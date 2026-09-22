@@ -168,7 +168,12 @@ for(let i = 0; i < 6000; i++){
     if(q.L.length !== q.R.length) throw new Error('term-by-term sums must line up');
     if(sum(q.L) - sum(q.R) !== q.ans || q.ans < 1) throw new Error('term-by-term answer wrong: ' + JSON.stringify(q));
     if(q.L.concat(q.R).some(v => v < 1)) throw new Error('a term dropped below one');
-    if(q.L.some((v, k) => v === q.R[k])) throw new Error('a pair with nothing to say between it');
+    const flat = q.L.filter((v, k) => v === q.R[k]).length;
+    if(q.tens){
+      // задача 8: whole tens, and exactly one term shared — that one cancels on sight
+      if(flat !== 1) throw new Error('the round-tens comparison wants exactly one shared term, got ' + flat);
+      if(q.L.concat(q.R).some(v => v % 10)) throw new Error('these should all be round tens');
+    } else if(flat) throw new Error('a pair with nothing to say between it');
     if(!q.L.some((v, k) => Math.abs(v - q.R[k]) >= 10)) throw new Error('no pair carries a ten, so nothing is worth spotting');
   }
   if(q.shape === 1){
@@ -248,19 +253,37 @@ console.log('two unknowns: each given fixes one symbol, worksheet instance gives
 console.log('circle level: the first number reaches every value from 7 to 20');
 
 // "естествени" excludes zero, which changes a count but never a sum
-let nat = 0, withZero = 0;
+let nat = 0, withZero = 0, twoDig = 0, named = 0;
 for(let i = 0; i < 8000; i++){
   const q = raw(12);
+  const txt = drawQ(q);
+  if(q.name){                                 // задача 9: the two numbers themselves, not how many
+    named++;
+    if(q.hi !== q.lo + 1) throw new Error('naming the numbers only works when exactly two fit');
+    if(q.lo !== q.a + 1 || q.hi !== q.b - 1) throw new Error('the ends must not be counted');
+    if(q.ans !== q.lo || String(q.alt) !== String([q.hi])) throw new Error('the two answers are not the two numbers');
+    if((txt.match(/class="slot"/g) || []).length !== 2) throw new Error('two numbers need two boxes');
+    continue;
+  }
   if(q.natural){ nat++; if(q.lo < 1) throw new Error('естествени must start at one, got ' + q.lo); }
   else if(q.lo === 0) withZero++;
+  if(q.two){ twoDig++; if(q.lo < 10) throw new Error('двуцифрени must start at ten, got ' + q.lo); }
   let want = 0;
   for(let v = q.lo; v <= q.hi; v++) want += q.sum ? v : 1;
   if(want !== q.ans) throw new Error('range ' + q.lo + '..' + q.hi + (q.sum ? ' sum' : ' count') + ' should be ' + want);
-  const txt = drawQ(q);
   if(q.natural !== /естествен/.test(txt)) throw new Error('the wording does not say which numbers are meant');
+  if(q.two !== /двуцифрен/.test(txt)) throw new Error('the wording does not say the numbers are two-digit');
 }
-if(!nat || !withZero) throw new Error('both wordings should turn up: ' + nat + ' natural, ' + withZero + ' with zero');
-console.log('ranges: естествени starts at one, the wording matches, counts and sums both check out');
+if(!nat || !withZero || !twoDig || !named)
+  throw new Error('all four wordings should turn up: ' + nat + ', ' + withZero + ', ' + twoDig + ', ' + named);
+{ // задача 7 and 9 as printed
+  const q7 = {kind:'count', shape:1, sum:false, natural:false, two:true, n:33, lo:10, hi:32, ans:23};
+  if(lastNum(why(q7, true)) !== 23) throw new Error('the two-digit numbers under 33 should be 23');
+  const q9 = {kind:'count', shape:4, name:1, sum:false, natural:false, two:false,
+              a:12, b:15, lo:13, hi:14, slots:2, ans:13, alt:[14]};
+  if(lastNum(why(q9, true)) !== 14) throw new Error('between 12 and 15 the numbers are 13 and 14');
+}
+console.log('ranges: естествени, двуцифрени and naming the two all hold, worksheet instances give 23, and 13 and 14');
 
 // the inequality asked as a sum
 let asked = 0;
@@ -317,6 +340,7 @@ console.log('unknown from an addition: the given holds and the second step is wo
 // the pencils, where one clue is a negative
 for(let i = 0; i < 4000; i++){
   const q = raw(38);
+  if(q.shape === 'gave') continue;             // задача 10 has two colours, and is checked below
   if(q.a + q.b + q.c !== q.T) throw new Error('the three colours do not add to the total');
   if(q.notA !== q.T - q.a) throw new Error('"not the first colour" is not the rest of them');
   if(q.ans !== q.notA - q.b || q.ans < 1) throw new Error('pencil answer wrong');
@@ -401,6 +425,7 @@ for(let i = 0; i < 4000; i++){
     if(q.star - q.dot !== q.ans || q.ans < 1) throw new Error('woven answer wrong');
     continue;
   }
+  if(q.one) continue;                          // задача 6 hides one term, and is checked below
   for(let k = 2; k < q.seq.length; k++){
     const want = q.rule === 0 ? q.seq[k-1] + q.seq[k-2]
                : q.rule === 1 ? q.seq[k-1] + (q.seq[1] - q.seq[0])
@@ -691,6 +716,58 @@ for(let i = 0; i < 4000; i++){
   if(lastNum(why(q, true)) !== 16) throw new Error('6, 8, 10 with +2 and +1 should shade 10 and 6');
 }
 console.log('placement: exactly one arrangement fits the chain, worksheet instance gives 16');
+
+{ // задача 8 as printed: 20 + 40 + 80 against 30 + 40 + 50
+  const q = {kind:'cmp', shape:3, tens:1, L:[20,40,80], R:[30,40,50], ans:20, flip:false};
+  if(lastNum(why(q, true)) !== 20) throw new Error('20+40+80 against 30+40+50 should be 20');
+  if(strip(why(q, true)).indexOf('поравно') < 0) throw new Error('the shared term should be called out as level');
+}
+console.log('round-tens comparison: one term shared, the rest whole tens apart, worksheet instance gives 20');
+
+// задача 6: a single gap, and the missing number itself
+let ones = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(27);
+  if(!q.one) continue;
+  ones++;
+  const seq = q.seq;
+  for(let k = 2; k < seq.length; k++){
+    const want = q.rule === 0 ? seq[k-1] + seq[k-2] : q.rule === 1 ? seq[k-1] + (seq[1] - seq[0]) : 2*seq[k-1];
+    if(seq[k] !== want) throw new Error('the run breaks its own rule at ' + k);
+  }
+  if(q.at < 2 || q.at > seq.length - 2) throw new Error('the gap must have terms on both sides');
+  if(seq.some((v, k) => k && v < seq[k-1])) throw new Error('the run steps down somewhere, which reads as a mistake');
+  if(seq[seq.length-1] > 200) throw new Error('the run has grown past what she works with');
+  if(q.ans !== seq[q.at]) throw new Error('the answer is not the hidden term');
+  if((strip(drawQ(q)).match(/…/g) || []).length !== 1) throw new Error('exactly one term should be hidden');
+}
+if(!ones) throw new Error('the single-gap shape should turn up');
+{ // задача 6 as printed: 0, 5, 5, 10, 15, 25, …, 65
+  const q = {kind:'missing', one:1, seq:[0,5,5,10,15,25,40,65], at:6, rule:0, ans:40};
+  if(lastNum(why(q, true)) !== 40) throw new Error('0, 5, 5, 10, 15, 25, …, 65 should be missing 40');
+}
+console.log('one missing term: every run follows its rule to the gap, worksheet instance gives 40');
+
+// задача 10: the rest of them, then two lots given away
+let gaves = 0;
+for(let i = 0; i < 4000; i++){
+  const q = raw(38);
+  if(q.shape !== 'gave') continue;
+  gaves++;
+  if(q.rest !== q.T - q.a) throw new Error('the other colour is not the rest of them');
+  if(q.ans !== q.rest - q.g1 - q.g2 || q.ans < 1) throw new Error('giving away left nothing, or the wrong count');
+  if(new Set(q.col.map(c => c[0])).size !== 2) throw new Error('the two colours must differ');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf(q.f ? 'имала' : 'имал') < 0 || shown.indexOf(q.f ? 'Подарила' : 'Подарил') < 0)
+    throw new Error('the verbs do not agree with the name, or the sentence lost its capital: ' + q.who);
+}
+if(!gaves) throw new Error('the giving-away shape should turn up');
+{ // задача 10 as printed: 20, 9 of one colour, 7 and 3 given away
+  const q = {kind:'pencils', shape:'gave', who:'Петър', f:false,
+             col:[['червени','червен'], ['жълти','жълт']], T:20, a:9, rest:11, g1:7, g2:3, ans:1};
+  if(lastNum(why(q, true)) !== 1) throw new Error('20 with 9 red, giving away 7 and 3, leaves 1');
+}
+console.log('given away: the rest is the whole minus the named colour, worksheet instance gives 1');
 
 // задача 10: two numbers a given distance from the same anchor
 let anchored = 0;

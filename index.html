@@ -838,6 +838,27 @@ function genPairsSub(){
 // Задача 3: the two sums line up term by term, so pairing them off beats adding both —
 // one pair carries a ten, the rest nudge by one or two.
 function genNear(){
+  if(Math.random() < 0.3){
+    // Задача 8: round tens, and one term the same on both sides — that pair cancels on
+    // sight, and the rest are whole tens apart.
+    for(;;){
+      const same = rnd(3), d = [], L = [], R = [];
+      for(let i = 0; i < 3; i++){
+        if(i === same){ d.push(0); continue; }
+        const k = 1 + rnd(3);                  // never nothing, or a second term would cancel too
+        d.push(10 * (Math.random() < 0.5 ? k : -k));
+      }
+      const tot = d.reduce((t, v) => t + v, 0);
+      if(tot <= 0) continue;
+      let ok = true;
+      for(let i = 0; i < 3; i++){
+        R.push(10*(2 + rnd(7)));
+        L.push(R[i] + d[i]);
+        if(L[i] < 10 || L[i] > 100) ok = false;
+      }
+      if(ok) return {kind:'cmp', shape:3, tens:1, L, R, ans: tot, flip: Math.random() < 0.4};
+    }
+  }
   for(;;){
     const n = 3, L = [], R = [], d = [];
     for(let i = 0; i < n; i++) d.push(rnd(5) - 2);
@@ -947,17 +968,29 @@ const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и 
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
 function genCount(){
   const sum = Math.random() < 0.45;
-  const top = sum ? 10 : 15;
+  if(!sum && Math.random() < 0.16){
+    // Задача 9: only two numbers fit, and they are what is asked for — not how many.
+    const a = 5 + rnd(25);
+    return {kind:'count', shape:4, name:1, sum:false, natural:false, two:false,
+            a, b: a + 3, lo: a + 1, hi: a + 2, slots:2, ans: a + 1, alt:[a + 2]};
+  }
+  // Задача 7: the same conditions, but only the two-digit numbers count — so the range
+  // starts at ten however low the condition reaches.
+  const two = !sum && Math.random() < 0.28;
+  const top = sum ? 10 : two ? 60 : 15;
   const shape = rnd(5);
   // "естествени числа" are 1, 2, 3 … — zero is not one of them, which changes a count
   // but never a sum.
-  const natural = Math.random() < 0.4;
-  const q = {kind:'count', sum, shape, natural};
-  if(shape === 0){ q.n = 3 + rnd(top - 2); q.lo = 0; q.hi = q.n; }
-  else if(shape === 1){ q.n = 3 + rnd(top - 2); q.lo = 0; q.hi = q.n - 1; }
-  else if(shape === 2){ q.a = 1 + rnd(6); q.b = q.a + 2 + rnd(sum ? 6 : 9); q.lo = q.a; q.hi = q.b; }
-  else { q.a = 1 + rnd(sum ? 6 : 8); q.b = q.a + 3 + rnd(sum ? 6 : 8); q.lo = q.a + 1; q.hi = q.b - 1; }
+  const natural = !two && Math.random() < 0.4;
+  const q = {kind:'count', sum, shape, natural, two};
+  const lowA = two ? 8 + rnd(28) : 1 + rnd(sum ? 6 : 8);
+  if(shape === 0){ q.n = (two ? 14 : 3) + rnd(top - 2); q.lo = 0; q.hi = q.n; }
+  else if(shape === 1){ q.n = (two ? 14 : 3) + rnd(top - 2); q.lo = 0; q.hi = q.n - 1; }
+  else if(shape === 2){ q.a = lowA; q.b = q.a + 2 + rnd(sum ? 6 : two ? 30 : 9); q.lo = q.a; q.hi = q.b; }
+  else { q.a = lowA; q.b = q.a + 3 + rnd(sum ? 6 : two ? 30 : 8); q.lo = q.a + 1; q.hi = q.b - 1; }
   if(natural) q.lo = Math.max(q.lo, 1);
+  if(two) q.lo = Math.max(q.lo, 10);                 // a two-digit number starts at ten
+  if(q.hi < q.lo + 1) return genCount();             // a range with nothing, or only one thing, in it
   const n = q.hi - q.lo + 1;
   q.ans = sum ? (q.lo + q.hi) * n / 2 : n;
   return q;
@@ -1406,6 +1439,28 @@ function genSeq(){
 // the digits of the missing numbers or the numbers themselves.
 function genMissing(){
   if(Math.random() < 0.3){
+    // Задача 6: a single gap, and the missing number itself is the answer. The rule has
+    // to be worked out first — a constant step, doubling, or adding the two before.
+    for(;;){
+      const rule = rnd(3);
+      const seq = [];
+      if(rule === 0){
+        const a0 = 5 * rnd(3);
+        seq.push(a0, a0 + 1 + rnd(9));         // never a step down, or the run reads as a mistake
+        while(seq.length < 8) seq.push(seq[seq.length-1] + seq[seq.length-2]);
+      } else if(rule === 1){
+        const start = 1 + rnd(9), d = 2 + rnd(8);
+        for(let i = 0; i < 8; i++) seq.push(start + i*d);
+      } else {
+        const start = 1 + rnd(4);
+        for(let i = 0; i < 7; i++) seq.push(start * Math.pow(2, i));
+      }
+      const at = 3 + rnd(seq.length - 4);            // never the opening terms, never the last
+      if(seq[at] < 1 || seq[seq.length-1] > 200) continue;
+      return {kind:'missing', one:1, seq, at, rule, ans: seq[at]};
+    }
+  }
+  if(Math.random() < 0.3){
     // Two runs woven together: every other number belongs to the same run.
     const dA = 6 + rnd(9), dB = 2 + rnd(3);
     const runA = [], runB = [];
@@ -1632,7 +1687,21 @@ function genShapes(){
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
+// Задача 10: the other colour is the whole minus the named one, and then two lots are
+// given away — three plain steps, with only the first one needing any thought.
+function genGave(){
+  for(;;){
+    const nm = NAMES[rnd(NAMES.length)], f = nm[1].slice(-1) === 'а';
+    const col = shuffle(PENCIL.slice()).slice(0, 2);
+    const T = 14 + rnd(12), a = 4 + rnd(8);
+    const rest = T - a, g1 = 2 + rnd(6), g2 = 1 + rnd(4);
+    if(rest - g1 - g2 < 1) continue;
+    return {kind:'pencils', shape:'gave', who: nm[0], f, col, T, a, rest, g1, g2,
+            ans: rest - g1 - g2};
+  }
+}
 function genPencils(){
+  if(Math.random() < 0.4) return genGave();
   const who = NAMES[rnd(NAMES.length)][0];
   const col = shuffle(PENCIL.slice()).slice(0, 3);
   const a = 2 + rnd(8), b = 2 + rnd(8), c = 2 + rnd(11);
@@ -2019,6 +2088,16 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
       ' <span class="or">или</span> <span class="slot" id="slot1"></span>' + cm + '</div>';
   }
+  if(q.kind === 'pencils' && q.shape === 'gave'){
+    const had = q.f ? 'имала' : 'имал', gave = q.f ? 'подарила' : 'подарил';
+    const Gave = gave[0].toUpperCase() + gave.slice(1);   // it opens a sentence
+    return '<div class="ask">' + q.who + ' ' + had + ' <span class="num">' + q.T + '</span> молива, от които <span class="num">' +
+      q.a + '</span> ' + q.col[0][0] + ', а останалите — ' + q.col[1][0] + '. ' + Gave +
+      ' на майка си <span class="num">' + q.g1 + '</span> ' + q.col[1][0] + ' молива, а на приятеля си ' +
+      gave + ' <span class="num">' + q.g2 + '</span> ' + q.col[1][0] +
+      ' молива. Колко <b>' + q.col[1][0] + '</b> молива са останали при ' + q.who + '?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
   if(q.kind === 'pencils'){
     return '<div class="ask">' + q.who + ' има <span class="num">' + q.T + '</span> молива с различен цвят — ' +
       q.col.map(c => c[1]).join(', ') + '. От тях <span class="num">' + q.notA + '</span> <b>не са ' +
@@ -2108,6 +2187,12 @@ function drawQ(q){
       i === q.hideAt[0] ? '<span class="circle">●</span>'
       : i === q.hideAt[1] ? '<span class="circle">★</span>' : v).join(', ');
     return '<div class="ask"><span class="circle">★</span> − <span class="circle">●</span> = ?</div>' +
+      '<div class="seq">' + shown + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
+  if(q.kind === 'missing' && q.one){
+    const shown = q.seq.map((v, i) => i === q.at ? '…' : v).join(', ');
+    return '<div class="ask">Кое е <b>пропуснатото</b> число?</div>' +
       '<div class="seq">' + shown + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
   }
@@ -2326,11 +2411,18 @@ function drawQ(q){
                : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
                : q.shape === 3 ? 'са между ' + q.a + ' и ' + q.b
                : 'са по-малки от ' + q.b + ' и са по-големи от ' + q.a;
-    const what = q.natural ? '<b>естествени</b> числа' : 'числа';
+    const what = q.natural ? '<b>естествени</b> числа' : q.two ? '<b>двуцифрени</b> числа' : 'числа';
+    if(q.name){
+      return '<div class="ask"><b>Кои са</b> числата, които ' + cond + '?</div>' +
+        '<div class="note">Числата са 0, 1, 2, 3, …</div>' +
+        '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
+        ' <span class="or">и</span> <span class="slot" id="slot1"></span></div>';
+    }
     const ask = q.sum ? 'Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.'
                       : '<b>Колко са</b> всички ' + what + ', които ' + cond + '?';
     return '<div class="ask">' + ask + '</div>' +
-      '<div class="note">' + (q.natural ? 'Естествените числа са 1, 2, 3, …' : 'Числата са 0, 1, 2, 3, …') + '</div>' +
+      '<div class="note">' + (q.natural ? 'Естествените числа са 1, 2, 3, …'
+        : q.two ? 'Двуцифрените числа са 10, 11, … 99' : 'Числата са 0, 1, 2, 3, …') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'named'){
@@ -2410,8 +2502,9 @@ function eqText(q){
   if(q.kind === 'box' && q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
   if(q.kind === 'box' && q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
-  if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.natural ? 'естествени, ' : '') +
-    'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
+  if(q.kind === 'count' && q.name) return 'между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi;
+  if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') +
+    (q.natural ? 'естествени, ' : q.two ? 'двуцифрени, ' : '') + 'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
   if(q.kind === 'named' && q.shape === 4) return q.k + ' различни, сбор ' + q.S + ' → най-голямо ' + q.ans;
   if(q.kind === 'named' && q.shape === 3) return 'сбор ' + q.S +
     (q.loose ? '' : ' от ' + q.k + ' цифри') + ' → най-голяма разлика ' + q.ans;
@@ -2428,6 +2521,8 @@ function eqText(q){
   if(q.kind === 'short') return 'не достигат ' + q.d1 + ' до ' + q.T1 + ' → ' + q.ans;
   if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
   if(q.kind === 'three') return q.a + ' и ' + q.b + ' → ' + (q.b - q.a) + ' или ' + (q.a + q.b);
+  if(q.kind === 'pencils' && q.shape === 'gave') return q.T + ' молива, ' + q.a + ' ' + q.col[0][0] +
+    ', подарени ' + q.g1 + ' и ' + q.g2 + ' → ' + q.ans;
   if(q.kind === 'pencils') return q.T + ' молива, ' + q.notA + ' не са ' + q.col[0][0] + ', ' +
     q.b + ' са ' + q.col[1][0] + ' → ' + q.ans;
   if(q.kind === 'shapes') return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
@@ -2440,6 +2535,7 @@ function eqText(q){
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
   if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
+  if(q.kind === 'missing' && q.one) return 'правило ' + q.rule + ', липсва на място ' + (q.at + 1) + ' → ' + q.ans;
   if(q.kind === 'missing' && q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
   if(q.kind === 'missing') return 'липсват ' + q.hidden[0] + ' и ' + q.hidden[1] +
     (q.asksDigits ? ' → цифри: ' : ' → сбор: ') + q.ans;
@@ -2536,9 +2632,10 @@ function whyWork(q, full){
   if(q.kind === 'cmp' && q.shape === 3){
     if(!full) return 'Сравни ги по двойки, вместо да събираш.';
     const pr = [], ds = q.L.map((v, i) => v - q.R[i]);
-    q.L.forEach((v, i) => pr.push(v + ' е с ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' повече' : ' по-малко')));
+    q.L.forEach((v, i) => pr.push(ds[i] === 0 ? v + ' е поравно'
+      : v + ' е с ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' повече' : ' по-малко')));
     // the gains added up first, then the losses taken off — so the running total never dips
-    const bits = ds.slice().sort((x, y) => y - x)
+    const bits = ds.filter(d => d).sort((x, y) => y - x)
       .map((d, i) => (i ? (d < 0 ? ' − ' : ' + ') : '') + Math.abs(d));
     return 'по двойки: ' + pr.join(', ') + ' &nbsp;→&nbsp; ' + bits.join('') + ' = ' + q.ans;
   }
@@ -2605,6 +2702,12 @@ function whyWork(q, full){
     if(!full) return 'При три точки върху права най-голямото разстояние е сборът на другите две.';
     return 'ако ' + q.b + ' е най-голямото &nbsp;→&nbsp; ' + q.b + ' − ' + q.a + ' = <b>' + (q.b - q.a) +
       '</b>; &nbsp;ако третото е най-голямото &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b>';
+  }
+  if(q.kind === 'pencils' && q.shape === 'gave'){
+    if(!full) return 'Първо колко са останалите на цвят, чак после кой колко е подарил.';
+    return q.col[1][0] + ' са ' + q.T + ' − ' + q.a + ' = <b>' + q.rest + '</b> &nbsp;→&nbsp; подарени са ' +
+      q.g1 + ' + ' + q.g2 + ' = <b>' + (q.g1 + q.g2) + '</b> &nbsp;→&nbsp; ' + q.rest + ' − ' +
+      (q.g1 + q.g2) + ' = ' + q.ans;
   }
   if(q.kind === 'pencils'){
     if(!full) return '„Не са ' + q.col[0][0] + '" значи всички останали цветове заедно.';
@@ -2697,6 +2800,14 @@ function whyWork(q, full){
     return q.runA.slice(0, 3).join(', ') + ', … растат с <b>' + q.dA + '</b> → ★ = ' + q.star +
       '; &nbsp;' + q.runB.slice(0, 2).join(', ') + ', … растат с <b>' + q.dB + '</b> → ● = ' + q.dot +
       ' &nbsp;→&nbsp; ' + q.star + ' − ' + q.dot + ' = ' + q.ans;
+  }
+  if(q.kind === 'missing' && q.one){
+    if(!full) return 'Виж как се получава всяко число от тези преди него.';
+    const a = q.seq[q.at - 1], b = q.seq[q.at - 2];
+    return q.rule === 0 ? 'всяко е сборът на двете преди него &nbsp;→&nbsp; ' + b + ' + ' + a + ' = ' + q.ans
+         : q.rule === 1 ? 'стъпката е <b>' + (q.seq[1] - q.seq[0]) + '</b> &nbsp;→&nbsp; ' + a + ' + ' +
+                          (q.seq[1] - q.seq[0]) + ' = ' + q.ans
+         : 'всяко е двойно по-голямо от предното &nbsp;→&nbsp; ' + a + ' + ' + a + ' = ' + q.ans;
   }
   if(q.kind === 'missing'){
     if(!full) return q.rule === 0 ? 'Всяко число е сборът на двете преди него.'
@@ -2893,8 +3004,13 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; 1 + 18 = ' + q.ans;
     return twoDigitWith(q.n).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.kind === 'count' && q.name){
+    if(!full) return 'Краищата не се броят — гледай само какво остава между тях.';
+    return 'между ' + q.a + ' и ' + q.b + ', без краищата &nbsp;→&nbsp; <b>' + q.lo + '</b> и <b>' + q.hi + '</b>';
+  }
   if(q.kind === 'count'){
-    if(!full) return q.natural ? 'Естествените числа започват от едно.'
+    if(!full) return q.two ? 'Двуцифрените числа започват от десет.'
+            : q.natural ? 'Естествените числа започват от едно.'
             : q.sum ? 'Събирай ги по двойки от двата края.'
             : q.shape >= 3 ? 'Краищата не се броят.'
             : q.shape === 2 ? 'И двата края се броят.'
