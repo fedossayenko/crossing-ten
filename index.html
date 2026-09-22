@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Math"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Math"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#EDF1F3" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#111A20" media="(prefers-color-scheme: dark)"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png"><link rel="manifest" href="manifest.json"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Crossing Ten</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&family=Nunito:wght@400;600;700&display=swap">
 <style>
@@ -22,7 +22,12 @@
   --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
   --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68; --lemon:#EFDC73; --grape:#B491D6;
 }
-html,body{height:100%}
+html,body{height:100%; overscroll-behavior:none}   /* no rubber-band, no pull-to-refresh */
+body{
+  touch-action:manipulation;              /* no double-tap zoom */
+  -webkit-touch-callout:none;             /* no long-press menu over a question */
+  -webkit-user-select:none; user-select:none;
+}
 body{background:var(--ground); color:var(--ink); font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%}
 .app{height:100%; max-width:640px; margin:0 auto; padding-inline:16px; padding-block:10px 14px; display:flex; flex-direction:column; gap:9px}
 button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-select:none; user-select:none; cursor:pointer}
@@ -2847,6 +2852,12 @@ let DB = null;
     $('synced').textContent = 'Saved on this device only' + builtOn();
   }
 })();
+
+// Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
+// an accidental pinch just breaks the layout, so the gesture is turned off here. It is
+// a deliberate trade against the usual advice — nothing on the page needs magnifying.
+['gesturestart', 'gesturechange', 'gestureend'].forEach(g =>
+  document.addEventListener(g, e => e.preventDefault(), { passive: false }));
 
 newRound();
 </script>
