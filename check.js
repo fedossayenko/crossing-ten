@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -1250,6 +1250,65 @@ for(let i = 0; i < 600; i++){
 }
 console.log('sudoku: one answer only, and the givens agree with it, worksheet instance gives 8');
 
+// задача 8: every two-digit number from three digits, with no leading zero
+for(let i = 0; i < 4000; i++){
+  const q = raw(18);
+  if(q.shape !== 3) continue;
+  const want = [];
+  q.pool.forEach(t => q.pool.forEach(u => { if(t !== u && t !== 0) want.push(10*t + u); }));
+  want.sort((a, b) => a - b);
+  if(String(want) !== String(q.made)) throw new Error('the list of numbers is not the one the digits allow');
+  if(q.made.some(v => v < 10 || v > 99)) throw new Error('something that is not a two-digit number got in');
+  if(new Set(q.pool).size !== 3) throw new Error('the three digits must differ');
+  const digitSum = q.made.reduce((t, v) => t + ((v / 10) | 0) + v % 10, 0);
+  const each = [digitSum, q.made.length, q.made.reduce((t, v) => t + v, 0)];
+  if(q.ans !== each[q.asks]) throw new Error('the answer is not the one asked for');
+  if(/нула/.test(strip(why(q, false))) !== (q.pool.indexOf(0) >= 0))
+    throw new Error('the nudge warns about a leading zero when there is no zero to lead');
+}
+{ // задача 8 as printed: the two-digit numbers from 0, 3 and 1
+  const q = {kind:'digits', shape:3, pool:[0,1,3], made:[10,13,30,31], asks:0, ans:12};
+  if(lastNum(why(q, true)) !== 12) throw new Error('10, 13, 30 and 31 have digits adding to 12');
+}
+console.log('numbers from three digits: no leading zero, worksheet instance gives 12');
+
+// задача 9: how often a digit turns up across a run
+const runShapes = {};
+for(let i = 0; i < 4000; i++){
+  const q = raw(55);
+  runShapes[q.shape] = 1;
+  const hits = (to) => { let n = 0; for(let v = q.from; v <= to; v++) n += String(v).split(String(q.d)).length - 1; return n; };
+  if(q.shape === 0){
+    if(hits(q.to) !== q.ans) throw new Error('the count of the digit is wrong');
+    if(q.ans < 3) throw new Error('too few to be worth counting');
+  } else {
+    if(hits(q.ans) !== q.k) throw new Error('the run does not hold exactly that many of the digit');
+    if(hits(q.ans + 1) <= q.k) throw new Error('one further along still fits, so it is not the largest');
+  }
+}
+if(Object.keys(runShapes).length !== 2) throw new Error('both directions should turn up');
+{ // задача 9 as printed: thirteen twos from 2 onwards
+  let n = 0, last = 0;
+  for(let v = 2; v <= 60; v++){ n += String(v).split('2').length - 1; if(n === 13) last = v; }
+  if(last !== 31) throw new Error('thirteen twos from 2 onwards should reach 31, got ' + last);
+  if(lastNum(why({kind:'dcount', shape:1, d:2, from:2, k:13, ans:31}, true)) !== 31)
+    throw new Error('the worked line should land on 31');
+}
+console.log('counting a digit: walked number by number both ways, worksheet instance gives 31');
+
+// задача 10: filling a vessel until the two buckets tell apart
+for(let i = 0; i < 4000; i++){
+  const q = raw(56);
+  if(q.p >= q.q) throw new Error('the two bucket sizes must differ, smaller first');
+  if(q.ans*q.q < q.V) throw new Error('the bigger bucket has not filled the vessel yet');
+  if((q.ans - 1)*q.q >= q.V) throw new Error('the bigger bucket filled it earlier, so fewer fills would do');
+  if(q.ans*q.p >= q.V) throw new Error('the smaller bucket fills it too, so nothing is told apart');
+  if(q.ans < 2 || q.ans > 6) throw new Error('one fill telling you is no puzzle, and many is just pouring');
+}
+if(lastNum(why({kind:'bucket', p:3, q:5, V:14, ans:3}, true)) !== 3)
+  throw new Error('a 14-litre vessel with a 3 or 5 litre bucket takes 3 fills');
+console.log('which bucket: the vessel overflows for one size and not the other, worksheet instance gives 3');
+
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0;
 for(let i = 0; i < 4000; i++){
@@ -1345,7 +1404,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 53) throw new Error('parsed ' + rows.length + ' levels, expected 53');
+  if(rows.length !== 55) throw new Error('parsed ' + rows.length + ' levels, expected 55');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1380,7 +1439,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 53 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 55 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {
