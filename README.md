@@ -39,7 +39,7 @@ sorted easiest first inside each group:
 
 - **Chains** — long ± runs, runs that simplify by grouping, and runs whose signs you choose
 - **Counting** — how many numbers, sums, ways or days fit a condition
-- **Numbers and digits** — place value, digits standing in for numbers, arranging digits, multiples
+- **Numbers and digits** — place value, digits standing in for numbers, arranging digits, multiples, sudoku
 - **Sequences** — find the rule, fill the gaps
 - **Find the value** — an unknown recovered from what is given
 - **Word problems** — a story to turn into arithmetic
@@ -48,7 +48,7 @@ sorted easiest first inside each group:
 ## The training path
 
 The picker opens with one recommendation — *Start here*, then *Next up* — and a bar
-showing how many of the 52 are learned.
+showing how many of the 53 are learned.
 
 - **Learned** means at least four in five right first try, over at least fifteen
   questions — so a single round is never enough evidence on its own.
@@ -64,7 +64,7 @@ showing how many of the 52 are learned.
   group than the last is preferred — six geometry levels in a row sticks less well
   than mixing them, and is duller. When nothing at that difficulty comes from another
   group, it will pull a level one step harder forward instead. This keeps the longest
-  single-group run to two.
+  single-group run to one.
 
 `node check.js` walks the whole path from nothing learned and fails if it cannot
 reach every level, suggests something before its groundwork, drops more than one step

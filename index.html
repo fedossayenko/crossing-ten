@@ -694,6 +694,7 @@ const LEVELS = [
   { id:18, op:'w', grp:'num', d:4, eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:45, op:'w', grp:'num', needs:[13], d:4, eq:'Четири карти', desc:'Arrange four digits for the smallest difference' },
   { id:23, op:'w', grp:'num', needs:[13], d:4, eq:'□△ − 9', desc:'Digits standing in for a two-digit number' },
+  { id:54, op:'w', grp:'num', d:5, eq:'Судоку', desc:'Four by four: every row, column and box holds 1 to 4 once' },
   { id:27, op:'w', grp:'seq', d:4, eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
   { id:26, op:'w', grp:'seq', d:4, eq:'Редица', desc:'Smaller on the left, bigger on the right' },
   { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the hidden number — or two of them — then use it' },
@@ -930,16 +931,17 @@ function genCmp(){
 // unknown is then read off the other — which way round the box sits decides the last step.
 function genBalance(){
   for(;;){
-    const form = rnd(4);                        // 0: x+y = N−□   1: x−y = □+N   2: x+y = □+N   3: x−y = N−□
+    // 0: x+y = N−□   1: x−y = □+N   2: x+y = □+N   3: x−y = N−□   4: x+y = □−N   5: x−y = □−N
+    const form = rnd(6);
     const round = Math.random() < 0.35;
     const x = round ? 10*(3 + rnd(8)) : 11 + rnd(80);
     const y = round ? 10*(1 + rnd(6)) : 11 + rnd(60);
-    const plus = form === 0 || form === 2;
+    const plus = form === 0 || form === 2 || form === 4;
     if(!plus && x <= y) continue;
     const L = plus ? x + y : x - y;
     if(L < 5 || L > 100) continue;
     const N = round ? 10*(1 + rnd(9)) : 5 + rnd(90);
-    const box = (form === 0 || form === 3) ? N - L : L - N;
+    const box = (form === 0 || form === 3) ? N - L : form >= 4 ? L + N : L - N;
     if(box < 1 || box > 99) continue;
     return {kind:'box', shape:'bal', form, x, y, N, L, plus, ans: box};
   }
@@ -983,6 +985,19 @@ const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и 
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
 function genCount(){
+  if(Math.random() < 0.14){
+    // Задача 3: a list with repeats. What is asked is about the set behind it, not the
+    // list — so the repeats have to be noticed and set aside.
+    const k = 4 + rnd(5);
+    const pool = shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0, k);
+    const list = pool.slice();
+    for(let i = 0, extra = 3 + rnd(4); i < extra; i++) list.push(pool[rnd(k)]);
+    shuffle(list);
+    const asksSum = Math.random() < 0.35;
+    return {kind:'count', shape:5, set:1, list, pool: pool.slice().sort((a, b) => a - b), asksSum,
+            sum:false, natural:false, two:false,
+            ans: asksSum ? pool.reduce((t, v) => t + v, 0) : k};
+  }
   const sum = Math.random() < 0.45;
   if(!sum && Math.random() < 0.16){
     // Задача 9: only two numbers fit, and they are what is asked for — not how many.
@@ -1811,6 +1826,79 @@ function genCrates(){
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
+// Задача 5: a four by four sudoku. Every row, every column and every bold two by two box
+// holds 1, 2, 3 and 4 exactly once. Two empty cells are named and their sum is asked.
+// Cells are counted 0..15, reading across.
+function sudokuFits(g, at, v){
+  const r = (at / 4) | 0, c = at % 4, br = r - r % 2, bc = c - c % 2;
+  for(let i = 0; i < 4; i++) if(g[r*4 + i] === v || g[i*4 + c] === v) return false;
+  for(let i = 0; i < 2; i++) for(let j = 0; j < 2; j++) if(g[(br+i)*4 + bc + j] === v) return false;
+  return true;
+}
+// Stops at two, since all we ever ask is whether the puzzle has one answer or more.
+function sudokuCount(g){
+  const at = g.indexOf(0);
+  if(at < 0) return 1;
+  let n = 0;
+  for(let v = 1; v <= 4 && n < 2; v++){
+    if(!sudokuFits(g, at, v)) continue;
+    g[at] = v;
+    n += sudokuCount(g);
+    g[at] = 0;
+  }
+  return n;
+}
+// One valid grid, shuffled every way that keeps it valid.
+function sudokuGrid(){
+  const map = shuffle([1,2,3,4]);
+  let m = [[1,2,3,4],[3,4,1,2],[2,1,4,3],[4,3,2,1]].map(r => r.map(v => map[v-1]));
+  const rows = o => o.map(i => m[i]);
+  if(Math.random() < 0.5) m = rows([1,0,2,3]);
+  if(Math.random() < 0.5) m = rows([0,1,3,2]);
+  if(Math.random() < 0.5) m = rows([2,3,0,1]);
+  const cols = o => m.map(r => o.map(i => r[i]));
+  if(Math.random() < 0.5) m = cols([1,0,2,3]);
+  if(Math.random() < 0.5) m = cols([0,1,3,2]);
+  if(Math.random() < 0.5) m = cols([2,3,0,1]);
+  if(Math.random() < 0.5) m = m[0].map((_, c) => m.map(r => r[c]));
+  return [].concat.apply([], m);
+}
+function genSudoku(){
+  for(;;){
+    const sol = sudokuGrid(), g = sol.slice();
+    const want = 6 + rnd(3);
+    const blank = [];
+    for(const at of shuffle(sol.map((_, i) => i))){
+      if(blank.length >= want) break;
+      g[at] = 0;
+      if(sudokuCount(g.slice()) === 1) blank.push(at); else g[at] = sol[at];
+    }
+    if(blank.length < 6) continue;
+    const two = shuffle(blank.slice()).slice(0, 2).sort((a, b) => a - b);
+    return {kind:'sudoku', g, sol, X: two[0], Y: two[1], ans: sol[two[0]] + sol[two[1]]};
+  }
+}
+function sudokuSvg(q){
+  const u = 42, P = 4;
+  let cells = '';
+  for(let i = 0; i < 16; i++){
+    const r = (i / 4) | 0, c = i % 4;
+    const t = i === q.X ? 'X' : i === q.Y ? 'Y' : q.g[i] ? String(q.g[i]) : '';
+    if(t) cells += '<text x="' + (P + c*u + u/2) + '" y="' + (P + r*u + u/2 + 8) +
+      '" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)" ' +
+      'font-family="Nunito, sans-serif">' + t + '</text>';
+  }
+  let lines = '';
+  for(let k = 0; k <= 4; k++){
+    const w = k % 2 === 0 ? 3 : 1.2, at = P + k*u;
+    lines += '<line x1="' + at + '" y1="' + P + '" x2="' + at + '" y2="' + (P + 4*u) + '" stroke-width="' + w + '"/>' +
+             '<line x1="' + P + '" y1="' + at + '" x2="' + (P + 4*u) + '" y2="' + at + '" stroke-width="' + w + '"/>';
+  }
+  return '<div class="fig"><svg viewBox="0 0 ' + (4*u + 2*P) + ' ' + (4*u + 2*P) +
+    '" role="img" aria-label="судоку четири на четири">' +
+    '<g stroke="var(--ink)" stroke-linecap="square">' + lines + '</g>' + cells + '</svg></div>';
+}
+
 // Задача 19: the smallest three-digit number with all different digits is 102. Pinning a
 // digit to one place shifts it, and the gap between the two is what is asked. Found by
 // scanning rather than by a rule, so the rule cannot be got wrong.
@@ -1843,7 +1931,14 @@ const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
 // Задача 1 and 5: a number said in tens, ones and hundreds instead of digits. Ten ones
 // make a десетица and ten десетици a стотица, so the same amount has many spellings.
 function genTens(){
-  const shape = rnd(4);
+  const shape = rnd(5);
+  if(shape === 4){
+    // Задача 1: the count of ones runs past nine, so it carries into the tens — and the
+    // box is a digit of the answer rather than a count of anything.
+    const a = 3 + rnd(7), b = rnd(10), tot = 10*a + b;
+    const t = 1 + rnd(Math.min(5, a - 1));
+    return {kind:'tens', shape, t, u: tot - 10*t, b, tot, ans: a};
+  }
   if(shape === 0){                              // 50 = □ десетици + 20 единици
     const ans = 2 + rnd(8);
     const c = Math.random() < 0.6 ? 10*(1 + rnd(4)) : 2 + rnd(8);
@@ -2111,6 +2206,7 @@ function raw(level){
     if(level === 51) return genTens();
     if(level === 52) return genStep();
     if(level === 53) return genThreeDig();
+    if(level === 54) return genSudoku();
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
@@ -2537,6 +2633,14 @@ function drawQ(q){
       '<div class="given">' + rel + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'sudoku'){
+    return '<div class="ask">Попълнете празните квадратчета с <span class="num">1</span>, <span class="num">2</span>, ' +
+      '<span class="num">3</span> или <span class="num">4</span> така, че във всеки <b>ред</b>, всеки <b>стълб</b> ' +
+      'и всяко <b>удебелено квадратче</b> числата от 1 до 4 да стоят точно по веднъж. ' +
+      'Колко е <b>сборът</b> на числата в <b>X</b> и <b>Y</b>?</div>' +
+      sudokuSvg(q) +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'thr'){
     const which = 'най-' + (q.small ? 'малкото' : 'голямото') + ' трицифрено число, записано с <b>три различни цифри</b>';
     const pinned = which + ' и <b>цифра на ' + POSN[q.pos] + ' ' + q.dig + '</b>';
@@ -2549,11 +2653,12 @@ function drawQ(q){
   if(q.kind === 'tens'){
     const B = '<span class="circle">□</span>';
     // the box holds a single digit in the first two, a whole number in the others
-    const ask = 'Ко' + (q.shape < 2 ? 'я цифра' : 'е число') + ' трябва да поставим вместо ' + B +
+    const ask = 'Ко' + (q.shape < 2 || q.shape === 4 ? 'я цифра' : 'е число') + ' трябва да поставим вместо ' + B +
       ', така че да е вярно равенството?';
     const eq = q.shape === 0 ? q.N + ' = ' + B + ' ' + PLACE[10][1] + ' + ' + places(q.c, 1)
              : q.shape === 1 ? places(q.a, 10) + ' + ' + places(q.b, 10) + ' + ' + places(10*q.m, 1) +
                                ' = ' + B + ' ' + PLACE[100][1]
+             : q.shape === 4 ? places(q.t, 10) + ' + ' + places(q.u, 1) + ' = ' + B + q.b
              : q.shape === 2 ? q.N + ' = ' + places(q.t, 10) + ' + ' + B + ' ' + PLACE[1][1]
              : places(q.a, 100) + ' + ' + places(q.b, 10) + ' + ' + places(q.c, 1) + ' = ' + B;
     return '<div class="ask">' + ask + '</div>' +
@@ -2621,6 +2726,12 @@ function drawQ(q){
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'count' && q.set){
+    return '<div class="ask">Колко ' + (q.asksSum ? 'е <b>сборът</b> на' : 'са') +
+      ' <b>различните</b> цифри?</div>' +
+      '<div class="seq">' + q.list.join(', ') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'count'){
     const cond = q.shape === 0 ? 'не са по-големи от ' + q.n
                : q.shape === 1 ? 'са по-малки от ' + q.n
@@ -2679,7 +2790,8 @@ function drawQ(q){
   if(q.kind === 'box' && q.shape === 'bal'){
     const B = '<span class="circle">□</span>';
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
-    const right = (q.form === 0 || q.form === 3) ? q.N + ' − ' + B : B + ' + ' + q.N;
+    const right = (q.form === 0 || q.form === 3) ? q.N + ' − ' + B
+                : q.form >= 4 ? B + ' − ' + q.N : B + ' + ' + q.N;
     return '<div class="ask">Кое число трябва да поставим вместо ' + B +
       ', така че да е вярно равенството?</div>' +
       '<div class="given">' + left + ' = ' + right + '</div>' +
@@ -2718,6 +2830,7 @@ function eqText(q){
   if(q.kind === 'box' && q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
   if(q.kind === 'box' && q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
+  if(q.kind === 'count' && q.set) return 'различни: ' + q.pool.join(', ') + ' → ' + q.ans;
   if(q.kind === 'count' && q.name) return 'между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi;
   if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') +
     (q.natural ? 'естествени, ' : q.two ? 'двуцифрени, ' : '') + 'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
@@ -2786,6 +2899,7 @@ function eqText(q){
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
     (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
+  if(q.kind === 'sudoku') return 'судоку → X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;
   if(q.kind === 'thr') return (q.small ? 'най-малко' : 'най-голямо') + ', ' + POSN[q.pos] + '=' + q.dig +
     ' → ' + q.a + (q.shape === 1 ? ' срещу ' + q.base + ' → ' + q.ans : '');
   if(q.kind === 'tens') return 'разредни единици → ' + q.ans;
@@ -3213,6 +3327,13 @@ function whyWork(q, full){
     return head + 'трябва ? + ' + q.C + ' ≥ ' + q.L + ', значи ? ≥ ' + lim +
       ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.kind === 'sudoku'){
+    if(!full) return 'Търси ред, стълб или квадратче, в което липсва само едно число.';
+    // the whole solved grid, so she can see where her own filling went wrong
+    const rows = [0,1,2,3].map(r => q.sol.slice(r*4, r*4 + 4).join(''));
+    return 'решението е <b>' + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
+      q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans;
+  }
   if(q.kind === 'thr'){
     if(!full) return 'Подреждай цифрите отпред назад — първата тежи най-много.';
     const found = 'с ' + q.dig + ' на ' + POSN[q.pos] + ' най-' + (q.small ? 'малкото' : 'голямото') +
@@ -3228,6 +3349,8 @@ function whyWork(q, full){
     if(q.shape === 1) return places(q.a, 10) + ' = ' + (10*q.a) + ', ' + places(q.b, 10) + ' = ' + (10*q.b) +
       ', ' + places(10*q.m, 1) + ' = ' + (10*q.m) + ' &nbsp;→&nbsp; ' + (10*q.a) + ' + ' + (10*q.b) + ' + ' +
       (10*q.m) + ' = <b>' + (100*q.ans) + '</b> &nbsp;→&nbsp; това са ' + q.ans + ' ' + PLACE[100][1];
+    if(q.shape === 4) return places(q.t, 10) + ' = ' + (10*q.t) + ' &nbsp;→&nbsp; ' + (10*q.t) + ' + ' +
+      q.u + ' = <b>' + q.tot + '</b> &nbsp;→&nbsp; цифрата на десетиците е ' + q.ans;
     if(q.shape === 2) return places(q.t, 10) + ' = <b>' + (10*q.t) + '</b> &nbsp;→&nbsp; ' + q.N + ' − ' +
       (10*q.t) + ' = ' + q.ans;
     return (100*q.a) + ' + ' + (10*q.b) + ' + ' + q.c + ' = ' + q.ans;
@@ -3286,6 +3409,11 @@ function whyWork(q, full){
     if(q.shape === 1) return 'само <b>10</b> дава 1, само <b>99</b> дава 18, всички други се повтарят' +
       ' &nbsp;→&nbsp; 1 + 18 = ' + q.ans;
     return twoDigitWith(q.n).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'count' && q.set){
+    if(!full) return 'Едно и също число, повторено, се брои само веднъж.';
+    return 'различните са <b>' + q.pool.join(', ') + '</b> &nbsp;→&nbsp; ' +
+      (q.asksSum ? q.pool.join(' + ') + ' = ' + q.ans : 'на брой ' + q.ans);
   }
   if(q.kind === 'count' && q.name){
     if(!full) return 'Краищата не се броят — гледай само какво остава между тях.';
@@ -3355,9 +3483,9 @@ function whyWork(q, full){
   if(q.shape === 'bal'){
     if(!full) return 'Едната страна може да се пресметне докрай — започни оттам.';
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
-    const tail = (q.form === 0 || q.form === 3)
-      ? '□ = ' + q.N + ' − ' + q.L + ' = ' + q.ans
-      : '□ = ' + q.L + ' − ' + q.N + ' = ' + q.ans;
+    const tail = (q.form === 0 || q.form === 3) ? '□ = ' + q.N + ' − ' + q.L + ' = ' + q.ans
+               : q.form >= 4 ? '□ = ' + q.L + ' + ' + q.N + ' = ' + q.ans
+               : '□ = ' + q.L + ' − ' + q.N + ' = ' + q.ans;
     return left + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tail;
   }
   if(q.shape === 'plus'){

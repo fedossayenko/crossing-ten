@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -253,10 +253,20 @@ console.log('two unknowns: each given fixes one symbol, worksheet instance gives
 console.log('circle level: the first number reaches every value from 7 to 20');
 
 // "естествени" excludes zero, which changes a count but never a sum
-let nat = 0, withZero = 0, twoDig = 0, named = 0;
+let nat = 0, withZero = 0, twoDig = 0, named = 0, sets = 0;
 for(let i = 0; i < 8000; i++){
   const q = raw(12);
   const txt = drawQ(q);
+  if(q.set){                                  // задача 3: the different digits in a list
+    sets++;
+    const pool = [...new Set(q.list)].sort((a, b) => a - b);
+    if(String(pool) !== String(q.pool)) throw new Error('the set of different digits is wrong');
+    if(q.list.length <= pool.length) throw new Error('a list with no repeat teaches nothing');
+    if(q.ans !== (q.asksSum ? pool.reduce((t, v) => t + v, 0) : pool.length))
+      throw new Error('the answer is not the one asked for');
+    if(q.list.some(v => v < 0 || v > 9)) throw new Error('these should all be single digits');
+    continue;
+  }
   if(q.name){                                 // задача 9: the two numbers themselves, not how many
     named++;
     if(q.hi !== q.lo + 1) throw new Error('naming the numbers only works when exactly two fit');
@@ -274,8 +284,13 @@ for(let i = 0; i < 8000; i++){
   if(q.natural !== /естествен/.test(txt)) throw new Error('the wording does not say which numbers are meant');
   if(q.two !== /двуцифрен/.test(txt)) throw new Error('the wording does not say the numbers are two-digit');
 }
-if(!nat || !withZero || !twoDig || !named)
-  throw new Error('all four wordings should turn up: ' + nat + ', ' + withZero + ', ' + twoDig + ', ' + named);
+if(!nat || !withZero || !twoDig || !named || !sets)
+  throw new Error('all five wordings should turn up: ' + [nat, withZero, twoDig, named, sets].join(', '));
+{ // задача 3 as printed
+  const list = [3,1,4,1,5,9,2,6,5,3,5];
+  const q = {kind:'count', shape:5, set:1, list, pool:[1,2,3,4,5,6,9], asksSum:false, ans:7};
+  if(lastNum(why(q, true)) !== 7) throw new Error('that list holds seven different digits');
+}
 { // задача 7 and 9 as printed
   const q7 = {kind:'count', shape:1, sum:false, natural:false, two:true, n:33, lo:10, hi:32, ans:23};
   if(lastNum(why(q7, true)) !== 23) throw new Error('the two-digit numbers under 33 should be 23');
@@ -1061,15 +1076,23 @@ for(let i = 0; i < 6000; i++){
   const want = q.shape === 0 ? (q.N - q.c) / 10
              : q.shape === 1 ? (10*q.a + 10*q.b + 10*q.m) / 100
              : q.shape === 2 ? q.N - 10*q.t
+             : q.shape === 4 ? Math.floor(q.tot / 10)
              : 100*q.a + 10*q.b + q.c;
+  if(q.shape === 4){
+    if(10*q.t + q.u !== q.tot) throw new Error('the tens and the ones do not make the total');
+    if(q.tot % 10 !== q.b) throw new Error('the digit shown is not the ones digit of the total');
+    if(q.u < 10) throw new Error('with fewer than ten ones there is no carry to notice');
+  }
   if(want !== q.ans) throw new Error('shape ' + q.shape + ' does not balance: ' + JSON.stringify(q));
   const shown = strip(drawQ(q));
-  if(q.shape < 2 && (q.ans < 0 || q.ans > 9)) throw new Error('the box is asked for as a digit but holds ' + q.ans);
-  if(q.shape < 2 && shown.indexOf('Коя цифра') < 0) throw new Error('a single digit should be asked for as a цифра');
-  if(q.shape >= 2 && shown.indexOf('Кое число') < 0) throw new Error('a whole number should be asked for as a число');
+  const digit = q.shape < 2 || q.shape === 4;
+  if(digit && (q.ans < 0 || q.ans > 9)) throw new Error('the box is asked for as a digit but holds ' + q.ans);
+  if(digit !== (shown.indexOf('Коя цифра') >= 0)) throw new Error('цифра and число do not match what the box holds');
   if(/\b1 (единици|десетици|стотици)\b/.test(shown)) throw new Error('„1 единици" — Bulgarian wants the singular');
 }
-if(Object.keys(seenTens).length !== 4) throw new Error('all four spellings should turn up');
+if(Object.keys(seenTens).length !== 5) throw new Error('all five spellings should turn up');
+if(lastNum(why({kind:'tens', shape:4, t:2, u:37, b:7, tot:57, ans:5}, true)) !== 5)
+  throw new Error('2 tens and 37 ones should make 57, so the digit is 5');
 { // задачи 1 and 5 as printed
   if(lastNum(why({kind:'tens', shape:0, c:20, N:50, ans:3}, true)) !== 3)
     throw new Error('50 = □ tens + 20 ones should be 3');
@@ -1086,7 +1109,8 @@ for(let i = 0; i < 6000; i++){
   balanced++;
   const L = q.plus ? q.x + q.y : q.x - q.y;
   if(L !== q.L) throw new Error('the side that can be worked out is wrong');
-  const right = (q.form === 0 || q.form === 3) ? q.N - q.ans : q.ans + q.N;
+  const right = (q.form === 0 || q.form === 3) ? q.N - q.ans
+              : q.form >= 4 ? q.ans - q.N : q.ans + q.N;
   if(right !== q.L) throw new Error('the two sides do not come out equal: ' + JSON.stringify(q));
   if(q.ans < 1 || q.ans > 99) throw new Error('the box left the range she works in');
 }
@@ -1096,6 +1120,10 @@ if(!balanced) throw new Error('the balance shape should turn up');
     throw new Error('31 + 29 = 95 − □ should be 35');
   if(lastNum(why({kind:'box', shape:'bal', form:1, x:100, y:40, N:20, L:60, plus:false, ans:40}, true)) !== 40)
     throw new Error('100 − 40 = □ + 20 should be 40');
+  if(lastNum(why({kind:'box', shape:'bal', form:5, x:60, y:40, N:20, L:20, plus:false, ans:40}, true)) !== 40)
+    throw new Error('60 − 40 = □ − 20 should be 40');
+  if(lastNum(why({kind:'box', shape:'bal', form:2, x:55, y:25, N:20, L:80, plus:true, ans:60}, true)) !== 60)
+    throw new Error('55 + 25 = □ + 20 should be 60');
 }
 console.log('both sides equal: the two sides agree whichever way the box sits, worksheet instances give 35 and 40');
 
@@ -1186,6 +1214,41 @@ if(Object.keys(thrShapes).length !== 2) throw new Error('both questions should t
   if(lastNum(why(q, true)) !== 108) throw new Error('210 beats 102 by 108');
 }
 console.log('three digits: nothing smaller or larger fits the condition, worksheet instance gives 108');
+
+// задача 5: the four by four sudoku must have exactly one answer
+for(let i = 0; i < 600; i++){
+  const q = raw(54);
+  const ok = g => {
+    for(let k = 0; k < 4; k++){
+      const row = new Set(), col = new Set(), box = new Set();
+      for(let j = 0; j < 4; j++){
+        row.add(g[k*4 + j]);
+        col.add(g[j*4 + k]);
+        const br = (k < 2 ? 0 : 2), bc = (k % 2 ? 2 : 0);
+        box.add(g[(br + ((j / 2) | 0))*4 + bc + j % 2]);
+      }
+      if(row.size !== 4 || col.size !== 4 || box.size !== 4) throw new Error('the solution repeats a number');
+    }
+  };
+  ok(q.sol);
+  if(q.sol.some(v => v < 1 || v > 4)) throw new Error('the solution uses something other than 1 to 4');
+  if(q.g.some((v, k) => v && v !== q.sol[k])) throw new Error('a given disagrees with the solution');
+  if(q.g[q.X] || q.g[q.Y]) throw new Error('X and Y must sit on empty cells');
+  if(q.X === q.Y) throw new Error('X and Y must be different cells');
+  if(q.g.filter(v => !v).length < 6) throw new Error('too few cells left empty to be a puzzle');
+  if(sudokuCount(q.g.slice()) !== 1) throw new Error('the puzzle does not have exactly one answer');
+  if(q.ans !== q.sol[q.X] + q.sol[q.Y]) throw new Error('the answer is not the two named cells added');
+}
+{ // задача 5 as printed
+  const g = [0,0,0,3, 3,2,4,0, 0,4,3,2, 2,0,0,0];
+  if(sudokuCount(g.slice()) !== 1) throw new Error('the printed puzzle should have one answer');
+  const sol = g.slice();
+  (function fill(){ const at = sol.indexOf(0); if(at < 0) return true;
+    for(let v = 1; v <= 4; v++){ if(!sudokuFits(sol, at, v)) continue; sol[at] = v; if(fill()) return true; sol[at] = 0; }
+    return false; })();
+  if(sol[0] + sol[15] !== 8) throw new Error('X and Y in the printed puzzle should add to 8, got ' + (sol[0] + sol[15]));
+}
+console.log('sudoku: one answer only, and the givens agree with it, worksheet instance gives 8');
 
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0;
@@ -1282,7 +1345,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 52) throw new Error('parsed ' + rows.length + ' levels, expected 52');
+  if(rows.length !== 53) throw new Error('parsed ' + rows.length + ' levels, expected 53');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1317,7 +1380,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 52 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 53 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {
