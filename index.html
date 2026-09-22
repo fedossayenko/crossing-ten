@@ -648,6 +648,10 @@ const LEVELS = [
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
+  { id:33, op:'w', grp:'puzzle', eq:'Цветя',      desc:'Petals of three kinds adding to a total' },
+  { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
+  { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
+  { id:34, op:'w', grp:'geo',    eq:'Оцветени',   desc:'Paint whole rows and columns — what is left' },
   { id:30, op:'w', grp:'word',   eq:'Умаляемо',   desc:'Naming the parts of a sum and a difference' },
   { id:29, op:'w', grp:'puzzle', eq:'Плодове',    desc:'Three fruit, three totals — find one from the others' },
   { id:31, op:'w', grp:'geo',    eq:'Дръвчета',   desc:'Trees in a row: the gaps are one fewer than the trees' },
@@ -901,14 +905,14 @@ function antSvg(x, y, u){
     '<ellipse cx="-5" cy="-3" rx="3.1" ry="2.7"/><ellipse cx="0" cy="0" rx="2.7" ry="2.5"/>' +
     '<ellipse cx="6" cy="2.4" rx="4.2" ry="3.4"/></g></g>';
 }
-function gridSvg(W, H, c, r){
+function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
   const u = 36, w = W*u, h = H*u;
   let g = '';
   for(let i = 0; i <= W; i++) g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + h + '"/>';
   for(let j = 0; j <= H; j++) g += '<line x1="0" y1="' + j*u + '" x2="' + w + '" y2="' + j*u + '"/>';
   return '<div class="fig"><svg viewBox="-3 -3 ' + (w+6) + ' ' + (h+6) + '" role="img" aria-label="решетка с мравка">' +
     '<g stroke="var(--ink)" stroke-width="1.7" fill="none">' + g + '</g>' +
-    antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) + '</svg></div>';
+    (c ? antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) : '') + '</svg></div>';
 }
 function sqSvg(parts, side){
   const S = 118, u = S/parts;
@@ -1106,6 +1110,65 @@ function genRibbon(){
   }
 }
 
+const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
+
+// Задача 13: flowers of three kinds. Generated so that every way of reaching the
+// total with at least one of each kind gives the SAME number of flowers.
+function genFlowers(){
+  for(;;){
+    const p0 = 3 + rnd(4);
+    const p = [p0, p0 + 1, p0 + 2];
+    const T = (1 + rnd(3))*p[0] + (1 + rnd(3))*p[1] + (1 + rnd(3))*p[2];
+    if(T > 60) continue;
+    const totals = new Set();
+    for(let x = 1; x*p[0] < T; x++)
+      for(let y = 1; x*p[0] + y*p[1] < T; y++){
+        const rest = T - x*p[0] - y*p[1];
+        if(rest > 0 && rest % p[2] === 0) totals.add(x + y + rest/p[2]);
+      }
+    if(totals.size !== 1) continue;
+    return {kind:'flowers', p, T, ans: [...totals][0]};
+  }
+}
+
+// Задача 14: whole rows and columns painted. What survives is the leftover rows
+// times the leftover columns — the crossings are counted twice the other way.
+function genPaint(){
+  const R = 3 + rnd(3), C = 4 + rnd(4);
+  const r = 1 + rnd(Math.min(3, R - 1)), c = 1 + rnd(Math.min(3, C - 1));
+  const left = (R - r) * (C - c);
+  const asksLeft = Math.random() < 0.7;
+  return {kind:'paint', R, C, r, c, left, asksLeft, ans: asksLeft ? left : R*C - left};
+}
+
+// Задача 15: both numbers are at least ten and different, which for these sums
+// leaves exactly one pair — at the bottom of the range or at the top.
+function genTwoDig(){
+  const three = Math.random() < 0.25;
+  const M = three ? 100 : 10, X = three ? 999 : 99;
+  const bottom = three ? true : Math.random() < 0.5;
+  const k = 1 + rnd(2);
+  const lo = bottom ? M : X - k, hi = bottom ? M + k : X;
+  const ask = rnd(3);
+  return {kind:'twodig', three, S: lo + hi, lo, hi, ask,
+          ans: ask === 0 ? hi - lo : ask === 1 ? hi : lo};
+}
+
+// Задача 16: identical sweets, every child gets at least one. Small enough that the
+// ways can be listed rather than reasoned about abstractly.
+function genCandy(){
+  const kids = 2 + rnd(2);
+  const n = kids === 2 ? 3 + rnd(6) : 4 + rnd(3);
+  return {kind:'candy', kids, n, ans: kids === 2 ? n - 1 : (n-1)*(n-2)/2};
+}
+function candyWays(n, kids){
+  const out = [];
+  if(kids === 2){ for(let a = 1; a < n; a++) out.push(a + ' + ' + (n - a)); return out; }
+  for(let a = 1; a <= n - 2; a++)
+    for(let b = 1; a + b <= n - 1; b++) out.push(a + ' + ' + b + ' + ' + (n - a - b));
+  return out;
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -1140,6 +1203,10 @@ function raw(level){
     if(level === 30) return genTerm();
     if(level === 31) return genTrees();
     if(level === 32) return genRibbon();
+    if(level === 33) return genFlowers();
+    if(level === 34) return genPaint();
+    if(level === 35) return genTwoDig();
+    if(level === 36) return genCandy();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1212,6 +1279,33 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'flowers'){
+    return '<div class="ask">Имаме цветя с по <span class="num">' + bgList(q.p) +
+      '</span> листенца — и от трите вида. Листенцата на всички цветя са общо <span class="num">' +
+      q.T + '</span>. Колко са цветята?</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'paint'){
+    return '<div class="ask">Правоъгълник е съставен от <span class="num">' + (q.R*q.C) +
+      '</span> квадратчета в <span class="num">' + q.R + '</span> реда и <span class="num">' + q.C +
+      '</span> стълба. Ако оцветим квадратчетата в <b>' + BGROW[q.r][0] + '</b> и в <b>' + BGROW[q.c][1] +
+      '</b>, колко квадратчета ще останат <b>' + (q.asksLeft ? 'неоцветени' : 'оцветени') + '</b>?</div>' +
+      gridSvg(q.C, q.R, 0, 0) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + '</div>';
+  }
+  if(q.kind === 'twodig'){
+    const what = q.ask === 0 ? 'От по-голямото извадете по-малкото. Колко е получената разлика?'
+               : q.ask === 1 ? 'Кое е по-голямото от тях?' : 'Кое е по-малкото от тях?';
+    return '<div class="ask">Сборът на две <b>различни</b> ' + (q.three ? 'трицифрени' : 'двуцифрени') +
+      ' числа е <span class="num">' + q.S + '</span>. ' + what + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'candy'){
+    return '<div class="ask">По колко начина можем да подарим <span class="num">' + q.n +
+      '</span> еднакви бонбона на <b>' + (q.kids === 2 ? 'две' : 'три') +
+      '</b> деца, така че всяко да получи <b>поне един</b> бонбон?</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'fruiteq'){
     const F = q.f.map(ic);
     return '<div class="ask">Пресметнете ' + F[q.askd[0]] + ' − ' + F[q.askd[1]] + ', ако:</div>' +
@@ -1398,6 +1492,10 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'flowers') return 'по ' + q.p.join(', ') + ' листенца, общо ' + q.T + ' → ' + q.ans;
+  if(q.kind === 'paint') return q.R + '×' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans;
+  if(q.kind === 'twodig') return 'сбор ' + q.S + ' → ' + q.lo + ' и ' + q.hi + ' → ' + q.ans;
+  if(q.kind === 'candy') return q.n + ' бонбона на ' + q.kids + ' деца → ' + q.ans;
   if(q.kind === 'fruiteq') return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
   if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
@@ -1462,6 +1560,37 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'flowers'){
+    if(!full) return 'От всеки вид има поне по едно цвете — пробвай колко от най-малките.';
+    const ways = [];
+    for(let x = 1; x*q.p[0] < q.T; x++)
+      for(let y = 1; x*q.p[0] + y*q.p[1] < q.T; y++){
+        const rest = q.T - x*q.p[0] - y*q.p[1];
+        if(rest > 0 && rest % q.p[2] === 0)
+          ways.push(x + '×' + q.p[0] + ' + ' + y + '×' + q.p[1] + ' + ' + (rest/q.p[2]) + '×' + q.p[2]);
+      }
+    return '<b>' + ways.join('</b>, или <b>') + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' + q.ans + ' цветя';
+  }
+  if(q.kind === 'paint'){
+    if(!full) return 'Квадратчетата в кръстовищата се броят само веднъж.';
+    const rr = q.R - q.r, cc = q.C - q.c;
+    const rows = rr === 1 ? '<b>1</b> неоцветен ред' : '<b>' + rr + '</b> неоцветени реда';
+    const cols = cc === 1 ? '<b>1</b> неоцветен стълб' : '<b>' + cc + '</b> неоцветени стълба';
+    const body = 'остават ' + rows + ' и ' + cols + ' &nbsp;→&nbsp; ' +
+      (rr === 1 ? String(q.left)
+       : rr <= 5 ? Array(rr).fill(cc).join(' + ') + ' = ' + q.left
+       : rr + ' × ' + cc + ' = ' + q.left);
+    return q.asksLeft ? body : body + ' &nbsp;→&nbsp; ' + (q.R*q.C) + ' − ' + q.left + ' = ' + q.ans;
+  }
+  if(q.kind === 'twodig'){
+    if(!full) return q.three ? 'Най-малкото трицифрено число е граница.' : 'Най-малкото двуцифрено число е граница.';
+    return 'числата могат да са само <b>' + q.lo + '</b> и <b>' + q.hi + '</b> &nbsp;→&nbsp; ' +
+      (q.ask === 0 ? q.hi + ' − ' + q.lo + ' = ' + q.ans : 'търсеното е ' + q.ans);
+  }
+  if(q.kind === 'candy'){
+    if(!full) return 'Изреди ги подред, за да не пропуснеш нито един начин.';
+    return candyWays(q.n, q.kids).join(', &nbsp;') + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'fruiteq'){
     if(!full) return 'Третото равенство съдържа първото — започни оттам.';

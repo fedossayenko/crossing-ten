@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 32 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 36 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -65,7 +65,7 @@ for(let W = 1; W <= 6; W++) for(let H = 1; H <= 6; H++)
 console.log('rectangle counting: closed form matches a brute-force count in all ' + grids + ' grid/ant positions');
 
 // the drawings must be well-formed and theme-aware
-for(const L of [19, 21, 28, 29]){
+for(const L of [19, 21, 28, 29, 34]){
   for(let i = 0; i < 300; i++){
     const svg = drawQ(raw(L));
     const open = (svg.match(/<g[ >]/g) || []).length, close = (svg.match(/<\\/g>/g) || []).length;
@@ -207,5 +207,65 @@ for(let i = 0; i < 4000; i++){
   }
 }
 console.log('lengths: conversions are exact and the ribbon always needs a real cut or addition');
+
+// задача 13: the flower count must be forced — every decomposition with at least one
+// of each kind has to give the same total
+for(let i = 0; i < 2000; i++){
+  const q = raw(33);
+  const totals = new Set();
+  for(let x = 1; x*q.p[0] < q.T; x++)
+    for(let y = 1; x*q.p[0] + y*q.p[1] < q.T; y++){
+      const rest = q.T - x*q.p[0] - y*q.p[1];
+      if(rest > 0 && rest % q.p[2] === 0) totals.add(x + y + rest/q.p[2]);
+    }
+  if(totals.size !== 1) throw new Error('petals ' + q.p.join(',') + ' totalling ' + q.T + ' allows ' + totals.size + ' flower counts');
+  if([...totals][0] !== q.ans) throw new Error('flower answer disagrees with the only possible count');
+}
+{ // the worksheet's own: 5, 6, 7 petals totalling 34
+  const totals = new Set();
+  for(let x = 1; x*5 < 34; x++) for(let y = 1; 5*x + 6*y < 34; y++){
+    const rest = 34 - 5*x - 6*y;
+    if(rest > 0 && rest % 7 === 0) totals.add(x + y + rest/7);
+  }
+  if(totals.size !== 1 || [...totals][0] !== 6) throw new Error('worksheet instance of задача 13 should be a forced 6');
+}
+console.log('flowers: the count is forced by the total, and the worksheet instance gives 6');
+
+// задача 14: the shortcut must equal an actual cell-by-cell count
+for(let i = 0; i < 3000; i++){
+  const q = raw(34);
+  let bare = 0;
+  for(let y = 0; y < q.R; y++) for(let x = 0; x < q.C; x++)
+    if(y >= q.r && x >= q.c) bare++;          // paint the first r rows and first c columns
+  if(bare !== q.left) throw new Error('painted grid ' + q.R + 'x' + q.C + ': counted ' + bare + ', shortcut says ' + q.left);
+  if(q.ans !== (q.asksLeft ? bare : q.R*q.C - bare)) throw new Error('painted answer wrong');
+}
+if((4-2)*(7-2) !== 10) throw new Error('worksheet instance of задача 14 should be 10');
+console.log('painted grid: the leftover-rows-times-columns shortcut matches a cell count, worksheet instance gives 10');
+
+// задача 15: the pair must be the ONLY one of its kind adding to that sum
+for(let i = 0; i < 3000; i++){
+  const q = raw(35);
+  const M = q.three ? 100 : 10, X = q.three ? 999 : 99;
+  const pairs = [];
+  for(let a = M; a <= X; a++){ const b = q.S - a; if(b > a && b <= X) pairs.push([a, b]); }
+  if(pairs.length !== 1) throw new Error('sum ' + q.S + ' allows ' + pairs.length + ' pairs, not one');
+  if(pairs[0][0] !== q.lo || pairs[0][1] !== q.hi) throw new Error('pair disagrees with the generated one');
+}
+console.log('two-digit pairs: every sum admits exactly one pair of different numbers');
+
+// задача 16: the count must equal the enumerated ways
+for(let i = 0; i < 3000; i++){
+  const q = raw(36);
+  const ways = candyWays(q.n, q.kids);
+  if(ways.length !== q.ans) throw new Error(q.n + ' sweets to ' + q.kids + ' children: listed ' + ways.length + ', answer says ' + q.ans);
+  ways.forEach(w => {
+    const parts = w.split(' + ').map(Number);
+    if(parts.length !== q.kids || parts.some(v => v < 1) || parts.reduce((s,v) => s+v, 0) !== q.n)
+      throw new Error('bad share: ' + w);
+  });
+}
+if(candyWays(5, 3).length !== 6) throw new Error('worksheet instance of задача 16 should be 6');
+console.log('sharing sweets: the count matches the listed ways, worksheet instance gives 6');
 `;
 eval(head + body + test);
