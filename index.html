@@ -2819,10 +2819,15 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- shared mirror ---------- */
+const builtOn = () => {
+  try { return ' · build ' + new Date(document.lastModified)
+    .toLocaleString(undefined, { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
+  catch(e){ return ''; }
+};
 let DB = null;
 (async () => {
   const db = window.claude && await claude.use('db');
-  if(!db) { $('synced').textContent = 'Saved on this device only.'; return; }
+  if(!db) { $('synced').textContent = 'Saved on this device only' + builtOn(); return; }
   DB = db;
   try {
     const snap = await db.collection('rounds').orderBy('ts','desc').limit(300).get();
@@ -2834,12 +2839,12 @@ let DB = null;
     LOCAL.rounds = Object.keys(byId).map(k => byId[k]).sort((x,y) => x.ts - y.ts).slice(-400);
     saveLocal();
     W = weightsFrom(LOCAL.rounds);
-    $('synced').textContent = 'Synced across your devices · ' + LOCAL.rounds.length + ' rounds kept';
+    $('synced').textContent = 'Synced across your devices · ' + LOCAL.rounds.length + ' rounds kept' + builtOn();
     if(!$('stats').hidden) renderStats();
     const pending = LOCAL.rounds.filter(r => !remoteIds[r.id]).slice(-20);
     for(const r of pending){ try { await db.collection('rounds').doc(r.id).set(r); } catch(e){ break; } }
   } catch(e){
-    $('synced').textContent = 'Saved on this device only.';
+    $('synced').textContent = 'Saved on this device only' + builtOn();
   }
 })();
 
