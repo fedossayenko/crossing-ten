@@ -607,12 +607,15 @@ const LEVELS = [
   { id:5, op:'+', eq:'27 + 15',  desc:'Two digits plus two, with a carry' },
   { id:6, op:'+', eq:'87 + 25',  desc:'Crossing a hundred' },
   { id:8,  op:'w', grp:'chain',  eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
-  { id:9,  op:'w', grp:'chain',  eq:'1 + 9 + 2 + 8', desc:'Chains whose terms pair up into tens' },
+  { id:9,  op:'w', grp:'chain',  eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — addends into tens, or ± pairs' },
   { id:10, op:'w', grp:'word',   eq:'С колко?',    desc:'How much bigger one sum is than the other' },
   { id:12, op:'w', grp:'word',   eq:'Колко са?',   desc:'Counting a range from a condition — zero counts too' },
   { id:13, op:'w', grp:'word',   eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
   { id:14, op:'w', grp:'word',   eq:'Нов сбор',    desc:'Every addend changes by the same amount' },
+  { id:17, op:'w', grp:'word',   eq:'Сбор и разлика', desc:'One number and the difference — two answers are possible' },
   { id:11, op:'w', grp:'puzzle', eq:'6 − ◯',       desc:'Find the number in the circle, then use it' },
+  { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
+  { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number that is a few more than another' },
   { id:3, op:'m', eq:'Mixed',    desc:'' }
 ];
@@ -644,7 +647,8 @@ function genChain(){
 }
 // Задача 2: the terms pair up into tens. A pair making ten is always odd+odd or
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
-function genPairs(){
+function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
+function genPairsTens(){
   const pairs = shuffle([[1,9],[2,8],[3,7],[4,6],[5,5]]).slice(0, 2 + rnd(2));
   const terms = [];
   pairs.forEach(p => terms.push({op:'+', n:p[0]}, {op:'+', n:p[1]}));
@@ -653,7 +657,23 @@ function genPairs(){
   const ans = 1 + rnd(9);
   terms.push({op:'−', n: pairs.length*10 + extra - ans});
   terms[0].op = '';
-  return {kind:'pairs', terms, paired:pairs.length, ans};
+  return {kind:'pairs', shape:'tens', terms, paired:pairs.length, ans};
+}
+// Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
+// pair usually breaking the pattern, so the structure is checked and not assumed.
+function genPairsSub(){
+  const start = 11 + rnd(10);
+  const k = 3 + rnd(2);
+  const terms = [];
+  let total = 0;
+  for(let i = 0; i < k; i++){
+    const big = start + i;
+    const twist = i === k-1 && Math.random() < 0.75;
+    const small = big - 10 + (twist ? 1 + rnd(3) : 0);
+    terms.push({op: i ? '+' : '', n: big}, {op:'−', n: small});
+    total += big - small;
+  }
+  return {kind:'pairs', shape:'sub', terms, paired:k, ans: total};
 }
 // Задача 3: how much bigger one sum is than the other. Asked the other way round
 // some of the time, so the wording has to be read rather than guessed.
@@ -730,6 +750,41 @@ function genErase(){
   }
 }
 
+// Задача 10: how many single digits make the statement false. The relation and the
+// negation both move, so "не е вярно" has to be worked through rather than skipped.
+function genIneq(){
+  for(;;){
+    const shape = rnd(3);
+    const L = 1 + rnd(9), B = 1 + rnd(17), A = L + B, C = 1 + rnd(4);
+    if(A > 30) continue;
+    const atMost = Math.max(0, Math.min(10, L - C + 1));   // digits with ? + C <= L
+    const ans = shape === 0 ? atMost
+              : shape === 1 ? 10 - atMost
+              : 10 - Math.max(0, Math.min(10, L - C));
+    if(ans < 1 || ans > 9) continue;
+    return {kind:'ineq', shape, A, B, L, C, ans};
+  }
+}
+
+// Задача 11: one number and the difference. Two numbers fit unless the smaller one
+// would go below zero — so both sums are accepted, and both are shown afterwards.
+function genSumDiff(){
+  const d = 1 + rnd(6);
+  // Now and then the smaller number would fall below zero, so only one sum is possible.
+  const a = d > 1 && Math.random() < 0.2 ? 1 + rnd(d - 1) : d + rnd(9);
+  const two = a >= d;
+  return {kind:'sumdiff', a, d, two, ans: 2*a + d, alt: two ? [2*a - d] : []};
+}
+
+// Задача 12: digit sums of the two-digit numbers. The count climbs to nine and falls
+// back — which is why only the extremes, 1 and 18, happen exactly once.
+function genDigits(){
+  if(Math.random() < 0.15) return {kind:'digits', shape:1, ans:19};
+  const n = 1 + rnd(18);
+  return {kind:'digits', shape:0, n, ans: n <= 9 ? n : 19 - n};
+}
+const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
+
 function raw(level){
   for(;;){
     let a, b;
@@ -747,6 +802,9 @@ function raw(level){
     if(level === 13) return genNamed();
     if(level === 14) return genGrow();
     if(level === 15) return genErase();
+    if(level === 16) return genIneq();
+    if(level === 17) return genSumDiff();
+    if(level === 18) return genDigits();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -787,6 +845,7 @@ function genForFact(key){
   return { a:t*10 + o, b:bt*10 + bo, op:'+' };
 }
 const answer = q => q.kind ? q.ans : (q.op === '-' ? q.a - q.b : q.a + q.b);
+const accepts = (q, v) => v === answer(q) || (q.alt || []).indexOf(v) >= 0;
 
 function drawQ(q){
   const slot = '<span class="slot" id="slot"></span>';
@@ -808,6 +867,27 @@ function drawQ(q){
         ? 'С колко сборът ' + B + ' е по-малък от сбора ' + A + '?'
         : 'С колко сборът ' + A + ' е по-голям от сбора ' + B + '?') +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'ineq'){
+    const rel = q.shape === 2
+      ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
+      : q.A + ' − ' + q.B + ' &lt; ? + ' + q.C;
+    return '<div class="ask">Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
+      (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':</div>' +
+      '<div class="given">' + rel + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'sumdiff'){
+    return '<div class="ask">Пресметнете сбора на две числа, едно от които е <span class="num">' + q.a +
+      '</span>, ако разликата им е <span class="num">' + q.d + '</span>.</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'digits'){
+    const ask = q.shape === 0
+      ? 'Колко двуцифрени числа имат сбор на цифрите <span class="num">' + q.n + '</span>?'
+      : 'Вместо да запиша всичките 90 двуцифрени числа, записах пресметнатите 90 сбора от цифрите им. Колко е сборът на сборовете, които се срещат само веднъж?';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'count'){
     const cond = q.shape === 0 ? 'не са по-големи от ' + q.n
@@ -856,12 +936,33 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
+    : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') + ' → ' + q.ans;
+  if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' +
+    (q.two ? (2*q.a - q.d) + ' или ' + q.ans : String(q.ans));
+  if(q.kind === 'digits') return q.shape === 0
+    ? 'сбор на цифрите ' + q.n + ' → ' + q.ans
+    : 'срещат се веднъж: 1 и 18 → ' + q.ans;
   if(q.kind === 'erase') return bgList(q.set) + ', изтрито ' + q.gone + ' → ' + q.ans;
   return exprText(q.terms) + ' = ' + q.ans;
 }
 
 // On a first miss she gets the method, not the answer; the worked line comes after.
 function whyWork(q, full){
+  if(q.kind === 'pairs' && q.shape === 'sub'){
+    if(!full) return 'Групирай ги по двойки — всяка дава кръгло число.';
+    const ts = q.terms;
+    let g = '', run = 0, odd = '', rest = 0;
+    for(let k = 0; k < ts.length; k += 2){
+      const v = ts[k].n - ts[k+1].n;
+      const piece = '(' + ts[k].n + ' − ' + ts[k+1].n + ')';
+      if(v === 10){ g += (g ? ' + ' : '') + '<b>' + piece + '</b>'; run += v; }
+      else { odd += (odd ? ', ' : '') + piece + ' = ' + v; rest += v; }
+    }
+    if(!odd) return g + ' = ' + q.ans;
+    return g + ' = <b>' + run + '</b>, &nbsp;после ' + odd + ' &nbsp;→&nbsp; ' +
+      run + ' + ' + rest + ' = ' + q.ans;
+  }
   if(q.kind === 'pairs'){
     if(!full) return 'Търси двойки, които правят 10.';
     const ts = q.terms, last = ts[ts.length-1], extra = ts[ts.length-2].n;
@@ -881,6 +982,31 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'ineq'){
+    if(!full) return q.shape === 1 ? 'Първо пресметни лявата страна.' : '„Не е вярно" обръща знака.';
+    const lim = q.L - q.C;
+    const head = q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ';
+    if(q.shape === 0) return head + 'трябва ? + ' + q.C + ' ≤ ' + q.L + ', значи ? ≤ ' + lim +
+      ' &nbsp;→&nbsp; 0 … ' + lim + ' &nbsp;→&nbsp; ' + q.ans;
+    if(q.shape === 1) return head + 'трябва ? + ' + q.C + ' > ' + q.L + ', значи ? ≥ ' + (lim+1) +
+      ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+    return head + 'трябва ? + ' + q.C + ' ≥ ' + q.L + ', значи ? ≥ ' + lim +
+      ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'sumdiff'){
+    if(!full) return 'Другото число може да е по-голямо или по-малко.';
+    if(!q.two) return 'другото число може да е само <b>' + (q.a + q.d) + '</b> (по-малкото би било под нулата)' +
+      ' &nbsp;→&nbsp; ' + q.a + ' + ' + (q.a + q.d) + ' = ' + q.ans;
+    return 'другото е <b>' + (q.a - q.d) + '</b> или <b>' + (q.a + q.d) + '</b> &nbsp;→&nbsp; ' +
+      q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;или ' + q.a + ' + ' + (q.a + q.d) +
+      ' = ' + q.ans + ' &nbsp;(и двата са верни)';
+  }
+  if(q.kind === 'digits'){
+    if(!full) return q.shape === 0 ? 'Опитай по десетиците подред.' : 'Кои сборове се получават само от едно число?';
+    if(q.shape === 1) return 'само <b>10</b> дава 1, само <b>99</b> дава 18, всички други се повтарят' +
+      ' &nbsp;→&nbsp; 1 + 18 = ' + q.ans;
+    return twoDigitWith(q.n).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'count'){
     if(!full) return q.shape === 3 ? 'Краищата не се броят.'
@@ -1021,7 +1147,7 @@ function press(k){
 function check(){
   if(S.entry === '') return;
   const q = S.qs[S.i], right = answer(q);
-  if(+S.entry === right){
+  if(accepts(q, +S.entry)){
     if(S.results[S.i] === undefined) S.results[S.i] = S.tries === 0;
     $('card').className = 'card ok';
     $('verdict').className = 'verdict ok';
