@@ -15,96 +15,106 @@
   :root:not([data-theme="light"]){
     --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
     --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
-    --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
+    --goodbg:#1B3A30; --badbg:#3A211E; --key:#223038; --keypress:#31424C;
   }
 }
 :root[data-theme="dark"]{
   --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
   --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
-  --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
+  --goodbg:#1B3A30; --badbg:#3A211E; --key:#223038; --keypress:#31424C;
 }
 html,body{height:100%}
 body{
   background:var(--ground); color:var(--ink);
-  font-family:Nunito,system-ui,sans-serif; font-size:16px;
-  -webkit-text-size-adjust:100%;
+  font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%;
 }
 .app{
   height:100%; max-width:640px; margin:0 auto;
-  padding-inline:16px; padding-block:10px 14px;
-  display:flex; flex-direction:column; gap:12px;
+  padding-inline:16px; padding-block:8px 12px;
+  display:flex; flex-direction:column; gap:10px;
 }
 button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-select:none; user-select:none; cursor:pointer}
 :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
 
-/* header */
-.top{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
-.levels{display:flex; gap:6px}
-.lvl{
+.top{display:flex; flex-direction:column; align-items:center; gap:8px}
+.modes{display:flex; gap:6px; flex-wrap:wrap; justify-content:center}
+.mode{
   border:1px solid var(--line); background:transparent; border-radius:999px;
-  padding:7px 13px; font-weight:700; font-size:13px; color:var(--muted);
+  padding:6px 12px; font-weight:700; font-size:13px; color:var(--muted); white-space:nowrap;
 }
-.lvl[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
+.mode[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
 .dots{display:flex; gap:5px}
-.dot{width:11px; height:11px; border-radius:50%; background:var(--line)}
-.dot.ok{background:var(--good)} .dot.no{background:var(--bad)} .dot.now{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent)}
+.dot{width:10px; height:10px; border-radius:50%; background:var(--line)}
+.dot.ok{background:var(--good)} .dot.no{background:var(--bad)}
+.dot.now{box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent)}
 
-/* problem */
 .card{
   flex:1; min-height:0; background:var(--card); border-radius:22px;
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-  padding:14px 18px; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+  padding:14px 16px; overflow:hidden;
 }
 .card.ok{background:var(--goodbg)} .card.no{background:var(--badbg)}
+
+/* vertical column subtraction */
 .sum{
   font-family:Fredoka,system-ui,sans-serif; font-variant-numeric:tabular-nums;
-  font-size:clamp(46px,13vh,88px); line-height:1.12; letter-spacing:.04em;
+  font-size:clamp(42px,12vh,84px); line-height:1.12; letter-spacing:.04em;
   display:grid; grid-template-columns:auto auto; gap:0 .35em; justify-items:end; align-items:center;
 }
 .op{color:var(--muted)}
 .rule{grid-column:1/-1; height:4px; background:var(--ink); opacity:.75; border-radius:2px; width:100%; margin:.06em 0}
-.slot{
-  grid-column:2; min-width:2.2ch; text-align:right; color:var(--accent);
-  border-bottom:none; min-height:1em;
+.sum .slot{grid-column:2; min-width:2.2ch; text-align:right}
+
+/* horizontal expression */
+.ask{
+  font-size:clamp(15px,4.2vw,20px); font-weight:700; line-height:1.45;
+  text-align:center; text-wrap:balance; max-width:30ch;
 }
-.slot .caret{display:inline-block; width:.1em; height:.78em; background:var(--accent); vertical-align:-.06em; animation:blink 1.1s steps(1,end) infinite}
+.ask .num{font-family:Fredoka,sans-serif; font-weight:500; letter-spacing:.02em; white-space:nowrap}
+.given{
+  font-family:Fredoka,sans-serif; font-size:clamp(19px,5vw,28px); color:var(--muted);
+  letter-spacing:.03em; text-align:center;
+}
+.line{
+  font-family:Fredoka,sans-serif; letter-spacing:.03em; line-height:1.25;
+  text-align:center; text-wrap:balance;
+}
+.box{color:var(--warm)}
+.slot{color:var(--accent); min-height:1em; display:inline-block; min-width:1.6ch}
+.caret{display:inline-block; width:.09em; height:.76em; background:var(--accent); vertical-align:-.06em; animation:blink 1.1s steps(1,end) infinite}
 @keyframes blink{50%{opacity:0}}
+
 .hint{
-  font-size:clamp(14px,2.1vh,18px); font-weight:700; color:var(--muted);
-  font-variant-numeric:tabular-nums; text-align:center; min-height:1.5em; text-wrap:balance;
+  font-size:clamp(13px,2.1vh,17px); font-weight:700; color:var(--muted);
+  font-variant-numeric:tabular-nums; text-align:center; min-height:1.4em; text-wrap:balance;
 }
 .hint b{color:var(--warm)}
-.verdict{font-family:Fredoka,sans-serif; font-size:clamp(17px,2.6vh,22px); min-height:1.4em}
+.verdict{font-family:Fredoka,sans-serif; font-size:clamp(16px,2.5vh,21px); min-height:1.3em}
 .verdict.ok{color:var(--good)} .verdict.no{color:var(--bad)}
 .shake{animation:shake .32s}
 @keyframes shake{25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
-@media (prefers-reduced-motion:reduce){.shake{animation:none} .slot .caret{animation:none}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none} .caret{animation:none}}
 
-/* keypad */
 .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:9px}
 .key{
   background:var(--key); border:1px solid var(--line); border-radius:16px;
   font-family:Fredoka,sans-serif; font-size:clamp(22px,3.4vh,30px); font-weight:500;
-  padding:0; height:clamp(52px,8.2vh,70px); display:flex; align-items:center; justify-content:center;
+  padding:0; height:clamp(50px,7.8vh,68px); display:flex; align-items:center; justify-content:center;
 }
 .key:active{background:var(--keypress)}
 .key.go{background:var(--accent); border-color:var(--accent); color:#fff}
 .key.del{color:var(--muted)}
 
-/* summary */
 .sheet{
   position:fixed; inset:0; background:var(--ground); z-index:5; overflow:auto;
   padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));
 }
 .sheet-in{max-width:520px; margin:0 auto; display:flex; flex-direction:column; gap:18px}
-.score{font-family:Fredoka,sans-serif; font-size:clamp(34px,7vw,46px); line-height:1.1; text-wrap:balance}
+.score{font-family:Fredoka,sans-serif; font-size:clamp(32px,7vw,44px); line-height:1.1; text-wrap:balance}
 .score small{display:block; font-family:Nunito,sans-serif; font-size:15px; font-weight:700; color:var(--muted); margin-top:6px}
 .misslist{display:flex; flex-direction:column; gap:8px}
-.miss{
-  background:var(--card); border-radius:14px; padding:11px 14px;
-  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
-}
-.miss .eq{font-family:Fredoka,sans-serif; font-size:21px; font-variant-numeric:tabular-nums; white-space:nowrap}
+.miss{background:var(--card); border-radius:14px; padding:11px 14px; display:flex; flex-direction:column; gap:4px}
+.miss .eq{font-family:Fredoka,sans-serif; font-size:19px; letter-spacing:.02em}
 .miss .why{font-size:13.5px; font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums}
 .miss .why b{color:var(--warm)}
 .lab{font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
@@ -118,21 +128,20 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 
 <div class="app">
   <div class="top">
-    <div class="levels" role="group" aria-label="Level">
-      <button class="lvl" id="lvl1" data-lvl="1" aria-pressed="false">42 − 7</button>
-      <button class="lvl" id="lvl2" data-lvl="2" aria-pressed="true">42 − 17</button>
-      <button class="lvl" id="lvl3" data-lvl="3" aria-pressed="false">Mixed</button>
+    <div class="modes" id="modes" role="group" aria-label="Вид задача">
+      <button class="mode" id="m-sub1" data-mode="sub1" aria-pressed="false">42 − 7</button>
+      <button class="mode" id="m-sub2" data-mode="sub2" aria-pressed="true">42 − 17</button>
+      <button class="mode" id="m-sub3" data-mode="sub3" aria-pressed="false">± микс</button>
+      <button class="mode" id="m-chain" data-mode="chain" aria-pressed="false">2+6−5</button>
+      <button class="mode" id="m-pairs" data-mode="pairs" aria-pressed="false">1+9+2+8</button>
+      <button class="mode" id="m-cmp" data-mode="cmp" aria-pressed="false">С колко?</button>
+      <button class="mode" id="m-box" data-mode="box" aria-pressed="false">6 − ◯</button>
     </div>
-    <div class="dots" id="dots" aria-label="Progress"></div>
+    <div class="dots" id="dots" aria-label="Напредък"></div>
   </div>
 
   <div class="card" id="card">
-    <div class="sum" aria-live="off">
-      <div class="op">−</div><div id="top">42</div>
-      <div class="op" style="visibility:hidden">−</div><div id="bot">17</div>
-      <div class="rule"></div>
-      <div class="slot" id="slot"><span class="caret"></span></div>
-    </div>
+    <div id="stage"></div>
     <div class="verdict" id="verdict"></div>
     <div class="hint" id="hint"></div>
   </div>
@@ -141,9 +150,9 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
     <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
     <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
     <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
-    <button class="key del" data-k="del" aria-label="Delete">⌫</button>
+    <button class="key del" data-k="del" aria-label="Изтрий">⌫</button>
     <button class="key" data-k="0">0</button>
-    <button class="key go" data-k="go" id="go" aria-label="Check answer">✓</button>
+    <button class="key go" data-k="go" id="go" aria-label="Провери">✓</button>
   </div>
 </div>
 
@@ -162,48 +171,168 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 </div>
 
 <script>
-const $ = s => document.getElementById(s);
+const $ = id => document.getElementById(id);
 const N = 10;
-const S = { level:2, qs:[], i:0, entry:'', tries:0, revealed:false, results:[], t0:0 };
+const S = { mode:'sub2', qs:[], i:0, entry:'', tries:0, revealed:false, results:[], t0:0 };
 
 const rnd = n => Math.floor(Math.random()*n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => a.map(v => [Math.random(), v]).sort((x,y) => x[0]-y[0]).map(v => v[1]);
+const digitsum = n => String(n).split('').reduce((s,d) => s + +d, 0);
 
-// Level 1: two-digit − one-digit, always crossing a ten (42−7).
-// Level 2: two-digit − two-digit, ones digit forces a borrow (42−17).
-// Level 3: mixed, so she has to decide whether a borrow is needed at all.
-function gen(level){
+/* ---------- generators: one per task type ---------- */
+
+// Задача 1: a plain ± chain, worked left to right. Zeros appear on purpose —
+// noticing that +0 changes nothing is half the task.
+function genChain(){
+  for(;;){
+    const len = 6 + rnd(3);
+    const terms = [{op:'', n: 2 + rnd(8)}];
+    let run = terms[0].n, ok = true;
+    for(let k = 1; k < len; k++){
+      const zero = Math.random() < 0.18;
+      const n = zero ? 0 : 1 + rnd(9);
+      const up = run < 6 ? true : run > 15 ? false : Math.random() < 0.5;
+      if(!up && n > run){ ok = false; break; }
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(ok && run >= 0 && run <= 20) return {kind:'chain', terms, paired:0, ans:run};
+  }
+}
+
+// Задача 2: the terms pair up into tens. A pair summing to ten is always
+// odd+odd or even+even (1+9, 3+7, 2+8) — that parity is what she learns to spot.
+function genPairs(){
+  const pairs = shuffle([[1,9],[2,8],[3,7],[4,6],[5,5]]).slice(0, 2 + rnd(2));
+  const terms = [];
+  pairs.forEach(p => terms.push({op:'+', n:p[0]}, {op:'+', n:p[1]}));
+  const extra = 1 + rnd(9);
+  terms.push({op:'+', n:extra});
+  const total = pairs.length*10 + extra;
+  const ans = 1 + rnd(9);
+  terms.push({op:'−', n: total - ans});
+  terms[0].op = '';
+  return {kind:'chain', terms, paired:pairs.length, ans};
+}
+
+// Задача 3: how much bigger is one sum than the other. Sometimes asked the
+// other way round ("по-малък"), so the wording has to be read, not guessed.
+function genCmp(){
+  for(;;){
+    const a = 10 + rnd(40), b = 10 + rnd(40);
+    const big = a + b, small = digitsum(a) + digitsum(b);
+    if(big > 89 || big - small < 10) continue;
+    return {kind:'cmp', a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
+  }
+}
+
+// Задача 4: unknown in a subtraction, where the other side is itself a sum.
+function genBox(){
+  const box = 2 + rnd(8);           // ◯
+  const r = 1 + rnd(9);             // value of the right-hand side
+  const b = box + r;                // b − ◯ = r
+  const y = 1 + rnd(9), x = y + r;  // x − y = r
+  let a;
+  do { a = pick([10, 12, 14, 15, 16, 18, 20]); } while(a === b); // same start makes it a one-stepper
+  return {kind:'box', a, b, x, y, box, r, ans: a - box};
+}
+
+// The borrow ladder from before.
+function genSub(mode){
   for(;;){
     let a, b;
-    if(level === 1){ a = 20 + rnd(80); b = 2 + rnd(8); if(a%10 >= b) continue; }
-    else if(level === 2){ a = 23 + rnd(77); b = 11 + rnd(a-12); if(b%10 === 0 || a%10 >= b%10) continue; }
+    if(mode === 'sub1'){ a = 20 + rnd(80); b = 2 + rnd(8); if(a%10 >= b) continue; }
+    else if(mode === 'sub2'){ a = 23 + rnd(77); b = 11 + rnd(a-12); if(b%10 === 0 || a%10 >= b%10) continue; }
     else { a = 21 + rnd(79); b = 2 + rnd(a-2); }
     if(a - b < 1) continue;
-    return {a, b};
+    return {kind:'sub', a, b, ans: a - b};
   }
 }
 
-// The regrouping line: 42 = 30 + 12 → 12 − 7 = 5, 30 − 10 = 20
-function why(a, b){
-  const o = a%10, t = a-o, bo = b%10, bt = b-bo;
-  if(o < bo){
-    const lend = t - 10, ones = o + 10;
-    return `${a} = <b>${lend} + ${ones}</b> &nbsp;→&nbsp; ${ones} − ${bo} = ${ones-bo}, &nbsp;${lend} − ${bt} = ${lend-bt}`;
+const gen = mode => mode.startsWith('sub') ? genSub(mode)
+  : mode === 'chain' ? genChain() : mode === 'pairs' ? genPairs()
+  : mode === 'cmp' ? genCmp() : genBox();
+
+/* ---------- how each type is drawn ---------- */
+
+const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
+
+function draw(q){
+  const slot = '<span class="slot" id="slot"></span>';
+  if(q.kind === 'sub'){
+    return `<div class="sum">
+      <div class="op">−</div><div>${q.a}</div>
+      <div class="op" style="visibility:hidden">−</div><div>${q.b}</div>
+      <div class="rule"></div>${slot}</div>`;
   }
-  return `${o} − ${bo} = ${o-bo}, &nbsp;${t} − ${bt} = ${t-bt} &nbsp;(no borrow needed)`;
+  if(q.kind === 'chain'){
+    const e = exprText(q.terms) + ' = ';
+    return `<div class="line" style="font-size:clamp(19px,calc((100vw - 52px)/${(e.length*0.56).toFixed(2)}),40px)">${e}${slot}</div>`;
+  }
+  if(q.kind === 'cmp'){
+    const A = `<span class="num">${q.a} + ${q.b}</span>`;
+    const B = `<span class="num">${String(q.a).split('').join(' + ')} + ${String(q.b).split('').join(' + ')}</span>`;
+    const ask = q.flip
+      ? `С колко сборът ${B} е по-малък от сбора ${A}?`
+      : `С колко сборът ${A} е по-голям от сбора ${B}?`;
+    return `<div class="ask">${ask}</div>
+      <div class="line" style="font-size:clamp(34px,10vw,56px)">${slot}</div>`;
+  }
+  return `<div class="ask">Пресметни, ако</div>
+    <div class="given">${q.b} − <span class="box">◯</span> = ${q.x} − ${q.y}</div>
+    <div class="line" style="font-size:clamp(30px,9vw,50px)">${q.a} − <span class="box">◯</span> = ${slot}</div>`;
 }
+
+/* ---------- the worked solution, shown on every answer ---------- */
+
+function why(q){
+  if(q.kind === 'sub'){
+    const o = q.a%10, t = q.a-o, bo = q.b%10, bt = q.b-bo;
+    if(o < bo){
+      const lend = t - 10, ones = o + 10;
+      return `${q.a} = <b>${lend} + ${ones}</b> &nbsp;→&nbsp; ${ones} − ${bo} = ${ones-bo}, &nbsp;${lend} − ${bt} = ${lend-bt}`;
+    }
+    return `${o} − ${bo} = ${o-bo}, &nbsp;${t} − ${bt} = ${t-bt} &nbsp;(без заемане)`;
+  }
+  if(q.kind === 'chain'){
+    if(q.paired){
+      const ts = q.terms, last = ts[ts.length-1], extra = ts[ts.length-2].n;
+      let g = '';
+      for(let k = 0; k < q.paired*2; k += 2) g += `<b>(${ts[k].n} + ${ts[k+1].n})</b> + `;
+      const total = q.paired*10 + extra;
+      return `Търси двойки до 10: ${g}${extra} = ${total} &nbsp;→&nbsp; ${total} − ${last.n} = ${q.ans}`;
+    }
+    let run = q.terms[0].n;
+    const steps = [run];
+    q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
+    return `Стъпка по стъпка: <b>${steps.join(', ')}</b>`;
+  }
+  if(q.kind === 'cmp'){
+    return `${q.a} + ${q.b} = <b>${q.big}</b>, &nbsp;${String(q.a).split('').join('+')}+${String(q.b).split('').join('+')} = <b>${q.small}</b> &nbsp;→&nbsp; ${q.big} − ${q.small} = ${q.ans}`;
+  }
+  return `${q.x} − ${q.y} = ${q.r} &nbsp;→&nbsp; <b>◯ = ${q.b} − ${q.r} = ${q.box}</b> &nbsp;→&nbsp; ${q.a} − ${q.box} = ${q.ans}`;
+}
+
+function shortEq(q){
+  if(q.kind === 'sub') return `${q.a} − ${q.b} = ${q.ans}`;
+  if(q.kind === 'chain') return `${exprText(q.terms)} = ${q.ans}`;
+  if(q.kind === 'cmp') return `(${q.a} + ${q.b}) − (${String(q.a).split('').join('+')}+${String(q.b).split('').join('+')}) = ${q.ans}`;
+  return `${q.b} − ◯ = ${q.x} − ${q.y} &nbsp;→&nbsp; ${q.a} − ◯ = ${q.ans}`;
+}
+
+/* ---------- round flow ---------- */
 
 function newRound(qs){
-  S.qs = qs || Array.from({length:N}, () => gen(S.level));
+  S.qs = qs || Array.from({length:N}, () => gen(S.mode));
   S.i = 0; S.results = []; S.t0 = Date.now();
   $('sheet').hidden = true;
   show();
 }
 
 function show(){
-  const q = S.qs[S.i];
   S.entry = ''; S.tries = 0; S.revealed = false;
-  $('top').textContent = q.a;
-  $('bot').textContent = q.b;
+  $('stage').innerHTML = draw(S.qs[S.i]);
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
   $('hint').innerHTML = '';
@@ -231,15 +360,15 @@ function press(k){
 
 function check(){
   if(S.entry === '') return;
-  const q = S.qs[S.i], right = q.a - q.b;
-  if(+S.entry === right){
+  const q = S.qs[S.i];
+  if(+S.entry === q.ans){
     if(S.results[S.i] === undefined) S.results[S.i] = S.tries === 0;
     $('card').className = 'card ok';
     $('verdict').className = 'verdict ok';
-    $('verdict').textContent = S.tries === 0 ? 'Yes!' : 'Got it.';
-    $('hint').innerHTML = why(q.a, q.b);
+    $('verdict').textContent = S.tries === 0 ? 'Да!' : 'Позна.';
+    $('hint').innerHTML = why(q);
     paintDots();
-    setTimeout(next, S.tries === 0 ? 800 : 1600);
+    setTimeout(next, S.tries === 0 ? 900 : 1900);
     return;
   }
   S.results[S.i] = false;
@@ -248,16 +377,16 @@ function check(){
   setTimeout(() => $('card').classList.remove('shake'), 340);
   if(S.tries === 1){
     $('verdict').className = 'verdict no';
-    $('verdict').textContent = 'Not yet — try once more.';
-    $('hint').innerHTML = why(q.a, q.b);
+    $('verdict').textContent = 'Не още — опитай пак.';
+    $('hint').innerHTML = why(q);
     S.entry = ''; paintSlot();
   } else {
     S.revealed = true;
-    S.entry = String(right);
+    S.entry = String(q.ans);
     $('card').className = 'card no';
     $('verdict').className = 'verdict no';
-    $('verdict').textContent = `${q.a} − ${q.b} = ${right}`;
-    $('hint').innerHTML = why(q.a, q.b);
+    $('verdict').textContent = `Отговорът е ${q.ans}`;
+    $('hint').innerHTML = why(q);
     $('go').textContent = '→';
     paintSlot(); paintDots();
   }
@@ -272,25 +401,24 @@ function finish(){
   const got = S.results.filter(Boolean).length;
   const secs = Math.round((Date.now() - S.t0)/1000);
   const mins = Math.floor(secs/60);
-  const time = mins ? `${mins} min ${secs%60} s` : `${secs} s`;
   const praise = got === S.qs.length ? 'All of them. ' : got >= S.qs.length - 2 ? 'Nearly all. ' : '';
-  $('score').innerHTML = `${praise}${got} out of ${S.qs.length} first try.<small>${time} · about ${Math.round(secs/S.qs.length)} s per sum</small>`;
+  $('score').innerHTML = `${praise}${got} out of ${S.qs.length} first try.`
+    + `<small>${mins ? mins + ' min ' + (secs%60) + ' s' : secs + ' s'} · about ${Math.round(secs/S.qs.length)} s each</small>`;
   const missed = S.qs.filter((_, k) => !S.results[k]);
   $('missWrap').hidden = missed.length === 0;
   $('redo').hidden = missed.length === 0;
   $('misslist').innerHTML = missed.map(q =>
-    `<div class="miss"><span class="eq">${q.a} − ${q.b} = ${q.a-q.b}</span><span class="why">${why(q.a,q.b)}</span></div>`
-  ).join('');
-  $('redo').onclick = () => newRound(missed.concat(missed.map(() => gen(S.level))).slice(0, Math.max(missed.length, 6)));
+    `<div class="miss"><span class="eq">${shortEq(q)}</span><span class="why">${why(q)}</span></div>`).join('');
+  $('redo').onclick = () => newRound(shuffle(missed.concat(missed.map(() => gen(S.mode)))).slice(0, Math.max(missed.length, 6)));
   $('sheet').hidden = false;
 }
 
 $('pad').addEventListener('click', e => {
   const b = e.target.closest('.key'); if(b) press(b.dataset.k);
 });
-document.querySelectorAll('.lvl').forEach(b => b.onclick = () => {
-  S.level = +b.dataset.lvl;
-  document.querySelectorAll('.lvl').forEach(x => x.setAttribute('aria-pressed', x === b));
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => {
+  S.mode = b.dataset.mode;
+  document.querySelectorAll('.mode').forEach(x => x.setAttribute('aria-pressed', x === b));
   newRound();
 });
 $('again').onclick = () => newRound();
