@@ -116,5 +116,21 @@ for(let i = 0; i < 4000; i++){
   if(10*q.a + q.t - q.u !== 22) throw new Error('worksheet instance of задача 17 should be 22');
 }
 console.log('digit placeholders: equation holds, digits differ, worksheet instance gives 22');
+
+// задача 2: the grouping chains must actually evaluate to their stated answer, and a
+// two-subtrahend chain must lead with a two-digit one or the grouping is not worth spotting
+let tens = 0, subs2 = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(9);
+  const run = q.terms.reduce((t, x, k) => k === 0 ? x.n : t + (x.op === '+' ? x.n : -x.n), 0);
+  if(run !== q.ans) throw new Error('grouping chain ' + q.terms.map(x => x.op + x.n).join(' ') + ' is not ' + q.ans);
+  if(q.ans < 1) throw new Error('grouping chain goes to zero or below');
+  if(q.shape === 'tens'){
+    tens++;
+    if(q.subs.length === 2){ subs2++; if(q.subs[0] < 10) throw new Error('two-subtrahend chain leads with ' + q.subs[0]); }
+  }
+}
+if(!subs2 || subs2 === tens) throw new Error('both endings should turn up: ' + subs2 + ' of ' + tens);
+console.log('grouping chains: evaluate correctly, both endings appear, two-subtrahend ones lead with two digits');
 `;
 eval(head + body + test);
