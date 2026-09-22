@@ -138,6 +138,12 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   padding:14px 18px; position:relative; overflow:hidden;
 }
 .card.ok{background:var(--goodbg)} .card.no{background:var(--badbg)}
+/* The card centres this; when a long question outgrows it, this scrolls rather than
+   letting the card clip it. */
+.card-in{
+  width:100%; max-height:100%; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+}
 .sum{
   font-family:Fredoka,system-ui,sans-serif; font-variant-numeric:tabular-nums;
   font-size:clamp(38px,11.5vh,80px); line-height:1.12; letter-spacing:.04em;
@@ -177,6 +183,18 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   .cat *,.cat{animation:none!important; transition:none!important}
   #confetti{display:none}
   .burst::before,.pop{animation:none!important}
+}
+
+/* A phone in portrait has roughly 660px of viewport: shrink the figure, the question
+   and the keys so a question with a drawing still fits without scrolling. */
+@media (orientation:portrait) and (max-height:760px){
+  .card{gap:5px; padding:10px 14px}
+  .card-in{gap:5px}
+  .ask{font-size:clamp(14px,3.9vw,18px); line-height:1.34}
+  .fig svg{height:clamp(62px,13vh,120px)}
+  .key{height:clamp(42px,6.6vh,60px)}
+  .pad{gap:7px}
+  .app{gap:7px}
 }
 
 /* keypad */
@@ -380,9 +398,11 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   <div class="dots" id="dots" aria-label="Progress"></div>
 
   <div class="card" id="card">
-    <div class="stage" id="stage"></div>
-    <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
-    <div class="hint" id="hint"></div>
+    <div class="card-in">
+      <div class="stage" id="stage"></div>
+      <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
+      <div class="hint" id="hint"></div>
+    </div>
   </div>
 
   <div class="pad" id="pad">
