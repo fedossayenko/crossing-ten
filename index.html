@@ -207,12 +207,17 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   padding:9px 13px; font-weight:700; font-size:13px; min-height:44px; font-variant-numeric:tabular-nums; white-space:nowrap}
 .mixsel button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff}
 .pick{
-  display:flex; align-items:center; gap:12px; background:var(--card); border:2px solid transparent;
-  border-radius:14px; padding:12px 14px; width:100%; text-align:left; min-height:52px;
+  display:flex; align-items:center; gap:10px 12px; flex-wrap:wrap; background:var(--card);
+  border:2px solid transparent; border-radius:14px; padding:12px 14px; width:100%;
+  text-align:left; min-height:52px;
 }
 .pick[aria-pressed="true"]{border-color:var(--accent)}
 .pick .eq{font-family:Fredoka,sans-serif; font-size:21px; font-variant-numeric:tabular-nums; flex:0 0 auto; min-width:96px}
-.pick .desc{font-size:13px; font-weight:700; color:var(--muted)}
+.pick .desc{font-size:13px; font-weight:700; color:var(--muted); flex:1 1 130px}
+.last{margin-left:auto; flex:0 0 auto; text-align:right; display:flex; flex-direction:column; gap:1px; font-variant-numeric:tabular-nums}
+.last b{font-family:Fredoka,sans-serif; font-size:18px; line-height:1}
+.last i{font-size:11px; font-weight:700; font-style:normal; color:var(--muted); white-space:nowrap}
+.last.none i{opacity:.7}
 .warnline{background:var(--badbg); color:var(--bad); font-weight:700; font-size:14px; border-radius:12px; padding:10px 13px}
 
 /* stats */
@@ -1378,9 +1383,39 @@ function buildMixSel(){
     saveLocal(); buildMixSel(); buildPicker();
   });
 }
+// "3 days ago", then a date once it stops being recent — precise enough to decide
+// what to practise without turning the picker into a log.
+function ago(ts){
+  const today = dayKey(Date.now()), then = dayKey(ts);
+  if(today === then) return 'today';
+  const days = Math.round((Date.parse(today + 'T12:00:00') - Date.parse(then + 'T12:00:00')) / 86400000);
+  if(days === 1) return 'yesterday';
+  if(days < 7) return days + ' days ago';
+  return new Date(ts).toLocaleDateString(undefined, { day:'numeric', month:'short' });
+}
+function levelHistory(rounds){
+  const m = {};
+  rounds.forEach(r => {
+    const h = m[r.level] || (m[r.level] = { last:null, n:0, f:0, rounds:0 });
+    h.n += r.n; h.f += r.firstTry; h.rounds++;
+    if(!h.last || r.ts > h.last.ts) h.last = r;
+  });
+  return m;
+}
 function buildPicker(){
+  const hist = levelHistory(LOCAL.rounds);
+  const stat = l => {
+    const h = hist[l.id];
+    if(!h) return '<span class="last none"><i>not tried yet</i></span>';
+    const f = h.last.n ? h.last.firstTry / h.last.n : 0;
+    const col = f >= .8 ? 'var(--good)' : f >= .5 ? 'var(--warm)' : 'var(--bad)';
+    const life = h.rounds > 1 ? ' · ' + Math.round(100 * h.f / h.n) + '%' : '';
+    return '<span class="last"><b style="color:' + col + '">' + h.last.firstTry + '/' + h.last.n +
+           '</b><i>' + ago(h.last.ts) + life + '</i></span>';
+  };
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span></button>';
+    '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span>' +
+    stat(l) + '</button>';
   $('pickMinus').innerHTML = LEVELS.filter(l => l.op === '-').map(row).join('');
   $('pickPlus').innerHTML = LEVELS.filter(l => l.op === '+').map(row).join('');
   $('pickChain').innerHTML = LEVELS.filter(l => l.grp === 'chain').map(row).join('');
