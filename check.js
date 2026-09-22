@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 41 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 45 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -422,6 +422,94 @@ for(let i = 0; i < 3000; i++){
 }
 if(!gaps) throw new Error('the widest-gap shape never turned up');
 console.log('widest gap: matches an exhaustive search over every qualifying set of digits');
+
+// задача 17: simulate the two cats day by day rather than trusting the product
+for(let i = 0; i < 3000; i++){
+  const q = raw(42);
+  let eaten = 0;
+  for(let d = 1; d <= q.ans; d++){
+    if(d % q.p === 0) eaten++;
+    if(d % q.q === 0) eaten++;
+  }
+  if(eaten !== q.boxes) throw new Error(q.p + '/' + q.q + ' cats in ' + q.ans + ' days eat ' + eaten + ', not ' + q.boxes);
+  let before = 0;
+  for(let d = 1; d < q.ans; d++){ if(d % q.p === 0) before++; if(d % q.q === 0) before++; }
+  if(before >= q.boxes) throw new Error('the boxes were finished before the stated day');
+  if(q.p === q.q) throw new Error('the two cats should differ');
+}
+{ let e = 0; for(let d = 1; d <= 20; d++){ if(d % 4 === 0) e++; if(d % 5 === 0) e++; }
+  if(e !== 9) throw new Error('worksheet instance of задача 17 should be 9 boxes in 20 days'); }
+console.log('cats: day-by-day simulation agrees, worksheet instance eats 9 boxes in 20 days');
+
+// задача 18: work out every payable amount from the actual coins
+for(let i = 0; i < 3000; i++){
+  const q = raw(43);
+  const pay = new Set();
+  for(let a = 0; a <= q.n1; a++) for(let b = 0; b <= q.n2; b++) pay.add(a + 2*b);
+  if(q.asksMax){
+    if(q.ans !== Math.max(...pay)) throw new Error('largest payable amount wrong');
+    continue;
+  }
+  const missing = [];
+  for(let v = 1; v < q.limit; v++) if(!pay.has(v)) missing.push(v);
+  if(missing.length !== 1) throw new Error('coins ' + q.n1 + '/' + q.n2 + ' under ' + q.limit + ' miss ' + missing.length + ' amounts');
+  if(missing[0] !== q.ans) throw new Error('the unpayable amount is ' + missing[0] + ', answer says ' + q.ans);
+}
+{ const pay = new Set();
+  for(let a = 0; a <= 2; a++) for(let b = 0; b <= 3; b++) pay.add(a + 2*b);
+  const miss = []; for(let v = 1; v < 10; v++) if(!pay.has(v)) miss.push(v);
+  if(miss.length !== 1 || miss[0] !== 9) throw new Error('worksheet instance of задача 18 should be 9'); }
+console.log('coins: exactly one amount under the limit cannot be paid, worksheet instance gives 9');
+
+// задача 19: every possible deletion tried, and only one digit may work
+for(let i = 0; i < 3000; i++){
+  const q = raw(44);
+  const parts = [q.A, q.B, q.C, q.D];
+  const found = [];
+  for(let t = 0; t < 4; t++){
+    const str = String(parts[t]);
+    for(let k = 0; k < str.length; k++){
+      const left = str.slice(0, k) + str.slice(k + 1);
+      if(left === '') continue;
+      const p2 = parts.slice(); p2[t] = Number(left);
+      if(p2[0] + p2[1] + p2[2] === p2[3]) found.push(+str[k]);
+    }
+  }
+  if(!found.length) throw new Error('no deletion makes ' + parts.join(' ') + ' true');
+  if(new Set(found).size !== 1) throw new Error('more than one digit would work');
+  if(found[0] !== q.ans) throw new Error('the digit to cross is ' + found[0] + ', answer says ' + q.ans);
+  if(q.A + q.B + q.C === q.D) throw new Error('the equation is already true, nothing to cross');
+}
+{ const parts = [10, 20, 30, 40], found = [];
+  for(let t = 0; t < 4; t++){ const str = String(parts[t]);
+    for(let k = 0; k < str.length; k++){ const left = str.slice(0,k) + str.slice(k+1);
+      if(left === '') continue; const p2 = parts.slice(); p2[t] = Number(left);
+      if(p2[0] + p2[1] + p2[2] === p2[3]) found.push(+str[k]); } }
+  if(found.length !== 1 || found[0] !== 2) throw new Error('worksheet instance of задача 19 should be 2'); }
+console.log('crossed digit: only one digit ever works, worksheet instance crosses the 2');
+
+// задача 20: the best arrangement, checked against all twenty-four of them
+for(let i = 0; i < 3000; i++){
+  const q = raw(45);
+  let best = null;
+  const d = q.digits;
+  for(let a = 0; a < 4; a++) for(let b = 0; b < 4; b++) for(let c = 0; c < 4; c++) for(let e = 0; e < 4; e++){
+    if(new Set([a,b,c,e]).size !== 4) continue;
+    const x = d[a]*10 + d[b], y = d[c]*10 + d[e], diff = x - y;
+    if(diff > 0 && (best === null || (q.smallest ? diff < best : diff > best))) best = diff;
+  }
+  if(best !== q.ans) throw new Error('cards ' + d.join(',') + ': best is ' + best + ', answer says ' + q.ans);
+  if(q.wit[0] - q.wit[1] !== q.ans) throw new Error('the example arrangement does not give the answer');
+  const used = (String(q.wit[0]) + String(q.wit[1])).split('').map(Number).sort((x,y) => x-y);
+  if(used.join() !== d.join()) throw new Error('the example arrangement does not use each card once');
+}
+{ let best = Infinity; const d = [1,2,4,7];
+  for(let a=0;a<4;a++)for(let b=0;b<4;b++)for(let c=0;c<4;c++)for(let e=0;e<4;e++){
+    if(new Set([a,b,c,e]).size !== 4) continue;
+    const diff = (d[a]*10+d[b]) - (d[c]*10+d[e]);
+    if(diff > 0 && diff < best) best = diff; }
+  if(best !== 7) throw new Error('worksheet instance of задача 20 should be 7'); }
+console.log('four cards: matches all twenty-four arrangements, worksheet instance gives 7');
 
 // задача 6: the picture IS the data — it must hold exactly the fruit the answer assumes
 for(let i = 0; i < 4000; i++){

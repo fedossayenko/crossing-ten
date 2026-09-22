@@ -673,6 +673,10 @@ const LEVELS = [
   { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
   { id:34, op:'w', grp:'geo',    eq:'Оцветени',   desc:'Paint whole rows and columns — what is left' },
+  { id:42, op:'w', grp:'word',   eq:'Котките',    desc:'Two cats and one box of food between them' },
+  { id:43, op:'w', grp:'puzzle', eq:'Монети',     desc:'The one amount a handful of coins cannot pay' },
+  { id:44, op:'w', grp:'puzzle', eq:'Зачеркни',   desc:'Cross out one digit to make it true' },
+  { id:45, op:'w', grp:'puzzle', eq:'Четири карти', desc:'Arrange four digits for the smallest difference' },
   { id:39, op:'w', grp:'word',   eq:'Не достигат', desc:'Short by so many — so how many are there now?' },
   { id:40, op:'w', grp:'geo',    eq:'AD = ?',      desc:'Overlapping lengths along a line' },
   { id:41, op:'w', grp:'geo',    eq:'Три точки',   desc:'Three points on a line — two answers' },
@@ -1419,6 +1423,70 @@ function genThree(){
   return {kind:'three', who, a, b, slots:2, ans: b - a, alt:[a + b]};
 }
 
+const CATS = [['Ан','Ед'], ['Мими','Рижко'], ['Сивка','Мурко'], ['Пух','Луна']];
+
+// Задача 17: in p times q days the first cat gets through q boxes and the second p,
+// so together they eat p + q boxes in that time.
+function genCats(){
+  const nm = CATS[rnd(CATS.length)];
+  const p = 3 + rnd(3);
+  let q = 3 + rnd(3);
+  if(q === p) q = p === 5 ? 3 : p + 1;
+  const k = Math.random() < 0.3 ? 2 : 1;
+  return {kind:'cats', nm, p, q, k, boxes: k*(p + q), ans: k*p*q};
+}
+
+// Задача 18: a single 1-euro coin lets you fix the parity, so every amount up to the
+// total can be paid and the first that cannot is one above it.
+function genCoins(){
+  const n1 = 1 + rnd(4), n2 = 1 + rnd(5);
+  const T = n1 + 2*n2;
+  const asksMax = Math.random() < 0.3;
+  return {kind:'coins', n1, n2, T, limit: T + 2, asksMax, ans: asksMax ? T : T + 1};
+}
+const coinWord = n => n === 1 ? 'монета' : 'монети';
+
+// Задача 19: one digit struck out makes the equation true. Built backwards, then every
+// possible deletion is tried so the digit to cross is never in doubt.
+function genCross(){
+  for(;;){
+    const A = 10*(1 + rnd(5)), C = 10*(1 + rnd(5)), B = 10*(1 + rnd(9));
+    const D = A + C;
+    if(D > 99) continue;
+    const parts = [A, B, C, D];
+    const hits = [];
+    for(let t = 0; t < 4; t++){
+      const str = String(parts[t]);
+      for(let i = 0; i < str.length; i++){
+        const left = str.slice(0, i) + str.slice(i + 1);
+        if(left === '') continue;
+        const p2 = parts.slice();
+        p2[t] = Number(left);
+        if(p2[0] + p2[1] + p2[2] === p2[3]) hits.push({t, i, digit: +str[i], left: p2[t]});
+      }
+    }
+    const values = new Set(hits.map(h => h.digit));
+    if(!hits.length || values.size !== 1) continue;      // the digit to cross must be beyond doubt
+    return {kind:'cross', A, B, C, D, hit: hits[0], ans: hits[0].digit};
+  }
+}
+
+// Задача 20: four cards into two two-digit numbers. Every arrangement is tried.
+function genCards(){
+  const digits = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 4);
+  const smallest = Math.random() < 0.7;
+  let best = null, wit = null;
+  (function walk(left, cur){
+    if(!left.length){
+      const a = cur[0]*10 + cur[1], b = cur[2]*10 + cur[3], d = a - b;
+      if(d > 0 && (best === null || (smallest ? d < best : d > best))){ best = d; wit = [a, b]; }
+      return;
+    }
+    left.forEach((v, i) => walk(left.filter((_, j) => j !== i), cur.concat(v)));
+  })(digits, []);
+  return {kind:'cards', digits: digits.slice().sort((x, y) => x - y), smallest, wit, ans: best};
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -1462,6 +1530,10 @@ function raw(level){
     if(level === 39) return genShort();
     if(level === 40) return genSeg();
     if(level === 41) return genThree();
+    if(level === 42) return genCats();
+    if(level === 43) return genCoins();
+    if(level === 44) return genCross();
+    if(level === 45) return genCards();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1546,6 +1618,34 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'cats'){
+    return '<div class="ask">Имам две котки — <b>' + q.nm[0] + '</b> и <b>' + q.nm[1] +
+      '</b>, които се хранят с една и съща храна. ' + q.nm[0] + ' сама изяжда кутия храна за <span class="num">' +
+      q.p + '</span> дни, а ' + q.nm[1] + ' изяжда същата кутия за <span class="num">' + q.q +
+      '</span> дни. За колко дни котките ще изядат общо <span class="num">' + q.boxes + '</span> кутии храна?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + ' <span class="unit">дни</span></div>';
+  }
+  if(q.kind === 'coins'){
+    const have = '<span class="num">' + q.n1 + '</span> ' + coinWord(q.n1) + ' от 1 евро и <span class="num">' +
+      q.n2 + '</span> ' + coinWord(q.n2) + ' от 2 евро';
+    return '<div class="ask">' + (q.asksMax
+      ? 'Коя е <b>най-голямата</b> сума, която можем да заплатим, ако имаме ' + have + '?'
+      : 'Коя сума, по-малка от <span class="num">' + q.limit + '</span> евро, <b>НЕ</b> може да се заплати, ако имаме ' +
+        have + '?') + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + ' <span class="unit">евро</span></div>';
+  }
+  if(q.kind === 'cross'){
+    return '<div class="ask">Коя цифра трябва да се зачеркне, за да се получи вярно равенство?</div>' +
+      '<div class="given">' + q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'cards'){
+    return '<div class="ask">На 4 карти са записани цифрите <span class="num">' + bgList(q.digits) +
+      '</span>, по една на карта. Поставете ги в квадратчетата, така че да се получи <b>най-' +
+      (q.smallest ? 'малката' : 'голямата') + '</b> възможна разлика. Коя е тя?</div>' +
+      '<div class="given"><span class="circle">□□</span> − <span class="circle">□□</span></div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'short'){
     const tail = q.shape === 0
       ? 'Колко ' + q.item + ' не ми достигат, за да имам <span class="num">' + q.T2 + '</span> ' + q.item + '?'
@@ -1842,6 +1942,10 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'cats') return q.p + ' и ' + q.q + ' дни, ' + q.boxes + ' кутии → ' + q.ans;
+  if(q.kind === 'coins') return q.n1 + '×1 + ' + q.n2 + '×2 = ' + q.T + ' → ' + q.ans;
+  if(q.kind === 'cross') return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + ' → зачерква се ' + q.ans;
+  if(q.kind === 'cards') return q.digits.join(', ') + ' → ' + q.wit[0] + ' − ' + q.wit[1] + ' = ' + q.ans;
   if(q.kind === 'short') return 'не достигат ' + q.d1 + ' до ' + q.T1 + ' → ' + q.ans;
   if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
   if(q.kind === 'three') return q.a + ' и ' + q.b + ' → ' + (q.b - q.a) + ' или ' + (q.a + q.b);
@@ -1943,6 +2047,34 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'cats'){
+    if(!full) return 'Намери ден, в който и двете котки свършват точно по цяла кутия.';
+    const base = q.p * q.q;
+    const head = 'за ' + base + ' дни ' + q.nm[0] + ' изяжда ' + q.q + ' кутии, а ' + q.nm[1] + ' — ' +
+      q.p + ' &nbsp;→&nbsp; общо ' + (q.p + q.q) + ' кутии';
+    return q.k === 1 ? head + ', значи трябват ' + q.ans + ' дни'
+      : head + ', а за ' + q.boxes + ' кутии трябва двойно повече &nbsp;→&nbsp; ' + q.ans + ' дни';
+  }
+  if(q.kind === 'coins'){
+    if(!full) return 'Монетите от 1 евро позволяват всяка сума до сбора.';
+    const total = q.n1 + ' + ' + (2*q.n2) + ' = <b>' + q.T + '</b> евро';
+    return 'всичко имаме ' + total + (q.asksMax ? '' :
+      ' &nbsp;→&nbsp; всяка сума до ' + q.T + ' може да се плати, значи не може ' + q.ans);
+  }
+  if(q.kind === 'cross'){
+    const names = ['първото число', 'второто число', 'третото число', 'сбора'];
+    const after = [q.A, q.B, q.C, q.D];
+    after[q.hit.t] = q.hit.left;
+    return !full ? 'Пресметни лявата страна — с колко се разминава?'
+      : q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + (q.A + q.B + q.C) + ', а трябва ' + q.D +
+        ' &nbsp;→&nbsp; ' + (/^[вф]/.test(names[q.hit.t]) ? 'във ' : 'в ') + names[q.hit.t] + ' зачеркваме <b>' + q.ans + '</b>: ' +
+        after[0] + ' + ' + after[1] + ' + ' + after[2] + ' = ' + after[3] + ' &nbsp;→&nbsp; цифрата е ' + q.ans;
+  }
+  if(q.kind === 'cards'){
+    if(!full) return q.smallest ? 'Числата трябва да са възможно най-близо едно до друго.'
+                                : 'Едното число да е възможно най-голямо, другото — най-малко.';
+    return q.wit[0] + ' − ' + q.wit[1] + ' = ' + q.ans;
   }
   if(q.kind === 'short'){
     if(!full) return 'Първо намери колко имам сега.';
