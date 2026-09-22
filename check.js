@@ -634,8 +634,8 @@ eval(head + body + test);
 // the generators: every level rated, in a known group, and easiest first.
 {
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
-  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?, d:(\d), eq:.(.*?)., desc/g)]
-    .map(m => ({ id:+m[1], grp: m[3] || m[2], d:+m[4], eq:m[5] }));
+  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
+    .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
   if(rows.length !== 45) throw new Error('parsed ' + rows.length + ' levels, expected 45');
   const seen = new Set();
   rows.forEach(r => {
@@ -651,5 +651,67 @@ eval(head + body + test);
   });
   const ladder = rows.filter(r => r.grp === '-' || r.grp === '+').map(r => r.d);
   if(ladder.join() !== '2,2,3,1,2,3') throw new Error('the arithmetic ladder lost its designed order');
-  console.log('level table: all 45 rated 1-5, in known groups, worksheet groups easiest first');
+  // prerequisites must exist, never point forward, and never form a cycle
+  const byId = {};
+  rows.forEach(r => byId[r.id] = r);
+  rows.forEach(r => r.needs.forEach(n => {
+    if(!byId[n]) throw new Error(r.eq + ' needs a level that does not exist: ' + n);
+    if(byId[n].d > r.d) throw new Error(r.eq + ' needs something harder than itself: ' + byId[n].eq);
+  }));
+  const depth = (id, seen) => {
+    if(seen.has(id)) throw new Error('prerequisites form a loop at ' + byId[id].eq);
+    seen.add(id);
+    return byId[id].needs.reduce((d, n) => Math.max(d, 1 + depth(n, new Set(seen))), 0);
+  };
+  rows.forEach(r => depth(r.id, new Set()));
+  // starting from nothing learned, the path must be able to reach every level
+  {
+    const done = new Set();
+    for(let pass = 0; pass < 50 && done.size < rows.length; pass++)
+      rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
+    if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
+  }
+  console.log('level table: all 45 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+
+  // every element the script looks up must exist in the markup
+  {
+    const markup = src.split('<script>')[0];
+    const have = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
+    ['slot0','slot1','wave1','wave2','waveX'].forEach(i => have.add(i));   // drawn at runtime
+    const looked = [...new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]))];
+    const gone = looked.filter(i => !have.has(i));
+    if(gone.length) throw new Error('the script looks up elements that are not in the page: ' + gone.join(', '));
+    console.log('page wiring: all ' + looked.length + ' element lookups resolve');
+  }
+
+  // Walk the recommended path from nothing learned: it must reach every level, never
+  // suggest something whose groundwork is undone, never step back in difficulty, and
+  // not grind one group for too long.
+  {
+    const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
+    const nextSrc = js.slice(js.indexOf('function nextUp(m'), js.indexOf('function buildPicker'));
+    const walk = `
+      const grp = l => l.grp || l.op;
+      const m = {}, order = [];
+      let last = null;
+      for(let step = 0; step < 200; step++){
+        const nx = nextUp(m, last);
+        if(!nx) break;
+        if(!(nx.needs || []).every(n => m[n] && m[n].done)) throw new Error(nx.eq + ' was suggested before its groundwork');
+        order.push(nx); last = grp(nx);
+        m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2 };
+      }
+      if(order.length !== LEVELS.length) throw new Error('the path reaches ' + order.length + ' of ' + LEVELS.length + ' levels');
+      const ds = order.map(l => l.d);
+      if(ds.some((v, i) => i && v < ds[i-1])) throw new Error('the path steps back in difficulty');
+      let run = 1, worst = 1;
+      for(let i = 1; i < order.length; i++){
+        run = grp(order[i]) === grp(order[i-1]) ? run + 1 : 1;
+        if(run > worst) worst = run;
+      }
+      if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running');
+      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, never easier, at most ' + worst + ' in a row from one group');
+    `;
+    eval(levelsSrc + nextSrc + walk);
+  }
 }

@@ -45,6 +45,26 @@ sorted easiest first inside each group:
 - **Word problems** — a story to turn into arithmetic
 - **Shapes and lines** — lengths, perimeters, grids, points on a line
 
+## The training path
+
+The picker opens with one recommendation — *Start here*, then *Next up* — and a bar
+showing how many of the 45 are learned.
+
+- **Learned** means at least four in five right first try, over at least fifteen
+  questions. Reachable in two rounds, high enough to mean something.
+- **Prerequisites** are declared only where a level genuinely builds on another
+  (`42 − 17` after `42 − 7`, `Оцветени` after `Правоъгълници`, `Плодове` after `6 − ◯`).
+  Difficulty handles the rest of the ordering.
+- **It recommends, it never locks.** Every level stays tappable. Gating content is
+  demotivating, and she may simply want the fun ones.
+- **Variety beats grinding.** Among levels tied on difficulty, one from a different
+  group than the last is preferred — six geometry levels in a row sticks less well
+  than mixing them, and is duller. This keeps the longest single-group run to four.
+
+`node check.js` walks the whole path from nothing learned and fails if it cannot
+reach every level, suggests something before its groundwork, steps back in
+difficulty, or grinds one group more than four times running.
+
 ## Checks
 
 `node check.js` generates thousands of questions per level and verifies the answer,
