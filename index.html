@@ -159,6 +159,8 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .circle{color:var(--warm)}
 .fig{display:flex; justify-content:center; width:100%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
+.seq{font-family:Fredoka,sans-serif; font-size:clamp(17px,4.6vw,27px); letter-spacing:.05em;
+  text-align:center; font-variant-numeric:tabular-nums; text-wrap:balance}
 .unit{color:var(--muted); font-size:.48em; margin-left:.18em; font-weight:400}
 .or{color:var(--muted); font-size:.6em; padding:0 .12em}
 .hint{font-size:clamp(13px,2vh,18px); font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; text-align:center; min-height:1.4em; text-wrap:balance}
@@ -643,6 +645,10 @@ const LEVELS = [
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number that is a few more than another' },
+  { id:24, op:'w', grp:'word',   eq:'Колко сбора?', desc:'How many different results two numbers can make' },
+  { id:25, op:'w', grp:'word',   eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
+  { id:23, op:'w', grp:'puzzle', eq:'□△ − 9',      desc:'Digits standing in for a two-digit number' },
+  { id:26, op:'w', grp:'puzzle', eq:'Редица',      desc:'Smaller on the left, bigger on the right' },
   { id:19, op:'w', grp:'geo', eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
   { id:20, op:'w', grp:'geo', eq:'A, B, C',       desc:'Along a line, right then left — how far apart?' },
   { id:21, op:'w', grp:'geo', eq:'Обиколка',      desc:'A square cut into equal squares' },
@@ -888,6 +894,59 @@ function sqSvg(parts, side){
     'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
 }
 
+const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
+  { nm:'понеделник', cnt:'понеделника' }, { nm:'вторник', cnt:'вторника' },
+  { nm:'сряда', cnt:'сряди', f:1 }, { nm:'четвъртък', cnt:'четвъртъка' },
+  { nm:'петък', cnt:'петъка' }, { nm:'събота', cnt:'съботи', f:1 }, { nm:'неделя', cnt:'недели', f:1 }
+];
+
+// Задача 17: the figures stand for digits of a two-digit numeral, not for a product.
+function genPlace(){
+  for(;;){
+    const t = 1 + rnd(9), u = rnd(10);
+    if(t === u) continue;                       // "различни цифри"
+    const k = 1 + rnd(9), N = 10*t + u, R = N - k;
+    if(R < 10) continue;
+    const a = 1 + rnd(9);
+    const shape = u === 0 ? 0 : rnd(2);         // △□ needs a non-zero △
+    const ans = shape === 0 ? 10*a + t - u : 10*u + t - a;
+    return {kind:'place', t, u, N, k, R, a, shape, ans};
+  }
+}
+
+// Задача 18: how many different results are reachable — find the two ends, count between.
+function genSums(){
+  const shape = rnd(3);
+  if(shape === 0){ const k = 2 + rnd(3); return {kind:'sums', shape, k, top: 9*k, ans: 9*k + 1}; }
+  if(shape === 1){ const n = 3 + rnd(10); return {kind:'sums', shape, n, top: 2*n, ans: 2*n + 1}; }
+  return {kind:'sums', shape, top: 9, ans: 10};
+}
+
+// Задача 19: whole weeks give one each, the leftover days may or may not add another.
+function genWeekday(){
+  let n;
+  do { n = 8 + rnd(38); } while(n % 7 === 0);    // a multiple of 7 has a single answer
+  const q = Math.floor(n / 7);
+  return {kind:'weekday', n, q, r: n % 7, day: DAYS[rnd(7)], slots:2, ans: q, alt:[q + 1]};
+}
+
+// Задача 20: near-sorted, so a few numbers sit with everything smaller to their left
+// and everything bigger to their right. Counted directly, never inferred.
+function genSeq(){
+  for(;;){
+    const n = 8 + rnd(3);
+    const a = [];
+    for(let i = 1; i <= n; i++) a.push(i);
+    const swaps = 2 + rnd(3);
+    for(let s = 0; s < swaps; s++){ const i = rnd(n - 1), t = a[i]; a[i] = a[i+1]; a[i+1] = t; }
+    if(Math.random() < 0.5) a.push(a.splice(rnd(n - 2), 1)[0]);
+    const hits = a.filter((v, i) =>
+      a.every((w, j) => j === i || (j < i ? w < v : w > v)));
+    if(hits.length < 1 || hits.length > n - 3) continue;
+    return {kind:'seq', a, hits, ans: hits.length};
+  }
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -912,6 +971,10 @@ function raw(level){
     if(level === 20) return genLine();
     if(level === 21) return genSqCut();
     if(level === 22) return genShared();
+    if(level === 23) return genPlace();
+    if(level === 24) return genSums();
+    if(level === 25) return genWeekday();
+    if(level === 26) return genSeq();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -984,6 +1047,35 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'place'){
+    const sq = '<span class="circle">□</span>', tr = '<span class="circle">△</span>';
+    const wanted = q.shape === 0 ? q.a + sq + ' − ' + tr : tr + sq + ' − ' + q.a;
+    return '<div class="ask">Вместо фигурите ' + sq + ' и ' + tr +
+      ' поставете <b>различни</b> цифри, така че:</div>' +
+      '<div class="given">' + sq + tr + ' − ' + q.k + ' = ' + q.R + '</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + wanted + ' = ' + slot + '</div>';
+  }
+  if(q.kind === 'sums'){
+    const ask = q.shape === 0
+      ? 'Колко различни числа можем да получим при сбор на ' + BGNUM[q.k] + ' едноцифрени числа?'
+      : q.shape === 1
+      ? 'Колко различни числа можем да получим при сбор на две числа, всяко от които не е по-голямо от <span class="num">' + q.n + '</span>?'
+      : 'Колко различни числа можем да получим при разлика на две едноцифрени числа?';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="note">Числата са 0, 1, 2, 3, …</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'weekday'){
+    return '<div class="ask">Колко <b>' + q.day.cnt + '</b> може да има сред <span class="num">' + q.n +
+      '</span> последователни дни?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
+      ' <span class="or">или</span> <span class="slot" id="slot1"></span></div>';
+  }
+  if(q.kind === 'seq'){
+    return '<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>' +
+      '<div class="seq">' + q.a.join(', ') + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
   if(q.kind === 'rects'){
     return '<div class="ask">Колко са всички правоъгълници на чертежа, в които има мравка?</div>' +
       gridSvg(q.W, q.H, q.c, q.r) +
@@ -1082,6 +1174,10 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'place') return '□△ = ' + q.N + ' → □=' + q.t + ', △=' + q.u + ' → ' + q.ans;
+  if(q.kind === 'sums') return 'от 0 до ' + q.top + ' → ' + q.ans;
+  if(q.kind === 'weekday') return q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt;
+  if(q.kind === 'seq') return q.a.join(', ') + ' → ' + bgList(q.hits) + ' → ' + q.ans;
   if(q.kind === 'rects') return q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
   if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
   if(q.kind === 'sqcut') return 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
@@ -1131,6 +1227,31 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'place'){
+    if(!full) return '□△ е двуцифрено число, а не умножение.';
+    const wanted = q.shape === 0 ? q.a + '' + q.t + ' − ' + q.u : '' + q.u + q.t + ' − ' + q.a;
+    return '□△ = ' + q.R + ' + ' + q.k + ' = <b>' + q.N + '</b> &nbsp;→&nbsp; □ = ' + q.t + ', △ = ' + q.u +
+      ' &nbsp;→&nbsp; ' + wanted + ' = ' + q.ans;
+  }
+  if(q.kind === 'sums'){
+    if(!full) return 'Кой е най-малкият и кой най-големият резултат?';
+    return 'най-малкото е <b>0</b>, най-голямото е <b>' + q.top + '</b> &nbsp;→&nbsp; от 0 до ' + q.top +
+      ' &nbsp;(с нулата) &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'weekday'){
+    if(!full) return 'Колко цели седмици се събират в толкова дни?';
+    const weeks = q.q === 1 ? '1 седмица' : q.q + ' седмици';
+    const left = q.r === 1 ? 'още 1 ден' : 'още ' + q.r + ' дни';
+    const extra = q.r === 1 ? 'ако и последният ден е ' + q.day.nm
+                            : 'ако и някой от останалите ' + q.r + ' дни е ' + q.day.nm;
+    return q.n + ' дни са <b>' + weeks + '</b> и ' + left + ' &nbsp;→&nbsp; във всяка седмица има ' +
+      (q.day.f ? 'по една ' : 'по един ') + q.day.nm + ', значи ' + q.q + '; ' + extra + ' → ' + (q.q + 1);
+  }
+  if(q.kind === 'seq'){
+    if(!full) return 'Провери всяко число: всички отляво по-малки, всички отдясно по-големи.';
+    return (q.hits.length === 1 ? 'това е само числото <b>' + q.hits[0] + '</b>'
+                                : 'това са <b>' + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'rects'){
     if(!full) return 'Правоъгълникът може да е от едно или от повече квадратчета.';

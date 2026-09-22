@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]){
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 22 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 26 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -83,5 +83,38 @@ for(let i = 0; i < 5000; i++){
   if(q.p1 <= 2*d || q.p2 <= 2*d) throw new Error('half with perimeter ' + Math.min(q.p1,q.p2) + ' cannot hold a cut of ' + d);
 }
 console.log('triangle cuts: perimeters add up and both halves are possible triangles');
+
+// задача 20: the compact pivot scan must agree with a plain double loop
+for(let i = 0; i < 4000; i++){
+  const q = raw(26);
+  const naive = [];
+  for(let k = 0; k < q.a.length; k++){
+    let ok = true;
+    for(let j = 0; j < k; j++) if(q.a[j] >= q.a[k]) ok = false;
+    for(let j = k+1; j < q.a.length; j++) if(q.a[j] <= q.a[k]) ok = false;
+    if(ok) naive.push(q.a[k]);
+  }
+  if(naive.join() !== q.hits.join() || naive.length !== q.ans)
+    throw new Error('sequence ' + q.a.join(',') + ': scan says ' + q.hits.join(',') + ', double loop says ' + naive.join(','));
+  if(q.a.slice().sort((x,y) => x-y).join() !== q.a.map((_,k) => k+1).join())
+    throw new Error('sequence is not a permutation: ' + q.a.join(','));
+}
+console.log('sequence scan: matches a plain double loop, and every run is a permutation');
+
+// задача 17: the digits must actually satisfy the equation, and stay different
+for(let i = 0; i < 4000; i++){
+  const q = raw(23);
+  if(q.N - q.k !== q.R) throw new Error('placeholder equation does not hold: ' + JSON.stringify(q));
+  if(q.t === q.u) throw new Error('placeholder digits must differ: ' + JSON.stringify(q));
+  if(10*q.t + q.u !== q.N) throw new Error('placeholder digits do not form the number');
+  const want = q.shape === 0 ? 10*q.a + q.t - q.u : 10*q.u + q.t - q.a;
+  if(want !== q.ans) throw new Error('placeholder answer wrong: ' + JSON.stringify(q));
+}
+// the worksheet's own instance
+{
+  const q = {kind:'place', t:9, u:7, N:97, k:9, R:88, a:2, shape:0, ans:22};
+  if(10*q.a + q.t - q.u !== 22) throw new Error('worksheet instance of задача 17 should be 22');
+}
+console.log('digit placeholders: equation holds, digits differ, worksheet instance gives 22');
 `;
 eval(head + body + test);
