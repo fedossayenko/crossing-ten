@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 26 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 28 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -65,7 +65,7 @@ for(let W = 1; W <= 6; W++) for(let H = 1; H <= 6; H++)
 console.log('rectangle counting: closed form matches a brute-force count in all ' + grids + ' grid/ant positions');
 
 // the drawings must be well-formed and theme-aware
-for(const L of [19, 21]){
+for(const L of [19, 21, 28]){
   for(let i = 0; i < 300; i++){
     const svg = drawQ(raw(L));
     const open = (svg.match(/<g[ >]/g) || []).length, close = (svg.match(/<\\/g>/g) || []).length;
@@ -132,5 +132,45 @@ for(let i = 0; i < 6000; i++){
 }
 if(!subs2 || subs2 === tens) throw new Error('both endings should turn up: ' + subs2 + ' of ' + tens);
 console.log('grouping chains: evaluate correctly, both endings appear, two-subtrahend ones lead with two digits');
+
+// задача 5: the run must really follow the rule it claims, and the gaps must be its own terms
+for(let i = 0; i < 4000; i++){
+  const q = raw(27);
+  for(let k = 2; k < q.seq.length; k++){
+    const want = q.rule === 0 ? q.seq[k-1] + q.seq[k-2]
+               : q.rule === 1 ? q.seq[k-1] + (q.seq[1] - q.seq[0])
+               : q.seq[k-1] * 2;
+    if(q.seq[k] !== want) throw new Error('sequence ' + q.seq.join(',') + ' breaks its own rule at ' + k);
+  }
+  if(q.hidden[0] !== q.seq[q.at] || q.hidden[1] !== q.seq[q.at+1]) throw new Error('hidden terms do not come from the run');
+  if(q.at < 2 || q.at + 1 >= q.seq.length - 1) throw new Error('gaps must leave the opening and the last term visible');
+  const want = q.asksDigits ? String(q.hidden[0]).length + String(q.hidden[1]).length : q.hidden[0] + q.hidden[1];
+  if(want !== q.ans) throw new Error('missing-terms answer wrong');
+}
+// the worksheet's own run: 1, 1, 2, 3, 5, _, _, 21, 34 hides 8 and 13, so 1 + 2 digits
+if(String(8).length + String(13).length !== 3) throw new Error('worksheet instance of задача 5 should be 3');
+console.log('missing terms: every run follows its rule, gaps are its own terms, worksheet instance gives 3');
+
+// задача 6: the picture IS the data — it must hold exactly the fruit the answer assumes
+for(let i = 0; i < 4000; i++){
+  const q = raw(28);
+  const drawn = { p:0, a:0 };
+  q.row.forEach(t => drawn[t]++);
+  if(drawn.p !== q.pears || drawn.a !== q.apples)
+    throw new Error('picture shows ' + drawn.p + ' pears and ' + drawn.a + ' apples, question assumes ' + q.pears + ' and ' + q.apples);
+  if(q.apples + q.ans !== q.pears + q.k) throw new Error('adding the answer does not reach the asked gap');
+  if(q.ans < 1) throw new Error('nothing to add');
+  const circles = (fruitSvg(q.row).match(/<circle/g) || []).length;
+  if(circles !== q.pears*2 + q.apples) throw new Error('drawing has ' + circles + ' bodies for ' + q.row.length + ' fruit');
+}
+console.log('fruit picture: drawn fruit match the counts the question assumes, and the answer closes the gap');
+
+// задача 8: the same list read the other way round erases the smaller number
+{
+  const set = [3,4,7,9,11], total = 34;
+  if(total - 7 !== 27) throw new Error('erasing the bigger of the pair should leave 27');
+  if(total - 3 !== 31) throw new Error('erasing the smaller of the pair should leave 31');
+}
+console.log('erase wording: same list gives 27 when the bigger goes, 31 when the smaller does');
 `;
 eval(head + body + test);

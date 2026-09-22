@@ -6,21 +6,21 @@
   --ground:#EDF1F3; --card:#FFFFFF; --ink:#16232E; --muted:#5C7380; --line:#D3DEE4;
   --accent:#2F6F8F; --warm:#E8A33D; --good:#23795A; --bad:#C0463C;
   --goodbg:#DCEFE5; --badbg:#F8E0DD; --key:#FFFFFF; --keypress:#DDE7EC;
-  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B;
+  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B; --pear:#E9B838; --apple:#93B84C;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
     --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
     --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63;
+    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68;
   }
 }
 :root[data-theme="dark"]{
   --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
   --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
   --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63;
+  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68;
 }
 html,body{height:100%}
 body{background:var(--ground); color:var(--ink); font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%}
@@ -644,7 +644,9 @@ const LEVELS = [
   { id:11, op:'w', grp:'puzzle', eq:'6 − ◯',       desc:'Find the number in the circle, then use it' },
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
-  { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number that is a few more than another' },
+  { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
+  { id:28, op:'w', grp:'word',   eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference' },
+  { id:27, op:'w', grp:'puzzle', eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
   { id:24, op:'w', grp:'word',   eq:'Колко сбора?', desc:'How many different results two numbers can make' },
   { id:25, op:'w', grp:'word',   eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
   { id:23, op:'w', grp:'puzzle', eq:'□△ − 9',      desc:'Digits standing in for a two-digit number' },
@@ -737,7 +739,9 @@ function genBox(){
   const b = box + r;
   const y = 1 + rnd(9), x = y + r;
   let a;
-  do { a = [10,12,14,15,16,18,20][rnd(7)]; } while(a === b); // same start makes it a one-stepper
+  // same start makes it a one-stepper, and a must stay above the circle
+  do { a = Math.random() < 0.3 ? 7 + rnd(3) : [10,12,14,15,16,18,20][rnd(7)]; }
+  while(a === b || a <= box);
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
 
@@ -797,8 +801,9 @@ function genErase(){
     set.sort((x,y) => x - y);
     const hits = set.filter(x => set.indexOf(x + d) >= 0).map(x => x + d);
     if(hits.length !== 1) continue;
-    const gone = hits[0];
-    return {kind:'erase', set, d, gone, ans: set.reduce((t,v) => t + v, 0) - gone};
+    const bigger = Math.random() < 0.5;                 // "по-голямо с d" or "по-малко с d"
+    const gone = bigger ? hits[0] : hits[0] - d;
+    return {kind:'erase', set, d, bigger, gone, ans: set.reduce((t,v) => t + v, 0) - gone};
   }
 }
 
@@ -963,6 +968,55 @@ function genSeq(){
   }
 }
 
+// Задача 5: find the rule, fill the two gaps — then read whether the question wants
+// the digits of the missing numbers or the numbers themselves.
+function genMissing(){
+  for(;;){
+    const rule = rnd(3);
+    const seq = [];
+    if(rule === 0){                                  // each is the sum of the two before it
+      seq.push(1, 1 + rnd(2));
+      while(seq.length < 9) seq.push(seq[seq.length-1] + seq[seq.length-2]);
+    } else if(rule === 1){                           // a constant step
+      const start = 1 + rnd(9), d = 2 + rnd(8);
+      for(let i = 0; i < 8; i++) seq.push(start + i*d);
+    } else {                                         // doubling
+      const start = 1 + rnd(4);
+      for(let i = 0; i < 7; i++) seq.push(start * Math.pow(2, i));
+    }
+    const at = 2 + rnd(seq.length - 4);              // never the opening terms, never the last
+    const hidden = [seq[at], seq[at+1]];
+    const asksDigits = Math.random() < 0.6;
+    const ans = asksDigits ? String(hidden[0]).length + String(hidden[1]).length : hidden[0] + hidden[1];
+    if(ans > 999) continue;
+    return {kind:'missing', seq, at, hidden, asksDigits, rule, ans};
+  }
+}
+
+// Задача 6: count two mixed groups, then work out how many to add to reach a gap.
+function genFruit(){
+  const pears = 3 + rnd(4);
+  const apples = 1 + rnd(pears - 1);
+  const k = 2 + rnd(5);
+  const row = shuffle(Array(pears).fill('p').concat(Array(apples).fill('a')));
+  return {kind:'fruit', pears, apples, k, row, ans: pears + k - apples};
+}
+function fruitSvg(row){
+  const cols = Math.min(6, row.length), u = 30;
+  const rows = Math.ceil(row.length / cols);
+  const g = row.map((t, i) => {
+    const x = (i % cols)*u + u/2, y = Math.floor(i/cols)*u + u/2;
+    return '<g transform="translate(' + x + ' ' + y + ')">' + (t === 'p'
+      ? '<path d="M0,-12 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>' +
+        '<circle cx="0" cy="-3" r="4.4" fill="var(--pear)"/><circle cx="0" cy="4" r="6.9" fill="var(--pear)"/>'
+      : '<path d="M0,-11 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>' +
+        '<ellipse cx="4.5" cy="-9" rx="3.4" ry="1.7" fill="var(--good)"/>' +
+        '<circle cx="0" cy="1" r="7.5" fill="var(--apple)"/>') + '</g>';
+  }).join('');
+  return '<div class="fig"><svg viewBox="0 0 ' + cols*u + ' ' + rows*u +
+    '" role="img" aria-label="круши и ябълки">' + g + '</svg></div>';
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -991,6 +1045,8 @@ function raw(level){
     if(level === 24) return genSums();
     if(level === 25) return genWeekday();
     if(level === 26) return genSeq();
+    if(level === 27) return genMissing();
+    if(level === 28) return genFruit();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1063,6 +1119,19 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'missing'){
+    const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
+    return '<div class="ask">' + (q.asksDigits
+        ? 'Колко е <b>броят на цифрите</b> на пропуснатите числа?'
+        : 'Колко е <b>сборът</b> на пропуснатите числа?') + '</div>' +
+      '<div class="seq">' + shown + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
+  if(q.kind === 'fruit'){
+    return '<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
+      q.k + '</span> по-голям от броя на <b>крушите</b>?</div>' + fruitSvg(q.row) +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
   if(q.kind === 'place'){
     const sq = '<span class="circle">□</span>', tr = '<span class="circle">△</span>';
     const wanted = q.shape === 0 ? q.a + sq + ' − ' + tr : tr + sq + ' − ' + q.a;
@@ -1169,9 +1238,11 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'erase'){
-    return '<div class="ask">Записах числата <span class="num">' + bgList(q.set) +
-      '</span>. Изтрих едно от числата, което е по-голямо с <span class="num">' + q.d +
-      '</span> от друго от тях. Пресметнете сбора на останалите числа.</div>' +
+    const which = q.bigger
+      ? 'Изтрих едно от числата, което е <b>по-голямо</b> с <span class="num">' + q.d + '</span> от друго от тях.'
+      : 'Едното от тях, което е <b>по-малко</b> с <span class="num">' + q.d + '</span> от друго от тях, изтрих.';
+    return '<div class="ask">Записах числата <span class="num">' + bgList(q.set) + '</span>. ' + which +
+      ' Пресметнете сбора на останалите числа.</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   return '<div class="ask">Пресметни, ако</div>' +
@@ -1192,6 +1263,9 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'missing') return 'липсват ' + q.hidden[0] + ' и ' + q.hidden[1] +
+    (q.asksDigits ? ' → цифри: ' : ' → сбор: ') + q.ans;
+  if(q.kind === 'fruit') return q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ' + q.ans;
   if(q.kind === 'place') return '□△ = ' + q.N + ' → □=' + q.t + ', △=' + q.u + ' → ' + q.ans;
   if(q.kind === 'sums') return 'от 0 до ' + q.top + ' → ' + q.ans;
   if(q.kind === 'weekday') return q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt;
@@ -1248,6 +1322,21 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'missing'){
+    if(!full) return q.rule === 0 ? 'Всяко число е сборът на двете преди него.'
+            : q.rule === 1 ? 'Стъпката между числата е една и съща.'
+            : 'Всяко число е двойно по-голямо от предното.';
+    const dg = v => String(v).length === 1 ? '1 цифра' : String(v).length + ' цифри';
+    const head = 'липсват <b>' + q.hidden[0] + '</b> и <b>' + q.hidden[1] + '</b> &nbsp;→&nbsp; ';
+    return head + (q.asksDigits
+      ? q.hidden[0] + ' има ' + dg(q.hidden[0]) + ', ' + q.hidden[1] + ' има ' + dg(q.hidden[1]) + ' &nbsp;→&nbsp; ' + q.ans
+      : q.hidden[0] + ' + ' + q.hidden[1] + ' = ' + q.ans);
+  }
+  if(q.kind === 'fruit'){
+    if(!full) return 'Преброй първо крушите, после ябълките.';
+    return 'круши: <b>' + q.pears + '</b>, ябълки: <b>' + q.apples + '</b> &nbsp;→&nbsp; трябват ' +
+      (q.pears + q.k) + ' ябълки &nbsp;→&nbsp; ' + (q.pears + q.k) + ' − ' + q.apples + ' = ' + q.ans;
   }
   if(q.kind === 'place'){
     if(!full) return '□△ е двуцифрено число, а не умножение.';
@@ -1358,8 +1447,10 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; ' + q.base + ' ' + (q.up ? '+' : '−') + ' ' + (q.k*q.d) + ' = ' + q.ans;
   }
   if(q.kind === 'erase'){
-    if(!full) return 'Кое число е точно толкова по-голямо от друго?';
-    return '<b>' + q.gone + ' = ' + (q.gone - q.d) + ' + ' + q.d + '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
+    if(!full) return q.bigger ? 'Кое число е точно толкова по-голямо от друго?'
+                              : 'Кое число е точно толкова по-малко от друго?';
+    return '<b>' + q.gone + ' = ' + (q.bigger ? (q.gone - q.d) + ' + ' + q.d : (q.gone + q.d) + ' − ' + q.d) +
+      '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
       ' &nbsp;→&nbsp; ' + q.set.filter(v => v !== q.gone).join(' + ') + ' = ' + q.ans;
   }
   if(!full) return 'Първо пресметни дясната страна.';
