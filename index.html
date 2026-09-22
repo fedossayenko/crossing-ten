@@ -434,8 +434,6 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
     <div class="warnline" id="pickWarn" hidden>Picking a level ends the round in progress.</div>
     <div id="nextUp"></div>
     <div id="pickAll"></div>
-    <div class="lab">What goes into Mixed</div>
-    <div class="mixsel" id="mixSel"></div>
     <div class="actions"><button class="btn ghost" id="closePick">Cancel</button></div>
   </div>
 </div>
@@ -507,11 +505,23 @@ const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), 
 
 /* ---------- local log ---------- */
 const LS = 'crossingten.v3';
-let LOCAL = { rounds:[], muted:false, speak:true, n:10, mix:[1,2,4,5], plain:true };
+let LOCAL = { rounds:[], muted:false, speak:true, n:10 };
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
+// The rounds she played while this lived as a Claude artifact, carried across once per
+// device. Each round has an id, so a device that already has them keeps its own copy.
+const SEED = [{"id":"r1790015038315_7cn3d","ts":1790015038315,"day":"2026-09-21","level":4,"n":10,"firstTry":8,"seen":["+:7-6","+:8-9","+:8-8","+:4-7","+:8-5","+:9-2","+:7-7","+:8-7","+:4-8","+:6-9"],"missed":["+:8-9","+:8-8"]},{"id":"r1790015105375_3mi4t","ts":1790015105375,"day":"2026-09-21","level":4,"n":10,"firstTry":10,"seen":["+:8-3","+:6-7","+:6-6","+:6-7","+:8-7","+:6-8","+:8-9","+:9-4","+:9-8","+:8-9"],"missed":[]},{"id":"r1790015141891_7ovx6","ts":1790015141891,"day":"2026-09-21","level":2,"n":10,"firstTry":0,"seen":["-:2-9","-:4-6","-:3-8","-:0-5","-:4-9","-:0-8","-:0-5","-:0-8","-:5-9","-:5-9"],"missed":["-:2-9","-:4-6","-:3-8","-:0-5","-:4-9","-:0-8","-:0-5","-:0-8","-:5-9","-:5-9"]},{"id":"r1790015260526_087bm","ts":1790015260526,"day":"2026-09-21","level":4,"n":10,"firstTry":10,"seen":["+:5-7","+:7-7","+:9-3","+:7-4","+:7-9","+:8-4","+:8-4","+:9-2","+:5-8","+:8-4"],"missed":[]},{"id":"r1790058153930_948f0","ts":1790058153930,"day":"2026-09-22","level":2,"n":10,"firstTry":10,"seen":["-:5-8","-:3-9","-:2-7","-:5-8","-:0-2","-:5-9","-:2-4","-:2-7","-:0-5","-:4-5"],"missed":[]},{"id":"r1790058354010_o4c4h","ts":1790058354010,"day":"2026-09-22","level":1,"n":10,"firstTry":9,"seen":["-:7-9","-:8-9","-:6-7","-:3-4","-:2-4","-:2-9","-:5-8","-:3-5","-:0-9","-:6-7"],"missed":["-:0-9"]},{"id":"r1790058861955_pzjc9","ts":1790058861955,"day":"2026-09-22","level":8,"n":10,"firstTry":10,"seen":["w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain"],"missed":[]},{"id":"r1790059304036_61pv5","ts":1790059304036,"day":"2026-09-22","level":9,"n":10,"firstTry":8,"seen":["w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs"],"missed":["w:pairs","w:pairs"]},{"id":"r1790064620994_56lld","ts":1790064620994,"day":"2026-09-22","level":11,"n":10,"firstTry":9,"seen":["w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box"],"missed":["w:box"]},{"id":"r1790065438571_k9bpe","ts":1790065438571,"day":"2026-09-22","level":18,"n":10,"firstTry":9,"seen":["w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits"],"missed":["w:digits"]},{"id":"r1790065992600_z3jg4","ts":1790065992600,"day":"2026-09-22","level":15,"n":10,"firstTry":6,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":["w:erase","w:erase","w:erase","w:erase"]},{"id":"r1790066770456_if76o","ts":1790066770456,"day":"2026-09-22","level":15,"n":10,"firstTry":7,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":["w:erase","w:erase","w:erase"]},{"id":"r1790067548274_mgn9c","ts":1790067548274,"day":"2026-09-22","level":15,"n":10,"firstTry":10,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":[]},{"id":"r1790068253029_ag759","ts":1790068253029,"day":"2026-09-22","level":10,"n":10,"firstTry":9,"seen":["w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp"],"missed":["w:cmp"]},{"id":"r1790076611158_kof1b","ts":1790076611158,"day":"2026-09-22","level":16,"n":10,"firstTry":7,"seen":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"],"missed":["w:ineq","w:ineq","w:ineq"]},{"id":"r1790077520842_ze4z7","ts":1790077520842,"day":"2026-09-22","level":16,"n":10,"firstTry":5,"seen":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"],"missed":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"]},{"id":"r1790078936561_9bl1n","ts":1790078936561,"day":"2026-09-22","level":34,"n":10,"firstTry":5,"seen":["w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint"],"missed":["w:paint","w:paint","w:paint","w:paint","w:paint"]},{"id":"r1790079610004_5y87l","ts":1790079610004,"day":"2026-09-22","level":34,"n":10,"firstTry":10,"seen":["w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint"],"missed":[]},{"id":"r1790080408348_nybp6","ts":1790080408348,"day":"2026-09-22","level":12,"n":10,"firstTry":4,"seen":["w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count"],"missed":["w:count","w:count","w:count","w:count","w:count","w:count"]},{"id":"r1790080992408_znvck","ts":1790080992408,"day":"2026-09-22","level":12,"n":10,"firstTry":5,"seen":["w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count"],"missed":["w:count","w:count","w:count","w:count","w:count"]}];
+(function(){
+  const have = {};
+  LOCAL.rounds.forEach(r => have[r.id] = true);
+  const add = SEED.filter(r => !have[r.id]);
+  if(!add.length) return;
+  LOCAL.rounds = LOCAL.rounds.concat(add).sort((a, b) => a.ts - b.ts).slice(-400);
+  try { localStorage.setItem(LS, JSON.stringify({ rounds: LOCAL.rounds, muted: LOCAL.muted,
+    speak: LOCAL.speak, n: LOCAL.n })); } catch(e){}
+})();
 function saveLocal(){
   try { localStorage.setItem(LS, JSON.stringify({ rounds: LOCAL.rounds.slice(-400), muted: LOCAL.muted,
-    speak: LOCAL.speak, n: LOCAL.n, mix: LOCAL.mix, plain: LOCAL.plain })); } catch(e){}
+    speak: LOCAL.speak, n: LOCAL.n })); } catch(e){}
 }
 
 /* ---------- sound ---------- */
@@ -658,7 +668,6 @@ const LEVELS = [
   { id:4, op:'+', d:1, eq:'8 + 5', desc:'Two single digits, bridging through ten' },
   { id:5, op:'+', needs:[4], d:2, eq:'27 + 15', desc:'Two digits plus two, with a carry' },
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:'Crossing a hundred' },
-  { id:3, op:'m', needs:[2,5], d:3, eq:'Mixed', desc:'' },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — addends into tens, or ± pairs' },
   { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one' },
@@ -703,7 +712,6 @@ const LEVELS = [
 const PICK_GROUPS = [
   { nm:'Take away',          has: l => l.op === '-' },
   { nm:'Add',                has: l => l.op === '+' },
-  { nm:'Both',               has: l => l.op === 'm' },
   { nm:'Chains',             has: l => l.grp === 'chain' },
   { nm:'Counting',           has: l => l.grp === 'count' },
   { nm:'Numbers and digits', has: l => l.grp === 'num' },
@@ -714,8 +722,6 @@ const PICK_GROUPS = [
 ];
 const LEVEL_NAME = {}, LEVEL_OP = {};
 LEVELS.forEach(l => { LEVEL_NAME[l.id] = l.eq; LEVEL_OP[l.id] = l.op; });
-const MIXABLE = [1,2,7,4,5,6];
-const mixList = () => (LOCAL.mix || []).filter(id => MIXABLE.indexOf(id) >= 0);
 
 /* ---------- the four worksheet tasks ---------- */
 const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
@@ -1549,17 +1555,7 @@ function raw(level){
     if(level === 43) return genCoins();
     if(level === 44) return genCross();
     if(level === 45) return genCards();
-    // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
-    // needing no regrouping at all, so she has to decide whether to cross.
-    const mix = mixList();
-    if(!mix.length) return raw(2);
-    if(LOCAL.plain && rnd(4) === 0){
-      const ops = {}; mix.forEach(id => ops[LEVEL_OP[id]] = true);
-      const keys = Object.keys(ops);
-      if(keys[rnd(keys.length)] === '-'){ a = 25 + rnd(74); b = 2 + rnd(a-2); if(a%10 < b%10) continue; return {a,b,op:'-'}; }
-      a = 12 + rnd(60); b = 5 + rnd(30); if(a%10 + b%10 >= 10 || a + b > 99) continue; return {a,b,op:'+'};
-    }
-    return raw(mix[rnd(mix.length)]);
+    return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
 // Weighted rejection sampling: a crossing step she keeps missing is likelier to come up.
@@ -2703,29 +2699,6 @@ $('reset').onclick = async () => {
 
 /* ---------- level picker ---------- */
 function paintPill(){ $('levelPill').textContent = LEVEL_NAME[S.level]; }
-function mixDesc(){
-  const names = mixList().map(id => LEVEL_NAME[id]);
-  if(!names.length) return 'Pick at least one below';
-  const head = names.length <= 2 ? names.join(' and ')
-             : names.slice(0,2).join(', ') + ' and ' + (names.length-2) + ' more';
-  return head + (LOCAL.plain ? ', some needing no regrouping' : '');
-}
-function buildMixSel(){
-  $('mixSel').innerHTML = MIXABLE.map(id =>
-      '<button data-mix="' + id + '" aria-pressed="' + (mixList().indexOf(id) >= 0) + '">' + LEVEL_NAME[id] + '</button>'
-    ).join('') +
-    '<button data-mix="plain" aria-pressed="' + (LOCAL.plain ? 'true' : 'false') + '">No regrouping</button>';
-  document.querySelectorAll('#mixSel button').forEach(b => b.onclick = () => {
-    const k = b.dataset.mix;
-    if(k === 'plain') LOCAL.plain = !LOCAL.plain;
-    else {
-      const id = +k, at = mixList().indexOf(id);
-      if(at >= 0){ if(mixList().length === 1) return; LOCAL.mix.splice(LOCAL.mix.indexOf(id), 1); }
-      else LOCAL.mix.push(id);
-    }
-    saveLocal(); buildMixSel(); buildPicker();
-  });
-}
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
 function ago(ts){
@@ -2755,7 +2728,9 @@ function mastery(rounds){
     const recent = by[k].slice().sort((a, b) => a.ts - b.ts).slice(-3);
     const n = recent.reduce((t, r) => t + r.n, 0);
     const f = recent.reduce((t, r) => t + r.firstTry, 0);
-    out[k] = { n, f, rate: n ? f/n : 0, done: n >= 15 && f/n >= 0.8, rounds: by[k].length };
+    const last = recent[recent.length - 1];
+    out[k] = { n, f, rate: n ? f/n : 0, done: n >= 15 && f/n >= 0.8, rounds: by[k].length,
+               lastRate: last.n ? last.firstTry / last.n : 0 };
   });
   return out;
 }
@@ -2765,14 +2740,21 @@ function nextUp(m, lastGrp){
   const done = id => m[id] && m[id].done;
   const open = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(done));
   if(!open.length) return null;
-  const ranked = open.slice().sort((a, b) =>
-    a.d - b.d || ((m[a.id] ? m[a.id].rounds : 0) - (m[b.id] ? m[b.id].rounds : 0)));
   const grp = l => l.grp || l.op;
-  const best = ranked[0];
-  // Same difficulty, different corner of the app: six geometry levels in a row is
-  // duller and sticks less well than mixing them up.
-  if(grp(best) !== lastGrp) return best;
-  return ranked.filter(l => l.d === best.d && grp(l) !== lastGrp)[0] || best;
+  const fresh = open.filter(l => !m[l.id]);
+  if(fresh.length){
+    // Still meeting the levels: the easiest one she has not seen. Same difficulty,
+    // different corner of the app — six geometry levels running is duller and sticks
+    // less well than mixing them up.
+    const ranked = fresh.slice().sort((a, b) => a.d - b.d);
+    const best = ranked[0];
+    if(grp(best) !== lastGrp) return best;
+    return ranked.filter(l => l.d === best.d && grp(l) !== lastGrp)[0] || best;
+  }
+  // She has met them all: go back to whichever is going worst, by its record and then
+  // by how the last round went.
+  return open.slice().sort((a, b) =>
+    m[a.id].rate - m[b.id].rate || m[a.id].lastRate - m[b.id].lastRate)[0];
 }
 
 function buildPicker(){
@@ -2793,17 +2775,18 @@ function buildPicker(){
     l.d + ' of 5">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
     '<span class="eq">' + l.eq + hard(l) + '</span>' +
-    '<span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span>' +
+    '<span class="desc">' + l.desc + '</span>' +
     (M[l.id] && M[l.id].done ? '<span class="tick">✓</span>' : '') + stat(l) + '</button>';
   const m = mastery(LOCAL.rounds);
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
   const lastLvl = lastRound && LEVELS.filter(l => l.id === lastRound.level)[0];
   const nx = nextUp(m, lastLvl && (lastLvl.grp || lastLvl.op));
   const learned = LEVELS.filter(l => m[l.id] && m[l.id].done).length;
+  const met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = '<div class="nextwrap"><div class="lab">' +
-    (learned ? 'Next up' : 'Start here') + '</div>' +
+    (!met ? 'Start here' : met < LEVELS.length ? 'Try this next' : 'Needs work') + '</div>' +
     (nx ? '<button class="pick now" data-lvl="' + nx.id + '"><span class="eq">' + nx.eq +
-          hard(nx) + '</span><span class="desc">' + (nx.id === 3 ? mixDesc() : nx.desc) + '</span>' +
+          hard(nx) + '</span><span class="desc">' + nx.desc + '</span>' +
           stat(nx) + '</button>'
         : '<div class="advice">Every level learned. Keep the ones she enjoys in rotation.</div>') +
     '<div class="progress"><span class="track"><i style="width:' +
@@ -2820,7 +2803,7 @@ function buildPicker(){
   });
 }
 const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
-$('levelPill').onclick = () => { buildPicker(); buildMixSel(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
+$('levelPill').onclick = () => { buildPicker(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
 $('closePick').onclick = () => { $('picker').hidden = true; };
 paintPill();
 

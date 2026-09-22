@@ -48,10 +48,13 @@ sorted easiest first inside each group:
 ## The training path
 
 The picker opens with one recommendation — *Start here*, then *Next up* — and a bar
-showing how many of the 45 are learned.
+showing how many of the 44 are learned.
 
 - **Learned** means at least four in five right first try, over at least fifteen
-  questions. Reachable in two rounds, high enough to mean something.
+  questions — so a single round is never enough evidence on its own.
+- **It suggests breadth first, then repair.** While levels remain that she has never
+  tried, it offers the easiest of those. Once she has met them all, it switches to
+  whichever is going worst — by its record, and then by how the last round went.
 - **Prerequisites** are declared only where a level genuinely builds on another
   (`42 − 17` after `42 − 7`, `Оцветени` after `Правоъгълници`, `Плодове` after `6 − ◯`).
   Difficulty handles the rest of the ordering.
@@ -71,3 +74,10 @@ difficulty, or grinds one group more than four times running.
 the worked line, the summary line and the layout agree, plus targeted checks that
 compare a closed form against a brute-force search wherever one is used, and pin the
 original worksheet instance of each task.
+
+## Progress storage
+
+The GitHub copy keeps her rounds in that browser's local storage — per device, not
+synced. The twenty rounds she played while this lived as a Claude artifact are carried
+across once per device by a seed in the page; rounds carry ids, so nothing is
+duplicated.
