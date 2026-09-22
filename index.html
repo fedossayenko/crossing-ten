@@ -673,6 +673,7 @@ const LEVELS = [
   { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
   { id:34, op:'w', grp:'geo',    eq:'Оцветени',   desc:'Paint whole rows and columns — what is left' },
+  { id:38, op:'w', grp:'word',   eq:'Моливи',     desc:'Colours counted by what they are not' },
   { id:30, op:'w', grp:'word',   eq:'Умаляемо',   desc:'Naming the parts of a sum and a difference' },
   { id:29, op:'w', grp:'puzzle', eq:'Плодове',    desc:'Three fruit, three totals — find one from the others' },
   { id:31, op:'w', grp:'geo',    eq:'Дръвчета',   desc:'Trees in a row: the gaps are one fewer than the trees' },
@@ -829,12 +830,16 @@ const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и 
 function genCount(){
   const sum = Math.random() < 0.45;
   const top = sum ? 10 : 15;
-  const shape = rnd(4);
-  const q = {kind:'count', sum, shape};
+  const shape = rnd(5);
+  // "естествени числа" are 1, 2, 3 … — zero is not one of them, which changes a count
+  // but never a sum.
+  const natural = Math.random() < 0.4;
+  const q = {kind:'count', sum, shape, natural};
   if(shape === 0){ q.n = 3 + rnd(top - 2); q.lo = 0; q.hi = q.n; }
   else if(shape === 1){ q.n = 3 + rnd(top - 2); q.lo = 0; q.hi = q.n - 1; }
   else if(shape === 2){ q.a = 1 + rnd(6); q.b = q.a + 2 + rnd(sum ? 6 : 9); q.lo = q.a; q.hi = q.b; }
   else { q.a = 1 + rnd(6); q.b = q.a + 3 + rnd(sum ? 6 : 8); q.lo = q.a + 1; q.hi = q.b - 1; }
+  if(natural) q.lo = Math.max(q.lo, 1);
   const n = q.hi - q.lo + 1;
   q.ans = sum ? (q.lo + q.hi) * n / 2 : n;
   return q;
@@ -902,6 +907,11 @@ function genIneq(){
               : shape === 1 ? 10 - atMost
               : 10 - Math.max(0, Math.min(10, L - C));
     if(ans < 1 || ans > 9) continue;
+    if(shape === 0 && atMost >= 3 && Math.random() < 0.35){
+      // the values run 0 … lim, so their sum needs no "one-digit" limit to be finite
+      const lim = L - C;
+      return {kind:'ineq', shape, asksSum:true, A, B, L, C, lim, ans: lim*(lim + 1)/2};
+    }
     return {kind:'ineq', shape, A, B, L, C, ans};
   }
 }
@@ -1266,6 +1276,15 @@ function genShapes(){
   }
 }
 
+// Задача 8: one clue is a negative — "not green" is every other colour together.
+const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
+function genPencils(){
+  const who = NAMES[rnd(NAMES.length)][0];
+  const col = shuffle(PENCIL.slice()).slice(0, 3);
+  const a = 2 + rnd(8), b = 2 + rnd(8), c = 2 + rnd(8);
+  return {kind:'pencils', who, col, a, b, c, T: a + b + c, notA: b + c, ans: c};
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -1305,6 +1324,7 @@ function raw(level){
     if(level === 35) return genTwoDig();
     if(level === 36) return genCandy();
     if(level === 37) return genShapes();
+    if(level === 38) return genPencils();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1389,6 +1409,13 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'pencils'){
+    return '<div class="ask">' + q.who + ' има <span class="num">' + q.T + '</span> молива с различен цвят — ' +
+      q.col.map(c => c[1]).join(', ') + '. От тях <span class="num">' + q.notA + '</span> <b>не са ' +
+      q.col[0][0] + '</b>, а <span class="num">' + q.b + '</span> са ' + q.col[1][0] +
+      '. Колко <b>' + q.col[2][0] + '</b> молива има ' + q.who + '?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
   if(q.kind === 'shapes'){
     return '<div class="ask">Колко <b>най-малко</b> фигури общо трябва да добавим, така че черните квадрати ■ да са толкова, колкото белите кръгове ○, а черните кръгове ● да са толкова, колкото са <b>всичките бели</b> фигури?</div>' +
       '<div class="seq" style="letter-spacing:.2em">' + q.row.map(t => SHAPE_GLYPH[t]).join(' ') + '</div>' +
@@ -1544,8 +1571,11 @@ function drawQ(q){
     const rel = q.shape === 2
       ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
       : q.A + ' − ' + q.B + ' &lt; ? + ' + q.C;
-    return '<div class="ask">Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
-      (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':</div>' +
+    const head = q.asksSum
+      ? 'Намерете <b>сбора</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да НЕ е вярно</b>:'
+      : 'Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
+        (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':';
+    return '<div class="ask">' + head + '</div>' +
       '<div class="given">' + rel + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
@@ -1566,11 +1596,13 @@ function drawQ(q){
     const cond = q.shape === 0 ? 'не са по-големи от ' + q.n
                : q.shape === 1 ? 'са по-малки от ' + q.n
                : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
-               : 'са между ' + q.a + ' и ' + q.b;
-    const ask = q.sum ? 'Пресметнете <b>сбора</b> на всички числа, които ' + cond + '.'
-                      : '<b>Колко са</b> всички числа, които ' + cond + '?';
+               : q.shape === 3 ? 'са между ' + q.a + ' и ' + q.b
+               : 'са по-малки от ' + q.b + ' и са по-големи от ' + q.a;
+    const what = q.natural ? '<b>естествени</b> числа' : 'числа';
+    const ask = q.sum ? 'Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.'
+                      : '<b>Колко са</b> всички ' + what + ', които ' + cond + '?';
     return '<div class="ask">' + ask + '</div>' +
-      '<div class="note">Числата са 0, 1, 2, 3, …</div>' +
+      '<div class="note">' + (q.natural ? 'Естествените числа са 1, 2, 3, …' : 'Числата са 0, 1, 2, 3, …') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'named'){
@@ -1610,16 +1642,16 @@ function eqText(q){
   if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ') срещу (' + q.p + '−' + q.q + ') → ' + q.ans;
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
-  if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.shape === 0 ? 'не по-големи от ' + q.n
-    : q.shape === 1 ? 'по-малки от ' + q.n
-    : q.shape === 2 ? 'от ' + q.a + ' до ' + q.b
-    : 'между ' + q.a + ' и ' + q.b) + ' → ' + q.ans;
+  if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.natural ? 'естествени, ' : '') +
+    'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
   if(q.kind === 'named' && q.shape === 2) return 'най-' + (q.small ? 'малките ' : 'големите ') +
     q.k + ' числа → ' + q.ans;
   if(q.kind === 'named') return q.shape === 0 ? q.nm + ' = ' + q.ans
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'pencils') return q.T + ' молива, ' + q.notA + ' не са ' + q.col[0][0] + ', ' +
+    q.b + ' са ' + q.col[1][0] + ' → ' + q.ans;
   if(q.kind === 'shapes') return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
   if(q.kind === 'flowers') return 'по ' + q.p.join(', ') + ' листенца, общо ' + q.T + ' → ' + q.ans;
   if(q.kind === 'paint') return q.R + '×' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans;
@@ -1644,7 +1676,8 @@ function eqText(q){
     ? 'квадрат ' + q.P + ', триъгълник ' + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
-    : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') + ' → ' + q.ans;
+    : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
+    (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
   if(q.kind === 'digits') return q.shape === 0
     ? 'сбор на цифрите ' + q.n + ' → ' + q.ans
@@ -1708,6 +1741,12 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'pencils'){
+    if(!full) return '„Не са ' + q.col[0][0] + '" значи всички останали цветове заедно.';
+    return '<b>' + q.notA + '</b> не са ' + q.col[0][0] + ', значи ' + q.col[0][0] + ' са ' +
+      q.T + ' − ' + q.notA + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' + q.col[2][0] + ' са ' +
+      q.notA + ' − ' + q.b + ' = ' + q.ans;
   }
   if(q.kind === 'shapes'){
     if(!full) return 'Белите квадратчета също се броят към белите фигури.';
@@ -1859,8 +1898,15 @@ function whyWork(q, full){
       ', това е общата страна <b>два пъти</b> &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'ineq'){
-    if(!full) return q.shape === 1 ? 'Първо пресметни лявата страна.' : '„Не е вярно" обръща знака.';
+    if(!full) return q.asksSum ? 'Първо намери кои числа стават, после ги събери.'
+            : q.shape === 1 ? 'Първо пресметни лявата страна.' : '„Не е вярно" обръща знака.';
     const lim = q.L - q.C;
+    if(q.asksSum){
+      const list = [];
+      for(let v = 0; v <= lim; v++) list.push(v);
+      return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; трябва ? + ' + q.C + ' ≤ ' + q.L +
+        ', значи ? ≤ ' + lim + ' &nbsp;→&nbsp; ' + list.join(' + ') + ' = ' + q.ans;
+    }
     const head = q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ';
     if(q.shape === 0) return head + 'трябва ? + ' + q.C + ' ≤ ' + q.L + ', значи ? ≤ ' + lim +
       ' &nbsp;→&nbsp; 0 … ' + lim + ' &nbsp;→&nbsp; ' + q.ans;
@@ -1882,8 +1928,9 @@ function whyWork(q, full){
     return twoDigitWith(q.n).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'count'){
-    if(!full) return q.sum ? 'Събирай ги по двойки от двата края.'
-            : q.shape === 3 ? 'Краищата не се броят.'
+    if(!full) return q.natural ? 'Естествените числа започват от едно.'
+            : q.sum ? 'Събирай ги по двойки от двата края.'
+            : q.shape >= 3 ? 'Краищата не се броят.'
             : q.shape === 2 ? 'И двата края се броят.'
             : 'Не забравяй нулата — тя също е число.';
     if(q.sum){
@@ -1897,12 +1944,14 @@ function whyWork(q, full){
       for(let v = q.lo; v <= q.hi; v++) list.push(v);
       return list.join(' + ') + ' = ' + q.ans;
     }
-    if(q.shape === 0) return '0, 1, 2, …, ' + q.n + ' &nbsp;→&nbsp; <b>с нулата</b> стават ' + q.ans;
-    if(q.shape === 1) return '0, 1, 2, …, ' + (q.n - 1) + ' &nbsp;(' + q.n + ' не се брои) &nbsp;→&nbsp; ' + q.ans;
-    if(q.shape === 2) return 'от ' + q.a + ' до ' + q.b + ', <b>с двата края</b> &nbsp;→&nbsp; ' +
-      q.b + ' − ' + q.a + ' + 1 = ' + q.ans;
-    return 'между ' + q.a + ' и ' + q.b + ' са ' + (q.a+1) + ' … ' + (q.b-1) +
-      ' &nbsp;(<b>без краищата</b>) &nbsp;→&nbsp; ' + q.ans;
+    const edge = q.shape === 0 ? 'включително ' + q.n
+               : q.shape === 1 ? q.n + ' не се брои'
+               : q.shape === 2 ? 'с двата края'
+               : 'без краищата';
+    const zero = q.natural ? 'нулата не е естествено число'
+               : q.lo === 0 ? '<b>нулата също се брои</b>' : '';
+    return q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi +
+      ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'named'){
     if(!full) return q.shape === 2 ? 'Вземи възможно най-' + (q.small ? 'малките' : 'големите') + ' различни числа.'

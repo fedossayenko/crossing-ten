@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 37 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 38 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -179,6 +179,46 @@ console.log('comparisons: cancelling sums and sum-against-difference both hold, 
     if(!starts.has(want)) throw new Error('the circle level never starts from ' + want);
 }
 console.log('circle level: the first number reaches every value from 7 to 20');
+
+// "естествени" excludes zero, which changes a count but never a sum
+let nat = 0, withZero = 0;
+for(let i = 0; i < 8000; i++){
+  const q = raw(12);
+  if(q.natural){ nat++; if(q.lo < 1) throw new Error('естествени must start at one, got ' + q.lo); }
+  else if(q.lo === 0) withZero++;
+  let want = 0;
+  for(let v = q.lo; v <= q.hi; v++) want += q.sum ? v : 1;
+  if(want !== q.ans) throw new Error('range ' + q.lo + '..' + q.hi + (q.sum ? ' sum' : ' count') + ' should be ' + want);
+  const txt = drawQ(q);
+  if(q.natural !== /естествен/.test(txt)) throw new Error('the wording does not say which numbers are meant');
+}
+if(!nat || !withZero) throw new Error('both wordings should turn up: ' + nat + ' natural, ' + withZero + ' with zero');
+console.log('ranges: естествени starts at one, the wording matches, counts and sums both check out');
+
+// the inequality asked as a sum
+let asked = 0;
+for(let i = 0; i < 8000; i++){
+  const q = raw(16);
+  if(!q.asksSum) continue;
+  asked++;
+  let want = 0, n = 0;
+  for(let d = 0; d <= 9; d++) if(d + q.C <= q.L){ want += d; n++; }
+  if(want !== q.ans) throw new Error('sum of the values that fit should be ' + want + ', got ' + q.ans);
+  if(n < 3) throw new Error('too few values to make a sum worth asking');
+}
+if(!asked) throw new Error('the sum variant of the inequality never turned up');
+console.log('inequality as a sum: adds up exactly the values that satisfy it');
+
+// the pencils, where one clue is a negative
+for(let i = 0; i < 4000; i++){
+  const q = raw(38);
+  if(q.a + q.b + q.c !== q.T) throw new Error('the three colours do not add to the total');
+  if(q.notA !== q.T - q.a) throw new Error('"not the first colour" is not the rest of them');
+  if(q.ans !== q.notA - q.b || q.ans < 1) throw new Error('pencil answer wrong');
+  if(new Set(q.col.map(c => c[0])).size !== 3) throw new Error('the three colours must differ');
+}
+if(22 - 15 !== 7 || 15 - 6 !== 9) throw new Error('worksheet instance of задача 8 should be 9');
+console.log('pencils: the colours add up, the negative clue is the rest, worksheet instance gives 9');
 
 // задача 20: the compact pivot scan must agree with a plain double loop
 for(let i = 0; i < 4000; i++){
