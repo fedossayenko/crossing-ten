@@ -131,6 +131,55 @@ for(let i = 0; i < 3000; i++){
 }
 console.log('extreme sums: taking the k smallest or largest distinct numbers gives the stated total');
 
+// pairs making twenty, and an answer of nothing
+let twenties = 0, zeros = 0;
+for(let i = 0; i < 8000; i++){
+  const q = raw(9);
+  if(q.shape !== 'tens' || q.base !== 20) continue;
+  twenties++;
+  if(q.ans === 0) zeros++;
+  for(let k = 0; k < q.paired*2; k += 2)
+    if(q.terms[k].n + q.terms[k+1].n !== 20)
+      throw new Error('pair ' + q.terms[k].n + ' + ' + q.terms[k+1].n + ' does not make twenty');
+  const run = q.terms.reduce((t, x, k) => k === 0 ? x.n : t + (x.op === '+' ? x.n : -x.n), 0);
+  if(run !== q.ans) throw new Error('twenty-chain does not evaluate to its answer');
+}
+if(!twenties) throw new Error('the twenty-pair shape never turned up');
+if(!zeros) throw new Error('an answer of zero never turned up');
+if(!accepts({kind:'t', ans:0}, ['0'])) throw new Error('an answer of zero must be accepted');
+if(accepts({kind:'t', ans:0}, [''])) throw new Error('an empty box must not count as zero');
+console.log('twenty-pairs: every pair makes twenty, zero turns up as an answer and is accepted');
+
+// the two new comparison shapes
+let sh1 = 0, sh2 = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(10);
+  if(q.shape === 1){
+    sh1++;
+    const total = q.terms.reduce((t, v) => t + v, 0), keptSum = q.kept.reduce((t, v) => t + v, 0);
+    if(total - keptSum !== q.ans) throw new Error('cancelling comparison: leftovers do not match');
+    if(q.kept.length < 2) throw new Error('the smaller sum needs at least two terms');
+    if(q.gone.reduce((t, v) => t + v, 0) !== q.ans) throw new Error('dropped terms do not add to the answer');
+  }
+  if(q.shape === 2){
+    sh2++;
+    if(q.S !== q.x + q.y || q.D !== q.p - q.q) throw new Error('sum or difference computed wrong');
+    if(Math.abs(q.D - q.S) !== q.ans || q.ans < 1) throw new Error('sum-against-difference answer wrong');
+    if(q.less !== (q.D > q.S)) throw new Error('the wording does not match which side is bigger');
+  }
+}
+if(!sh1 || !sh2) throw new Error('both new comparison shapes should turn up: ' + sh1 + ', ' + sh2);
+console.log('comparisons: cancelling sums and sum-against-difference both hold, and the wording follows the numbers');
+
+// the circle level now reaches every start from 7 to 20
+{
+  const starts = new Set();
+  for(let i = 0; i < 4000; i++) starts.add(raw(11).a);
+  for(const want of [7, 11, 13, 17, 19, 20])
+    if(!starts.has(want)) throw new Error('the circle level never starts from ' + want);
+}
+console.log('circle level: the first number reaches every value from 7 to 20');
+
 // задача 20: the compact pivot scan must agree with a plain double loop
 for(let i = 0; i < 4000; i++){
   const q = raw(26);
@@ -171,7 +220,7 @@ for(let i = 0; i < 6000; i++){
   const q = raw(9);
   const run = q.terms.reduce((t, x, k) => k === 0 ? x.n : t + (x.op === '+' ? x.n : -x.n), 0);
   if(run !== q.ans) throw new Error('grouping chain ' + q.terms.map(x => x.op + x.n).join(' ') + ' is not ' + q.ans);
-  if(q.ans < 1) throw new Error('grouping chain goes to zero or below');
+  if(q.ans < 0) throw new Error('grouping chain goes below zero');
   if(q.shape === 'tens'){
     tens++;
     if(q.subs.length === 2){ subs2++; if(q.subs[0] < 10) throw new Error('two-subtrahend chain leads with ' + q.subs[0]); }

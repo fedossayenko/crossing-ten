@@ -719,6 +719,18 @@ function genChain(){
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
 function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
 function genPairsTens(){
+  if(Math.random() < 0.35){
+    // Pairs making twenty — a single digit with a teen — and the whole chain may come
+    // out at nothing, which is a perfectly good answer.
+    const k = 2 + rnd(2);
+    const pairs = shuffle([[5,15],[6,14],[7,13],[8,12],[9,11]]).slice(0, k);
+    const terms = [];
+    pairs.forEach(pr => shuffle(pr.slice()).forEach(n => terms.push({op:'+', n})));
+    const ans = rnd(10);
+    terms.push({op:'−', n: k*20 - ans});
+    terms[0].op = '';
+    return {kind:'pairs', shape:'tens', base:20, terms, paired:k, extra:0, subs:[k*20 - ans], ans};
+  }
   const two = Math.random() < 0.5;               // two subtrahends need room for a two-digit one
   const k = two ? 3 + rnd(2) : 2 + rnd(2);
   const pairs = shuffle([[1,9],[2,8],[3,7],[4,6],[5,5]]).slice(0, k);
@@ -728,7 +740,7 @@ function genPairsTens(){
     const extra = 1 + rnd(9), ans = 1 + rnd(9);
     terms.push({op:'+', n:extra}, {op:'−', n: k*10 + extra - ans});
     terms[0].op = '';
-    return {kind:'pairs', shape:'tens', terms, paired:k, extra, subs:[k*10 + extra - ans], ans};
+    return {kind:'pairs', shape:'tens', base:10, terms, paired:k, extra, subs:[k*10 + extra - ans], ans};
   }
   // …or ending in two subtrahends, which group into a round number of their own: 11 + 9 = 20
   const m = 2 + rnd(k - 2);                      // m >= 2 keeps the first subtrahend two-digit
@@ -736,7 +748,7 @@ function genPairsTens(){
   const s2 = 1 + rnd(9), s1 = 10*m - s2 + off;
   terms.push({op:'−', n:s1}, {op:'−', n:s2});
   terms[0].op = '';
-  return {kind:'pairs', shape:'tens', terms, paired:k, extra:0, subs:[s1, s2], ans: k*10 - s1 - s2};
+  return {kind:'pairs', shape:'tens', base:10, terms, paired:k, extra:0, subs:[s1, s2], ans: k*10 - s1 - s2};
 }
 // Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
 // pair usually breaking the pattern, so the structure is checked and not assumed.
@@ -766,11 +778,33 @@ function genPairsSub(){
 // Задача 3: how much bigger one sum is than the other. Asked the other way round
 // some of the time, so the wording has to be read rather than guessed.
 function genCmp(){
+  const pickShape = Math.random();
+  if(pickShape < 0.28){
+    // Задача 3: the two sums share terms, so the shared ones cancel and only the
+    // leftovers matter.
+    const n = 3 + rnd(2);
+    const terms = [];
+    for(let i = 0; i < n; i++) terms.push(10 * (1 + rnd(5)));
+    const drop = shuffle(terms.map((_, i) => i)).slice(0, 1 + rnd(Math.min(2, n - 2))).sort((x, y) => x - y);
+    const kept = terms.filter((_, i) => drop.indexOf(i) < 0);
+    return {kind:'cmp', shape:1, terms, kept, gone: drop.map(i => terms[i]),
+            ans: drop.reduce((t, i) => t + terms[i], 0)};
+  }
+  if(pickShape < 0.52){
+    // Задача 4: a sum against a difference.
+    for(;;){
+      const x = 2 + rnd(18), y = 2 + rnd(18);
+      const p = 20 + rnd(60), q = 5 + rnd(Math.min(40, p - 5));
+      const S = x + y, D = p - q;
+      if(S === D) continue;
+      return {kind:'cmp', shape:2, x, y, p, q, S, D, less: D > S, ans: Math.abs(D - S)};
+    }
+  }
   for(;;){
     const a = 10 + rnd(40), b = 10 + rnd(40);
     const big = a + b, small = (a%10) + Math.floor(a/10) + (b%10) + Math.floor(b/10);
     if(big > 89 || big - small < 10) continue;
-    return {kind:'cmp', a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
+    return {kind:'cmp', shape:0, a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
   }
 }
 // Задача 4: an unknown inside a subtraction, where the other side is itself a sum.
@@ -781,8 +815,7 @@ function genBox(){
   const y = 1 + rnd(9), x = y + r;
   let a;
   // same start makes it a one-stepper, and a must stay above the circle
-  do { a = Math.random() < 0.3 ? 7 + rnd(3) : [10,12,14,15,16,18,20][rnd(7)]; }
-  while(a === b || a <= box);
+  do { a = 7 + rnd(14); } while(a === b || a <= box);
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
 
@@ -1316,6 +1349,7 @@ const answers = q => [answer(q)].concat(q.alt || []);
 // One box: any accepted answer will do. Several: every answer, once each, in any
 // order — and the count is taken from the question, never from what was typed.
 function accepts(q, parts){
+  if(parts.some(p => p === '')) return false;   // an empty box is not a zero
   const want = answers(q), got = parts.map(Number), n = q.slots || 1;
   if(got.length !== n) return false;
   if(n === 1) return want.indexOf(got[0]) >= 0;
@@ -1334,6 +1368,17 @@ function drawQ(q){
     const e = exprText(q.terms) + ' = ';
     return '<div class="line" style="font-size:clamp(19px,calc((100vw - 56px)/' +
            (e.length*0.56).toFixed(2) + '),40px)">' + e + slot + '</div>';
+  }
+  if(q.kind === 'cmp' && q.shape === 1){
+    return '<div class="ask">С колко сборът <span class="num">' + q.terms.join(' + ') +
+      '</span> е <b>по-голям</b> от сбора <span class="num">' + q.kept.join(' + ') + '</span>?</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'cmp' && q.shape === 2){
+    return '<div class="ask">С колко сборът <span class="num">' + q.x + ' + ' + q.y +
+      '</span> е <b>' + (q.less ? 'по-малък' : 'по-голям') + '</b> от разликата <span class="num">' +
+      q.p + ' − ' + q.q + '</span>?</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'cmp'){
     const A = '<span class="num">' + q.a + ' + ' + q.b + '</span>';
@@ -1561,6 +1606,8 @@ function drawQ(q){
 
 function eqText(q){
   if(!q.kind) return q.a + ' ' + (q.op === '-' ? '−' : '+') + ' ' + q.b + ' = ' + answer(q);
+  if(q.kind === 'cmp' && q.shape === 1) return q.terms.join('+') + ' срещу ' + q.kept.join('+') + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ') срещу (' + q.p + '−' + q.q + ') → ' + q.ans;
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
   if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.shape === 0 ? 'не по-големи от ' + q.n
@@ -1634,7 +1681,7 @@ function whyWork(q, full){
     const ts = q.terms;
     let g = '';
     for(let k = 0; k < q.paired*2; k += 2) g += (g ? ' + ' : '') + '<b>(' + ts[k].n + ' + ' + ts[k+1].n + ')</b>';
-    const total = q.paired*10 + q.extra;
+    const total = q.paired*(q.base || 10) + q.extra;
     const head = g + (q.extra ? ' + ' + q.extra : '') + ' = <b>' + total + '</b>';
     if(q.subs.length === 1) return head + ' &nbsp;→&nbsp; ' + total + ' − ' + q.subs[0] + ' = ' + q.ans;
     return head + ', &nbsp;а ' + q.subs[0] + ' + ' + q.subs[1] + ' = <b>' + (q.subs[0] + q.subs[1]) +
@@ -1646,6 +1693,16 @@ function whyWork(q, full){
     const steps = [run];
     q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
     return 'Стъпка по стъпка: <b>' + steps.join(', ') + '</b>';
+  }
+  if(q.kind === 'cmp' && q.shape === 1){
+    if(!full) return 'Общите събираеми се съкращават.';
+    return 'общите събираеми ' + q.kept.join(' + ') + ' се съкращават &nbsp;→&nbsp; остава ' +
+      q.gone.join(' + ') + ' = ' + q.ans;
+  }
+  if(q.kind === 'cmp' && q.shape === 2){
+    if(!full) return 'Пресметни сбора и разликата поотделно.';
+    return q.x + ' + ' + q.y + ' = <b>' + q.S + '</b>, &nbsp;' + q.p + ' − ' + q.q + ' = <b>' + q.D +
+      '</b> &nbsp;→&nbsp; ' + Math.max(q.S, q.D) + ' − ' + Math.min(q.S, q.D) + ' = ' + q.ans;
   }
   if(q.kind === 'cmp'){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
