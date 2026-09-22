@@ -6,21 +6,21 @@
   --ground:#EDF1F3; --card:#FFFFFF; --ink:#16232E; --muted:#5C7380; --line:#D3DEE4;
   --accent:#2F6F8F; --warm:#E8A33D; --good:#23795A; --bad:#C0463C;
   --goodbg:#DCEFE5; --badbg:#F8E0DD; --key:#FFFFFF; --keypress:#DDE7EC;
-  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B; --pear:#E9B838; --apple:#93B84C;
+  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B; --pear:#E9B838; --apple:#93B84C; --lemon:#E8CE41; --grape:#9769C2;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
     --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
     --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68;
+    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68; --lemon:#EFDC73; --grape:#B491D6;
   }
 }
 :root[data-theme="dark"]{
   --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
   --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
   --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68;
+  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68; --lemon:#EFDC73; --grape:#B491D6;
 }
 html,body{height:100%}
 body{background:var(--ground); color:var(--ink); font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%}
@@ -159,6 +159,9 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .circle{color:var(--warm)}
 .fig{display:flex; justify-content:center; width:100%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
+.ic{height:1.3em; width:auto; vertical-align:-.3em}
+.eqs{display:flex; flex-direction:column; gap:2px; align-items:center;
+  font-family:Fredoka,sans-serif; font-size:clamp(17px,4.6vw,26px); color:var(--muted); letter-spacing:.03em}
 .seq{font-family:Fredoka,sans-serif; font-size:clamp(17px,4.6vw,27px); letter-spacing:.05em;
   text-align:center; font-variant-numeric:tabular-nums; text-wrap:balance}
 .unit{color:var(--muted); font-size:.48em; margin-left:.18em; font-weight:400}
@@ -645,6 +648,10 @@ const LEVELS = [
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
+  { id:30, op:'w', grp:'word',   eq:'Умаляемо',   desc:'Naming the parts of a sum and a difference' },
+  { id:29, op:'w', grp:'puzzle', eq:'Плодове',    desc:'Three fruit, three totals — find one from the others' },
+  { id:31, op:'w', grp:'geo',    eq:'Дръвчета',   desc:'Trees in a row: the gaps are one fewer than the trees' },
+  { id:32, op:'w', grp:'geo',    eq:'Ленти',      desc:'Centimetres, decimetres and metres' },
   { id:28, op:'w', grp:'word',   eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference' },
   { id:27, op:'w', grp:'puzzle', eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
   { id:24, op:'w', grp:'word',   eq:'Колко сбора?', desc:'How many different results two numbers can make' },
@@ -1001,20 +1008,102 @@ function genFruit(){
   const row = shuffle(Array(pears).fill('p').concat(Array(apples).fill('a')));
   return {kind:'fruit', pears, apples, k, row, ans: pears + k - apples};
 }
+function fruitBody(t){
+  const stem = '<path d="M0,-12 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>';
+  if(t === 'p') return stem + '<circle cx="0" cy="-3" r="4.4" fill="var(--pear)"/>' +
+    '<circle cx="0" cy="4" r="6.9" fill="var(--pear)"/>';
+  if(t === 'a') return stem + '<ellipse cx="4.5" cy="-9" rx="3.4" ry="1.7" fill="var(--good)"/>' +
+    '<circle cx="0" cy="1" r="7.5" fill="var(--apple)"/>';
+  if(t === 'l') return '<ellipse cx="5" cy="-6" rx="3.6" ry="1.8" fill="var(--good)"/>' +
+    '<ellipse cx="0" cy="1" rx="8.6" ry="5.8" fill="var(--lemon)"/>';
+  return stem + '<g fill="var(--grape)"><circle cx="0" cy="-4" r="3.1"/><circle cx="-4" cy="1" r="3.1"/>' +
+    '<circle cx="4" cy="1" r="3.1"/><circle cx="-2" cy="6" r="3.1"/><circle cx="2" cy="6" r="3.1"/>' +
+    '<circle cx="0" cy="10" r="3.1"/></g>';
+}
+const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
+
 function fruitSvg(row){
   const cols = Math.min(6, row.length), u = 30;
   const rows = Math.ceil(row.length / cols);
   const g = row.map((t, i) => {
     const x = (i % cols)*u + u/2, y = Math.floor(i/cols)*u + u/2;
-    return '<g transform="translate(' + x + ' ' + y + ')">' + (t === 'p'
-      ? '<path d="M0,-12 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>' +
-        '<circle cx="0" cy="-3" r="4.4" fill="var(--pear)"/><circle cx="0" cy="4" r="6.9" fill="var(--pear)"/>'
-      : '<path d="M0,-11 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>' +
-        '<ellipse cx="4.5" cy="-9" rx="3.4" ry="1.7" fill="var(--good)"/>' +
-        '<circle cx="0" cy="1" r="7.5" fill="var(--apple)"/>') + '</g>';
+    return '<g transform="translate(' + x + ' ' + y + ')">' + fruitBody(t) + '</g>';
   }).join('');
   return '<div class="fig"><svg viewBox="0 0 ' + cols*u + ' ' + rows*u +
     '" role="img" aria-label="круши и ябълки">' + g + '</svg></div>';
+}
+
+// Задача 9: three totals, three fruit. The third equation contains the first, which
+// is the way in — no guessing, just substitution.
+function genFruitEq(){
+  for(;;){
+    const f = shuffle(['a','p','l','g']).slice(0, 3);
+    const a = 3 + rnd(8), b = 1 + rnd(8), c = 3 + rnd(9);
+    if(a === b || a === c || b === c) continue;          // one value per fruit
+    if(a + b > 18 || a + c > 18 || a + b + c > 26) continue;
+    const pairs = [[0, 1, a - b], [2, 0, c - a], [2, 1, c - b]].filter(x => x[2] > 0);
+    if(!pairs.length) continue;
+    const askd = pairs[rnd(pairs.length)];
+    return {kind:'fruiteq', f, a, b, c, s1: a + b, s2: a + c, s3: a + b + c,
+            askd, ans: askd[2]};
+  }
+}
+
+// Задача 10: the parts of a sum and a difference have names, and the name is the task.
+const TERMS = [
+  { sub:'умаляемото',        obj:'умаляемото',        of:'разликата', at:0, op:'−' },
+  { sub:'умалителят',        obj:'умалителя',         of:'разликата', at:1, op:'−' },
+  { sub:'първото събираемо', obj:'първото събираемо', of:'сбора',     at:0, op:'+' },
+  { sub:'второто събираемо', obj:'второто събираемо', of:'сбора',     at:1, op:'+' }
+];
+function genTerm(){
+  for(;;){
+    const t = TERMS[rnd(4)];
+    const x = 20 + rnd(60);
+    const y = 5 + rnd(Math.min(40, x - 5));
+    const val = t.at === 0 ? x : y;
+    if(Math.random() < 0.4) return {kind:'term', t, x, y, shape:0, ans: val};
+    const k = 3 + rnd(4);
+    const odd = Math.random() < 0.5;
+    const chain = [];
+    for(let i = 0; i < k; i++) chain.push(odd ? 1 + 2*i : 1 + i);
+    const total = chain.reduce((s, v) => s + v, 0);
+    if(total === val) continue;
+    return {kind:'term', t, x, y, shape:1, chain, total, less: val > total, ans: Math.abs(val - total)};
+  }
+}
+
+// Задача 11: n trees in a row leave n − 1 gaps. Asked three ways round.
+const NAMES = [['Хари', 'посадил'], ['Мая', 'посадила'], ['Ния', 'посадила'],
+               ['Борис', 'посадил'], ['Ива', 'посадила']];
+function genTrees(){
+  const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
+  const n = 4 + rnd(9), d = 2 + rnd(5);
+  const shape = rnd(3);
+  return {kind:'trees', who, did, n, d, shape, len: (n - 1) * d,
+          ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
+}
+
+// Задача 12: centimetres against decimetres and metres.
+const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
+function genRibbon(){
+  for(;;){
+    const u = Math.random() < 0.75 ? LEN[0] : LEN[1];
+    const shape = rnd(3);
+    if(shape === 0){                                     // straight conversion, either way
+      const toCm = Math.random() < 0.5;
+      const n = 1 + rnd(u.cm === 10 ? 9 : 3);
+      return toCm ? {kind:'ribbon', shape, u, n, toCm, ans: n * u.cm}
+                  : {kind:'ribbon', shape, u, n, toCm, cm: n * u.cm, ans: n};
+    }
+    const dm = LEN[0];                                   // a cut in metres would run past 100 cm
+    const t = 2 + rnd(7);
+    const target = t * dm.cm;
+    const off = 2 + rnd(19);
+    const L = shape === 1 ? target + off : target - off;
+    if(L < 12) continue;
+    return {kind:'ribbon', shape, u: dm, t, target, L, ans: off};
+  }
 }
 
 function raw(level){
@@ -1047,6 +1136,10 @@ function raw(level){
     if(level === 26) return genSeq();
     if(level === 27) return genMissing();
     if(level === 28) return genFruit();
+    if(level === 29) return genFruitEq();
+    if(level === 30) return genTerm();
+    if(level === 31) return genTrees();
+    if(level === 32) return genRibbon();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1119,6 +1212,48 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'fruiteq'){
+    const F = q.f.map(ic);
+    return '<div class="ask">Пресметнете ' + F[q.askd[0]] + ' − ' + F[q.askd[1]] + ', ако:</div>' +
+      '<div class="eqs"><span>' + F[1] + ' + ' + F[0] + ' = ' + q.s1 + '</span>' +
+      '<span>' + F[0] + ' + ' + F[2] + ' = ' + q.s2 + '</span>' +
+      '<span>' + F[2] + ' + ' + F[0] + ' + ' + F[1] + ' = ' + q.s3 + '</span></div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + '</div>';
+  }
+  if(q.kind === 'term'){
+    const expr = '<span class="num">' + q.x + ' ' + q.t.op + ' ' + q.y + '</span>';
+    const ask = q.shape === 0
+      ? 'Кое е <b>' + q.t.sub + '</b> в ' + q.t.of + ' ' + expr + '?'
+      : 'С колко сборът <span class="num">' + q.chain.join(' + ') + '</span> е <b>' +
+        (q.less ? 'по-малък' : 'по-голям') + '</b> от <b>' + q.t.obj + '</b> в ' + q.t.of + ' ' + expr + '?';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'trees'){
+    const ask = q.shape === 0
+      ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
+        q.d + '</span> метра едно от друго. Колко метра е дълга редицата?'
+      : q.shape === 1
+      ? q.who + ' ' + q.did + ' дръвчета в една редица, дълга <span class="num">' + q.len +
+        '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
+      : q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в редица, дълга <span class="num">' + q.len +
+        '</span> метра, на равни разстояния. Колко метра е разстоянието между две съседни дръвчета?';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
+      (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';
+  }
+  if(q.kind === 'ribbon'){
+    const ask = q.shape === 0
+      ? (q.toCm ? 'Колко сантиметра са <span class="num">' + q.n + '</span> ' + q.u.nm + '?'
+                : 'Колко ' + (q.u.nm === 'дм' ? 'дециметра' : 'метра') + ' са <span class="num">' + q.cm + '</span> см?')
+      : q.shape === 1
+      ? 'Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>отрежем</b> от нея, за да остане лента с дължина <span class="num">' + q.t + '</span> ' + q.u.nm + '?'
+      : 'Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>добавим</b>, за да стане дълга <span class="num">' + q.t + '</span> ' + q.u.nm + '?';
+    const unit = q.shape === 0 && !q.toCm ? q.u.nm : 'см';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
+      ' <span class="unit">' + unit + '</span></div>';
+  }
   if(q.kind === 'missing'){
     const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
     return '<div class="ask">' + (q.asksDigits
@@ -1263,6 +1398,11 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'fruiteq') return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
+  if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
+    : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
+  if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
+  if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
   if(q.kind === 'missing') return 'липсват ' + q.hidden[0] + ' и ' + q.hidden[1] +
     (q.asksDigits ? ' → цифри: ' : ' → сбор: ') + q.ans;
   if(q.kind === 'fruit') return q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ' + q.ans;
@@ -1322,6 +1462,45 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'fruiteq'){
+    if(!full) return 'Третото равенство съдържа първото — започни оттам.';
+    const F = q.f.map(ic);
+    const v = [q.a, q.b, q.c];
+    return F[2] + ' = ' + q.s3 + ' − ' + q.s1 + ' = <b>' + q.c + '</b> &nbsp;→&nbsp; ' +
+      F[0] + ' = ' + q.s2 + ' − ' + q.c + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' +
+      F[1] + ' = ' + q.s1 + ' − ' + q.a + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' +
+      v[q.askd[0]] + ' − ' + v[q.askd[1]] + ' = ' + q.ans;
+  }
+  if(q.kind === 'term'){
+    if(!full) return q.t.op === '−' ? 'Умаляемото е първото число, умалителят — второто.'
+                                    : 'Събираемите са числата, които събираме.';
+    const val = q.t.at === 0 ? q.x : q.y;
+    const head = q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y + ' е <b>' + val + '</b>';
+    if(q.shape === 0) return head;
+    return q.chain.join(' + ') + ' = <b>' + q.total + '</b>, а ' + head +
+      ' &nbsp;→&nbsp; ' + Math.max(val, q.total) + ' − ' + Math.min(val, q.total) + ' = ' + q.ans;
+  }
+  if(q.kind === 'trees'){
+    if(!full) return 'Разстоянията са с едно по-малко от дръвчетата.';
+    const gaps = q.n - 1;
+    if(q.shape === 0) return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
+      (gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans : gaps + ' × ' + q.d + ' = ' + q.ans);
+    if(q.shape === 1) return q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
+      '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans;
+    return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
+      q.len + ' м, разделени на ' + gaps + ' → ' + q.ans;
+  }
+  if(q.kind === 'ribbon'){
+    // the reminder must not state the factor: for a plain conversion that IS the answer
+    if(!full) return q.shape === 0
+      ? 'Колко сантиметра има в един ' + (q.u.nm === 'дм' ? 'дециметър' : 'метър') + '?'
+      : 'Първо преобразувай всичко в сантиметри.';
+    if(q.shape === 0) return q.toCm
+      ? '1 ' + q.u.nm + ' = ' + q.u.cm + ' см &nbsp;→&nbsp; ' + q.n + ' ' + q.u.nm + ' = ' + q.ans + ' см'
+      : q.u.cm + ' см = 1 ' + q.u.nm + ' &nbsp;→&nbsp; ' + q.cm + ' см = ' + q.ans + ' ' + q.u.nm;
+    return q.t + ' ' + q.u.nm + ' = <b>' + q.target + ' см</b> &nbsp;→&nbsp; ' +
+      (q.shape === 1 ? q.L + ' − ' + q.target : q.target + ' − ' + q.L) + ' = ' + q.ans;
   }
   if(q.kind === 'missing'){
     if(!full) return q.rule === 0 ? 'Всяко число е сборът на двете преди него.'

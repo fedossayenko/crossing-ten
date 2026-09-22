@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 28 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 32 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -65,7 +65,7 @@ for(let W = 1; W <= 6; W++) for(let H = 1; H <= 6; H++)
 console.log('rectangle counting: closed form matches a brute-force count in all ' + grids + ' grid/ant positions');
 
 // the drawings must be well-formed and theme-aware
-for(const L of [19, 21, 28]){
+for(const L of [19, 21, 28, 29]){
   for(let i = 0; i < 300; i++){
     const svg = drawQ(raw(L));
     const open = (svg.match(/<g[ >]/g) || []).length, close = (svg.match(/<\\/g>/g) || []).length;
@@ -172,5 +172,40 @@ console.log('fruit picture: drawn fruit match the counts the question assumes, a
   if(total - 3 !== 31) throw new Error('erasing the smaller of the pair should leave 31');
 }
 console.log('erase wording: same list gives 27 when the bigger goes, 31 when the smaller does');
+
+// задача 9: the three totals must be consistent with the three fruit values
+for(let i = 0; i < 4000; i++){
+  const q = raw(29);
+  if(q.a + q.b !== q.s1 || q.a + q.c !== q.s2 || q.a + q.b + q.c !== q.s3)
+    throw new Error('fruit totals disagree with the values: ' + JSON.stringify(q));
+  if(new Set(q.f).size !== 3) throw new Error('the three fruit must be different');
+  const v = [q.a, q.b, q.c];
+  if(v[q.askd[0]] - v[q.askd[1]] !== q.ans || q.ans < 1) throw new Error('fruit answer wrong');
+}
+console.log('fruit equations: totals match the values, three distinct fruit, answer stays positive');
+
+// задача 11: the gaps are one fewer than the trees, whichever way round it is asked
+for(let i = 0; i < 4000; i++){
+  const q = raw(31);
+  if(q.len !== (q.n - 1) * q.d) throw new Error('row length is not gaps times spacing');
+  const want = q.shape === 0 ? q.len : q.shape === 1 ? q.n : q.d;
+  if(q.ans !== want) throw new Error('trees answer wrong for shape ' + q.shape);
+  if(q.n < 2) throw new Error('a row needs at least two trees');
+}
+console.log('trees in a row: length, count and spacing agree in all three directions');
+
+// задача 12: conversions and the cut both land on whole centimetres
+for(let i = 0; i < 4000; i++){
+  const q = raw(32);
+  if(q.shape === 0){
+    if(q.toCm && q.ans !== q.n * q.u.cm) throw new Error('to-cm conversion wrong');
+    if(!q.toCm && q.cm !== q.ans * q.u.cm) throw new Error('from-cm conversion wrong');
+  } else {
+    if(q.target !== q.t * q.u.cm) throw new Error('target length wrong');
+    const want = q.shape === 1 ? q.L - q.target : q.target - q.L;
+    if(want !== q.ans || q.ans < 1) throw new Error('ribbon answer wrong');
+  }
+}
+console.log('lengths: conversions are exact and the ribbon always needs a real cut or addition');
 `;
 eval(head + body + test);
