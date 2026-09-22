@@ -837,10 +837,17 @@ for(let i = 0; i < 6000; i++){
     const want = q.rule === 0 ? seq[k-1] + seq[k-2] : q.rule === 1 ? seq[k-1] + (seq[1] - seq[0]) : 2*seq[k-1];
     if(seq[k] !== want) throw new Error('the run breaks its own rule at ' + k);
   }
-  if(q.at < 2 || q.at > seq.length - 2) throw new Error('the gap must have terms on both sides');
+  if(!q.next && q.ans !== seq[q.at]) throw new Error('the answer is not the hidden term');
+  if(q.next){                                  // задача 11: the gap sits after the run
+    if(q.at !== seq.length) throw new Error('the next number should follow the whole shown run');
+    const rule0 = seq[seq.length-1] + seq[seq.length-2];
+    const want = q.rule === 0 ? rule0 : q.rule === 1 ? seq[seq.length-1] + (seq[1] - seq[0]) : 2*seq[seq.length-1];
+    if(want !== q.ans) throw new Error('the next number does not follow the rule');
+    if((strip(drawQ(q)).match(/…/g) || []).length !== 1) throw new Error('the run should trail off once');
+    if(strip(drawQ(q)).indexOf('следващото') < 0) throw new Error('it should ask for the next number, not a missing one');
+  } else if(q.at < 2 || q.at > seq.length - 2) throw new Error('the gap must have terms on both sides');
   if(seq.some((v, k) => k && v < seq[k-1])) throw new Error('the run steps down somewhere, which reads as a mistake');
-  if(seq[seq.length-1] > 200) throw new Error('the run has grown past what she works with');
-  if(q.ans !== seq[q.at]) throw new Error('the answer is not the hidden term');
+  if(Math.max(seq[seq.length-1], q.ans) > 250) throw new Error('the run has grown past what she works with');
   if((strip(drawQ(q)).match(/…/g) || []).length !== 1) throw new Error('exactly one term should be hidden');
 }
 if(!ones) throw new Error('the single-gap shape should turn up');
@@ -898,17 +905,17 @@ for(let i = 0; i < 4000; i++){
   const [a, b, c] = q.sides.slice().sort((x, y) => x - y);
   if(a + b <= c) throw new Error('those three lengths do not close into a triangle');
   if(q.p !== a + b + c) throw new Error('the triangle perimeter is not its three sides');
-  if(q.P !== 4 * 10 * q.dm) throw new Error('the square perimeter is not four sides in см');
+  if(q.P !== 4 * (q.inCm ? q.dm : 10*q.dm)) throw new Error('the square perimeter is not four sides in см');
   if(q.ans !== q.P - q.p || q.ans < 1) throw new Error('the square should come out the bigger one');
   // a figure that disagrees with its own labels teaches the wrong thing
   const svg = drawQ(q);
   const d = svg.match(/d="M([\\d.]+) ([\\d.]+)L([\\d.]+) ([\\d.]+)L([\\d.]+) ([\\d.]+)Z"/).slice(1).map(Number);
   const pt = [[d[0],d[1]], [d[2],d[3]], [d[4],d[5]]];
-  const u = 200 / (c + 10*q.dm + 4);
+  const u = 200 / (c + (q.inCm ? q.dm : 10*q.dm) + 4);
   const drawn = [0,1,2].map(k => Math.hypot(pt[k][0] - pt[(k+1)%3][0], pt[k][1] - pt[(k+1)%3][1])).sort((x, y) => x - y);
   [a, b, c].forEach((v, k) => { if(Math.abs(drawn[k] - v*u) > 0.15) throw new Error('a drawn side does not match its label'); });
   const w = +svg.match(/<rect x="[\\d.]+" y="[\\d.]+" width="([\\d.]+)"/)[1];
-  if(Math.abs(w - 10*q.dm*u) > 0.15) throw new Error('the square is not drawn to the same scale as the triangle');
+  if(Math.abs(w - (q.inCm ? q.dm : 10*q.dm)*u) > 0.15) throw new Error('the square is not drawn to the same scale as the triangle');
 }
 if(!tris) throw new Error('the triangle-against-square shape should turn up');
 { // задача 12 as printed: 3, 4, 5 см against a square of 1 дм
@@ -945,6 +952,40 @@ if(!tiled) throw new Error('the tiled-rectangle shape should turn up');
   if(lastNum(why(q, true)) !== 16) throw new Error('four squares with two of side 1 should give 16');
 }
 console.log('tiled rectangle: every tiling covers its rectangle exactly, worksheet instance gives 16');
+
+// задача 15: the square cut the one way into equal strips
+let cuts = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(21);
+  if(q.shape !== 6) continue;
+  cuts++;
+  if(q.side !== q.k * q.w) throw new Error('the strips do not add up to the square');
+  if(q.w >= q.side) throw new Error('a strip as wide as the square is not a cut');
+  const P = 2*(q.w + q.side);
+  if(q.ans !== (q.mm ? 10*P : P)) throw new Error('the perimeter, or the conversion to мм, is wrong');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf(q.mm ? 'милиметра' : 'сантиметра') < 0) throw new Error('the unit asked for is not the one drawn');
+  if(/две еднакви правоъгълника/.test(shown)) throw new Error('правоъгълник is masculine — Bulgarian wants два');
+  const lines = (drawQ(q).match(/<line /g) || []).length;
+  if(lines !== q.k - 1) throw new Error('the figure should show ' + (q.k - 1) + ' cuts, not ' + lines);
+}
+if(!cuts) throw new Error('the strip shape should turn up');
+{ // задача 15 as printed: a 4 см square in four strips, answered in мм
+  const q = {kind:'sqcut', shape:6, k:4, w:1, side:4, mm:true, ans:100};
+  if(lastNum(why(q, true)) !== 100) throw new Error('four 1 by 4 strips have a perimeter of 100 mm');
+}
+console.log('strips: the pieces fill the square and the millimetres follow, worksheet instance gives 100');
+
+{ // задача 12 as printed, this time with the square given in сантиметри
+  const q = {kind:'sqcut', shape:4, inCm:true, dm:4, P:16, sides:[3,4,5], p:12, ans:4};
+  if(lastNum(why(q, true)) !== 4) throw new Error('a 4 cm square beats a 3-4-5 triangle by 4');
+  if(strip(drawQ(q)).indexOf('4 см') < 0) throw new Error('the square should be given in сантиметри');
+}
+{ // задача 11 as printed: the Fibonacci run, asked for the next number
+  const q = {kind:'missing', one:1, next:true, seq:[1,1,2,3,5,8,13,21], at:8, rule:0, ans:34};
+  if(lastNum(why(q, true)) !== 34) throw new Error('after 21 comes 34');
+}
+console.log('printed instances: 3-4-5 against a 4 cm square gives 4, and 1 1 2 3 5 8 13 21 runs on to 34');
 
 { // задача 14 as printed: the tall rectangle beats the wide one by 8 см
   const q = {kind:'shared', shape:2, a:4, h:3, d:8, ans:16};
@@ -1310,9 +1351,18 @@ if(lastNum(why({kind:'bucket', p:3, q:5, V:14, ans:3}, true)) !== 3)
 console.log('which bucket: the vessel overflows for one size and not the other, worksheet instance gives 3');
 
 // задача 12: conversions and the cut both land on whole centimetres
-let sticks = 0;
+let sticks = 0, boards = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(32);
+  if(q.shape === 4){                           // задача 13: one stick, a leftover, answered in дм
+    boards++;
+    if(q.cm !== q.k*q.a + q.left) throw new Error('the board is not the sticks plus what is left');
+    if(q.cm % 10) throw new Error('the length does not come out a whole number of дециметри');
+    if(q.ans !== q.cm / 10) throw new Error('the conversion to дециметри is wrong');
+    if(q.left >= q.a) throw new Error('another whole stick would have fitted in what is left');
+    if(q.left < 1) throw new Error('with nothing left over the leftover is not part of the question');
+    continue;
+  }
   if(q.shape === 3){                           // задача 13: two sticks, laid down a few times each
     sticks++;
     if(q.aCm !== (q.inDm ? 10*q.a : q.a)) throw new Error('the long stick is not brought to centimetres');
@@ -1331,7 +1381,9 @@ for(let i = 0; i < 4000; i++){
     if(want !== q.ans || q.ans < 1) throw new Error('ribbon answer wrong');
   }
 }
-if(!sticks) throw new Error('the two-sticks shape should turn up');
+if(!sticks || !boards) throw new Error('both the two-stick and the leftover shapes should turn up');
+if(lastNum(why({kind:'ribbon', shape:4, a:11, k:3, left:7, cm:40, ans:4}, true)) !== 4)
+  throw new Error('11 three times plus 7 makes 40 cm, which is 4 dm');
 if(lastNum(why({kind:'ribbon', shape:3, inDm:false, a:15, aCm:15, b:5, k:3, m:1, ans:50}, true)) !== 50)
   throw new Error('15 three times and 5 once should measure 50');
 console.log('lengths: conversions are exact, the ribbon needs a real cut, and two sticks measure a board (50)');

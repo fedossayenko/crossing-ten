@@ -980,6 +980,7 @@ function genBox(){
 }
 
 const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
+const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и ' + a[a.length-1];
 
 // Задача 5: counting a range given as a condition. The wording rotates — including
@@ -1319,13 +1320,14 @@ function genTiles(){
 // to centimetres before the comparison means anything.
 function genTriSq(){
   for(;;){
-    const dm = 1 + rnd(2);
-    const P = 40 * dm;
+    const inCm = Math.random() < 0.45;         // told in сантиметри, so there is nothing to convert
+    const dm = inCm ? 3 + rnd(8) : 1 + rnd(2);
+    const P = inCm ? 4*dm : 40*dm;
     const a = 2 + rnd(5), b = a + rnd(5), c = b + rnd(5);   // sides may repeat, so 7-7-6 can come up
     if(c >= a + b) continue;                   // three lengths only close into a triangle if the short two beat the long one
     const p = a + b + c;
     if(p >= P) continue;
-    return {kind:'sqcut', shape:4, dm, P, sides:[a, b, c], p, ans: P - p};
+    return {kind:'sqcut', shape:4, inCm, dm, P, sides:[a, b, c], p, ans: P - p};
   }
 }
 // The tiling drawn from its unit layout, outer edge heavier than the cuts.
@@ -1358,7 +1360,7 @@ function stackSvg(q){
 function triSqSvg(q){
   const [p, r, L] = q.sides.slice().sort((x, y) => x - y);   // L is the longest, so it makes the base
   const ax = (L*L + r*r - p*p) / (2*L), ay = Math.sqrt(Math.max(1, r*r - ax*ax));
-  const S = 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
+  const S = q.inCm ? q.dm : 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
   const t = (x, y, txt) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
     '" text-anchor="middle" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
   const sx = (L + 4) * u;
@@ -1372,9 +1374,17 @@ function triSqSvg(q){
     t(L*u/2, H + 15, L + ' см') +
     t(ax*u/2 - 9, H - ay*u/2, r + ' см') +
     t((ax + L)*u/2 + 9, H - ay*u/2, p + ' см') +
-    t(sx + S*u/2, H + 15, q.dm + ' дм') + '</svg></div>';
+    t(sx + S*u/2, H + 15, q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
 }
 function genSqCut(){
+  if(Math.random() < 0.2){
+    // Задача 15: strips, and the answer wanted in милиметри — ten to the centimetre.
+    const k = 2 + rnd(3);                      // 2, 3 or 4 strips
+    const w = 1 + rnd(3), side = k*w;
+    const mm = Math.random() < 0.6;
+    const P = 2*(w + side);
+    return {kind:'sqcut', shape:6, k, w, side, mm, ans: mm ? 10*P : P};
+  }
   if(Math.random() < 0.26) return genTiles();
   if(Math.random() < 0.28) return genTriSq();
   if(Math.random() < 0.3){
@@ -1475,6 +1485,19 @@ function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
     '<g stroke="var(--ink)" stroke-width="1.7" fill="none">' + g + '</g>' +
     (c ? antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) : '') + '</svg></div>';
 }
+// Задача 15: the same square, but cut the one way into strips — so the pieces are long
+// and thin rather than square, and their two sides are not the same.
+function stripSvg(k, side){
+  const S = 118, u = S/k;
+  let g = '<rect x="0" y="0" width="' + S + '" height="' + S + '"/>';
+  for(let i = 1; i < k; i++)
+    g += '<line x1="0" y1="' + (i*u).toFixed(1) + '" x2="' + S + '" y2="' + (i*u).toFixed(1) + '"/>';
+  return '<div class="fig"><svg viewBox="-8 -24 ' + (S+16) + ' ' + (S+32) +
+    '" role="img" aria-label="квадрат, разрязан на еднакви ивици">' +
+    '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
+    '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
+    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+}
 function sqSvg(parts, side){
   const S = 118, u = S/parts;
   let g = '<rect x="0" y="0" width="' + S + '" height="' + S + '"/>';
@@ -1571,9 +1594,9 @@ function genMissing(){
       const rule = rnd(3);
       const seq = [];
       if(rule === 0){
-        const a0 = 5 * rnd(3);
-        seq.push(a0, a0 + 1 + rnd(9));         // never a step down, or the run reads as a mistake
-        while(seq.length < 8) seq.push(seq[seq.length-1] + seq[seq.length-2]);
+        const a0 = rnd(4) * (Math.random() < 0.5 ? 1 : 5);
+        seq.push(a0, a0 + rnd(9) + (a0 ? 0 : 1));   // never a step down, or the run reads as a mistake
+        while(seq.length < 9) seq.push(seq[seq.length-1] + seq[seq.length-2]);
       } else if(rule === 1){
         const start = 1 + rnd(9), d = 2 + rnd(8);
         for(let i = 0; i < 8; i++) seq.push(start + i*d);
@@ -1581,9 +1604,11 @@ function genMissing(){
         const start = 1 + rnd(4);
         for(let i = 0; i < 7; i++) seq.push(start * Math.pow(2, i));
       }
-      const at = 3 + rnd(seq.length - 4);            // never the opening terms, never the last
-      if(seq[at] < 1 || seq[seq.length-1] > 200) continue;
-      return {kind:'missing', one:1, seq, at, rule, ans: seq[at]};
+      // …and it may be the number after the run, which is the same reading of the rule
+      const next = Math.random() < 0.4;
+      const at = next ? seq.length - 1 : 3 + rnd(seq.length - 4);
+      if(seq[at] < 1 || seq[seq.length-1] > 250) continue;
+      return {kind:'missing', one:1, next, seq: next ? seq.slice(0, -1) : seq, at, rule, ans: seq[at]};
     }
   }
   if(Math.random() < 0.3){
@@ -1734,6 +1759,16 @@ function genTrees(){
 // Задача 12: centimetres against decimetres and metres.
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 function genRibbon(){
+  if(Math.random() < 0.2){
+    // Задача 13: one stick laid down a few times with a piece of board left over, and the
+    // length wanted in дециметри — so the total has to come out a whole number of them.
+    for(;;){
+      const a = 6 + rnd(15), k = 2 + rnd(4);
+      const left = 10 - (k*a) % 10 + 10*rnd(2);
+      if(left < 1 || left >= a) continue;      // another whole stick would have fitted
+      return {kind:'ribbon', shape:4, a, k, left, cm: k*a + left, ans: (k*a + left) / 10};
+    }
+  }
   if(Math.random() < 0.28){
     // Задача 13: a board measured by laying two sticks down a few times each. One stick
     // is sometimes given in дециметри, so the two have to be brought together first.
@@ -2515,6 +2550,14 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
       (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';
   }
+  if(q.kind === 'ribbon' && q.shape === 4){
+    const pt = n => n === 1 ? 'път' : 'пъти';
+    return '<div class="ask">Използваме пръчка с дължина <span class="num">' + q.a +
+      ' см</span>, за да премерим дължината на една дъска. Сложили сме пръчката <span class="num">' + q.k +
+      '</span> ' + pt(q.k) + ' и остават още <span class="num">' + q.left +
+      '</span> см за премерване. Колко <b>дециметра</b> е дълга дъската?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + ' <span class="unit">дм</span></div>';
+  }
   if(q.kind === 'ribbon' && q.shape === 3){
     const long = q.a + ' ' + (q.inDm ? 'дм' : 'см'), pt = n => n === 1 ? 'път' : 'пъти';
     return '<div class="ask">Имам две пръчки — с дължина <span class="num">' + long +
@@ -2545,8 +2588,8 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
   }
   if(q.kind === 'missing' && q.one){
-    const shown = q.seq.map((v, i) => i === q.at ? '…' : v).join(', ');
-    return '<div class="ask">Кое е <b>пропуснатото</b> число?</div>' +
+    const shown = q.next ? q.seq.join(', ') + ', …' : q.seq.map((v, i) => i === q.at ? '…' : v).join(', ');
+    return '<div class="ask">Кое е <b>' + (q.next ? 'следващото' : 'пропуснатото') + '</b> число?</div>' +
       '<div class="seq">' + shown + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
   }
@@ -2627,6 +2670,15 @@ function drawQ(q){
       q.d2 + '</span> см ' + two + ' от точка <b>B</b> е отбелязана точка <b>C</b>. Колко сантиметра е разстоянието от <b>A</b> до <b>C</b>?</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
   }
+  if(q.kind === 'sqcut' && q.shape === 6){
+    return '<div class="ask">Квадрат със страна <span class="num">' + q.side +
+      '</span> см е разрязан на <span class="num">' + BGNUM_M[q.k] +
+      '</span> еднакви правоъгълника. Колко <b>' + (q.mm ? 'милиметра' : 'сантиметра') +
+      '</b> е обиколката на всеки един от тези правоъгълници?</div>' +
+      stripSvg(q.k, q.side) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
+      ' <span class="unit">' + (q.mm ? 'мм' : 'см') + '</span></div>';
+  }
   if(q.kind === 'sqcut' && q.shape === 5){
     const many = {2:'два', 3:'три', 4:'четири'}[q.few];
     const which = q.few === q.n ? 'всички квадрати имат' : many + ' от квадратите имат';
@@ -2638,7 +2690,8 @@ function drawQ(q){
   if(q.kind === 'sqcut' && q.shape === 4){
     return '<div class="ask">Триъгълник има страни <span class="num">' + q.sides.join('</span> см, <span class="num">') +
       '</span> см. Квадрат има страна <span class="num">' + q.dm +
-      '</span> дм. С колко сантиметра обиколката на <b>квадрата</b> е по-голяма от обиколката на <b>триъгълника</b>?</div>' +
+      '</span> ' + (q.inCm ? 'см' : 'дм') +
+      '. С колко сантиметра обиколката на <b>квадрата</b> е по-голяма от обиколката на <b>триъгълника</b>?</div>' +
       triSqSvg(q) +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
   }
@@ -2950,6 +3003,7 @@ function eqText(q){
   if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
   if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
+  if(q.kind === 'ribbon' && q.shape === 4) return q.k + '×' + q.a + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
   if(q.kind === 'ribbon' && q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
   if(q.kind === 'missing' && q.one) return 'правило ' + q.rule + ', липсва на място ' + (q.at + 1) + ' → ' + q.ans;
@@ -2969,9 +3023,11 @@ function eqText(q){
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? 'квадратите' : 'без квадратите') + ' → ' + q.ans
     : q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
   if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
+  if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + ', на ' + q.k + ' ивици → ' +
+    q.w + '×' + q.side + ' → ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 5) return q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ' +
     (q.t.w*q.s) + '×' + (q.t.h*q.s) + ' → ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + ' дм → ' + q.P + ', триъгълник ' +
+  if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + ', триъгълник ' +
     q.sides.join('+') + ' = ' + q.p + ' → ' + q.ans;
   if(q.kind === 'sqcut') return q.shape === 3
     ? 'лист с обиколка ' + q.P + ', квадрат ' + q.a + ' → ' + q.ans
@@ -3249,6 +3305,11 @@ function whyWork(q, full){
     return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
       q.len + ' м, разделени на ' + gaps + ' → ' + q.ans;
   }
+  if(q.kind === 'ribbon' && q.shape === 4){
+    if(!full) return 'Първо цялата дъска в сантиметри, чак после я преобразувай.';
+    return q.k + ' × ' + q.a + ' = <b>' + (q.k*q.a) + '</b> &nbsp;→&nbsp; ' + (q.k*q.a) + ' + ' + q.left +
+      ' = <b>' + q.cm + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм, значи ' + q.ans;
+  }
   if(q.kind === 'ribbon' && q.shape === 3){
     if(!full) return 'Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.';
     const head = q.inDm ? q.a + ' дм = <b>' + q.aCm + ' см</b> &nbsp;→&nbsp; ' : '';
@@ -3352,6 +3413,13 @@ function whyWork(q, full){
       (q.back ? 'обратно &nbsp;→&nbsp; ' + q.d2 + ' − ' + q.d1 : 'напред &nbsp;→&nbsp; ' + q.d1 + ' + ' + q.d2) +
       ' = ' + q.ans;
   }
+  if(q.kind === 'sqcut' && q.shape === 6){
+    if(!full) return 'Едната страна на ивицата е цялата страна на квадрата, другата е част от нея.';
+    const P = 2*(q.w + q.side);
+    return 'всяка ивица е <b>' + q.w + '</b> на <b>' + q.side + '</b> см &nbsp;→&nbsp; ' + q.w + ' + ' +
+      q.side + ' = ' + (q.w + q.side) + ', два пъти &nbsp;→&nbsp; <b>' + P + ' см</b>' +
+      (q.mm ? ' &nbsp;→&nbsp; 1 см = 10 мм, значи ' + q.ans + ' мм' : '');
+  }
   if(q.kind === 'sqcut' && q.shape === 5){
     if(!full) return 'Най-малкото квадратче дава мярката — с нея измери целия правоъгълник.';
     return 'страната на най-малкото е ' + q.side + ' &nbsp;→&nbsp; правоъгълникът е <b>' + (q.t.w*q.s) +
@@ -3359,8 +3427,11 @@ function whyWork(q, full){
       ((q.t.w + q.t.h)*q.s) + ', два пъти &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'sqcut' && q.shape === 4){
-    if(!full) return 'Двете обиколки са в различни мерки — изравни ги първо.';
-    return q.dm + ' дм = <b>' + (10*q.dm) + '</b> см &nbsp;→&nbsp; квадратът е 4 × ' + (10*q.dm) + ' = <b>' + q.P +
+    if(!full) return q.inCm ? 'Пресметни поотделно двете обиколки.'
+                            : 'Двете обиколки са в различни мерки — изравни ги първо.';
+    const side = q.inCm ? q.dm : 10*q.dm;
+    return (q.inCm ? '' : q.dm + ' дм = <b>' + side + '</b> см &nbsp;→&nbsp; ') +
+      'квадратът е 4 × ' + side + ' = <b>' + q.P +
       '</b>, триъгълникът е ' + q.sides.join(' + ') + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; ' +
       q.P + ' − ' + q.p + ' = ' + q.ans;
   }
