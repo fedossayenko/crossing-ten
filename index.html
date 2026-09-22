@@ -6,21 +6,21 @@
   --ground:#EDF1F3; --card:#FFFFFF; --ink:#16232E; --muted:#5C7380; --line:#D3DEE4;
   --accent:#2F6F8F; --warm:#E8A33D; --good:#23795A; --bad:#C0463C;
   --goodbg:#DCEFE5; --badbg:#F8E0DD; --key:#FFFFFF; --keypress:#DDE7EC;
-  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E;
+  --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
     --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
     --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57;
+    --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63;
   }
 }
 :root[data-theme="dark"]{
   --ground:#111A20; --card:#1A252C; --ink:#E8EFF3; --muted:#93A8B3; --line:#2B3A44;
   --accent:#6FB3D2; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
   --goodbg:#1B3A30; --badbg:#3A211E; --key:#22303880; --keypress:#31424C;
-  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57;
+  --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63;
 }
 html,body{height:100%}
 body{background:var(--ground); color:var(--ink); font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%}
@@ -157,6 +157,9 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .line{font-family:Fredoka,sans-serif; letter-spacing:.03em; line-height:1.25; text-align:center; text-wrap:balance}
 .line .slot,.given .slot{grid-column:auto; display:inline-block; min-width:1.6ch}
 .circle{color:var(--warm)}
+.fig{display:flex; justify-content:center; width:100%}
+.fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
+.unit{color:var(--muted); font-size:.48em; margin-left:.18em; font-weight:400}
 .or{color:var(--muted); font-size:.6em; padding:0 .12em}
 .hint{font-size:clamp(13px,2vh,18px); font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; text-align:center; min-height:1.4em; text-wrap:balance}
 .hint b{color:var(--warm)}
@@ -401,6 +404,8 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
     <div class="pickgroup" id="pickWord"></div>
     <div class="lab">Puzzles</div>
     <div class="pickgroup" id="pickPuzzle"></div>
+    <div class="lab">Shapes and lines</div>
+    <div class="pickgroup" id="pickGeo"></div>
     <div class="lab">Both</div>
     <div class="pickgroup" id="pickMixed"></div>
     <div class="lab">What goes into Mixed</div>
@@ -638,6 +643,10 @@ const LEVELS = [
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number that is a few more than another' },
+  { id:19, op:'w', grp:'geo', eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
+  { id:20, op:'w', grp:'geo', eq:'A, B, C',       desc:'Along a line, right then left — how far apart?' },
+  { id:21, op:'w', grp:'geo', eq:'Обиколка',      desc:'A square cut into equal squares' },
+  { id:22, op:'w', grp:'geo', eq:'Обща страна',   desc:'Two perimeters share an edge — how long is it?' },
   { id:3, op:'m', eq:'Mixed',    desc:'' }
 ];
 const LEVEL_NAME = {}, LEVEL_OP = {};
@@ -804,6 +813,81 @@ function genDigits(){
 }
 const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
 
+const BGCOUNT = {4:'четири', 9:'девет'};
+
+// Задача 13: a rectangle holds the ant when its left edge is at or left of the ant's
+// column and its right edge at or right of it — so the count is the choices each way.
+function genRects(){
+  const W = 2 + rnd(3), H = 2 + rnd(2);
+  const c = 1 + rnd(W), r = 1 + rnd(H);
+  return {kind:'rects', W, H, c, r, wide: c*(W-c+1), tall: r*(H-r+1), ans: c*(W-c+1)*r*(H-r+1)};
+}
+
+// Задача 14: two steps along a line, usually in opposite directions, then the distance.
+function genLine(){
+  const d1 = 2 + rnd(8);
+  const back = Math.random() < 0.75;
+  const d2 = back ? d1 + 1 + rnd(9) : 1 + rnd(9);
+  const right = Math.random() < 0.5;
+  return {kind:'line', d1, d2, right, back, ans: back ? d2 - d1 : d1 + d2};
+}
+
+// Задача 15: a square cut into equal squares. The small side is never divided out —
+// it is found by asking what adds up to the big side.
+function genSqCut(){
+  const parts = Math.random() < 0.75 ? 2 : 3;
+  const small = 2 + rnd(4);
+  const side = parts * small;
+  const shape = parts === 2 ? rnd(3) : rnd(2);
+  return {kind:'sqcut', parts, side, small, shape,
+          ans: shape === 0 ? 4*small : shape === 1 ? 4*side : 4*small*parts*parts};
+}
+
+// Задача 16: the cut edge belongs to both halves, so the two perimeters count it twice.
+function genShared(){
+  for(;;){
+    const c = 2 + rnd(8);
+    const P = 12 + rnd(18);
+    const tot = P + 2*c;
+    const p1 = Math.floor(tot/2) - rnd(4);
+    const p2 = tot - p1;
+    // each half must be a possible triangle: its other two sides together beat the cut
+    if(p1 <= 2*c || p2 <= 2*c || p1 >= P + c || p2 >= P + c) continue;
+    return {kind:'shared', P, p1, p2, ans: c};
+  }
+}
+
+function antSvg(x, y, u){
+  const k = (u/34).toFixed(3);
+  return '<g transform="translate(' + x + ' ' + y + ') scale(' + k + ')" stroke="var(--ant)" ' +
+    'stroke-width="1.2" stroke-linecap="round">' +
+    '<g fill="none"><path d="M-4,-4 L-8,-9 M0,-4.5 L2,-10"/>' +
+    '<path d="M-2,0 L-9,-3 M-2,1 L-9,3 M-1,2 L-7,8 M2,0 L9,-3 M2,1 L9,3 M3,2 L8,8"/></g>' +
+    '<g fill="var(--ant)" stroke="none">' +
+    '<ellipse cx="-5" cy="-3" rx="3.1" ry="2.7"/><ellipse cx="0" cy="0" rx="2.7" ry="2.5"/>' +
+    '<ellipse cx="6" cy="2.4" rx="4.2" ry="3.4"/></g></g>';
+}
+function gridSvg(W, H, c, r){
+  const u = 36, w = W*u, h = H*u;
+  let g = '';
+  for(let i = 0; i <= W; i++) g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + h + '"/>';
+  for(let j = 0; j <= H; j++) g += '<line x1="0" y1="' + j*u + '" x2="' + w + '" y2="' + j*u + '"/>';
+  return '<div class="fig"><svg viewBox="-3 -3 ' + (w+6) + ' ' + (h+6) + '" role="img" aria-label="решетка с мравка">' +
+    '<g stroke="var(--ink)" stroke-width="1.7" fill="none">' + g + '</g>' +
+    antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) + '</svg></div>';
+}
+function sqSvg(parts, side){
+  const S = 118, u = S/parts;
+  let g = '<rect x="0" y="0" width="' + S + '" height="' + S + '"/>';
+  for(let i = 1; i < parts; i++)
+    g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + S + '"/>' +
+         '<line x1="0" y1="' + i*u + '" x2="' + S + '" y2="' + i*u + '"/>';
+  return '<div class="fig"><svg viewBox="-8 -24 ' + (S+16) + ' ' + (S+32) + '" role="img" aria-label="квадрат, разрязан на еднакви квадрати">' +
+    '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
+    '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
+    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -824,6 +908,10 @@ function raw(level){
     if(level === 16) return genIneq();
     if(level === 17) return genSumDiff();
     if(level === 18) return genDigits();
+    if(level === 19) return genRects();
+    if(level === 20) return genLine();
+    if(level === 21) return genSqCut();
+    if(level === 22) return genShared();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -895,6 +983,36 @@ function drawQ(q){
         : 'С колко сборът ' + A + ' е по-голям от сбора ' + B + '?') +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'rects'){
+    return '<div class="ask">Колко са всички правоъгълници на чертежа, в които има мравка?</div>' +
+      gridSvg(q.W, q.H, q.c, q.r) +
+      '<div class="note">Квадратът е правоъгълник, на който всички страни са равни.</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + '</div>';
+  }
+  if(q.kind === 'line'){
+    const one = q.right ? 'вдясно' : 'вляво';
+    const two = q.back ? (q.right ? 'вляво' : 'вдясно') : one;
+    return '<div class="ask">На права линия е отбелязана точка <b>A</b>. На <span class="num">' + q.d1 +
+      '</span> см ' + one + ' от нея е отбелязана точка <b>B</b>. След това, на същата права линия, на <span class="num">' +
+      q.d2 + '</span> см ' + two + ' от точка <b>B</b> е отбелязана точка <b>C</b>. Колко сантиметра е разстоянието от <b>A</b> до <b>C</b>?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
+  }
+  if(q.kind === 'sqcut'){
+    const ask = q.shape === 0 ? 'Колко сантиметра е сборът от страните на всеки един от тези еднакви квадрати?'
+              : q.shape === 1 ? 'Колко сантиметра е обиколката на големия квадрат?'
+              : 'Колко сантиметра е сборът от обиколките на всички малки квадрати?';
+    return '<div class="ask">Квадрат със страна <span class="num">' + q.side + '</span> см е разрязан на ' +
+      BGCOUNT[q.parts*q.parts] + ' еднакви квадрата. ' + ask + '</div>' +
+      sqSvg(q.parts, q.side) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
+  }
+  if(q.kind === 'shared'){
+    return '<div class="ask">Триъгълник с обиколка <span class="num">' + q.P +
+      '</span> см разрязали на два триъгълника с обиколки <span class="num">' + q.p1 +
+      '</span> см и <span class="num">' + q.p2 + '</span> см. Колко сантиметра е общата им страна?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
+  }
   if(q.kind === 'ineq'){
     const rel = q.shape === 2
       ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
@@ -964,6 +1082,10 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'rects') return q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
+  if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
+  if(q.kind === 'sqcut') return 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
+  if(q.kind === 'shared') return q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
@@ -1009,6 +1131,32 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'rects'){
+    if(!full) return 'Правоъгълникът може да е от едно или от повече квадратчета.';
+    const rep = n => Array(n).fill(q.wide).join(' + ');
+    return 'по ширина <b>' + q.wide + '</b>, по височина <b>' + q.tall + '</b> &nbsp;→&nbsp; ' +
+      (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans);
+  }
+  if(q.kind === 'line'){
+    if(!full) return q.back ? 'Втората стъпка е в обратната посока.' : 'Двете стъпки са в една посока.';
+    return 'A → B: ' + q.d1 + ' см, &nbsp;B → C: ' + q.d2 + ' см ' +
+      (q.back ? 'обратно &nbsp;→&nbsp; ' + q.d2 + ' − ' + q.d1 : 'напред &nbsp;→&nbsp; ' + q.d1 + ' + ' + q.d2) +
+      ' = ' + q.ans;
+  }
+  if(q.kind === 'sqcut'){
+    if(!full) return q.shape === 1 ? 'Обиколката е сборът от четирите страни.' : 'Колко прави малката страна?';
+    const add = (v, n) => Array(n).fill(v).join(' + ');
+    const found = add(q.small, q.parts) + ' = ' + q.side + ', значи малката страна е <b>' + q.small + '</b>';
+    if(q.shape === 0) return found + ' &nbsp;→&nbsp; ' + add(q.small, 4) + ' = ' + q.ans;
+    if(q.shape === 1) return add(q.side, 4) + ' = ' + q.ans;
+    return found + ', обиколката ѝ е <b>' + (4*q.small) + '</b> &nbsp;→&nbsp; ' + add(4*q.small, q.parts*q.parts) + ' = ' + q.ans;
+  }
+  if(q.kind === 'shared'){
+    if(!full) return 'Общата страна е в двете обиколки.';
+    return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + '</b>, а обиколката е ' + q.P +
+      ' &nbsp;→&nbsp; ' + (q.p1+q.p2) + ' − ' + q.P + ' = ' + (2*q.ans) +
+      ', това е общата страна <b>два пъти</b> &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'ineq'){
     if(!full) return q.shape === 1 ? 'Първо пресметни лявата страна.' : '„Не е вярно" обръща знака.';
@@ -1455,6 +1603,7 @@ function buildPicker(){
   $('pickChain').innerHTML = LEVELS.filter(l => l.grp === 'chain').map(row).join('');
   $('pickWord').innerHTML = LEVELS.filter(l => l.grp === 'word').map(row).join('');
   $('pickPuzzle').innerHTML = LEVELS.filter(l => l.grp === 'puzzle').map(row).join('');
+  $('pickGeo').innerHTML = LEVELS.filter(l => l.grp === 'geo').map(row).join('');
   $('pickMixed').innerHTML = LEVELS.filter(l => l.op === 'm').map(row).join('');
   document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
