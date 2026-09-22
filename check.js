@@ -268,6 +268,44 @@ for(let i = 0; i < 8000; i++){
 if(!asked) throw new Error('the sum variant of the inequality never turned up');
 console.log('inequality as a sum: adds up exactly the values that satisfy it');
 
+{ // задача 7 as printed: 22 − 14 < ? + 7, counting what makes it false
+  const q = {kind:'ineq', shape:0, A:22, B:14, L:8, C:7, ans:2};
+  if(lastNum(why(q, true)) !== 2) throw new Error('22 - 14 < ? + 7 should be false for 2 digits');
+  if(strip(drawQ(q)).replace('&lt;', '<').indexOf('22 − 14 < ? + 7') < 0) throw new Error('the printed statement is not the one drawn');
+  let widest = 0;
+  for(let i = 0; i < 4000; i++) widest = Math.max(widest, raw(16).C);
+  if(widest < 7) throw new Error('the number added to ? never reaches 7');
+}
+console.log('inequality: the printed statement reads back the same, and ? + 7 is reachable');
+
+{ // задача 5 as printed: the естествени numbers under 10 and over 7
+  const q = {kind:'count', sum:false, shape:4, natural:true, a:7, b:10, lo:8, hi:9, ans:2};
+  if(lastNum(why(q, true)) !== 2) throw new Error('естествени under 10 and over 7 should be 2');
+  if(strip(drawQ(q)).indexOf('по-малки от 10 и са по-големи от 7') < 0) throw new Error('задача 5 wording lost');
+  let top = 0;
+  for(let i = 0; i < 4000; i++){ const g = raw(12); if(g.shape >= 3) top = Math.max(top, g.a); }
+  if(top < 7) throw new Error('the open-ended range never starts as high as 7');
+}
+console.log('ranges: the two-sided wording reaches into the teens, worksheet instance gives 2');
+
+{ // задача 6 as printed: box - 20, given 20 + box = 60
+  const q = {kind:'box', shape:'plus', g:20, p:20, box:40, S:60, ans:20};
+  if(lastNum(why(q, true)) !== 20) throw new Error('20 + box = 60 then box - 20 should be 20');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf('20 + ■ = 60') < 0) throw new Error('the given is not drawn as printed');
+  let seen = 0;
+  for(let i = 0; i < 6000; i++){
+    const g = raw(11);
+    if(g.shape !== 'plus') continue;
+    seen++;
+    if(g.g + g.box !== g.S) throw new Error('the given addition does not hold');
+    if(g.box - g.p !== g.ans || g.ans < 10) throw new Error('the second step leaves nothing to work out');
+    if([g.g, g.p, g.box].some(v => v % 10)) throw new Error('these should all be round tens');
+  }
+  if(!seen) throw new Error('the addition shape should turn up');
+}
+console.log('unknown from an addition: the given holds and the second step is worth taking, worksheet instance gives 20');
+
 // the pencils, where one clue is a negative
 for(let i = 0; i < 4000; i++){
   const q = raw(38);
@@ -276,8 +314,15 @@ for(let i = 0; i < 4000; i++){
   if(q.ans !== q.notA - q.b || q.ans < 1) throw new Error('pencil answer wrong');
   if(new Set(q.col.map(c => c[0])).size !== 3) throw new Error('the three colours must differ');
 }
-if(22 - 15 !== 7 || 15 - 6 !== 9) throw new Error('worksheet instance of задача 8 should be 9');
-console.log('pencils: the colours add up, the negative clue is the rest, worksheet instance gives 9');
+{ // задача 8 as printed: 21 pencils, 18 not green, 7 yellow
+  const col = [['зелени','зелен'], ['жълти','жълт'], ['сини','син']];
+  const q = {kind:'pencils', who:'Алекс', col, a:3, b:7, c:11, T:21, notA:18, ans:11};
+  if(lastNum(why(q, true)) !== 11) throw new Error('21 pencils, 18 not green, 7 yellow should leave 11 blue');
+  let widest = 0;
+  for(let i = 0; i < 4000; i++) widest = Math.max(widest, raw(38).ans);
+  if(widest < 11) throw new Error('the leftover colour never reaches the teens, so задача 8 cannot come up');
+}
+console.log('pencils: the colours add up, the negative clue is the rest, worksheet instance gives 11 blue');
 
 // задача 20: the compact pivot scan must agree with a plain double loop
 for(let i = 0; i < 4000; i++){
