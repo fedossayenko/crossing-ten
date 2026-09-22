@@ -341,6 +341,88 @@ for(let i = 0; i < 4000; i++){
   ok.forEach(t => { const d = t.slice().sort((x,y) => x-y); if(d[0]+d[1] !== d[2]) throw new Error('worksheet instance of задача 12 is wrong'); }); }
 console.log('three points: both answers sit on a line, worksheet instance gives 3 or 5');
 
+// задача 13: the cut sheet must be consistent with its perimeter
+let cut = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(21);
+  if(q.shape !== 3) continue;
+  cut++;
+  if(q.P !== 2*(2*q.a + q.extra)) throw new Error('sheet perimeter does not match its sides');
+  if(q.extra >= q.a) throw new Error('B short side must be the shorter one, got ' + q.extra + ' against ' + q.a);
+  const want = q.asksSide ? q.extra : 2*(q.extra + q.a);
+  if(q.ans !== want) throw new Error('cut-sheet answer wrong');
+}
+if(!cut) throw new Error('the cut-sheet shape never turned up');
+if(2*(2*4 + 2) !== 20) throw new Error('worksheet instance of задача 13 should have perimeter 20 and leave 2');
+console.log('cut sheet: perimeter matches the pieces, worksheet instance leaves a short side of 2');
+
+// задача 14: the perimeters summed must match every sub-rectangle of the strip
+let strips = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(19);
+  if(q.shape !== 1) continue;
+  strips++;
+  let brute = 0;
+  for(let a = 0; a < q.n; a++) for(let b = a + 1; b <= q.n; b++){
+    const w = (b - a) * q.s, isSquare = (b - a) === 1;
+    if(q.squares === isSquare) brute += 2 * (w + q.s);
+  }
+  if(brute !== q.ans) throw new Error('strip of ' + q.n + '×' + q.s + ': counted ' + brute + ', answer says ' + q.ans);
+}
+if(!strips) throw new Error('the strip shape never turned up');
+{ let b = 0;
+  for(let a = 0; a < 3; a++) for(let c = a+1; c <= 3; c++){ const w = (c-a)*3; if(c-a !== 1) b += 2*(w+3); }
+  if(b !== 60) throw new Error('worksheet instance of задача 14 should be 60'); }
+console.log('strip of squares: summed perimeters match every sub-rectangle, worksheet instance gives 60');
+
+// задача 15: counting two-digit numbers with one digit fixed
+let digits2 = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(18);
+  if(q.shape !== 2) continue;
+  digits2++;
+  let brute = 0;
+  for(let v = 10; v <= 99; v++){
+    const t = Math.floor(v/10), o = v % 10;
+    const ok = q.smaller ? (t === q.d && o < q.d) || (o === q.d && t < q.d)
+                         : (t === q.d && o > q.d) || (o === q.d && t > q.d);
+    if(ok) brute++;
+  }
+  if(brute !== q.ans) throw new Error('digit ' + q.d + ': counted ' + brute + ', answer says ' + q.ans);
+  if(q.list.length !== q.ans) throw new Error('the listed numbers do not match the count');
+  if(new Set(q.list).size !== q.list.length) throw new Error('a number is listed twice');
+}
+if(!digits2) throw new Error('the fixed-digit shape never turned up');
+{ let b = 0;
+  for(let v = 10; v <= 99; v++){ const t = Math.floor(v/10), o = v % 10;
+    if((t === 5 && o < 5) || (o === 5 && t < 5)) b++; }
+  if(b !== 9) throw new Error('worksheet instance of задача 15 should be 9'); }
+console.log('fixed digit: the listed numbers are exactly the ones that qualify, worksheet instance gives 9');
+
+// задача 16: the widest gap, checked against every qualifying set
+let gaps = 0;
+for(let i = 0; i < 3000; i++){
+  const q = raw(13);
+  if(q.shape !== 3) continue;
+  gaps++;
+  if(q.loose){
+    if(q.ans !== 9) throw new Error('with any number of digits the gap should reach nine');
+    if(q.S - 9 < 0 || q.S - 9 > 36) throw new Error('the rest cannot be made from the digits 1..8');
+    continue;
+  }
+  let best = -1;
+  (function walk(start, left, cur, sum){
+    if(sum > q.S) return;
+    if(left === 0){ if(sum === q.S) best = Math.max(best, cur[cur.length-1] - cur[0]); return; }
+    for(let v = start; v <= 9; v++) walk(v + 1, left - 1, cur.concat(v), sum + v);
+  })(0, q.k, [], 0);
+  if(best !== q.ans) throw new Error(q.k + ' digits summing to ' + q.S + ': widest gap is ' + best + ', answer says ' + q.ans);
+  if(q.wit.reduce((t, v) => t + v, 0) !== q.S) throw new Error('the example set does not add to the sum');
+  if(new Set(q.wit).size !== q.k) throw new Error('the example set repeats a digit');
+}
+if(!gaps) throw new Error('the widest-gap shape never turned up');
+console.log('widest gap: matches an exhaustive search over every qualifying set of digits');
+
 // задача 6: the picture IS the data — it must hold exactly the fruit the answer assumes
 for(let i = 0; i < 4000; i++){
   const q = raw(28);

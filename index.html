@@ -689,7 +689,7 @@ const LEVELS = [
   { id:26, op:'w', grp:'puzzle', eq:'Редица',      desc:'Smaller on the left, bigger on the right' },
   { id:19, op:'w', grp:'geo', eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
   { id:20, op:'w', grp:'geo', eq:'A, B, C',       desc:'Along a line, right then left — how far apart?' },
-  { id:21, op:'w', grp:'geo', eq:'Обиколка',      desc:'A square cut into equal squares' },
+  { id:21, op:'w', grp:'geo', eq:'Обиколка',      desc:'Squares and sheets cut up — sides and perimeters' },
   { id:22, op:'w', grp:'geo', eq:'Обща страна',   desc:'Two perimeters share an edge — how long is it?' },
   { id:3, op:'m', eq:'Mixed',    desc:'' }
 ];
@@ -855,7 +855,38 @@ const NAMED = [
   { nm:'най-голямото двуцифрено число',  v:99 },
   { nm:'най-малкото трицифрено число',   v:100 }
 ];
+// The widest gap between the largest and smallest of k different digits adding to S,
+// found by looking at every such set rather than by a rule.
+function widestGap(k, S){
+  let best = -1, wit = null;
+  (function walk(start, left, cur, sum){
+    if(sum > S) return;
+    if(left === 0){
+      if(sum === S){
+        const gap = cur[cur.length-1] - cur[0];
+        if(gap > best){ best = gap; wit = cur.slice(); }
+      }
+      return;
+    }
+    for(let v = start; v <= 9; v++) walk(v + 1, left - 1, cur.concat(v), sum + v);
+  })(0, k, [], 0);
+  return {best, wit};
+}
 function genNamed(){
+  if(Math.random() < 0.25){
+    // Задача 16: how far apart the ends can be, given the sum.
+    if(Math.random() < 0.25){
+      const S = 12 + rnd(24);                  // "няколко" — nothing stops us taking 0 and 9
+      return {kind:'named', shape:3, loose:true, S, ans: 9};
+    }
+    for(;;){
+      const k = 3 + rnd(3);
+      const S = 6 + rnd(25);
+      const g = widestGap(k, S);
+      if(g.best < 2) continue;
+      return {kind:'named', shape:3, k, S, wit: g.wit, ans: g.best};
+    }
+  }
   if(Math.random() < 0.3){
     // Задача 17: the smallest (or largest) sum of k different numbers — take the k
     // smallest, or the k largest. Zero counts as a one-digit number.
@@ -930,7 +961,17 @@ function genSumDiff(){
 // Задача 12: digit sums of the two-digit numbers. The count climbs to nine and falls
 // back — which is why only the extremes, 1 and 18, happen exactly once.
 function genDigits(){
-  if(Math.random() < 0.15) return {kind:'digits', shape:1, ans:19};
+  if(Math.random() < 0.3){
+    // Задача 15: one digit fixed, the other either side of it. The tens digit cannot
+    // be zero, which is what makes the two cases come out different.
+    const d = 2 + rnd(7);
+    const smaller = Math.random() < 0.6;
+    const list = [];
+    for(let o = 0; o <= 9; o++) if(smaller ? o < d : o > d) list.push(10*d + o);
+    for(let t = 1; t <= 9; t++) if(smaller ? t < d : t > d) list.push(10*t + d);
+    return {kind:'digits', shape:2, d, smaller, list: list.sort((x, y) => x - y), ans: list.length};
+  }
+  if(Math.random() < 0.18) return {kind:'digits', shape:1, ans:19};
   const n = 1 + rnd(18);
   return {kind:'digits', shape:0, n, ans: n <= 9 ? n : 19 - n};
 }
@@ -941,9 +982,27 @@ const BGCOUNT = {4:'четири', 9:'девет'};
 // Задача 13: a rectangle holds the ant when its left edge is at or left of the ant's
 // column and its right edge at or right of it — so the count is the choices each way.
 function genRects(){
+  if(Math.random() < 0.32){
+    // Задача 14: a strip of equal squares. Every sub-rectangle counts — the square ones
+    // are the ones to leave out.
+    // kept near the original's 3 by 9: four squares only with the smallest side, or the
+    // perimeters add up to well over a hundred
+    const n = Math.random() < 0.75 ? 3 : 4;
+    const s = n === 3 ? 2 + rnd(5) : 2;
+    const squares = Math.random() < 0.3;
+    let sum = 0;
+    const parts = [];
+    for(let k = 1; k <= n; k++){
+      if(squares ? k !== 1 : k === 1) continue;
+      const count = n - k + 1, per = 2*(s + k*s);
+      sum += count * per;
+      parts.push([k, count, per]);
+    }
+    return {kind:'rects', shape:1, n, s, squares, parts, ans: sum};
+  }
   const W = 2 + rnd(3), H = 2 + rnd(2);
   const c = 1 + rnd(W), r = 1 + rnd(H);
-  return {kind:'rects', W, H, c, r, wide: c*(W-c+1), tall: r*(H-r+1), ans: c*(W-c+1)*r*(H-r+1)};
+  return {kind:'rects', shape:0, W, H, c, r, wide: c*(W-c+1), tall: r*(H-r+1), ans: c*(W-c+1)*r*(H-r+1)};
 }
 
 // Задача 14: two steps along a line, usually in opposite directions, then the distance.
@@ -957,7 +1016,27 @@ function genLine(){
 
 // Задача 15: a square cut into equal squares. The small side is never divided out —
 // it is found by asking what adds up to the big side.
+function cutRectSvg(a, extra){
+  const W = 160, u = W / (a + extra), H = a * u;
+  return '<div class="fig"><svg viewBox="-4 -4 ' + (W + 8) + ' ' + (H + 8) + '" role="img" aria-label="лист, разрязан на квадрат и правоъгълник">' +
+    '<g stroke="var(--ink)" stroke-width="2.2" fill="none">' +
+    '<rect x="0" y="0" width="' + W + '" height="' + H.toFixed(1) + '"/>' +
+    '<line x1="' + (a*u).toFixed(1) + '" y1="0" x2="' + (a*u).toFixed(1) + '" y2="' + H.toFixed(1) + '"/></g>' +
+    '<text x="' + (a*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
+    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">A</text>' +
+    '<text x="' + (a*u + extra*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
+    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">B</text></svg></div>';
+}
 function genSqCut(){
+  if(Math.random() < 0.3){
+    // Задача 13: a sheet cut into a square and what is left over. The square's side is
+    // the whole height, so the leftover width comes out of the half-perimeter.
+    const a = 3 + rnd(5);
+    const extra = 1 + rnd(a - 1);              // keeps B's short side the shorter one
+    const asksSide = Math.random() < 0.65;
+    return {kind:'sqcut', shape:3, a, extra, P: 2*(2*a + extra),
+            ans: asksSide ? extra : 2*(extra + a), asksSide};
+  }
   const parts = Math.random() < 0.75 ? 2 : 3;
   const small = 2 + rnd(4);
   const side = parts * small;
@@ -1620,6 +1699,14 @@ function drawQ(q){
       '<div class="seq">' + q.a.join(', ') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
   }
+  if(q.kind === 'rects' && q.shape === 1){
+    return '<div class="ask">Правоъгълникът с размери <span class="num">' + q.s +
+      '</span> см и <span class="num">' + (q.n * q.s) + '</span> см е разделен на <b>' + BGNUM[q.n] +
+      ' квадрата</b>. Колко сантиметра е сборът от обиколките на всички правоъгълници, които <b>' +
+      (q.squares ? 'са квадрати' : 'не са квадрати') + '</b>?</div>' +
+      gridSvg(q.n, 1, 0, 0) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
+  }
   if(q.kind === 'rects'){
     return '<div class="ask">Колко са всички правоъгълници на чертежа, в които има мравка?</div>' +
       gridSvg(q.W, q.H, q.c, q.r) +
@@ -1633,6 +1720,14 @@ function drawQ(q){
       '</span> см ' + one + ' от нея е отбелязана точка <b>B</b>. След това, на същата права линия, на <span class="num">' +
       q.d2 + '</span> см ' + two + ' от точка <b>B</b> е отбелязана точка <b>C</b>. Колко сантиметра е разстоянието от <b>A</b> до <b>C</b>?</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
+  }
+  if(q.kind === 'sqcut' && q.shape === 3){
+    return '<div class="ask">Разрязах правоъгълен лист с обиколка <span class="num">' + q.P +
+      '</span> см на квадрат <b>A</b> със страна <span class="num">' + q.a +
+      '</span> см и правоъгълник <b>B</b>. Колко сантиметра е ' +
+      (q.asksSide ? '<b>по-малката страна</b> на правоъгълник B' : '<b>обиколката</b> на правоъгълник B') + '?</div>' +
+      cutRectSvg(q.a, q.extra) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
   }
   if(q.kind === 'sqcut'){
     const ask = q.shape === 0 ? 'Колко сантиметра е сборът от страните на всеки един от тези еднакви квадрати?'
@@ -1674,7 +1769,10 @@ function drawQ(q){
       ' <span class="or">или</span> <span class="slot" id="slot1"></span></div>';
   }
   if(q.kind === 'digits'){
-    const ask = q.shape === 0
+    const ask = q.shape === 2
+      ? 'Колко са двуцифрените числа, една от цифрите на които е <span class="num">' + q.d +
+        '</span>, а другата е <b>' + (q.smaller ? 'по-малка' : 'по-голяма') + '</b> от <span class="num">' + q.d + '</span>?'
+      : q.shape === 0
       ? 'Колко двуцифрени числа имат сбор на цифрите <span class="num">' + q.n + '</span>?'
       : 'Вместо да запиша всичките 90 двуцифрени числа, записах пресметнатите 90 сбора от цифрите им. Колко е сборът на сборовете, които се срещат само веднъж?';
     return '<div class="ask">' + ask + '</div>' +
@@ -1694,7 +1792,11 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'named'){
-    const ask = q.shape === 2
+    const ask = q.shape === 3
+      ? 'Сборът на <b>' + (q.loose ? 'няколко' : BGNUM[q.k]) +
+        ' различни</b> едноцифрени числа е <span class="num">' + q.S +
+        '</span>. Пресметнете <b>най-голямата възможна разлика</b> на най-голямото и най-малкото сред тях.'
+      : q.shape === 2
       ? 'Колко е най-' + (q.small ? 'малкият' : 'големият') + ' сбор на <b>' + BGNUM[q.k] +
         ' различни</b> ' + (q.two ? 'двуцифрени' : 'едноцифрени') + ' числа?'
       : q.shape === 0
@@ -1732,6 +1834,8 @@ function eqText(q){
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
   if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.natural ? 'естествени, ' : '') +
     'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
+  if(q.kind === 'named' && q.shape === 3) return 'сбор ' + q.S +
+    (q.loose ? '' : ' от ' + q.k + ' цифри') + ' → най-голяма разлика ' + q.ans;
   if(q.kind === 'named' && q.shape === 2) return 'най-' + (q.small ? 'малките ' : 'големите ') +
     q.k + ' числа → ' + q.ans;
   if(q.kind === 'named') return q.shape === 0 ? q.nm + ' = ' + q.ans
@@ -1761,9 +1865,13 @@ function eqText(q){
   if(q.kind === 'sums') return 'от 0 до ' + q.top + ' → ' + q.ans;
   if(q.kind === 'weekday') return q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt;
   if(q.kind === 'seq') return q.a.join(', ') + ' → ' + bgList(q.hits) + ' → ' + q.ans;
-  if(q.kind === 'rects') return q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
+  if(q.kind === 'rects') return q.shape === 1
+    ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? 'квадратите' : 'без квадратите') + ' → ' + q.ans
+    : q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
   if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
-  if(q.kind === 'sqcut') return 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
+  if(q.kind === 'sqcut') return q.shape === 3
+    ? 'лист с обиколка ' + q.P + ', квадрат ' + q.a + ' → ' + q.ans
+    : 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
   if(q.kind === 'shared') return q.shape === 1
     ? 'квадрат ' + q.P + ', триъгълник ' + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
@@ -1771,6 +1879,8 @@ function eqText(q){
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
     (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
+  if(q.kind === 'digits' && q.shape === 2) return 'едната цифра ' + q.d + ', другата ' +
+    (q.smaller ? 'по-малка' : 'по-голяма') + ' → ' + q.ans;
   if(q.kind === 'digits') return q.shape === 0
     ? 'сбор на цифрите ' + q.n + ' → ' + q.ans
     : 'срещат се веднъж: 1 и 18 → ' + q.ans;
@@ -1979,6 +2089,11 @@ function whyWork(q, full){
     return (q.hits.length === 1 ? 'това е само числото <b>' + q.hits[0] + '</b>'
                                 : 'това са <b>' + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.kind === 'rects' && q.shape === 1){
+    if(!full) return 'Брой всички правоъгълници, не само квадратчетата поотделно.';
+    return q.parts.map(pt => pt[1] + ' на ширина ' + (pt[0]*q.s) + ' см, обиколка ' + pt[2]).join('; &nbsp;') +
+      ' &nbsp;→&nbsp; ' + q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans;
+  }
   if(q.kind === 'rects'){
     if(!full) return 'Правоъгълникът може да е от едно или от повече квадратчета.';
     const rep = n => Array(n).fill(q.wide).join(' + ');
@@ -1990,6 +2105,15 @@ function whyWork(q, full){
     return 'A → B: ' + q.d1 + ' см, &nbsp;B → C: ' + q.d2 + ' см ' +
       (q.back ? 'обратно &nbsp;→&nbsp; ' + q.d2 + ' − ' + q.d1 : 'напред &nbsp;→&nbsp; ' + q.d1 + ' + ' + q.d2) +
       ' = ' + q.ans;
+  }
+  if(q.kind === 'sqcut' && q.shape === 3){
+    if(!full) return 'Половината обиколка са двете различни страни, взети по веднъж.';
+    const half = q.P / 2, wide = half - q.a;
+    return 'половината обиколка е ' + q.P + ' : 2 = <b>' + half + '</b>, а височината е ' + q.a +
+      ' &nbsp;→&nbsp; дължината е ' + half + ' − ' + q.a + ' = <b>' + wide + '</b>' +
+      ' &nbsp;→&nbsp; B е ' + q.extra + ' на ' + q.a +
+      (q.asksSide ? ', по-малката страна е ' + q.ans
+                  : ', обиколката ѝ е ' + q.extra + ' + ' + q.a + ' + ' + q.extra + ' + ' + q.a + ' = ' + q.ans);
   }
   if(q.kind === 'sqcut'){
     if(!full) return q.shape === 1 ? 'Обиколката е сборът от четирите страни.' : 'Колко прави малката страна?';
@@ -2035,6 +2159,10 @@ function whyWork(q, full){
       q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
       ' = ' + q.ans;
   }
+  if(q.kind === 'digits' && q.shape === 2){
+    if(!full) return 'Цифрата на десетиците не може да е нула.';
+    return q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'digits'){
     if(!full) return q.shape === 0 ? 'Опитай по десетиците подред.' : 'Кои сборове се получават само от едно число?';
     if(q.shape === 1) return 'само <b>10</b> дава 1, само <b>99</b> дава 18, всички други се повтарят' +
@@ -2068,6 +2196,12 @@ function whyWork(q, full){
       ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'named'){
+    if(!full && q.shape === 3) return 'Опитай се да включиш най-малката и най-голямата цифра.';
+    if(q.shape === 3) return q.loose
+      ? 'вземаме <b>0</b> и <b>9</b>; останалите трябва да дадат ' + (q.S - 9) +
+        ', което може с различни цифри &nbsp;→&nbsp; 9 − 0 = ' + q.ans
+      : 'например ' + q.wit.join(' + ') + ' = ' + q.S + ' &nbsp;→&nbsp; ' +
+        q.wit[q.wit.length-1] + ' − ' + q.wit[0] + ' = ' + q.ans;
     if(!full) return q.shape === 2 ? 'Вземи възможно най-' + (q.small ? 'малките' : 'големите') + ' различни числа.'
             : q.shape === 0 ? 'Колко цифри трябва да има числото?' : 'Първо сборът, после сравнението.';
     if(q.shape === 2) return 'най-' + (q.small ? 'малките' : 'големите') + ' са <b>' + q.list.join(', ') +
