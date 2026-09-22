@@ -673,6 +673,9 @@ const LEVELS = [
   { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
   { id:34, op:'w', grp:'geo',    eq:'Оцветени',   desc:'Paint whole rows and columns — what is left' },
+  { id:39, op:'w', grp:'word',   eq:'Не достигат', desc:'Short by so many — so how many are there now?' },
+  { id:40, op:'w', grp:'geo',    eq:'AD = ?',      desc:'Overlapping lengths along a line' },
+  { id:41, op:'w', grp:'geo',    eq:'Три точки',   desc:'Three points on a line — two answers' },
   { id:38, op:'w', grp:'word',   eq:'Моливи',     desc:'Colours counted by what they are not' },
   { id:30, op:'w', grp:'word',   eq:'Умаляемо',   desc:'Naming the parts of a sum and a difference' },
   { id:29, op:'w', grp:'puzzle', eq:'Плодове',    desc:'Three fruit, three totals — find one from the others' },
@@ -1071,6 +1074,20 @@ function genSeq(){
 // Задача 5: find the rule, fill the two gaps — then read whether the question wants
 // the digits of the missing numbers or the numbers themselves.
 function genMissing(){
+  if(Math.random() < 0.3){
+    // Two runs woven together: every other number belongs to the same run.
+    const dA = 6 + rnd(9), dB = 2 + rnd(3);
+    const runA = [], runB = [];
+    let a0 = 5 + rnd(15), b0 = 1 + rnd(5);
+    for(let i = 0; i < 5; i++){ runA.push(a0 + i*dA); runB.push(b0 + i*dB); }
+    const k = 1 + rnd(2);                     // hide runB[k] then runA[k+1], side by side
+    const star = runA[k + 1], dot = runB[k];
+    if(star <= dot) return genMissing();
+    const woven = [];
+    for(let i = 0; i < 5; i++) woven.push(runA[i], runB[i]);
+    return {kind:'missing', woven, hideAt:[2*k + 1, 2*k + 2], runA, runB, dA, dB,
+            star, dot, ans: star - dot};
+  }
   for(;;){
     const rule = rnd(3);
     const seq = [];
@@ -1168,7 +1185,7 @@ function genTerm(){
 
 // Задача 11: n trees in a row leave n − 1 gaps. Asked three ways round.
 const NAMES = [['Хари', 'посадил'], ['Мая', 'посадила'], ['Ния', 'посадила'],
-               ['Борис', 'посадил'], ['Ива', 'посадила']];
+               ['Борис', 'посадил'], ['Ива', 'посадила'], ['Асен', 'посадил']];
 function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
   const n = 4 + rnd(9), d = 2 + rnd(5);
@@ -1285,6 +1302,44 @@ function genPencils(){
   return {kind:'pencils', who, col, a, b, c, T: a + b + c, notA: b + c, ans: c};
 }
 
+const SWEETS = ['бонбона', 'стикера', 'ябълки', 'монети'];
+
+// Задача 10: being short of a total tells you how many there are now.
+function genShort(){
+  const item = SWEETS[rnd(SWEETS.length)];
+  const have = 2 + rnd(18);
+  const T1 = have + 2 + rnd(18);
+  const T2 = T1 + 2 + rnd(20);
+  const shape = Math.random() < 0.3 ? 1 : 0;
+  return {kind:'short', item, have, T1, T2, d1: T1 - have, shape, ans: shape === 0 ? T2 - have : have};
+}
+
+// Задача 11: four points in a row, measured in overlapping pieces.
+function genSeg(){
+  const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
+  return {kind:'seg', p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
+}
+function segSvg(q){
+  const W = 236, tot = q.p + q.q + q.r;
+  const at = v => 14 + v / tot * (W - 28);
+  const pts = [[at(0), 'A'], [at(q.p), 'C'], [at(q.p + q.q), 'B'], [at(tot), 'D']];
+  return '<div class="fig"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="четири точки върху права">' +
+    '<line x1="4" y1="0" x2="' + (W - 4) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
+    pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/>' +
+      '<text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" ' +
+      'fill="var(--ink)" font-family="Nunito, sans-serif">' + pt[1] + '</text>').join('') +
+    '</svg></div>';
+}
+
+// Задача 12: with three points on a line the longest distance is the other two added,
+// so the third measurement is either the difference or the sum.
+function genThree(){
+  const who = NAMES[rnd(NAMES.length)][0];
+  const a = 1 + rnd(7);
+  const b = a + 1 + rnd(7);
+  return {kind:'three', who, a, b, slots:2, ans: b - a, alt:[a + b]};
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -1325,6 +1380,9 @@ function raw(level){
     if(level === 36) return genCandy();
     if(level === 37) return genShapes();
     if(level === 38) return genPencils();
+    if(level === 39) return genShort();
+    if(level === 40) return genSeg();
+    if(level === 41) return genThree();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1409,6 +1467,28 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'short'){
+    const tail = q.shape === 0
+      ? 'Колко ' + q.item + ' не ми достигат, за да имам <span class="num">' + q.T2 + '</span> ' + q.item + '?'
+      : 'Колко ' + q.item + ' имам?';
+    return '<div class="ask">Не ми достигат <span class="num">' + q.d1 + '</span> ' + q.item +
+      ', за да имам <span class="num">' + q.T1 + '</span> ' + q.item + '. ' + tail + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'seg'){
+    return '<div class="ask">AD = ? см</div>' + segSvg(q) +
+      '<div class="given" style="font-size:clamp(15px,4vw,20px)">AB = ' + q.AB + ' см &nbsp; CD = ' +
+      q.CD + ' см &nbsp; CB = ' + q.q + ' см</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
+  }
+  if(q.kind === 'three'){
+    return '<div class="ask">Върху права са отбелязани <b>3 точки</b>. ' + q.who +
+      ' премерил разстоянията между всеки две от точките и записал две от тях: <span class="num">' +
+      q.a + '</span> см и <span class="num">' + q.b +
+      '</span> см. Колко сантиметра е възможно да е третото разстояние?</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
+      ' <span class="or">или</span> <span class="slot" id="slot1"></span>' + cm + '</div>';
+  }
   if(q.kind === 'pencils'){
     return '<div class="ask">' + q.who + ' има <span class="num">' + q.T + '</span> молива с различен цвят — ' +
       q.col.map(c => c[1]).join(', ') + '. От тях <span class="num">' + q.notA + '</span> <b>не са ' +
@@ -1489,6 +1569,14 @@ function drawQ(q){
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
       ' <span class="unit">' + unit + '</span></div>';
+  }
+  if(q.kind === 'missing' && q.woven){
+    const shown = q.woven.map((v, i) =>
+      i === q.hideAt[0] ? '<span class="circle">●</span>'
+      : i === q.hideAt[1] ? '<span class="circle">★</span>' : v).join(', ');
+    return '<div class="ask"><span class="circle">★</span> − <span class="circle">●</span> = ?</div>' +
+      '<div class="seq">' + shown + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
   }
   if(q.kind === 'missing'){
     const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
@@ -1650,6 +1738,9 @@ function eqText(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'short') return 'не достигат ' + q.d1 + ' до ' + q.T1 + ' → ' + q.ans;
+  if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
+  if(q.kind === 'three') return q.a + ' и ' + q.b + ' → ' + (q.b - q.a) + ' или ' + (q.a + q.b);
   if(q.kind === 'pencils') return q.T + ' молива, ' + q.notA + ' не са ' + q.col[0][0] + ', ' +
     q.b + ' са ' + q.col[1][0] + ' → ' + q.ans;
   if(q.kind === 'shapes') return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
@@ -1662,6 +1753,7 @@ function eqText(q){
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
   if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
+  if(q.kind === 'missing' && q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
   if(q.kind === 'missing') return 'липсват ' + q.hidden[0] + ' и ' + q.hidden[1] +
     (q.asksDigits ? ' → цифри: ' : ' → сбор: ') + q.ans;
   if(q.kind === 'fruit') return q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ' + q.ans;
@@ -1741,6 +1833,22 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'short'){
+    if(!full) return 'Първо намери колко имам сега.';
+    const head = 'имам ' + q.T1 + ' − ' + q.d1 + ' = <b>' + q.have + '</b>';
+    return q.shape === 1 ? head
+      : head + ' &nbsp;→&nbsp; до ' + q.T2 + ' не достигат ' + q.T2 + ' − ' + q.have + ' = ' + q.ans;
+  }
+  if(q.kind === 'seg'){
+    if(!full) return 'Отсечките се застъпват — намери първо AC.';
+    return 'AC = AB − CB = ' + q.AB + ' − ' + q.q + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; AD = AC + CD = ' +
+      q.p + ' + ' + q.CD + ' = ' + q.ans;
+  }
+  if(q.kind === 'three'){
+    if(!full) return 'При три точки върху права най-голямото разстояние е сборът на другите две.';
+    return 'ако ' + q.b + ' е най-голямото &nbsp;→&nbsp; ' + q.b + ' − ' + q.a + ' = <b>' + (q.b - q.a) +
+      '</b>; &nbsp;ако третото е най-голямото &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b>';
   }
   if(q.kind === 'pencils'){
     if(!full) return '„Не са ' + q.col[0][0] + '" значи всички останали цветове заедно.';
@@ -1824,6 +1932,12 @@ function whyWork(q, full){
       : q.u.cm + ' см = 1 ' + q.u.nm + ' &nbsp;→&nbsp; ' + q.cm + ' см = ' + q.ans + ' ' + q.u.nm;
     return q.t + ' ' + q.u.nm + ' = <b>' + q.target + ' см</b> &nbsp;→&nbsp; ' +
       (q.shape === 1 ? q.L + ' − ' + q.target : q.target + ' − ' + q.L) + ' = ' + q.ans;
+  }
+  if(q.kind === 'missing' && q.woven){
+    if(!full) return 'Погледни числата през едно — това са две редици.';
+    return q.runA.slice(0, 3).join(', ') + ', … растат с <b>' + q.dA + '</b> → ★ = ' + q.star +
+      '; &nbsp;' + q.runB.slice(0, 2).join(', ') + ', … растат с <b>' + q.dB + '</b> → ● = ' + q.dot +
+      ' &nbsp;→&nbsp; ' + q.star + ' − ' + q.dot + ' = ' + q.ans;
   }
   if(q.kind === 'missing'){
     if(!full) return q.rule === 0 ? 'Всяко число е сборът на двете преди него.'

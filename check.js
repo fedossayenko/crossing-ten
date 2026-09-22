@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 38 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 41 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -65,7 +65,7 @@ for(let W = 1; W <= 6; W++) for(let H = 1; H <= 6; H++)
 console.log('rectangle counting: closed form matches a brute-force count in all ' + grids + ' grid/ant positions');
 
 // the drawings must be well-formed and theme-aware
-for(const L of [19, 21, 28, 29, 34]){
+for(const L of [19, 21, 28, 29, 34, 40]){
   for(let i = 0; i < 300; i++){
     const svg = drawQ(raw(L));
     const open = (svg.match(/<g[ >]/g) || []).length, close = (svg.match(/<\\/g>/g) || []).length;
@@ -270,8 +270,25 @@ if(!subs2 || subs2 === tens) throw new Error('both endings should turn up: ' + s
 console.log('grouping chains: evaluate correctly, both endings appear, two-subtrahend ones lead with two digits');
 
 // задача 5: the run must really follow the rule it claims, and the gaps must be its own terms
+let woven = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(27);
+  if(q.woven){                              // two runs interleaved
+    woven++;
+    for(let k = 1; k < q.runA.length; k++){
+      if(q.runA[k] - q.runA[k-1] !== q.dA) throw new Error('first run does not keep its step');
+      if(q.runB[k] - q.runB[k-1] !== q.dB) throw new Error('second run does not keep its step');
+    }
+    for(let k = 0; k < q.woven.length; k++){
+      const want = k % 2 === 0 ? q.runA[k/2] : q.runB[(k-1)/2];
+      if(q.woven[k] !== want) throw new Error('the woven order does not alternate between the runs');
+    }
+    if(q.woven[q.hideAt[0]] !== q.dot || q.woven[q.hideAt[1]] !== q.star)
+      throw new Error('the hidden spots are not the star and the dot');
+    if(q.hideAt[1] !== q.hideAt[0] + 1) throw new Error('the two hidden terms should sit side by side');
+    if(q.star - q.dot !== q.ans || q.ans < 1) throw new Error('woven answer wrong');
+    continue;
+  }
   for(let k = 2; k < q.seq.length; k++){
     const want = q.rule === 0 ? q.seq[k-1] + q.seq[k-2]
                : q.rule === 1 ? q.seq[k-1] + (q.seq[1] - q.seq[0])
@@ -285,7 +302,44 @@ for(let i = 0; i < 4000; i++){
 }
 // the worksheet's own run: 1, 1, 2, 3, 5, _, _, 21, 34 hides 8 and 13, so 1 + 2 digits
 if(String(8).length + String(13).length !== 3) throw new Error('worksheet instance of задача 5 should be 3');
-console.log('missing terms: every run follows its rule, gaps are its own terms, worksheet instance gives 3');
+if(!woven) throw new Error('the woven shape never turned up');
+console.log('missing terms: every run follows its rule, woven runs alternate, worksheet instance gives 3');
+
+// задача 10: being short of a total fixes how many there are now
+for(let i = 0; i < 4000; i++){
+  const q = raw(39);
+  if(q.have + q.d1 !== q.T1) throw new Error('the shortfall does not reach the first total');
+  if(q.T2 <= q.T1) throw new Error('the second total should be the larger one');
+  const want = q.shape === 0 ? q.T2 - q.have : q.have;
+  if(q.ans !== want || q.ans < 1) throw new Error('shortfall answer wrong');
+}
+if(20 - (20 - 10) !== 10 || 30 - 10 !== 20) throw new Error('worksheet instance of задача 10 should be 20');
+console.log('shortfalls: the current amount follows from the gap, worksheet instance gives 20');
+
+// задача 11: the overlapping measurements must describe one consistent line
+for(let i = 0; i < 4000; i++){
+  const q = raw(40);
+  if(q.AB !== q.p + q.q || q.CD !== q.q + q.r) throw new Error('the given lengths do not match the points');
+  if(q.ans !== q.p + q.q + q.r) throw new Error('AD wrong');
+  if(q.AB - q.q !== q.p) throw new Error('AC does not come out of AB and CB');
+  if(q.q >= q.AB || q.q >= q.CD) throw new Error('the overlap must be shorter than each measured piece');
+}
+if((5 - 1) + 6 !== 10) throw new Error('worksheet instance of задача 11 should be 10');
+console.log('segments: the pieces describe one line, worksheet instance gives 10');
+
+// задача 12: both possible third distances must really be placeable on a line
+for(let i = 0; i < 4000; i++){
+  const q = raw(41);
+  for(const third of [q.ans].concat(q.alt)){
+    const d = [q.a, q.b, third].sort((x, y) => x - y);
+    if(d[0] + d[1] !== d[2]) throw new Error('distances ' + d.join(',') + ' cannot come from three points on a line');
+    if(third < 1) throw new Error('a distance of zero means two points coincide');
+  }
+  if(q.ans === q.alt[0]) throw new Error('the two answers must differ');
+}
+{ const ok = [[1,4,3],[1,4,5]];
+  ok.forEach(t => { const d = t.slice().sort((x,y) => x-y); if(d[0]+d[1] !== d[2]) throw new Error('worksheet instance of задача 12 is wrong'); }); }
+console.log('three points: both answers sit on a line, worksheet instance gives 3 or 5');
 
 // задача 6: the picture IS the data — it must hold exactly the fruit the answer assumes
 for(let i = 0; i < 4000; i++){
