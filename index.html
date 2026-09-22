@@ -256,6 +256,9 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .pick[aria-pressed="true"]{border-color:var(--accent)}
 .pick .eq{font-family:Fredoka,sans-serif; font-size:21px; font-variant-numeric:tabular-nums; flex:0 0 auto; min-width:96px}
 .pick .desc{font-size:13px; font-weight:700; color:var(--muted); flex:1 1 130px}
+.dots5{display:inline-flex; gap:2.5px; vertical-align:.5px; margin-left:7px}
+.dots5 i{width:5px; height:5px; border-radius:50%; background:var(--line)}
+.dots5 i.on{background:var(--accent)}
 .last{margin-left:auto; flex:0 0 auto; text-align:right; display:flex; flex-direction:column; gap:1px; font-variant-numeric:tabular-nums}
 .last b{font-family:Fredoka,sans-serif; font-size:18px; line-height:1}
 .last i{font-size:11px; font-weight:700; font-style:normal; color:var(--muted); white-space:nowrap}
@@ -419,20 +422,7 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   <div class="sheet-in">
     <div class="score" style="font-size:clamp(24px,5vw,32px)">Choose a level</div>
     <div class="warnline" id="pickWarn" hidden>Picking a level ends the round in progress.</div>
-    <div class="lab">Take away</div>
-    <div class="pickgroup" id="pickMinus"></div>
-    <div class="lab">Add</div>
-    <div class="pickgroup" id="pickPlus"></div>
-    <div class="lab">Chains</div>
-    <div class="pickgroup" id="pickChain"></div>
-    <div class="lab">Word problems</div>
-    <div class="pickgroup" id="pickWord"></div>
-    <div class="lab">Puzzles</div>
-    <div class="pickgroup" id="pickPuzzle"></div>
-    <div class="lab">Shapes and lines</div>
-    <div class="pickgroup" id="pickGeo"></div>
-    <div class="lab">Both</div>
-    <div class="pickgroup" id="pickMixed"></div>
+    <div id="pickAll"></div>
     <div class="lab">What goes into Mixed</div>
     <div class="mixsel" id="mixSel"></div>
     <div class="actions"><button class="btn ghost" id="closePick">Cancel</button></div>
@@ -651,51 +641,65 @@ const earnedSet = rounds => { const s = statsFrom(rounds); return BADGES.filter(
 
 /* ---------- questions ---------- */
 const LEVELS = [
-  { id:1, op:'-', eq:'42 − 7',   desc:'Two digits take away one, crossing a ten' },
-  { id:2, op:'-', eq:'42 − 17',  desc:'Two digits take away two, with a borrow' },
-  { id:7, op:'-', eq:'112 − 25', desc:'Crossing back under a hundred' },
-  { id:4, op:'+', eq:'8 + 5',    desc:'Two single digits, bridging through ten' },
-  { id:5, op:'+', eq:'27 + 15',  desc:'Two digits plus two, with a carry' },
-  { id:6, op:'+', eq:'87 + 25',  desc:'Crossing a hundred' },
-  { id:8,  op:'w', grp:'chain',  eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
-  { id:9,  op:'w', grp:'chain',  eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — addends into tens, or ± pairs' },
-  { id:10, op:'w', grp:'word',   eq:'С колко?',    desc:'How much bigger one sum is than the other' },
-  { id:12, op:'w', grp:'word',   eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition' },
-  { id:13, op:'w', grp:'word',   eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
-  { id:14, op:'w', grp:'word',   eq:'Нов сбор',    desc:'Every addend changes by the same amount' },
-  { id:17, op:'w', grp:'word',   eq:'Сбор и разлика', desc:'One number and the difference — both sums are wanted' },
-  { id:11, op:'w', grp:'puzzle', eq:'6 − ◯',       desc:'Find the number in the circle, then use it' },
-  { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
-  { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
-  { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
-  { id:37, op:'w', grp:'puzzle', eq:'Фигури',     desc:'Add the fewest shapes to make two counts match' },
-  { id:33, op:'w', grp:'puzzle', eq:'Цветя',      desc:'Petals of three kinds adding to a total' },
-  { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
-  { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
-  { id:34, op:'w', grp:'geo',    eq:'Оцветени',   desc:'Paint whole rows and columns — what is left' },
-  { id:42, op:'w', grp:'word',   eq:'Котките',    desc:'Two cats and one box of food between them' },
-  { id:43, op:'w', grp:'puzzle', eq:'Монети',     desc:'The one amount a handful of coins cannot pay' },
-  { id:44, op:'w', grp:'puzzle', eq:'Зачеркни',   desc:'Cross out one digit to make it true' },
-  { id:45, op:'w', grp:'puzzle', eq:'Четири карти', desc:'Arrange four digits for the smallest difference' },
-  { id:39, op:'w', grp:'word',   eq:'Не достигат', desc:'Short by so many — so how many are there now?' },
-  { id:40, op:'w', grp:'geo',    eq:'AD = ?',      desc:'Overlapping lengths along a line' },
-  { id:41, op:'w', grp:'geo',    eq:'Три точки',   desc:'Three points on a line — two answers' },
-  { id:38, op:'w', grp:'word',   eq:'Моливи',     desc:'Colours counted by what they are not' },
-  { id:30, op:'w', grp:'word',   eq:'Умаляемо',   desc:'Naming the parts of a sum and a difference' },
-  { id:29, op:'w', grp:'puzzle', eq:'Плодове',    desc:'Three fruit, three totals — find one from the others' },
-  { id:31, op:'w', grp:'geo',    eq:'Дръвчета',   desc:'Trees in a row: the gaps are one fewer than the trees' },
-  { id:32, op:'w', grp:'geo',    eq:'Ленти',      desc:'Centimetres, decimetres and metres' },
-  { id:28, op:'w', grp:'word',   eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference' },
-  { id:27, op:'w', grp:'puzzle', eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
-  { id:24, op:'w', grp:'word',   eq:'Колко сбора?', desc:'How many different results two numbers can make' },
-  { id:25, op:'w', grp:'word',   eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
-  { id:23, op:'w', grp:'puzzle', eq:'□△ − 9',      desc:'Digits standing in for a two-digit number' },
-  { id:26, op:'w', grp:'puzzle', eq:'Редица',      desc:'Smaller on the left, bigger on the right' },
-  { id:19, op:'w', grp:'geo', eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
-  { id:20, op:'w', grp:'geo', eq:'A, B, C',       desc:'Along a line, right then left — how far apart?' },
-  { id:21, op:'w', grp:'geo', eq:'Обиколка',      desc:'Squares and sheets cut up — sides and perimeters' },
-  { id:22, op:'w', grp:'geo', eq:'Обща страна',   desc:'Two perimeters share an edge — how long is it?' },
-  { id:3, op:'m', eq:'Mixed',    desc:'' }
+  { id:1, op:'-', d:2, eq:'42 − 7', desc:'Two digits take away one, crossing a ten' },
+  { id:2, op:'-', d:2, eq:'42 − 17', desc:'Two digits take away two, with a borrow' },
+  { id:7, op:'-', d:3, eq:'112 − 25', desc:'Crossing back under a hundred' },
+  { id:4, op:'+', d:1, eq:'8 + 5', desc:'Two single digits, bridging through ten' },
+  { id:5, op:'+', d:2, eq:'27 + 15', desc:'Two digits plus two, with a carry' },
+  { id:6, op:'+', d:3, eq:'87 + 25', desc:'Crossing a hundred' },
+  { id:3, op:'m', d:3, eq:'Mixed', desc:'' },
+  { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
+  { id:9, op:'w', grp:'chain', d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — addends into tens, or ± pairs' },
+  { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one' },
+  { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition' },
+  { id:25, op:'w', grp:'count', d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
+  { id:24, op:'w', grp:'count', d:4, eq:'Колко сбора?', desc:'How many different results two numbers can make' },
+  { id:16, op:'w', grp:'count', d:5, eq:'Вместо ?', desc:'How many digits make the statement false' },
+  { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
+  { id:35, op:'w', grp:'num', d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
+  { id:44, op:'w', grp:'num', d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true' },
+  { id:18, op:'w', grp:'num', d:4, eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
+  { id:45, op:'w', grp:'num', d:4, eq:'Четири карти', desc:'Arrange four digits for the smallest difference' },
+  { id:23, op:'w', grp:'num', d:4, eq:'□△ − 9', desc:'Digits standing in for a two-digit number' },
+  { id:27, op:'w', grp:'seq', d:4, eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
+  { id:26, op:'w', grp:'seq', d:4, eq:'Редица', desc:'Smaller on the left, bigger on the right' },
+  { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the number in the circle, then use it' },
+  { id:15, op:'w', grp:'find', d:4, eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
+  { id:29, op:'w', grp:'find', d:4, eq:'Плодове', desc:'Three fruit, three totals — find one from the others' },
+  { id:37, op:'w', grp:'find', d:5, eq:'Фигури', desc:'Add the fewest shapes to make two counts match' },
+  { id:28, op:'w', grp:'word', d:2, eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference' },
+  { id:38, op:'w', grp:'word', d:3, eq:'Моливи', desc:'Colours counted by what they are not' },
+  { id:39, op:'w', grp:'word', d:3, eq:'Не достигат', desc:'Short by so many — so how many are there now?' },
+  { id:14, op:'w', grp:'word', d:3, eq:'Нов сбор', desc:'Every addend changes by the same amount' },
+  { id:10, op:'w', grp:'word', d:3, eq:'С колко?', desc:'How much bigger one sum is than the other' },
+  { id:30, op:'w', grp:'word', d:3, eq:'Умаляемо', desc:'Naming the parts of a sum and a difference' },
+  { id:42, op:'w', grp:'word', d:4, eq:'Котките', desc:'Two cats and one box of food between them' },
+  { id:43, op:'w', grp:'word', d:4, eq:'Монети', desc:'The one amount a handful of coins cannot pay' },
+  { id:17, op:'w', grp:'word', d:4, eq:'Сбор и разлика', desc:'One number and the difference — both sums are wanted' },
+  { id:33, op:'w', grp:'word', d:5, eq:'Цветя', desc:'Petals of three kinds adding to a total' },
+  { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:'Along a line, right then left — how far apart?' },
+  { id:40, op:'w', grp:'geo', d:3, eq:'AD = ?', desc:'Overlapping lengths along a line' },
+  { id:32, op:'w', grp:'geo', d:3, eq:'Ленти', desc:'Centimetres, decimetres and metres' },
+  { id:31, op:'w', grp:'geo', d:4, eq:'Дръвчета', desc:'Trees in a row: the gaps are one fewer than the trees' },
+  { id:21, op:'w', grp:'geo', d:4, eq:'Обиколка', desc:'Squares and sheets cut up — sides and perimeters' },
+  { id:22, op:'w', grp:'geo', d:4, eq:'Обща страна', desc:'Two perimeters share an edge — how long is it?' },
+  { id:34, op:'w', grp:'geo', d:4, eq:'Оцветени', desc:'Paint whole rows and columns — what is left' },
+  { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
+  { id:41, op:'w', grp:'geo', d:4, eq:'Три точки', desc:'Three points on a line — two answers' }
+];
+// Picker sections, in the order they appear. Levels inside each are sorted easiest
+// first in the LEVELS table above.
+const PICK_GROUPS = [
+  { nm:'Take away',          has: l => l.op === '-' },
+  { nm:'Add',                has: l => l.op === '+' },
+  { nm:'Both',               has: l => l.op === 'm' },
+  { nm:'Chains',             has: l => l.grp === 'chain' },
+  { nm:'Counting',           has: l => l.grp === 'count' },
+  { nm:'Numbers and digits', has: l => l.grp === 'num' },
+  { nm:'Sequences',          has: l => l.grp === 'seq' },
+  { nm:'Find the value',     has: l => l.grp === 'find' },
+  { nm:'Word problems',      has: l => l.grp === 'word' },
+  { nm:'Shapes and lines',   has: l => l.grp === 'geo' }
 ];
 const LEVEL_NAME = {}, LEVEL_OP = {};
 LEVELS.forEach(l => { LEVEL_NAME[l.id] = l.eq; LEVEL_OP[l.id] = l.op; });
@@ -2741,16 +2745,17 @@ function buildPicker(){
     return '<span class="last"><b style="color:' + col + '">' + h.last.firstTry + '/' + h.last.n +
            '</b><i>' + ago(h.last.ts) + life + '</i></span>';
   };
+  // how hard it is, on the rubric in the README: operations, reading, search,
+  // number size and how easy the trap is to miss — five dots
+  const hard = l => '<span class="dots5" title="Difficulty ' + l.d + ' of 5" aria-label="Difficulty ' +
+    l.d + ' of 5">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span>' +
-    stat(l) + '</button>';
-  $('pickMinus').innerHTML = LEVELS.filter(l => l.op === '-').map(row).join('');
-  $('pickPlus').innerHTML = LEVELS.filter(l => l.op === '+').map(row).join('');
-  $('pickChain').innerHTML = LEVELS.filter(l => l.grp === 'chain').map(row).join('');
-  $('pickWord').innerHTML = LEVELS.filter(l => l.grp === 'word').map(row).join('');
-  $('pickPuzzle').innerHTML = LEVELS.filter(l => l.grp === 'puzzle').map(row).join('');
-  $('pickGeo').innerHTML = LEVELS.filter(l => l.grp === 'geo').map(row).join('');
-  $('pickMixed').innerHTML = LEVELS.filter(l => l.op === 'm').map(row).join('');
+    '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) +
+    hard(l) + '</span>' + stat(l) + '</button>';
+  $('pickAll').innerHTML = PICK_GROUPS.map(g => {
+    const rows = LEVELS.filter(g.has).map(row).join('');
+    return rows ? '<div class="lab">' + g.nm + '</div><div class="pickgroup">' + rows + '</div>' : '';
+  }).join('');
   document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
     paintPill();

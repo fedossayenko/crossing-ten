@@ -629,3 +629,27 @@ if(candyWays(5, 3).length !== 6) throw new Error('worksheet instance of зада
 console.log('sharing sweets: the count matches the listed ways, worksheet instance gives 6');
 `;
 eval(head + body + test);
+
+// The level table is a static thing, so it is checked on the file rather than through
+// the generators: every level rated, in a known group, and easiest first.
+{
+  const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
+  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?, d:(\d), eq:.(.*?)., desc/g)]
+    .map(m => ({ id:+m[1], grp: m[3] || m[2], d:+m[4], eq:m[5] }));
+  if(rows.length !== 45) throw new Error('parsed ' + rows.length + ' levels, expected 45');
+  const seen = new Set();
+  rows.forEach(r => {
+    if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
+    if(seen.has(r.id)) throw new Error('level id ' + r.id + ' appears twice');
+    seen.add(r.id);
+  });
+  const known = ['-', '+', 'm', 'chain', 'count', 'num', 'seq', 'find', 'word', 'geo'];
+  rows.forEach(r => { if(known.indexOf(r.grp) < 0) throw new Error(r.eq + ' is in no known group'); });
+  known.slice(3).forEach(g => {
+    const ds = rows.filter(r => r.grp === g).map(r => r.d);
+    if(ds.some((v, i) => i && v < ds[i-1])) throw new Error('group ' + g + ' is not easiest first');
+  });
+  const ladder = rows.filter(r => r.grp === '-' || r.grp === '+').map(r => r.d);
+  if(ladder.join() !== '2,2,3,1,2,3') throw new Error('the arithmetic ladder lost its designed order');
+  console.log('level table: all 45 rated 1-5, in known groups, worksheet groups easiest first');
+}
