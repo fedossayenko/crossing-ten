@@ -37,9 +37,9 @@ Take away, Add and Both keep their designed ladder order — they are a progress
 not a topic. Everything from the worksheets is grouped by what you have to *do*, and
 sorted easiest first inside each group:
 
-- **Chains** — long ± runs, and runs that simplify by grouping
+- **Chains** — long ± runs, runs that simplify by grouping, and runs whose signs you choose
 - **Counting** — how many numbers, sums, ways or days fit a condition
-- **Numbers and digits** — place value, digits standing in for numbers, arranging digits
+- **Numbers and digits** — place value, digits standing in for numbers, arranging digits, multiples
 - **Sequences** — find the rule, fill the gaps
 - **Find the value** — an unknown recovered from what is given
 - **Word problems** — a story to turn into arithmetic

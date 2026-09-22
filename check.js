@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -808,6 +808,87 @@ for(let i = 0; i < 4000; i++){
 }
 console.log('two languages: the overlap is the excess, worksheet instance gives 4');
 
+// задача 17: the smallest count past the bound that splits equally both ways
+for(let i = 0; i < 4000; i++){
+  const q = raw(49);
+  if(q.ans % q.p || q.ans % q.r) throw new Error('the count does not split both ways');
+  if(q.ans <= q.N) throw new Error('the count is not past the bound');
+  for(let v = q.N + 1; v < q.ans; v++)
+    if(v % q.p === 0 && v % q.r === 0) throw new Error(v + ' is smaller and also works');
+  if(q.N % q.L === 0) throw new Error('the bound is itself a count that works, which blurs „more than"');
+  if(!BGNUM[q.p] || !BGNUM[q.r]) throw new Error('the number of equal parts has no Bulgarian word');
+  if(q.ans > 100) throw new Error('the count has run past what she works with');
+}
+if(lastNum(why({kind:'multiple', g:['рози','розите','градината'], p:3, r:2, L:6, N:32, ans:36}, true)) !== 36)
+  throw new Error('more than 32, splitting into 2 and into 3, should be 36');
+console.log('equal parts both ways: nothing smaller past the bound works, worksheet instance gives 36');
+
+// задача 18: k different whole numbers with a fixed sum
+let tops = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(13);
+  if(q.shape !== 4) continue;
+  tops++;
+  const rest = [];
+  for(let v = 0; v <= q.k - 2; v++) rest.push(v);
+  if(rest.reduce((t, v) => t + v, 0) !== q.floor) throw new Error('the smallest the others can be is wrong');
+  const set = rest.concat([q.ans]);
+  if(set.reduce((t, v) => t + v, 0) !== q.S) throw new Error('the witness set does not reach the sum');
+  if(new Set(set).size !== q.k) throw new Error('the witness set repeats a number');
+  if(q.ans + 1 + q.floor <= q.S) throw new Error('one bigger would still fit, so the answer is not the largest');
+}
+if(!tops) throw new Error('the largest-of-k shape should turn up');
+if(lastNum(why({kind:'named', shape:4, k:5, S:11, floor:6, ans:5}, true)) !== 5)
+  throw new Error('five different numbers summing to 11 cap the biggest at 5');
+console.log('largest of a set: the witness holds and one more would not fit, worksheet instance gives 5');
+
+// задача 19: the last such weekday of the month
+let lasts = 0;
+for(let i = 0; i < 4000; i++){
+  const q = raw(25);
+  if(q.shape !== 'last') continue;
+  lasts++;
+  if(q.first < 1 || q.first > 7) throw new Error('the first such weekday must fall in the opening week');
+  if((q.ans - q.first) % 7) throw new Error('the last one is not a whole number of weeks on');
+  if(q.ans > q.mon[1]) throw new Error('the date runs past the end of the month');
+  if(q.ans + 7 <= q.mon[1]) throw new Error('another one still fits, so it is not the last');
+  const idx = DAYS.indexOf(q.d1), want = DAYS.indexOf(q.day);
+  if((idx + q.first - 1) % 7 !== want) throw new Error('the first date does not land on the named weekday');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf(q.day.f ? 'последната ' + q.day.nm : 'последният ' + q.day.nm) < 0)
+    throw new Error('the weekday is not agreed with its adjective: ' + q.day.nm);
+}
+if(!lasts) throw new Error('the last-weekday shape should turn up');
+{ // задача 19 as printed: the 1st of January is a Sunday
+  const sun = DAYS[6];
+  const q = {kind:'weekday', shape:'last', mon:['януари',31], d1:sun, day:sun, first:1, ans:29};
+  if(lastNum(why(q, true)) !== 29) throw new Error('the last Sunday of that January is the 29th');
+}
+console.log('last weekday: a whole number of weeks on, and no further one fits, worksheet instance gives 29');
+
+// задача 20: the signs in a run, and how many of them can be minus
+for(let i = 0; i < 3000; i++){
+  const q = raw(50);
+  const rest = q.nums.slice(1);
+  let most = -1;
+  for(let mask = 0; mask < (1 << rest.length); mask++){
+    let sum = 0, n = 0;
+    for(let j = 0; j < rest.length; j++) if(mask & (1 << j)){ sum += rest[j]; n++; }
+    if(q.nums.reduce((t, v) => t + v, 0) - 2*sum === q.T) most = Math.max(most, n);
+  }
+  if(most !== q.ans) throw new Error('the most minuses is ' + most + ', answer says ' + q.ans);
+  if(q.ans < 1) throw new Error('a run with no minus at all is not the puzzle');
+  const val = q.nums.reduce((t, v, j) => j === 0 ? v : t + (q.wit.indexOf(v) >= 0 ? -v : v), 0);
+  if(val !== q.T) throw new Error('the worked example does not come out at the target');
+  if(q.wit.length !== q.ans) throw new Error('the example does not use the most minuses');
+  if(q.nums.some((v, j) => j && v !== q.nums[j-1] + 1)) throw new Error('the run must step by one');
+}
+{ // задача 20 as printed: 1 to 5 making 5
+  const q = {kind:'signs', a:1, b:5, nums:[1,2,3,4,5], T:5, wit:[2,3], ans:2};
+  if(lastNum(why(q, true)) !== 2) throw new Error('1 to 5 making 5 allows two minuses');
+}
+console.log('choosing the signs: matches an exhaustive search of every sign pattern, worksheet instance gives 2');
+
 // задача 12: conversions and the cut both land on whole centimetres
 for(let i = 0; i < 4000; i++){
   const q = raw(32);
@@ -890,7 +971,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 47) throw new Error('parsed ' + rows.length + ' levels, expected 47');
+  if(rows.length !== 49) throw new Error('parsed ' + rows.length + ' levels, expected 49');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -925,7 +1006,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 47 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 49 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {
