@@ -254,9 +254,12 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
   text-align:left; min-height:52px;
 }
 .pick[aria-pressed="true"]{border-color:var(--accent)}
-.pick .eq{font-family:Fredoka,sans-serif; font-size:21px; font-variant-numeric:tabular-nums; flex:0 0 auto; min-width:96px}
+.pick .eq{
+  font-family:Fredoka,sans-serif; font-size:21px; font-variant-numeric:tabular-nums;
+  flex:0 0 auto; min-width:96px; display:flex; flex-direction:column; align-items:flex-start; gap:5px;
+}
 .pick .desc{font-size:13px; font-weight:700; color:var(--muted); flex:1 1 130px}
-.dots5{display:inline-flex; gap:2.5px; vertical-align:.5px; margin-left:7px}
+.dots5{display:inline-flex; gap:3px}
 .dots5 i{width:5px; height:5px; border-radius:50%; background:var(--line)}
 .dots5 i.on{background:var(--accent)}
 .pick.now{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 9%, var(--card))}
@@ -2789,9 +2792,9 @@ function buildPicker(){
   const hard = l => '<span class="dots5" title="Difficulty ' + l.d + ' of 5" aria-label="Difficulty ' +
     l.d + ' of 5">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) +
-    hard(l) + '</span>' + (M[l.id] && M[l.id].done ? '<span class="tick">✓</span>' : '') +
-    stat(l) + '</button>';
+    '<span class="eq">' + l.eq + hard(l) + '</span>' +
+    '<span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span>' +
+    (M[l.id] && M[l.id].done ? '<span class="tick">✓</span>' : '') + stat(l) + '</button>';
   const m = mastery(LOCAL.rounds);
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
   const lastLvl = lastRound && LEVELS.filter(l => l.id === lastRound.level)[0];
@@ -2800,7 +2803,7 @@ function buildPicker(){
   $('nextUp').innerHTML = '<div class="nextwrap"><div class="lab">' +
     (learned ? 'Next up' : 'Start here') + '</div>' +
     (nx ? '<button class="pick now" data-lvl="' + nx.id + '"><span class="eq">' + nx.eq +
-          '</span><span class="desc">' + (nx.id === 3 ? mixDesc() : nx.desc) + hard(nx) + '</span>' +
+          hard(nx) + '</span><span class="desc">' + (nx.id === 3 ? mixDesc() : nx.desc) + '</span>' +
           stat(nx) + '</button>'
         : '<div class="advice">Every level learned. Keep the ones she enjoys in rotation.</div>') +
     '<div class="progress"><span class="track"><i style="width:' +
