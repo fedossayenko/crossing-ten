@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(!Number.isInteger(ans) || ans < 0) throw new Error('level ' + L + ' bad answer ' + JSON.stringify(q));
@@ -32,7 +32,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11]){
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across 11 levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 15 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 `;

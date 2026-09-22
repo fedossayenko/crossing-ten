@@ -152,6 +152,7 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .stage{display:flex; flex-direction:column; align-items:center; gap:9px; max-width:100%}
 .ask{font-size:clamp(15px,4.2vw,20px); font-weight:700; line-height:1.45; text-align:center; text-wrap:balance; max-width:30ch}
 .ask .num{font-family:Fredoka,sans-serif; font-weight:500; letter-spacing:.02em; white-space:nowrap}
+.note{font-size:clamp(12px,3vw,14px); font-weight:700; font-style:italic; color:var(--muted); text-align:center}
 .given{font-family:Fredoka,sans-serif; font-size:clamp(19px,5vw,28px); color:var(--muted); letter-spacing:.03em; text-align:center}
 .line{font-family:Fredoka,sans-serif; letter-spacing:.03em; line-height:1.25; text-align:center; text-wrap:balance}
 .line .slot,.given .slot{grid-column:auto; display:inline-block; min-width:1.6ch}
@@ -373,8 +374,12 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
     <div class="pickgroup" id="pickMinus"></div>
     <div class="lab">Add</div>
     <div class="pickgroup" id="pickPlus"></div>
-    <div class="lab">From the worksheet</div>
-    <div class="pickgroup" id="pickWork"></div>
+    <div class="lab">Chains</div>
+    <div class="pickgroup" id="pickChain"></div>
+    <div class="lab">Word problems</div>
+    <div class="pickgroup" id="pickWord"></div>
+    <div class="lab">Puzzles</div>
+    <div class="pickgroup" id="pickPuzzle"></div>
     <div class="lab">Both</div>
     <div class="pickgroup" id="pickMixed"></div>
     <div class="lab">What goes into Mixed</div>
@@ -601,10 +606,14 @@ const LEVELS = [
   { id:4, op:'+', eq:'8 + 5',    desc:'Two single digits, bridging through ten' },
   { id:5, op:'+', eq:'27 + 15',  desc:'Two digits plus two, with a carry' },
   { id:6, op:'+', eq:'87 + 25',  desc:'Crossing a hundred' },
-  { id:8,  op:'w', eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
-  { id:9,  op:'w', eq:'1 + 9 + 2 + 8', desc:'Chains whose terms pair up into tens' },
-  { id:10, op:'w', eq:'С колко?',  desc:'How much bigger one sum is than the other' },
-  { id:11, op:'w', eq:'6 − ◯',     desc:'Find the number in the circle, then use it' },
+  { id:8,  op:'w', grp:'chain',  eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
+  { id:9,  op:'w', grp:'chain',  eq:'1 + 9 + 2 + 8', desc:'Chains whose terms pair up into tens' },
+  { id:10, op:'w', grp:'word',   eq:'С колко?',    desc:'How much bigger one sum is than the other' },
+  { id:12, op:'w', grp:'word',   eq:'Колко са?',   desc:'Counting a range from a condition — zero counts too' },
+  { id:13, op:'w', grp:'word',   eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
+  { id:14, op:'w', grp:'word',   eq:'Нов сбор',    desc:'Every addend changes by the same amount' },
+  { id:11, op:'w', grp:'puzzle', eq:'6 − ◯',       desc:'Find the number in the circle, then use it' },
+  { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number that is a few more than another' },
   { id:3, op:'m', eq:'Mixed',    desc:'' }
 ];
 const LEVEL_NAME = {}, LEVEL_OP = {};
@@ -667,6 +676,60 @@ function genBox(){
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
 
+const BGNUM = {2:'две', 3:'три', 4:'четири'};
+const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и ' + a[a.length-1];
+
+// Задача 5: counting a range given as a condition. The wording rotates — including
+// «между», where the two ends are NOT counted — so the condition has to be read.
+function genCount(){
+  const shape = rnd(4);
+  if(shape === 0){ const n = 3 + rnd(13); return {kind:'count', shape, n, ans: n + 1}; }
+  if(shape === 1){ const n = 3 + rnd(13); return {kind:'count', shape, n, ans: n}; }
+  if(shape === 2){ const a = 1 + rnd(8), b = a + 2 + rnd(9); return {kind:'count', shape, a, b, ans: b - a + 1}; }
+  const a = 1 + rnd(8), b = a + 3 + rnd(8);
+  return {kind:'count', shape, a, b, ans: b - a - 1};
+}
+
+// Задача 6: the vocabulary of place value, on its own or feeding a comparison.
+const NAMED = [
+  { nm:'най-голямото едноцифрено число', v:9 },
+  { nm:'най-малкото двуцифрено число',   v:10 },
+  { nm:'най-голямото двуцифрено число',  v:99 },
+  { nm:'най-малкото трицифрено число',   v:100 }
+];
+function genNamed(){
+  if(Math.random() < 0.4){
+    const t = NAMED[rnd(NAMED.length)];
+    return {kind:'named', shape:0, nm:t.nm, ans:t.v};
+  }
+  const R = [14,15,16,17,18,20,22,25][rnd(8)];   // 10 + 9 = 19, so R is never 19
+  return {kind:'named', shape:1, R, ans: Math.abs(19 - R)};
+}
+
+// Задача 7: every addend moves by the same amount, so the sum moves that many times.
+function genGrow(){
+  const k = 2 + rnd(3);
+  const d = 2 + rnd(5);
+  const up = Math.random() < 0.65;
+  const base = up ? 3 + rnd(15) : k*d + rnd(12);
+  return {kind:'grow', k, d, up, base, ans: up ? base + k*d : base - k*d};
+}
+
+// Задача 8: exactly one number in the list is d more than another one. Generated by
+// rejection so there is never a second candidate to argue about.
+function genErase(){
+  for(;;){
+    const d = 2 + rnd(4);
+    const set = [];
+    while(set.length < 5){ const v = 2 + rnd(18); if(set.indexOf(v) < 0) set.push(v); }
+    set.sort((x,y) => x - y);
+    const hits = set.filter(x => set.indexOf(x + d) >= 0).map(x => x + d);
+    if(hits.length !== 1) continue;
+    const gone = hits[0];
+    return {kind:'erase', set, d, gone, ans: set.reduce((t,v) => t + v, 0) - gone};
+  }
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -680,6 +743,10 @@ function raw(level){
     if(level === 9) return genPairs();
     if(level === 10) return genCmp();
     if(level === 11) return genBox();
+    if(level === 12) return genCount();
+    if(level === 13) return genNamed();
+    if(level === 14) return genGrow();
+    if(level === 15) return genErase();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -742,6 +809,35 @@ function drawQ(q){
         : 'С колко сборът ' + A + ' е по-голям от сбора ' + B + '?') +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'count'){
+    const cond = q.shape === 0 ? 'не са по-големи от ' + q.n
+               : q.shape === 1 ? 'са по-малки от ' + q.n
+               : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
+               : 'са между ' + q.a + ' и ' + q.b;
+    return '<div class="ask">Колко са всички числа, които ' + cond + '?</div>' +
+      '<div class="note">Числата са 0, 1, 2, 3, …</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'named'){
+    const ask = q.shape === 0
+      ? 'Кое е ' + q.nm + '?'
+      : 'Съберете най-малкото двуцифрено и най-голямото едноцифрено число. С колко полученият сбор е ' +
+        (q.R > 19 ? 'по-малък' : 'по-голям') + ' от <span class="num">' + q.R + '</span>?';
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'grow'){
+    return '<div class="ask">Сборът на ' + BGNUM[q.k] + ' числа е <span class="num">' + q.base +
+      '</span>. Всяко от събираемите ' + (q.up ? 'увеличаваме' : 'намаляваме') +
+      ' с <span class="num">' + q.d + '</span>. Колко е новият сбор?</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'erase'){
+    return '<div class="ask">Записах числата <span class="num">' + bgList(q.set) +
+      '</span>. Изтрих едно от числата, което е по-голямо с <span class="num">' + q.d +
+      '</span> от друго от тях. Пресметнете сбора на останалите числа.</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   return '<div class="ask">Пресметни, ако</div>' +
     '<div class="given">' + q.b + ' − <span class="circle">◯</span> = ' + q.x + ' − ' + q.y + '</div>' +
     '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.a +
@@ -752,6 +848,15 @@ function eqText(q){
   if(!q.kind) return q.a + ' ' + (q.op === '-' ? '−' : '+') + ' ' + q.b + ' = ' + answer(q);
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
+  if(q.kind === 'count') return (q.shape === 0 ? 'не по-големи от ' + q.n
+    : q.shape === 1 ? 'по-малки от ' + q.n
+    : q.shape === 2 ? 'от ' + q.a + ' до ' + q.b
+    : 'между ' + q.a + ' и ' + q.b) + ' → ' + q.ans;
+  if(q.kind === 'named') return q.shape === 0 ? q.nm + ' = ' + q.ans
+    : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
+  if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
+    (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'erase') return bgList(q.set) + ', изтрито ' + q.gone + ' → ' + q.ans;
   return exprText(q.terms) + ' = ' + q.ans;
 }
 
@@ -776,6 +881,33 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'count'){
+    if(!full) return q.shape === 3 ? 'Краищата не се броят.'
+            : q.shape === 2 ? 'И двата края се броят.'
+            : 'Не забравяй нулата — тя също е число.';
+    if(q.shape === 0) return '0, 1, 2, …, ' + q.n + ' &nbsp;→&nbsp; <b>с нулата</b> стават ' + q.ans;
+    if(q.shape === 1) return '0, 1, 2, …, ' + (q.n - 1) + ' &nbsp;(' + q.n + ' не се брои) &nbsp;→&nbsp; ' + q.ans;
+    if(q.shape === 2) return 'от ' + q.a + ' до ' + q.b + ', <b>с двата края</b> &nbsp;→&nbsp; ' +
+      q.b + ' − ' + q.a + ' + 1 = ' + q.ans;
+    return 'между ' + q.a + ' и ' + q.b + ' са ' + (q.a+1) + ' … ' + (q.b-1) +
+      ' &nbsp;(<b>без краищата</b>) &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'named'){
+    if(!full) return q.shape === 0 ? 'Колко цифри трябва да има числото?' : 'Първо сборът, после сравнението.';
+    if(q.shape === 0) return q.nm + ' е <b>' + q.ans + '</b>';
+    return '10 + 9 = <b>19</b> &nbsp;→&nbsp; ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
+  }
+  if(q.kind === 'grow'){
+    if(!full) return 'Всяко число се променя — колко пъти общо?';
+    const step = Array(q.k).fill(q.d).join(' + ');
+    return step + ' = <b>' + (q.k*q.d) + '</b> ' + (q.up ? 'повече' : 'по-малко') +
+      ' &nbsp;→&nbsp; ' + q.base + ' ' + (q.up ? '+' : '−') + ' ' + (q.k*q.d) + ' = ' + q.ans;
+  }
+  if(q.kind === 'erase'){
+    if(!full) return 'Кое число е точно толкова по-голямо от друго?';
+    return '<b>' + q.gone + ' = ' + (q.gone - q.d) + ' + ' + q.d + '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
+      ' &nbsp;→&nbsp; ' + q.set.filter(v => v !== q.gone).join(' + ') + ' = ' + q.ans;
   }
   if(!full) return 'Първо пресметни дясната страна.';
   return q.x + ' − ' + q.y + ' = ' + q.r + ' &nbsp;→&nbsp; <b>◯ = ' + q.b + ' − ' + q.r + ' = ' + q.box +
@@ -1125,7 +1257,9 @@ function buildPicker(){
     '<span class="eq">' + l.eq + '</span><span class="desc">' + (l.id === 3 ? mixDesc() : l.desc) + '</span></button>';
   $('pickMinus').innerHTML = LEVELS.filter(l => l.op === '-').map(row).join('');
   $('pickPlus').innerHTML = LEVELS.filter(l => l.op === '+').map(row).join('');
-  $('pickWork').innerHTML = LEVELS.filter(l => l.op === 'w').map(row).join('');
+  $('pickChain').innerHTML = LEVELS.filter(l => l.grp === 'chain').map(row).join('');
+  $('pickWord').innerHTML = LEVELS.filter(l => l.grp === 'word').map(row).join('');
+  $('pickPuzzle').innerHTML = LEVELS.filter(l => l.grp === 'puzzle').map(row).join('');
   $('pickMixed').innerHTML = LEVELS.filter(l => l.op === 'm').map(row).join('');
   document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
