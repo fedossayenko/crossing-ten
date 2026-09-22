@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -86,6 +86,13 @@ for(let i = 0; i < 6000; i++){
     if(q.P !== 4*q.c) throw new Error('square perimeter is not four sides');
     if(q.p <= 2*q.c) throw new Error('a triangle of ' + q.p + ' cannot sit on a side of ' + q.c);
     if(q.ans !== q.P - q.c + (q.p - q.c)) throw new Error('cut-square perimeter wrong: ' + JSON.stringify(q));
+    continue;
+  }
+  if(q.shape === 2){                       // a square with a rectangle standing on it
+    // the tall rectangle beats the wide one by the square's two upright sides, whatever the height on top
+    const big = 2*(q.a + q.a + q.h), small = 2*(q.a + q.h);
+    if(big - small !== q.d) throw new Error('the stated difference is not the one the figure gives');
+    if(q.ans !== 4*q.a) throw new Error('the square perimeter is not four sides');
     continue;
   }
   const d = q.ans;
@@ -731,6 +738,76 @@ if(!tris) throw new Error('the triangle-against-square shape should turn up');
 }
 console.log('triangle against square: the figure matches its labels at one scale, worksheet instance gives 28');
 
+// задача 13: each tiling must cover its rectangle exactly — no gap, no overlap
+let tiled = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(21);
+  if(q.shape !== 5) continue;
+  tiled++;
+  const cell = {};
+  q.t.sq.forEach(([x, y, k]) => {
+    if(x + k > q.t.w || y + k > q.t.h) throw new Error('a square hangs off the rectangle');
+    for(let dx = 0; dx < k; dx++) for(let dy = 0; dy < k; dy++){
+      const key = (x+dx) + ',' + (y+dy);
+      if(cell[key]) throw new Error('two squares overlap at ' + key);
+      cell[key] = 1;
+    }
+  });
+  if(Object.keys(cell).length !== q.t.w * q.t.h) throw new Error('the squares leave a gap');
+  const least = Math.min(...q.t.sq.map(r => r[2]));
+  if(q.few !== q.t.sq.filter(r => r[2] === least).length) throw new Error('the clue miscounts the smallest squares');
+  if(q.side !== least * q.s) throw new Error('the stated side is not the smallest square scaled');
+  if(q.ans !== 2*(q.t.w + q.t.h)*q.s) throw new Error('the perimeter is not twice the two sides');
+}
+if(!tiled) throw new Error('the tiled-rectangle shape should turn up');
+{ // задача 13 as printed: four squares, two of them 1 см
+  const t = { w:5, h:3, sq:[[0,0,2],[0,2,1],[1,2,1],[2,0,3]] };
+  const q = {kind:'sqcut', shape:5, t, s:1, n:4, few:2, side:1, ans:16};
+  if(lastNum(why(q, true)) !== 16) throw new Error('four squares with two of side 1 should give 16');
+}
+console.log('tiled rectangle: every tiling covers its rectangle exactly, worksheet instance gives 16');
+
+{ // задача 14 as printed: the tall rectangle beats the wide one by 8 см
+  const q = {kind:'shared', shape:2, a:4, h:3, d:8, ans:16};
+  if(lastNum(why(q, true)) !== 16) throw new Error('a difference of 8 should make a square of 16');
+  if(strip(drawQ(q)).indexOf('DCEF') < 0) throw new Error('the rectangle is not named as printed');
+}
+console.log('square under a rectangle: the height on top cancels, worksheet instance gives 16');
+
+// задача 15: three amounts peeled off one at a time
+for(let i = 0; i < 4000; i++){
+  const q = raw(47);
+  if(q.a + q.b + q.c !== q.T) throw new Error('the three amounts do not make the total');
+  if(q.a + q.b !== q.ab) throw new Error('the first two do not make their own total');
+  if(q.c - q.b !== q.d) throw new Error('the gap between the second and third is wrong');
+  if([q.a, q.b, q.c].some(v => v < 1)) throw new Error('an amount fell to nothing');
+  if(q.ans !== [q.a, q.b, q.c][q.asks]) throw new Error('the answer is not the one asked for');
+  if(/ в втор/.test(strip(drawQ(q)))) throw new Error('„в втората" — Bulgarian wants „във" there');
+}
+{ // задача 15 as printed: 30 кг, first two 19, second 2 less than the third
+  const box = ['щайги','щайга'];
+  const q = {kind:'crates', box, asks:0, T:30, ab:19, a:10, b:9, c:11, d:2, ans:10};
+  if(lastNum(why(q, true)) !== 10) throw new Error('the first crate should hold 10 kg');
+}
+console.log('three crates: the parts add up and each step leaves one fewer unknown, worksheet instance gives 10');
+
+// задача 16: two groups that overlap
+for(let i = 0; i < 4000; i++){
+  const q = raw(48);
+  if(q.A + q.B - q.T !== q.both) throw new Error('the overlap is not the excess');
+  if(q.both < 1) throw new Error('with no overlap there is nothing to notice');
+  if(q.both >= q.B) throw new Error('nobody would be left studying only the second language');
+  if(q.A >= q.T || q.B >= q.T) throw new Error('a group is as big as the whole class');
+  if(q.ans !== (q.asksBoth ? q.both : q.B - q.both)) throw new Error('the answer is not the one asked for');
+  if(new Set(q.lang).size !== 2) throw new Error('the two languages must differ');
+}
+{ // задача 16 as printed: 22 students, 18 English, 5 French
+  const q = {kind:'both', T:22, A:18, B:5, both:1, lang:['английски','френски'], asksBoth:false, ans:4};
+  if(lastNum(why(q, true)) !== 4) throw new Error('22 students with 18 and 5 should leave 4 on French alone');
+  if(strip(drawQ(q)).indexOf('поне един') < 0) throw new Error('the assumption that makes it well-posed is missing');
+}
+console.log('two languages: the overlap is the excess, worksheet instance gives 4');
+
 // задача 12: conversions and the cut both land on whole centimetres
 for(let i = 0; i < 4000; i++){
   const q = raw(32);
@@ -813,7 +890,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 45) throw new Error('parsed ' + rows.length + ' levels, expected 45');
+  if(rows.length !== 47) throw new Error('parsed ' + rows.length + ' levels, expected 47');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -848,7 +925,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 45 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 47 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {
