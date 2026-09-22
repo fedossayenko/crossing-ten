@@ -30,12 +30,24 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18]){
       const nums = (strip(why(q,false)).match(/\\d+/g) || []).map(Number);
       if(nums.some(v => ok.indexOf(v) >= 0)) throw new Error('level ' + L + ': the first-miss nudge gives away the answer');
     }
-    if((drawQ(q).match(/id="slot"/g)||[]).length !== 1) throw new Error('level ' + L + ' must draw exactly one answer slot');
+    const boxes = (drawQ(q).match(/class="slot"/g) || []).length;
+    if(boxes !== (q.slots || 1)) throw new Error('level ' + L + ' draws ' + boxes + ' answer boxes but wants ' + (q.slots || 1));
+    if((q.alt || []).length && !q.slots) throw new Error('level ' + L + ' has alternatives but only one box');
     checked++;
   }
 }
 console.log('checked ' + checked + ' questions across ' + 18 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
+
+// answer matching, including the two-box questions
+const one = {kind:'t', ans:7}, two = {kind:'t', ans:18, alt:[14], slots:2};
+[[one,['7'],true],[one,['8'],false],[one,['07'],true],
+ [two,['14','18'],true],[two,['18','14'],true],[two,['14','14'],false],
+ [two,['18','18'],false],[two,['14','15'],false],[two,['14'],false],[two,['14','18','9'],false]
+].forEach(([q,parts,want]) => {
+  if(accepts(q, parts) !== want) throw new Error('accepts(' + JSON.stringify(parts) + ') should be ' + want);
+});
+console.log('answer matching: order-free, no duplicates, every box required');
 `;
 eval(head + body + test);

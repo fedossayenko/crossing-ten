@@ -157,6 +157,7 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .line{font-family:Fredoka,sans-serif; letter-spacing:.03em; line-height:1.25; text-align:center; text-wrap:balance}
 .line .slot,.given .slot{grid-column:auto; display:inline-block; min-width:1.6ch}
 .circle{color:var(--warm)}
+.or{color:var(--muted); font-size:.6em; padding:0 .12em}
 .hint{font-size:clamp(13px,2vh,18px); font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; text-align:center; min-height:1.4em; text-wrap:balance}
 .hint b{color:var(--warm)}
 .verdict{font-family:Fredoka,sans-serif; font-size:clamp(16px,2.5vh,22px); min-height:1.3em}
@@ -172,6 +173,21 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 
 /* keypad */
 .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:9px}
+/* Landscape on a tablet: the keypad sits beside the question instead of under it,
+   so the sum gets the height and the keys stay under the thumb. */
+@media (orientation:landscape) and (min-width:660px) and (min-height:360px){
+  .app{
+    max-width:1000px; gap:9px 16px;
+    display:grid; grid-template-columns:1fr clamp(220px,30vw,300px);
+    grid-template-rows:auto auto 1fr;
+    grid-template-areas:"top pad" "dots pad" "card pad";
+  }
+  .top{grid-area:top} .dots{grid-area:dots} .card{grid-area:card}
+  .pad{grid-area:pad; align-content:center}
+  .key{height:clamp(44px,14vh,74px)}
+  .sum{font-size:clamp(38px,17vh,86px)}
+  .catwrap{width:clamp(46px,7vw,66px)}
+}
 .key{
   background:var(--key); border:1px solid var(--line); border-radius:16px;
   font-family:Fredoka,sans-serif; font-size:clamp(22px,3.4vh,30px); font-weight:500;
@@ -453,7 +469,7 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 
 <script>
 const $ = s => document.getElementById(s);
-const S = { level:2, qs:[], i:0, entry:'', tries:0, revealed:false, settled:false, results:[], t0:0, timers:[], touched:false };
+const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], t0:0, timers:[], touched:false };
 const rnd = n => Math.floor(Math.random()*n);
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
@@ -617,7 +633,7 @@ const LEVELS = [
   { id:12, op:'w', grp:'word',   eq:'Колко са?',   desc:'Counting a range from a condition — zero counts too' },
   { id:13, op:'w', grp:'word',   eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
   { id:14, op:'w', grp:'word',   eq:'Нов сбор',    desc:'Every addend changes by the same amount' },
-  { id:17, op:'w', grp:'word',   eq:'Сбор и разлика', desc:'One number and the difference — two answers are possible' },
+  { id:17, op:'w', grp:'word',   eq:'Сбор и разлика', desc:'One number and the difference — both sums are wanted' },
   { id:11, op:'w', grp:'puzzle', eq:'6 − ◯',       desc:'Find the number in the circle, then use it' },
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
@@ -775,10 +791,8 @@ function genIneq(){
 // would go below zero — so both sums are accepted, and both are shown afterwards.
 function genSumDiff(){
   const d = 1 + rnd(6);
-  // Now and then the smaller number would fall below zero, so only one sum is possible.
-  const a = d > 1 && Math.random() < 0.2 ? 1 + rnd(d - 1) : d + rnd(9);
-  const two = a >= d;
-  return {kind:'sumdiff', a, d, two, ans: 2*a + d, alt: two ? [2*a - d] : []};
+  const a = d + rnd(9);          // the smaller number stays at or above zero, so both sums exist
+  return {kind:'sumdiff', a, d, slots:2, ans: 2*a + d, alt:[2*a - d]};
 }
 
 // Задача 12: digit sums of the two-digit numbers. The count climbs to nine and falls
@@ -850,10 +864,18 @@ function genForFact(key){
   return { a:t*10 + o, b:bt*10 + bo, op:'+' };
 }
 const answer = q => q.kind ? q.ans : (q.op === '-' ? q.a - q.b : q.a + q.b);
-const accepts = (q, v) => v === answer(q) || (q.alt || []).indexOf(v) >= 0;
+const answers = q => [answer(q)].concat(q.alt || []);
+// One box: any accepted answer will do. Several: every answer, once each, in any
+// order — and the count is taken from the question, never from what was typed.
+function accepts(q, parts){
+  const want = answers(q), got = parts.map(Number), n = q.slots || 1;
+  if(got.length !== n) return false;
+  if(n === 1) return want.indexOf(got[0]) >= 0;
+  return want.length === n && got.every((v, i) => want.indexOf(v) >= 0 && got.indexOf(v) === i);
+}
 
 function drawQ(q){
-  const slot = '<span class="slot" id="slot"></span>';
+  const slot = '<span class="slot" id="slot0"></span>';
   if(!q.kind){
     return '<div class="sum" title="Tap to hear it">' +
       '<div class="op" style="visibility:hidden" aria-hidden="true">−</div><div>' + q.a + '</div>' +
@@ -883,9 +905,10 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'sumdiff'){
-    return '<div class="ask">Пресметнете сбора на две числа, едно от които е <span class="num">' + q.a +
-      '</span>, ако разликата им е <span class="num">' + q.d + '</span>.</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+    return '<div class="ask">Пресметнете <b>двата възможни сбора</b> на две числа, едно от които е <span class="num">' +
+      q.a + '</span>, ако разликата им е <span class="num">' + q.d + '</span>.</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
+      ' <span class="or">или</span> <span class="slot" id="slot1"></span></div>';
   }
   if(q.kind === 'digits'){
     const ask = q.shape === 0
@@ -943,8 +966,7 @@ function eqText(q){
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') + ' → ' + q.ans;
-  if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' +
-    (q.two ? (2*q.a - q.d) + ' или ' + q.ans : String(q.ans));
+  if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
   if(q.kind === 'digits') return q.shape === 0
     ? 'сбор на цифрите ' + q.n + ' → ' + q.ans
     : 'срещат се веднъж: 1 и 18 → ' + q.ans;
@@ -1000,12 +1022,10 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'sumdiff'){
-    if(!full) return 'Другото число може да е по-голямо или по-малко.';
-    if(!q.two) return 'другото число може да е само <b>' + (q.a + q.d) + '</b> (по-малкото би било под нулата)' +
-      ' &nbsp;→&nbsp; ' + q.a + ' + ' + (q.a + q.d) + ' = ' + q.ans;
+    if(!full) return 'Другото число може да е по-малко или по-голямо — намери и двата сбора.';
     return 'другото е <b>' + (q.a - q.d) + '</b> или <b>' + (q.a + q.d) + '</b> &nbsp;→&nbsp; ' +
-      q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;или ' + q.a + ' + ' + (q.a + q.d) +
-      ' = ' + q.ans + ' &nbsp;(и двата са верни)';
+      q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
+      ' = ' + q.ans;
   }
   if(q.kind === 'digits'){
     if(!full) return q.shape === 0 ? 'Опитай по десетиците подред.' : 'Кои сборове се получават само от едно число?';
@@ -1118,7 +1138,8 @@ function newRound(qs){
 }
 function show(){
   const q = S.qs[S.i];
-  S.entry = ''; S.tries = 0; S.revealed = false; S.settled = false;
+  S.parts = Array(q.slots || 1).fill(''); S.at = 0;
+  S.tries = 0; S.revealed = false; S.settled = false;
   clearTimers();
   $('stage').innerHTML = drawQ(q);
   $('card').className = 'card';
@@ -1129,7 +1150,12 @@ function show(){
   paintSlot(); paintDots();
   speak(q);
 }
-function paintSlot(){ $('slot').innerHTML = S.entry + (S.revealed ? '' : '<span class="caret"></span>'); }
+function paintSlot(){
+  S.parts.forEach((p, i) => {
+    const el = $('slot' + i);
+    if(el) el.innerHTML = p + (!S.revealed && i === S.at ? '<span class="caret"></span>' : '');
+  });
+}
 function paintDots(){
   $('dots').innerHTML = S.qs.map((_, k) => {
     const r = S.results[k];
@@ -1142,17 +1168,25 @@ function press(k){
   // it is the first digit of the next answer.
   if(S.settled){
     next();
-    if(k >= '0' && k <= '9'){ S.entry = k; sfx.tap(); paintSlot(); }
+    if(k >= '0' && k <= '9'){ S.parts[0] = k; sfx.tap(); paintSlot(); }
     return;
   }
-  if(k === 'del'){ S.entry = S.entry.slice(0,-1); paintSlot(); return; }
-  if(k === 'go'){ check(); return; }
-  if(S.entry.length < 3){ S.entry += k; mood('idle'); sfx.tap(); paintSlot(); }
+  if(k === 'del'){
+    if(S.parts[S.at] === '' && S.at > 0) S.at--;
+    else S.parts[S.at] = S.parts[S.at].slice(0,-1);
+    paintSlot(); return;
+  }
+  if(k === 'go'){
+    // With more than one box, ✓ fills the next one before it submits.
+    if(S.at < S.parts.length - 1 && S.parts[S.at] !== ''){ S.at++; paintSlot(); return; }
+    check(); return;
+  }
+  if(S.parts[S.at].length < 3){ S.parts[S.at] += k; mood('idle'); sfx.tap(); paintSlot(); }
 }
 function check(){
-  if(S.entry === '') return;
-  const q = S.qs[S.i], right = answer(q);
-  if(accepts(q, +S.entry)){
+  if(S.parts.some(p => p === '')) return;
+  const q = S.qs[S.i];
+  if(accepts(q, S.parts)){
     if(S.results[S.i] === undefined) S.results[S.i] = S.tries === 0;
     $('card').className = 'card ok';
     $('verdict').className = 'verdict ok';
@@ -1176,10 +1210,10 @@ function check(){
     $('verdict').className = 'verdict no';
     $('verdict').textContent = 'Not yet — try once more.';
     $('hint').innerHTML = why(q);
-    S.entry = ''; paintSlot();
+    S.parts = S.parts.map(() => ''); S.at = 0; paintSlot();
   } else {
     S.revealed = true; S.settled = true;
-    S.entry = String(right);
+    S.parts = answers(q).slice(0, S.parts.length).map(String);
     $('card').className = 'card no';
     $('verdict').className = 'verdict no';
     $('verdict').textContent = eqText(q);
@@ -1428,7 +1462,7 @@ function buildPicker(){
     newRound();
   });
 }
-const midRound = () => S.i > 0 || S.entry !== '' || S.results.length > 0;
+const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
 $('levelPill').onclick = () => { buildPicker(); buildMixSel(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
 $('closePick').onclick = () => { $('picker').hidden = true; };
 paintPill();
