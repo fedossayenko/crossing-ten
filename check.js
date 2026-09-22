@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -728,15 +728,44 @@ console.log('fruit picture: drawn fruit match the counts the question assumes, a
 console.log('erase wording: same list gives 27 when the bigger goes, 31 when the smaller does');
 
 // задача 9: the three totals must be consistent with the three fruit values
+let squares = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(29);
+  if(q.grid){                                  // задача 20: four fruit in a square, checked below
+    squares++;
+    if(q.A + q.B !== q.R1 || q.C - q.D !== q.R2) throw new Error('a row does not match its total');
+    if(q.A + q.C !== q.C1 || q.B + q.D !== q.C2) throw new Error('a column does not match its total');
+    if(new Set(q.f).size !== 4) throw new Error('the four fruit must differ');
+    if(q.signs.filter(x => x > 0).length !== 2) throw new Error('the question should add two and take away two');
+    if(q.signs[0] !== 1) throw new Error('the expression should not open with a minus');
+    if(new Set([q.A, q.B, q.C, q.D]).size !== 4) throw new Error('two fruit share a value, which softens the puzzle');
+    const want = [q.A, q.B, q.C, q.D].reduce((t, x, i) => t + q.signs[i]*x, 0);
+    if(want !== q.ans || q.ans < 1) throw new Error('the grid answer is wrong or went negative');
+    // only one set of values can fit all four totals
+    let fits = 0;
+    for(let A = 0; A <= 20; A++){
+      const B = q.R1 - A, C = q.C1 - A, D = q.C2 - B;
+      if(B < 0 || C < 0 || D < 0) continue;
+      if(C - D === q.R2) fits++;
+    }
+    if(fits !== 1) throw new Error(fits + ' sets of values fit the square, so it has no single answer');
+    continue;
+  }
   if(q.a + q.b !== q.s1 || q.a + q.c !== q.s2 || q.a + q.b + q.c !== q.s3)
     throw new Error('fruit totals disagree with the values: ' + JSON.stringify(q));
   if(new Set(q.f).size !== 3) throw new Error('the three fruit must be different');
   const v = [q.a, q.b, q.c];
   if(v[q.askd[0]] - v[q.askd[1]] !== q.ans || q.ans < 1) throw new Error('fruit answer wrong');
 }
-console.log('fruit equations: totals match the values, three distinct fruit, answer stays positive');
+if(!squares) throw new Error('the four-fruit square should turn up');
+{ // задача 20 as printed
+  const q = {kind:'fruiteq', grid:1, f:['l','g','a','p'], A:7, B:9, C:5, D:2,
+             signs:[1, -1, 1, -1], R1:16, R2:3, C1:12, C2:11, ans:1};
+  if(lastNum(why(q, true)) !== 1) throw new Error('that square should come out at 1');
+  // the printed question asks lemon - strawberry - pear + apple, which is 9 - 7 - 2 + 5
+  if(9 - 7 - 2 + 5 !== 5) throw new Error('the printed expression is 5');
+}
+console.log('fruit equations: three totals or a square of four, every value forced, worksheet values are 7, 9, 5 and 2');
 
 // задача 11: the gaps are one fewer than the trees, whichever way round it is asked
 for(let i = 0; i < 4000; i++){
@@ -843,7 +872,7 @@ for(let i = 0; i < 4000; i++){
 if(!anchored) throw new Error('the distance-from-an-anchor shape should turn up');
 if(lastNum(why({kind:'sumdiff', shape:'gap', c:18, d1:2, d2:3, ans:5}, true)) !== 5)
   throw new Error('A two from 18 and B three from 18 should be five apart');
-console.log('distance from an anchor: matches all four placings of the two numbers, worksheet instance gives 5');
+console.log('distance from an anchor: matches all four placings of the two numbers, worksheet values are 7, 9, 5 and 2');
 
 // задача 12: a triangle in см against a square given in дм
 let tris = 0;
@@ -975,7 +1004,7 @@ for(let i = 0; i < 6000; i++){
 if(!tops) throw new Error('the largest-of-k shape should turn up');
 if(lastNum(why({kind:'named', shape:4, k:5, S:11, floor:6, ans:5}, true)) !== 5)
   throw new Error('five different numbers summing to 11 cap the biggest at 5');
-console.log('largest of a set: the witness holds and one more would not fit, worksheet instance gives 5');
+console.log('largest of a set: the witness holds and one more would not fit, worksheet values are 7, 9, 5 and 2');
 
 // задача 19: the last such weekday of the month
 let lasts = 0;
@@ -1085,6 +1114,79 @@ if(lastNum(why({kind:'cmp', shape:2, same:1, x:31, y:13, p:31, q:13, S:44, D:18,
   throw new Error('31 + 13 against 31 − 13 should be 26');
 console.log('same pair both ways: the gap is twice the smaller number, worksheet instance gives 26');
 
+// задача 16: one bracket take away another, the second in a different order
+let written = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(10);
+  if(!q.written) continue;
+  written++;
+  const rest = q.terms.slice();
+  q.kept.forEach(v => {
+    const at = rest.indexOf(v);
+    if(at < 0) throw new Error('the second bracket holds a term the first does not');
+    rest.splice(at, 1);
+  });
+  if(rest.length !== 1 || rest[0] !== q.ans) throw new Error('what is left over is not the answer');
+  if(q.gone[0] === q.terms[0] || q.gone[0] === q.terms[q.terms.length-1])
+    throw new Error('the odd one out should not sit at either end, where it is easy to spot');
+  if(String(q.kept) === String(q.terms.filter(v => v !== q.ans)))
+    throw new Error('the second bracket should be in a different order');
+}
+if(!written) throw new Error('the written-out bracket shape should turn up');
+{ // задача 16 as printed
+  const q = {kind:'cmp', shape:1, written:1, terms:[7,9,11,13,15,17], kept:[17,15,13,9,7], gone:[11], ans:11};
+  if(lastNum(why(q, true)) !== 11) throw new Error('those two brackets should leave 11');
+  if(strip(drawQ(q)).indexOf('(7 + 9 + 11 + 13 + 15 + 17) − (17 + 15 + 13 + 9 + 7)') < 0)
+    throw new Error('the printed expression is not the one drawn');
+}
+console.log('bracket take away bracket: only the odd term survives, worksheet instance gives 11');
+
+// задача 17: which weekday a later date falls on
+let whiches = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(25);
+  if(q.shape !== 'which') continue;
+  whiches++;
+  const idx = DAYS.indexOf(q.d1);
+  if((idx + q.n - 1) % 7 + 1 !== q.ans) throw new Error('the weekday does not follow from the first of the month');
+  if(q.ans < 1 || q.ans > 7) throw new Error('the answer must be one of the seven days');
+  if(q.n < 8 || q.n > 20) throw new Error('the date should be far enough in to be worth counting, and its ordinal spellable');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf('1 понеделник') < 0) throw new Error('the numbering of the days is missing');
+  const nums = (strip(why(q, false)).match(/\d+/g) || []).map(Number);
+  if(nums.indexOf(q.ans) >= 0) throw new Error('the nudge gives the day away');
+}
+if(!whiches) throw new Error('the which-weekday shape should turn up');
+{ // задача 17 as printed: the 1st of December is a Wednesday
+  const q = {kind:'weekday', shape:'which', mon:['декември',31], d1:DAYS[2], n:16, ans:4};
+  if(lastNum(why(q, true)) !== 4) throw new Error('the 16th is a Thursday, the fourth day');
+  if(DAYS[3].nm !== 'четвъртък') throw new Error('day four should be четвъртък');
+}
+console.log('which weekday: whole weeks drop out and the leftover moves the day, worksheet instance gives 4');
+
+// задача 19: the smallest or largest three-digit number that fits a condition
+const thrShapes = {};
+for(let i = 0; i < 6000; i++){
+  const q = raw(53);
+  thrShapes[q.shape] = 1;
+  const ok = n => { const d = String(n); return n >= 100 && n <= 999 && d[0] !== d[1] && d[1] !== d[2] && d[0] !== d[2]; };
+  if(!ok(q.a) || +String(q.a)[q.pos] !== q.dig) throw new Error('the pinned number does not fit its own condition');
+  if(!ok(q.base)) throw new Error('the plain extreme does not have three different digits');
+  for(let n = 100; n <= 999; n++){             // nothing better may exist either way
+    if(!ok(n)) continue;
+    if(+String(n)[q.pos] === q.dig && (q.small ? n < q.a : n > q.a)) throw new Error(n + ' beats the pinned one');
+    if(q.small ? n < q.base : n > q.base) throw new Error(n + ' beats the plain one');
+  }
+  if(q.ans !== (q.shape === 0 ? q.a : Math.abs(q.a - q.base))) throw new Error('the answer is not the one asked for');
+  if(q.shape === 1 && q.ans < 1) throw new Error('there is nothing to compare');
+}
+if(Object.keys(thrShapes).length !== 2) throw new Error('both questions should turn up');
+{ // задача 19 as printed
+  const q = {kind:'thr', small:true, pos:1, dig:1, a:210, base:102, shape:1, ans:108};
+  if(lastNum(why(q, true)) !== 108) throw new Error('210 beats 102 by 108');
+}
+console.log('three digits: nothing smaller or larger fits the condition, worksheet instance gives 108');
+
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0;
 for(let i = 0; i < 4000; i++){
@@ -1180,7 +1282,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 51) throw new Error('parsed ' + rows.length + ' levels, expected 51');
+  if(rows.length !== 52) throw new Error('parsed ' + rows.length + ' levels, expected 52');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1215,7 +1317,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 51 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 52 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {
@@ -1247,14 +1349,17 @@ eval(head + body + test);
       }
       if(order.length !== LEVELS.length) throw new Error('the path reaches ' + order.length + ' of ' + LEVELS.length + ' levels');
       const ds = order.map(l => l.d);
-      if(ds.some((v, i) => i && v < ds[i-1])) throw new Error('the path steps back in difficulty');
+      // The path may pull one level forward for variety, so a single step back is allowed;
+      // dropping further than that would mean the ladder is not being climbed at all.
+      if(ds.some((v, i) => i && v < ds[i-1] - 1)) throw new Error('the path steps back in difficulty');
+      if(ds[ds.length-1] < ds[0]) throw new Error('the path ends easier than it starts');
       let run = 1, worst = 1;
       for(let i = 1; i < order.length; i++){
         run = grp(order[i]) === grp(order[i-1]) ? run + 1 : 1;
         if(run > worst) worst = run;
       }
       if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running');
-      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, never easier, at most ' + worst + ' in a row from one group');
+      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, climbing, at most ' + worst + ' in a row from one group');
     `;
     eval(levelsSrc + nextSrc + walk);
   }

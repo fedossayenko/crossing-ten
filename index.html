@@ -171,6 +171,9 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .fig{display:flex; justify-content:center; width:100%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
 .ic{height:1.3em; width:auto; vertical-align:-.3em}
+.grid4{display:grid; grid-template-columns:repeat(5, auto); gap:1px 7px;
+  justify-content:center; align-items:center; text-align:center;
+  font-family:Fredoka,sans-serif; font-size:clamp(16px,4.4vw,24px); color:var(--muted)}
 .eqs{display:flex; flex-direction:column; gap:2px; align-items:center;
   font-family:Fredoka,sans-serif; font-size:clamp(17px,4.6vw,26px); color:var(--muted); letter-spacing:.03em}
 .seq{font-family:Fredoka,sans-serif; font-size:clamp(17px,4.6vw,27px); letter-spacing:.05em;
@@ -683,6 +686,7 @@ const LEVELS = [
   { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false' },
   { id:51, op:'w', grp:'num', d:3, eq:'Десетици', desc:'A number said in tens, ones and hundreds' },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
+  { id:53, op:'w', grp:'num', needs:[13], d:4, eq:'Трицифрени', desc:'The smallest or largest three-digit number that fits a condition' },
   { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds' },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:44, op:'w', grp:'num', needs:[8], d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true' },
@@ -878,6 +882,17 @@ function genCmp(){
   const pickShape = Math.random();
   if(pickShape < 0.22) return genNear();
   if(pickShape < 0.45){
+    if(Math.random() < 0.45){
+      // Задача 16: written out as one bracket take away another, with the second bracket
+      // in a different order — so the terms have to be matched, not lined up.
+      const n = 5 + rnd(2), start = 3 + rnd(8), step = 2 + rnd(3), terms = [];
+      for(let i = 0; i < n; i++) terms.push(start + i*step);
+      const drop = [1 + rnd(n - 2)];                      // never the first or the last, which are easy to spot
+      const kept = shuffle(terms.filter((_, i) => drop.indexOf(i) < 0));
+      if(kept.every((v, i) => !i || v > kept[i-1])) kept.reverse();   // same order as the first bracket gives it away
+      return {kind:'cmp', shape:1, written:1, terms, kept,
+              gone: drop.map(i => terms[i]), ans: terms[drop[0]]};
+    }
     // Задача 3: the two sums share terms, so the shared ones cancel and only the
     // leftovers matter.
     const n = 3 + rnd(2);
@@ -1445,8 +1460,17 @@ function genLastDay(){
   return {kind:'weekday', shape:'last', mon, d1: DAYS[first1], day: DAYS[want], first,
           ans: first + 7 * Math.floor((mon[1] - first) / 7)};
 }
+// Задача 17: the first of the month is a known weekday, so every later date is that many
+// days on — and only what is left over after whole weeks matters.
+function genWhichDay(){
+  const mon = MONTHS[rnd(MONTHS.length)];
+  const first1 = rnd(7), n = 8 + rnd(13);       // a date far enough in to be worth counting
+  return {kind:'weekday', shape:'which', mon, d1: DAYS[first1], n,
+          ans: (first1 + n - 1) % 7 + 1};
+}
 function genWeekday(){
-  if(Math.random() < 0.4) return genLastDay();
+  if(Math.random() < 0.3) return genWhichDay();
+  if(Math.random() < 0.5) return genLastDay();
   let n;
   do { n = 8 + rnd(38); } while(n % 7 === 0);    // a multiple of 7 has a single answer
   const q = Math.floor(n / 7);
@@ -1566,7 +1590,23 @@ function fruitSvg(row){
 
 // Задача 9: three totals, three fruit. The third equation contains the first, which
 // is the way in — no guessing, just substitution.
+// Задача 20: four fruit in a square — two rows and two columns, each with its own total.
+// Four facts for four unknowns, and only one set of values fits them all.
+function genGrid(){
+  for(;;){
+    const f = shuffle(['a','p','l','g']);                // top-left, top-right, bottom-left, bottom-right
+    const A = 3 + rnd(8), B = 3 + rnd(8), D = 1 + rnd(6), C = D + 1 + rnd(7);
+    const v = [A, B, C, D];
+    if(new Set(v).size !== 4) continue;                  // four different values, so no two fruit can be swapped
+    const signs = [1].concat(shuffle([1, -1, -1]));      // the first term is never negative
+    const ask = v.reduce((t, x, i) => t + signs[i]*x, 0);
+    if(ask < 1) continue;
+    return {kind:'fruiteq', grid:1, f, A, B, C, D, signs,
+            R1: A + B, R2: C - D, C1: A + C, C2: B + D, ans: ask};
+  }
+}
 function genFruitEq(){
+  if(Math.random() < 0.35) return genGrid();
   for(;;){
     const f = shuffle(['a','p','l','g']).slice(0, 3);
     const a = 3 + rnd(8), b = 1 + rnd(8), c = 3 + rnd(9);
@@ -1771,6 +1811,33 @@ function genCrates(){
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
+// Задача 19: the smallest three-digit number with all different digits is 102. Pinning a
+// digit to one place shifts it, and the gap between the two is what is asked. Found by
+// scanning rather than by a rule, so the rule cannot be got wrong.
+const POSN = ['стотиците', 'десетиците', 'единиците'];
+const allDiff = n => { const d = String(n); return d[0] !== d[1] && d[1] !== d[2] && d[0] !== d[2]; };
+function pick3(small, pos, dig){
+  for(let i = 0; i < 900; i++){
+    const n = small ? 100 + i : 999 - i;
+    if(!allDiff(n)) continue;
+    if(pos >= 0 && +String(n)[pos] !== dig) continue;
+    return n;
+  }
+  return 0;
+}
+function genThreeDig(){
+  for(;;){
+    const small = Math.random() < 0.6;
+    const pos = rnd(3), dig = rnd(10);
+    const a = pick3(small, pos, dig);
+    if(!a) continue;
+    const base = pick3(small, -1, 0);
+    const shape = Math.random() < 0.55 ? 1 : 0;
+    if(shape === 1 && a === base) continue;    // nothing to compare
+    return {kind:'thr', small, pos, dig, a, base, shape, ans: shape === 0 ? a : Math.abs(a - base)};
+  }
+}
+
 const PLACE = {1:['единица','единици'], 10:['десетица','десетици'], 100:['стотица','стотици']};
 const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
 // Задача 1 and 5: a number said in tens, ones and hundreds instead of digits. Ten ones
@@ -2043,6 +2110,7 @@ function raw(level){
     if(level === 50) return genSigns();
     if(level === 51) return genTens();
     if(level === 52) return genStep();
+    if(level === 53) return genThreeDig();
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
@@ -2104,6 +2172,11 @@ function drawQ(q){
         ? 'С колко сборът ' + R + ' е <b>по-малък</b> от сбора ' + L + '?'
         : 'С колко сборът ' + L + ' е <b>по-голям</b> от сбора ' + R + '?') +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'cmp' && q.written){
+    return '<div class="ask">Пресметнете</div>' +
+      '<div class="given">(' + q.terms.join(' + ') + ') − (' + q.kept.join(' + ') + ')</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'cmp' && q.shape === 1){
     return '<div class="ask">С колко сборът <span class="num">' + q.terms.join(' + ') +
@@ -2239,6 +2312,23 @@ function drawQ(q){
       '</b> деца, така че всяко да получи <b>поне един</b> бонбон?</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'fruiteq' && q.grid){
+    const F = q.f.map(ic);
+    const head = F.map((g, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : (q.signs[i] > 0 ? '' : '− ')) + g).join('');
+    const cell = t => '<span>' + t + '</span>';
+    const blank = cell('');
+    return '<div class="ask">Пресметнете</div>' +
+      '<div class="given">' + head + '</div>' +
+      '<div class="ask">ако</div>' +
+      '<div class="grid4">' +
+        cell(F[0]) + cell('+') + cell(F[1]) + cell('=') + cell(q.R1) +
+        cell('+') + blank + cell('+') + blank + blank +
+        cell(F[2]) + cell('−') + cell(F[3]) + cell('=') + cell(q.R2) +
+        cell('=') + blank + cell('=') + blank + blank +
+        cell(q.C1) + blank + cell(q.C2) + blank + blank +
+      '</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + '</div>';
+  }
   if(q.kind === 'fruiteq'){
     const F = q.f.map(ic);
     return '<div class="ask">Пресметнете ' + F[q.askd[0]] + ' − ' + F[q.askd[1]] + ', ако:</div>' +
@@ -2336,6 +2426,12 @@ function drawQ(q){
       : 'Колко различни числа можем да получим при разлика на две едноцифрени числа?';
     return '<div class="ask">' + ask + '</div>' +
       '<div class="note">Числата са 0, 1, 2, 3, …</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'weekday' && q.shape === 'which'){
+    return '<div class="ask">Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
+      '</b>. Кой ден от седмицата ще бъде <b>' + q.n + '-ият</b> ден на същия месец?</div>' +
+      '<div class="note">' + DAYS.map((d, i) => (i + 1) + ' ' + d.nm).join(' · ') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'weekday' && q.shape === 'last'){
@@ -2439,6 +2535,15 @@ function drawQ(q){
         (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':';
     return '<div class="ask">' + head + '</div>' +
       '<div class="given">' + rel + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'thr'){
+    const which = 'най-' + (q.small ? 'малкото' : 'голямото') + ' трицифрено число, записано с <b>три различни цифри</b>';
+    const pinned = which + ' и <b>цифра на ' + POSN[q.pos] + ' ' + q.dig + '</b>';
+    const ask = q.shape === 0
+      ? 'Кое е ' + pinned + '?'
+      : 'С колко ' + pinned + ' е <b>по-' + (q.small ? 'голямо' : 'малко') + '</b> от ' + which + '?';
+    return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'tens'){
@@ -2643,6 +2748,7 @@ function eqText(q){
   if(q.kind === 'paint') return q.R + '×' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans;
   if(q.kind === 'twodig') return 'сбор ' + q.S + ' → ' + q.lo + ' и ' + q.hi + ' → ' + q.ans;
   if(q.kind === 'candy') return q.n + ' бонбона на ' + q.kids + ' деца → ' + q.ans;
+  if(q.kind === 'fruiteq' && q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
   if(q.kind === 'fruiteq') return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
   if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
@@ -2656,6 +2762,8 @@ function eqText(q){
   if(q.kind === 'fruit') return q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ' + q.ans;
   if(q.kind === 'place') return '□△ = ' + q.N + ' → □=' + q.t + ', △=' + q.u + ' → ' + q.ans;
   if(q.kind === 'sums') return 'от 0 до ' + q.top + ' → ' + q.ans;
+  if(q.kind === 'weekday' && q.shape === 'which') return q.mon[0] + ', 1-ви е ' + q.d1.nm + ', ден ' +
+    q.n + ' → ' + DAYS[q.ans - 1].nm + ' (' + q.ans + ')';
   if(q.kind === 'weekday' && q.shape === 'last') return q.mon[0] + ', 1-ви е ' + q.d1.nm + ' → ' +
     q.day.nm + ' от ' + q.first + ' нататък → ' + q.ans;
   if(q.kind === 'weekday') return q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt;
@@ -2678,6 +2786,8 @@ function eqText(q){
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
     (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
+  if(q.kind === 'thr') return (q.small ? 'най-малко' : 'най-голямо') + ', ' + POSN[q.pos] + '=' + q.dig +
+    ' → ' + q.a + (q.shape === 1 ? ' срещу ' + q.base + ' → ' + q.ans : '');
   if(q.kind === 'tens') return 'разредни единици → ' + q.ans;
   if(q.kind === 'multiple') return 'кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N + ' → ' + q.ans;
   if(q.kind === 'signs') return q.a + '…' + q.b + ' = ' + q.T + ' → минуси: ' + q.ans;
@@ -2755,8 +2865,10 @@ function whyWork(q, full){
   }
   if(q.kind === 'cmp' && q.shape === 1){
     if(!full) return 'Общите събираеми се съкращават.';
-    return 'общите събираеми ' + q.kept.join(' + ') + ' се съкращават &nbsp;→&nbsp; остава ' +
-      q.gone.join(' + ') + ' = ' + q.ans;
+    const rest = q.gone.length === 1 ? 'остава само ' + q.ans
+                                     : 'остава ' + q.gone.join(' + ') + ' = ' + q.ans;
+    return 'общите събираеми ' + q.kept.slice().sort((a, b) => a - b).join(' + ') +
+      ' се съкращават &nbsp;→&nbsp; ' + rest;
   }
   if(q.kind === 'cmp' && q.same){
     if(!full) return 'Двете числа са едни и същи — какво прави по-малкото веднъж горе и веднъж долу?';
@@ -2889,6 +3001,18 @@ function whyWork(q, full){
     if(!full) return 'Изреди ги подред, за да не пропуснеш нито един начин.';
     return candyWays(q.n, q.kids).join(', &nbsp;') + ' &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.kind === 'fruiteq' && q.grid){
+    if(!full) return 'Двата стълба заедно съдържат всичките четири плода.';
+    const F = q.f.map(ic), v = [q.A, q.B, q.C, q.D];
+    const both = q.C1 + q.C2, low = both - q.R1;
+    const bits = v.map((x, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : '') + x);
+    return 'двата стълба заедно: ' + q.C1 + ' + ' + q.C2 + ' = ' + both + ', а горният ред е ' + q.R1 +
+      ' &nbsp;→&nbsp; долният ред заедно е ' + both + ' − ' + q.R1 + ' = <b>' + low +
+      '</b>, а разликата му е ' + q.R2 + ' &nbsp;→&nbsp; ' + F[2] + ' = <b>' + q.C + '</b>, ' + F[3] +
+      ' = <b>' + q.D + '</b> &nbsp;→&nbsp; ' + F[0] + ' = ' + q.C1 + ' − ' + q.C + ' = <b>' + q.A +
+      '</b>, ' + F[1] + ' = ' + q.R1 + ' − ' + q.A + ' = <b>' + q.B + '</b> &nbsp;→&nbsp; ' +
+      bits.join('') + ' = ' + q.ans;
+  }
   if(q.kind === 'fruiteq'){
     if(!full) return 'Третото равенство съдържа първото — започни оттам.';
     const F = q.f.map(ic);
@@ -2978,6 +3102,13 @@ function whyWork(q, full){
     if(!full) return 'Кой е най-малкият и кой най-големият резултат?';
     return 'най-малкото е <b>0</b>, най-голямото е <b>' + q.top + '</b> &nbsp;→&nbsp; от 0 до ' + q.top +
       ' &nbsp;(с нулата) &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'weekday' && q.shape === 'which'){
+    if(!full) return 'Само остатъкът след цели седмици мести деня.';
+    const gap = q.n - 1, weeks = Math.floor(gap / 7), left = gap % 7;
+    return 'от първия до ' + q.n + '-ия ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + weeks +
+      ' цели седмици и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
+      DAYS[q.ans - 1].nm + '</b>, тоест номер ' + q.ans;
   }
   if(q.kind === 'weekday' && q.shape === 'last'){
     if(!full) return 'Един и същи ден от седмицата се повтаря през всеки седем дни.';
@@ -3081,6 +3212,14 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
     return head + 'трябва ? + ' + q.C + ' ≥ ' + q.L + ', значи ? ≥ ' + lim +
       ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'thr'){
+    if(!full) return 'Подреждай цифрите отпред назад — първата тежи най-много.';
+    const found = 'с ' + q.dig + ' на ' + POSN[q.pos] + ' най-' + (q.small ? 'малкото' : 'голямото') +
+      ' е <b>' + q.a + '</b>';
+    if(q.shape === 0) return found.replace('<b>' + q.a + '</b>', q.a);
+    return 'без условие най-' + (q.small ? 'малкото' : 'голямото') + ' е <b>' + q.base + '</b>, а ' +
+      found + ' &nbsp;→&nbsp; ' + Math.max(q.a, q.base) + ' − ' + Math.min(q.a, q.base) + ' = ' + q.ans;
   }
   if(q.kind === 'tens'){
     if(!full) return 'Всяка десетица е десет единици, а всяка стотица — десет десетици.';
@@ -3616,7 +3755,11 @@ function nextUp(m, lastGrp){
     const ranked = fresh.slice().sort((a, b) => a.d - b.d);
     const best = ranked[0];
     if(grp(best) !== lastGrp) return best;
-    return ranked.filter(l => l.d === best.d && grp(l) !== lastGrp)[0] || best;
+    // Nothing else at this difficulty from another corner? One step harder is still a
+    // step forward, and beats a sixth helping of the same kind.
+    return ranked.filter(l => l.d === best.d && grp(l) !== lastGrp)[0]
+        || ranked.filter(l => l.d === best.d + 1 && grp(l) !== lastGrp)[0]
+        || best;
   }
   // She has met them all: go back to whichever is going worst, by its record and then
   // by how the last round went.
