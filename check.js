@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -454,15 +454,72 @@ if(20 - (20 - 10) !== 10 || 30 - 10 !== 20) throw new Error('worksheet instance 
 console.log('shortfalls: the current amount follows from the gap, worksheet instance gives 20');
 
 // задача 11: the overlapping measurements must describe one consistent line
+let rulers = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(40);
+  if(q.shape === 'ruler'){                     // задача 14: read off a ruler, checked below
+    rulers++;
+    if(q.AB !== q.b - q.a || q.CD !== q.d - q.c) throw new Error('a segment is not the gap between its marks');
+    if(q.ans !== q.AB + q.CD) throw new Error('the two lengths do not add to the answer');
+    if(!(q.a < q.c && q.c < q.b && q.b < q.d)) throw new Error('the two segments should overlap, in that order');
+    if(q.d > 14) throw new Error('the segment runs off the end of the ruler');
+    continue;
+  }
   if(q.AB !== q.p + q.q || q.CD !== q.q + q.r) throw new Error('the given lengths do not match the points');
   if(q.ans !== q.p + q.q + q.r) throw new Error('AD wrong');
   if(q.AB - q.q !== q.p) throw new Error('AC does not come out of AB and CB');
   if(q.q >= q.AB || q.q >= q.CD) throw new Error('the overlap must be shorter than each measured piece');
 }
 if((5 - 1) + 6 !== 10) throw new Error('worksheet instance of задача 11 should be 10');
-console.log('segments: the pieces describe one line, worksheet instance gives 10');
+if(!rulers) throw new Error('the ruler shape should turn up');
+if(lastNum(why({kind:'seg', shape:'ruler', a:3, b:7, c:5, d:11, AB:4, CD:6, ans:10}, true)) !== 10)
+  throw new Error('AB from 3 to 7 and CD from 5 to 11 should add to 10');
+console.log('segments: the pieces describe one line, and a ruler is read from both ends (10)');
+
+// задача 15: a corner cut out of a rectangle
+const stepShapes = {};
+for(let i = 0; i < 6000; i++){
+  const q = raw(52);
+  stepShapes[q.shape] = 1;
+  const sides = [q.W, q.H - q.h, q.w, q.h, q.W - q.w, q.H];
+  if(String(sides) !== String(q.sides)) throw new Error('the six sides do not follow the cut');
+  if(sides.some(v => v < 1)) throw new Error('a side of the figure vanished');
+  const seen = {};
+  sides.forEach(v => { seen[v] = (seen[v] || 0) + 1; });
+  const equal = sides.filter(v => seen[v] > 1).length;
+  if(q.shape === 0){
+    if(q.ans !== equal || equal < 2) throw new Error('the count of equal sides is wrong or there is nothing to find');
+  } else if(q.shape === 1){
+    // the cut moves sides around but never shortens the outline
+    if(q.ans !== sides.reduce((t, v) => t + v, 0)) throw new Error('the outline is not the six sides');
+    if(q.ans !== 2*(q.W + q.H)) throw new Error('the outline should match the uncut rectangle');
+  } else if(q.ans !== q.h) throw new Error('the unlabelled upright is wrong');
+}
+if(Object.keys(stepShapes).length !== 3) throw new Error('all three questions about the figure should turn up');
+{ // задача 15 as printed: 7 by 6 with a 2 by 5 corner taken out
+  const q = {kind:'step', shape:0, W:7, H:6, w:2, h:5, sides:[7,1,2,5,5,6], equal:2, ans:2};
+  if(lastNum(why(q, true)) !== 2) throw new Error('that figure has exactly two sides of equal length');
+  if(String([7,6,5,5,2,1]) !== String(q.sides.slice().sort((a, b) => b - a))) throw new Error('the printed sides are 7, 6, 5, 5, 2, 1');
+}
+// the two new figures must fit their own boxes and close up properly
+for(const L of [52, 40]){
+  for(let i = 0; i < 1500; i++){
+    const svg = drawQ(raw(L));
+    if(!/viewBox=/.test(svg)) continue;
+    const vb = svg.match(/viewBox="([-\\d. ]+)"/)[1].split(' ').map(Number);
+    for(const m of svg.matchAll(/<text x="([-\\d.]+)" y="([-\\d.]+)"[^>]*>([^<]*)</g)){
+      const x = +m[1], y = +m[2], half = m[3].length * 4.2 + 3;   // roughly how wide the label draws
+      if(x - half < vb[0] || x + half > vb[0] + vb[2]) throw new Error('level ' + L + ': „' + m[3] + '" runs off the side of the figure');
+      if(y - 12 < vb[1] || y + 4 > vb[1] + vb[3]) throw new Error('level ' + L + ': „' + m[3] + '" runs off the top or bottom');
+    }
+  }
+}
+for(let i = 0; i < 1500; i++){
+  const cmds = drawQ(raw(52)).match(/<path d="(M[^"]+)"/)[1].match(/[MHVZ][-\\d.]*/g);
+  if(cmds.map(c => c[0]).join('') !== 'MHVHVHZ') throw new Error('the outline does not trace six sides and close');
+}
+console.log('cut corner: the six sides follow the cut and the outline never shortens, worksheet instance gives 2');
+console.log('figures: every label sits inside its box, and the cut corner closes in six sides');
 
 // задача 12: both possible third distances must really be placeable on a line
 for(let i = 0; i < 4000; i++){
@@ -689,6 +746,7 @@ for(let i = 0; i < 4000; i++){
   if(q.ans !== want) throw new Error('trees answer wrong for shape ' + q.shape);
   if(q.n < 2) throw new Error('a row needs at least two trees');
   if(q.shape === 3 && (q.dm !== 10 * q.d || q.d < 2)) throw new Error('the дм spacing does not match the м one, or the conversion does nothing');
+  if(/\b1 метра\b/.test(strip(drawQ(q)))) throw new Error('„1 метра" — Bulgarian wants „1 метър"');
 }
 { // задача 11 as printed: 16 trees, 20 дм apart, asked in metres
   const q = {kind:'trees', who:'Хари', did:'посадил', n:16, d:2, dm:20, shape:3, len:30, ans:30};
@@ -1028,8 +1086,18 @@ if(lastNum(why({kind:'cmp', shape:2, same:1, x:31, y:13, p:31, q:13, S:44, D:18,
 console.log('same pair both ways: the gap is twice the smaller number, worksheet instance gives 26');
 
 // задача 12: conversions and the cut both land on whole centimetres
+let sticks = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(32);
+  if(q.shape === 3){                           // задача 13: two sticks, laid down a few times each
+    sticks++;
+    if(q.aCm !== (q.inDm ? 10*q.a : q.a)) throw new Error('the long stick is not brought to centimetres');
+    if(q.ans !== q.k*q.aCm + q.m*q.b) throw new Error('the board is not the sticks laid end to end');
+    if(q.k < 2 || q.m < 1) throw new Error('a stick has to be used at least once');
+    const shown = strip(drawQ(q));
+    if(q.m === 1 && shown.indexOf('1 път') < 0) throw new Error('„1 пъти" — Bulgarian wants the singular');
+    continue;
+  }
   if(q.shape === 0){
     if(q.toCm && q.ans !== q.n * q.u.cm) throw new Error('to-cm conversion wrong');
     if(!q.toCm && q.cm !== q.ans * q.u.cm) throw new Error('from-cm conversion wrong');
@@ -1039,7 +1107,10 @@ for(let i = 0; i < 4000; i++){
     if(want !== q.ans || q.ans < 1) throw new Error('ribbon answer wrong');
   }
 }
-console.log('lengths: conversions are exact and the ribbon always needs a real cut or addition');
+if(!sticks) throw new Error('the two-sticks shape should turn up');
+if(lastNum(why({kind:'ribbon', shape:3, inDm:false, a:15, aCm:15, b:5, k:3, m:1, ans:50}, true)) !== 50)
+  throw new Error('15 three times and 5 once should measure 50');
+console.log('lengths: conversions are exact, the ribbon needs a real cut, and two sticks measure a board (50)');
 
 // задача 13: the flower count must be forced — every decomposition with at least one
 // of each kind has to give the same total
@@ -1109,7 +1180,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 50) throw new Error('parsed ' + rows.length + ' levels, expected 50');
+  if(rows.length !== 51) throw new Error('parsed ' + rows.length + ' levels, expected 51');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1144,7 +1215,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 50 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 51 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {

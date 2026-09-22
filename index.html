@@ -711,6 +711,7 @@ const LEVELS = [
   { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:'Along a line, right then left — how far apart?' },
   { id:40, op:'w', grp:'geo', d:3, eq:'AD = ?', desc:'Overlapping lengths along a line' },
   { id:32, op:'w', grp:'geo', d:3, eq:'Ленти', desc:'Centimetres, decimetres and metres' },
+  { id:52, op:'w', grp:'geo', d:3, eq:'Изрязан ъгъл', desc:'A corner cut from a rectangle — its sides and its outline' },
   { id:31, op:'w', grp:'geo', d:4, eq:'Дръвчета', desc:'Trees in a row: the gaps are one fewer, and the units may not match' },
   { id:21, op:'w', grp:'geo', d:4, eq:'Обиколка', desc:'Squares, sheets and triangles — sides and perimeters' },
   { id:22, op:'w', grp:'geo', needs:[21], d:4, eq:'Обща страна', desc:'Two figures share an edge — what it costs the outline' },
@@ -1238,7 +1239,7 @@ function genTriSq(){
   for(;;){
     const dm = 1 + rnd(2);
     const P = 40 * dm;
-    const a = 2 + rnd(5), b = a + 1 + rnd(4), c = b + 1 + rnd(4);
+    const a = 2 + rnd(5), b = a + rnd(5), c = b + rnd(5);   // sides may repeat, so 7-7-6 can come up
     if(c >= a + b) continue;                   // three lengths only close into a triangle if the short two beat the long one
     const p = a + b + c;
     if(p >= P) continue;
@@ -1312,6 +1313,40 @@ function genSqCut(){
 }
 
 // Задача 16: the cut edge belongs to both halves, so the two perimeters count it twice.
+// Задача 15: a corner cut out of a rectangle. Two of the six sides are never labelled,
+// so they have to be worked out — and the outline is the same length as the uncut
+// rectangle's, which is the surprise.
+function genStep(){
+  for(;;){
+    const W = 5 + rnd(5), H = 4 + rnd(5);
+    const w = 1 + rnd(W - 2), h = 1 + rnd(H - 2);
+    // going round: bottom, right, inward, up, top, left
+    const sides = [W, H - h, w, h, W - w, H];
+    const seen = {};
+    sides.forEach(v => { seen[v] = (seen[v] || 0) + 1; });
+    const equal = sides.filter(v => seen[v] > 1).length;
+    const shape = rnd(3);
+    if(shape === 0 && equal < 2) continue;      // a question with nothing to find is no question
+    return {kind:'step', shape, W, H, w, h, sides, equal,
+            ans: shape === 0 ? equal : shape === 1 ? 2*(W + H) : h};
+  }
+}
+// The four labelled sides are the ones the question gives; the other two she works out.
+function stepSvg(q){
+  const u = 150 / Math.max(q.W, q.H), X = v => 44 + v*u, Y = v => 14 + (q.H - v)*u;
+  const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+    '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" ' +
+    'font-family="Nunito, sans-serif">' + t + ' см</text>';
+  const d = 'M' + X(0) + ' ' + Y(0) + 'H' + X(q.W) + 'V' + Y(q.H - q.h) + 'H' + X(q.W - q.w) +
+            'V' + Y(q.H) + 'H' + X(0) + 'Z';
+  return '<div class="fig"><svg viewBox="0 0 ' + (q.W*u + 90).toFixed(1) + ' ' + (q.H*u + 44).toFixed(1) +
+    '" role="img" aria-label="правоъгълник с изрязан ъгъл">' +
+    '<path d="' + d + '" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round"/>' +
+    lab(X(q.W/2), Y(0) + 17, q.W) +
+    lab(X(0) - 22, Y(q.H/2) + 4, q.H) +
+    lab(X(q.W - q.w/2), Y(q.H - q.h) - 6, q.w) +
+    lab(X(q.W) + 22, Y((q.H - q.h)/2) + 4, q.H - q.h) + '</svg></div>';
+}
 // Задача 14: a square with a rectangle sitting on it. The tall rectangle beats the wide
 // one by the square's two upright sides — the height of the piece on top cancels out.
 function genStack(){
@@ -1574,7 +1609,10 @@ const NAMES = [['Хари', 'посадил'], ['Мая', 'посадила'], [
                ['Борис', 'посадил'], ['Ива', 'посадила'], ['Асен', 'посадил']];
 function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
-  const n = 4 + rnd(9), d = 2 + rnd(5);
+  // a row can run to two dozen, and the gap may be a single metre — which is the purest
+  // form of the lesson, since then the length is just the number of gaps
+  let n, d;
+  do { n = 4 + rnd(21); d = 1 + rnd(6); } while((n - 1) * d > 100);
   const shape = rnd(4);
   if(shape === 3){
     // Задача 11: told in дециметри, asked in метри — the gap count is the same puzzle,
@@ -1589,6 +1627,15 @@ function genTrees(){
 // Задача 12: centimetres against decimetres and metres.
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 function genRibbon(){
+  if(Math.random() < 0.28){
+    // Задача 13: a board measured by laying two sticks down a few times each. One stick
+    // is sometimes given in дециметри, so the two have to be brought together first.
+    const inDm = Math.random() < 0.35;
+    const a = inDm ? 1 + rnd(2) : 8 + rnd(13);
+    const b = 3 + rnd(8), k = 2 + rnd(3), m = 1 + rnd(3);
+    return {kind:'ribbon', shape:3, inDm, a, aCm: inDm ? 10*a : a, b, k, m,
+            ans: k * (inDm ? 10*a : a) + m*b};
+  }
   for(;;){
     const u = Math.random() < 0.75 ? LEN[0] : LEN[1];
     const shape = rnd(3);
@@ -1815,8 +1862,47 @@ function genShort(){
 
 // Задача 11: four points in a row, measured in overlapping pieces.
 function genSeg(){
+  if(Math.random() < 0.4) return genRuler();
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
   return {kind:'seg', p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
+}
+// Задача 14: the segments are not given, they are read off the ruler — the length is the
+// difference of the two marks, not the mark the segment ends at.
+function genRuler(){
+  for(;;){
+    const a = 1 + rnd(3), b = a + 2 + rnd(4);
+    const c = a + 1 + rnd(3), d = c + 2 + rnd(5);
+    if(d > 13 || c >= b || d <= b) continue;   // they overlap and neither swallows the other, so both must be read
+    return {kind:'seg', shape:'ruler', a, b, c, d, AB: b - a, CD: d - c, ans: (b - a) + (d - c)};
+  }
+}
+// A ruler with the two bracketed segments standing above it.
+function rulerSvg(q){
+  const W = 232, n = 14, u = (W - 16) / n, x = v => 8 + v*u;
+  const top = 44, H = top + 46;
+  let ticks = '';
+  for(let v = 0; v <= n; v++){
+    const h = v % 5 === 0 ? 13 : 7;
+    ticks += '<line x1="' + x(v).toFixed(1) + '" y1="' + top + '" x2="' + x(v).toFixed(1) +
+             '" y2="' + (top + h) + '"/>';
+  }
+  let nums = '';
+  for(let v = 0; v <= n; v += 1) if(v % 2 === 0)
+    nums += '<text x="' + x(v).toFixed(1) + '" y="' + (top + 30) + '" text-anchor="middle" font-size="9" ' +
+            'fill="var(--muted)" font-family="Nunito, sans-serif">' + v + '</text>';
+  const bracket = (from, to, y, l1, l2) =>
+    '<g stroke="var(--accent)" stroke-width="2" fill="none">' +
+    '<path d="M' + x(from).toFixed(1) + ' ' + y + 'H' + x(to).toFixed(1) + '"/>' +
+    '<path d="M' + x(from).toFixed(1) + ' ' + y + 'V' + top + 'M' + x(to).toFixed(1) + ' ' + y + 'V' + top +
+    '" stroke-dasharray="3 3" stroke-width="1.4"/></g>' +
+    '<text x="' + (x(from) - 8).toFixed(1) + '" y="' + (y + 4) + '" text-anchor="middle" font-size="13" ' +
+    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l1 + '</text>' +
+    '<text x="' + (x(to) + 8).toFixed(1) + '" y="' + (y + 4) + '" text-anchor="middle" font-size="13" ' +
+    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l2 + '</text>';
+  return '<div class="fig"><svg viewBox="-20 0 ' + (W + 40) + ' ' + H + '" role="img" aria-label="две отсечки върху линийка">' +
+    '<rect x="8" y="' + top + '" width="' + (W - 16) + '" height="26" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
+    '<g stroke="var(--ink)" stroke-width="1.1">' + ticks + '</g>' + nums +
+    bracket(q.a, q.b, 12, 'A', 'B') + bracket(q.c, q.d, 30, 'C', 'D') + '</svg></div>';
 }
 function segSvg(q){
   const W = 236, tot = q.p + q.q + q.r;
@@ -1956,6 +2042,7 @@ function raw(level){
     if(level === 49) return genMultiple();
     if(level === 50) return genSigns();
     if(level === 51) return genTens();
+    if(level === 52) return genStep();
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
@@ -2074,6 +2161,21 @@ function drawQ(q){
       ', за да имам <span class="num">' + q.T1 + '</span> ' + q.item + '. ' + tail + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'step'){
+    const ask = q.shape === 0
+      ? 'От правоъгълник е изрязан правоъгълник. Получила се е друга фигура. <b>Колко са отсечките</b> на тази фигура, които са с <b>равни дължини</b>?'
+      : q.shape === 1
+      ? 'От правоъгълник е изрязан правоъгълник. Колко сантиметра е <b>обиколката</b> на получената фигура?'
+      : 'От правоъгълник е изрязан правоъгълник. Колко сантиметра е дължината на <b>неозначената изправена</b> страна?';
+    return '<div class="ask">' + ask + '</div>' + stepSvg(q) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot +
+      (q.shape === 0 ? '' : cm) + '</div>';
+  }
+  if(q.kind === 'seg' && q.shape === 'ruler'){
+    return '<div class="ask">Колко сантиметра е <b>сборът</b> от дължините на отсечките <b>AB</b> и <b>CD</b>?</div>' +
+      rulerSvg(q) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
+  }
   if(q.kind === 'seg'){
     return '<div class="ask">AD = ? см</div>' + segSvg(q) +
       '<div class="given" style="font-size:clamp(15px,4vw,20px)">AB = ' + q.AB + ' см &nbsp; CD = ' +
@@ -2160,7 +2262,7 @@ function drawQ(q){
         q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
       : q.shape === 0
       ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
-        q.d + '</span> метра едно от друго. Колко метра е дълга редицата?'
+        q.d + '</span> ' + (q.d === 1 ? 'метър' : 'метра') + ' едно от друго. Колко метра е дълга редицата?'
       : q.shape === 1
       ? q.who + ' ' + q.did + ' дръвчета в една редица, дълга <span class="num">' + q.len +
         '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
@@ -2169,6 +2271,15 @@ function drawQ(q){
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot +
       (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';
+  }
+  if(q.kind === 'ribbon' && q.shape === 3){
+    const long = q.a + ' ' + (q.inDm ? 'дм' : 'см'), pt = n => n === 1 ? 'път' : 'пъти';
+    return '<div class="ask">Имам две пръчки — с дължина <span class="num">' + long +
+      '</span> и с дължина <span class="num">' + q.b + ' см</span>. С тях премерих дължината на една дъска. ' +
+      'Пръчката от <span class="num">' + long + '</span> използвах <span class="num">' + q.k + '</span> ' + pt(q.k) +
+      ', а пръчката от <span class="num">' + q.b + ' см</span> — <span class="num">' + q.m + '</span> ' + pt(q.m) +
+      '. Колко сантиметра е дължината на дъската?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
   }
   if(q.kind === 'ribbon'){
     const ask = q.shape === 0
@@ -2519,6 +2630,8 @@ function eqText(q){
   if(q.kind === 'cross') return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + ' → зачерква се ' + q.ans;
   if(q.kind === 'cards') return q.digits.join(', ') + ' → ' + q.wit[0] + ' − ' + q.wit[1] + ' = ' + q.ans;
   if(q.kind === 'short') return 'не достигат ' + q.d1 + ' до ' + q.T1 + ' → ' + q.ans;
+  if(q.kind === 'step') return q.W + '×' + q.H + ', изрязано ' + q.w + '×' + q.h + ' → ' + q.ans;
+  if(q.kind === 'seg' && q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
   if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
   if(q.kind === 'three') return q.a + ' и ' + q.b + ' → ' + (q.b - q.a) + ' или ' + (q.a + q.b);
   if(q.kind === 'pencils' && q.shape === 'gave') return q.T + ' молива, ' + q.a + ' ' + q.col[0][0] +
@@ -2534,6 +2647,7 @@ function eqText(q){
   if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
     : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
   if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
+  if(q.kind === 'ribbon' && q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
   if(q.kind === 'missing' && q.one) return 'правило ' + q.rule + ', липсва на място ' + (q.at + 1) + ' → ' + q.ans;
   if(q.kind === 'missing' && q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
@@ -2693,6 +2807,28 @@ function whyWork(q, full){
     return q.shape === 1 ? head
       : head + ' &nbsp;→&nbsp; до ' + q.T2 + ' не достигат ' + q.T2 + ' − ' + q.have + ' = ' + q.ans;
   }
+  if(q.kind === 'step'){
+    if(!full) return q.shape === 1 ? 'Изрязването мести страните, но не ги скъсява.'
+                                   : 'Двете неозначени страни се получават от означените.';
+    const missing = 'неозначените са ' + (q.W - q.w) + ' и ' + q.h;
+    if(q.shape === 0){
+      const groups = {};
+      q.sides.forEach(v => { groups[v] = (groups[v] || 0) + 1; });
+      const pairs = Object.keys(groups).filter(v => groups[v] > 1)
+        .map(v => groups[v] + ' по ' + v).join(', ');
+      return missing + ' &nbsp;→&nbsp; страните са <b>' + q.sides.slice().sort((a, b) => b - a).join(', ') +
+        '</b> &nbsp;→&nbsp; ' + pairs + ' &nbsp;→&nbsp; ' + q.ans;
+    }
+    if(q.shape === 1) return 'страните се местят, но обиколката е като на целия правоъгълник &nbsp;→&nbsp; ' +
+      q.W + ' + ' + q.H + ' = ' + (q.W + q.H) + ', два пъти &nbsp;→&nbsp; ' + q.ans;
+    return 'изправената страна на целия правоъгълник е ' + q.H + ', а долната ѝ част е ' + (q.H - q.h) +
+      ' &nbsp;→&nbsp; ' + q.H + ' − ' + (q.H - q.h) + ' = ' + q.ans;
+  }
+  if(q.kind === 'seg' && q.shape === 'ruler'){
+    if(!full) return 'Дължината не е числото, до което стига отсечката — гледай и откъде тръгва.';
+    return 'AB: от ' + q.a + ' до ' + q.b + ' &nbsp;→&nbsp; <b>' + q.AB + '</b>, &nbsp;CD: от ' + q.c +
+      ' до ' + q.d + ' &nbsp;→&nbsp; <b>' + q.CD + '</b> &nbsp;→&nbsp; ' + q.AB + ' + ' + q.CD + ' = ' + q.ans;
+  }
   if(q.kind === 'seg'){
     if(!full) return 'Отсечките се застъпват — намери първо AC.';
     return 'AC = AB − CB = ' + q.AB + ' − ' + q.q + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; AD = AC + CD = ' +
@@ -2778,11 +2914,19 @@ function whyWork(q, full){
     if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, а между ' + q.n + ' дръвчета има <b>' +
       gaps + '</b> разстояния &nbsp;→&nbsp; ' + gaps + ' × ' + q.d + ' = ' + q.ans;
     if(q.shape === 0) return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
-      (gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans : gaps + ' × ' + q.d + ' = ' + q.ans);
+      (q.d === 1 ? 'по един метър всяко, значи ' + q.ans
+       : gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans
+       : gaps + ' × ' + q.d + ' = ' + q.ans);
     if(q.shape === 1) return q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
       '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans;
     return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
       q.len + ' м, разделени на ' + gaps + ' → ' + q.ans;
+  }
+  if(q.kind === 'ribbon' && q.shape === 3){
+    if(!full) return 'Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.';
+    const head = q.inDm ? q.a + ' дм = <b>' + q.aCm + ' см</b> &nbsp;→&nbsp; ' : '';
+    return head + q.k + ' × ' + q.aCm + ' = <b>' + (q.k*q.aCm) + '</b>, &nbsp;' + q.m + ' × ' + q.b +
+      ' = <b>' + (q.m*q.b) + '</b> &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans;
   }
   if(q.kind === 'ribbon'){
     // the reminder must not state the factor: for a plain conversion that IS the answer
