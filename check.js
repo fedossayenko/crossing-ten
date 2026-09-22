@@ -16,7 +16,8 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45]){
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46];
+for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +37,7 @@ for(const L of [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 45 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + IDS.length + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -652,11 +653,83 @@ console.log('fruit equations: totals match the values, three distinct fruit, ans
 for(let i = 0; i < 4000; i++){
   const q = raw(31);
   if(q.len !== (q.n - 1) * q.d) throw new Error('row length is not gaps times spacing');
-  const want = q.shape === 0 ? q.len : q.shape === 1 ? q.n : q.d;
+  const want = q.shape === 1 ? q.n : q.shape === 2 ? q.d : q.len;
   if(q.ans !== want) throw new Error('trees answer wrong for shape ' + q.shape);
   if(q.n < 2) throw new Error('a row needs at least two trees');
+  if(q.shape === 3 && (q.dm !== 10 * q.d || q.d < 2)) throw new Error('the дм spacing does not match the м one, or the conversion does nothing');
 }
-console.log('trees in a row: length, count and spacing agree in all three directions');
+{ // задача 11 as printed: 16 trees, 20 дм apart, asked in metres
+  const q = {kind:'trees', who:'Хари', did:'посадил', n:16, d:2, dm:20, shape:3, len:30, ans:30};
+  if(lastNum(why(q, true)) !== 30) throw new Error('16 trees 20 дм apart should make 30 m');
+  if(strip(drawQ(q)).indexOf('20 дм') < 0) throw new Error('the spacing is not drawn in дециметри');
+}
+console.log('trees in a row: length, count and spacing agree, and дм converts, worksheet instance gives 30');
+
+// задача 9: the arrangement has to be the only one that works
+for(let i = 0; i < 4000; i++){
+  const q = raw(46);
+  if(new Set(q.nums).size !== 3) throw new Error('the three numbers must differ');
+  const fits = [];
+  for(let a = 0; a < 3; a++) for(let b = 0; b < 3; b++) for(let c = 0; c < 3; c++){
+    if(a === b || b === c || a === c) continue;
+    if(q.nums[a] + q.p > q.nums[b] && q.nums[b] > q.nums[c] + q.g) fits.push([q.nums[a], q.nums[b], q.nums[c]]);
+  }
+  if(fits.length !== 1) throw new Error(fits.length + ' arrangements work, so the question has no single answer');
+  if(fits[0].join() !== q.fit.join()) throw new Error('the recorded arrangement is not the one that works');
+  const want = q.asksMid ? q.fit[1] : q.fit[0] + q.fit[2];
+  if(q.ans !== want) throw new Error('placement answer wrong: ' + JSON.stringify(q));
+}
+{ // задача 9 as printed: 6, 8 and 10 into ■ + 2 > □ > ■ + 1
+  const q = {kind:'order', nums:[6,8,10], p:2, g:1, fit:[10,8,6], asksMid:false, ans:16};
+  if(lastNum(why(q, true)) !== 16) throw new Error('6, 8, 10 with +2 and +1 should shade 10 and 6');
+}
+console.log('placement: exactly one arrangement fits the chain, worksheet instance gives 16');
+
+// задача 10: two numbers a given distance from the same anchor
+let anchored = 0;
+for(let i = 0; i < 4000; i++){
+  const q = raw(17);
+  if(q.shape !== 'gap') continue;
+  anchored++;
+  if(q.d1 === q.d2) throw new Error('equal distances make the two letters interchangeable');
+  let widest = 0;
+  for(const A of [q.c - q.d1, q.c + q.d1]) for(const B of [q.c - q.d2, q.c + q.d2])
+    widest = Math.max(widest, Math.abs(A - B));
+  if(widest !== q.ans) throw new Error('the widest gap is ' + widest + ', answer says ' + q.ans);
+  if(q.c - Math.max(q.d1, q.d2) < 1) throw new Error('a number fell to zero or below');
+}
+if(!anchored) throw new Error('the distance-from-an-anchor shape should turn up');
+if(lastNum(why({kind:'sumdiff', shape:'gap', c:18, d1:2, d2:3, ans:5}, true)) !== 5)
+  throw new Error('A two from 18 and B three from 18 should be five apart');
+console.log('distance from an anchor: matches all four placings of the two numbers, worksheet instance gives 5');
+
+// задача 12: a triangle in см against a square given in дм
+let tris = 0;
+for(let i = 0; i < 4000; i++){
+  const q = raw(21);
+  if(q.shape !== 4) continue;
+  tris++;
+  const [a, b, c] = q.sides.slice().sort((x, y) => x - y);
+  if(a + b <= c) throw new Error('those three lengths do not close into a triangle');
+  if(q.p !== a + b + c) throw new Error('the triangle perimeter is not its three sides');
+  if(q.P !== 4 * 10 * q.dm) throw new Error('the square perimeter is not four sides in см');
+  if(q.ans !== q.P - q.p || q.ans < 1) throw new Error('the square should come out the bigger one');
+  // a figure that disagrees with its own labels teaches the wrong thing
+  const svg = drawQ(q);
+  const d = svg.match(/d="M([\\d.]+) ([\\d.]+)L([\\d.]+) ([\\d.]+)L([\\d.]+) ([\\d.]+)Z"/).slice(1).map(Number);
+  const pt = [[d[0],d[1]], [d[2],d[3]], [d[4],d[5]]];
+  const u = 200 / (c + 10*q.dm + 4);
+  const drawn = [0,1,2].map(k => Math.hypot(pt[k][0] - pt[(k+1)%3][0], pt[k][1] - pt[(k+1)%3][1])).sort((x, y) => x - y);
+  [a, b, c].forEach((v, k) => { if(Math.abs(drawn[k] - v*u) > 0.15) throw new Error('a drawn side does not match its label'); });
+  const w = +svg.match(/<rect x="[\\d.]+" y="[\\d.]+" width="([\\d.]+)"/)[1];
+  if(Math.abs(w - 10*q.dm*u) > 0.15) throw new Error('the square is not drawn to the same scale as the triangle');
+}
+if(!tris) throw new Error('the triangle-against-square shape should turn up');
+{ // задача 12 as printed: 3, 4, 5 см against a square of 1 дм
+  const q = {kind:'sqcut', shape:4, dm:1, P:40, sides:[3,4,5], p:12, ans:28};
+  if(lastNum(why(q, true)) !== 28) throw new Error('a 1 дм square beats a 3-4-5 triangle by 28 см');
+}
+console.log('triangle against square: the figure matches its labels at one scale, worksheet instance gives 28');
 
 // задача 12: conversions and the cut both land on whole centimetres
 for(let i = 0; i < 4000; i++){
@@ -740,7 +813,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 44) throw new Error('parsed ' + rows.length + ' levels, expected 44');
+  if(rows.length !== 45) throw new Error('parsed ' + rows.length + ' levels, expected 45');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -775,7 +848,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 44 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 45 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {

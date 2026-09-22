@@ -681,6 +681,7 @@ const LEVELS = [
   { id:24, op:'w', grp:'count', needs:[12], d:4, eq:'Колко сбора?', desc:'How many different results two numbers can make' },
   { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false' },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
+  { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds' },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:44, op:'w', grp:'num', needs:[8], d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true' },
   { id:18, op:'w', grp:'num', d:4, eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
@@ -700,13 +701,13 @@ const LEVELS = [
   { id:30, op:'w', grp:'word', needs:[10], d:3, eq:'Умаляемо', desc:'Naming the parts of a sum and a difference' },
   { id:42, op:'w', grp:'word', d:4, eq:'Котките', desc:'Two cats and one box of food between them' },
   { id:43, op:'w', grp:'word', d:4, eq:'Монети', desc:'The one amount a handful of coins cannot pay' },
-  { id:17, op:'w', grp:'word', needs:[2], d:4, eq:'Сбор и разлика', desc:'One number and the difference — both sums are wanted' },
+  { id:17, op:'w', grp:'word', needs:[2], d:4, eq:'Сбор и разлика', desc:'A number given by how far it sits from another' },
   { id:33, op:'w', grp:'word', d:5, eq:'Цветя', desc:'Petals of three kinds adding to a total' },
   { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:'Along a line, right then left — how far apart?' },
   { id:40, op:'w', grp:'geo', d:3, eq:'AD = ?', desc:'Overlapping lengths along a line' },
   { id:32, op:'w', grp:'geo', d:3, eq:'Ленти', desc:'Centimetres, decimetres and metres' },
-  { id:31, op:'w', grp:'geo', d:4, eq:'Дръвчета', desc:'Trees in a row: the gaps are one fewer than the trees' },
-  { id:21, op:'w', grp:'geo', d:4, eq:'Обиколка', desc:'Squares and sheets cut up — sides and perimeters' },
+  { id:31, op:'w', grp:'geo', d:4, eq:'Дръвчета', desc:'Trees in a row: the gaps are one fewer, and the units may not match' },
+  { id:21, op:'w', grp:'geo', d:4, eq:'Обиколка', desc:'Squares, sheets and triangles — sides and perimeters' },
   { id:22, op:'w', grp:'geo', needs:[21], d:4, eq:'Обща страна', desc:'Two perimeters share an edge — how long is it?' },
   { id:34, op:'w', grp:'geo', needs:[19], d:4, eq:'Оцветени', desc:'Paint whole rows and columns — what is left' },
   { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant' },
@@ -1036,7 +1037,35 @@ function genIneq(){
 
 // Задача 11: one number and the difference. Two numbers fit unless the smaller one
 // would go below zero — so both sums are accepted, and both are shown afterwards.
+// Задача 9: three numbers to drop into three boxes so a chain of inequalities holds.
+// Exactly one arrangement fits, so it is found by trying, not by computing — and what
+// is asked is read off the arrangement, not off the numbers.
+function genOrder(){
+  for(;;){
+    const base = 2 + rnd(8), step = 2 + rnd(3);
+    const nums = [base, base + step, base + 2*step];
+    const p = 1 + rnd(3), g = 1 + rnd(3);
+    const fits = [];
+    for(let i = 0; i < 3; i++) for(let j = 0; j < 3; j++) for(let k = 0; k < 3; k++){
+      if(i === j || j === k || i === k) continue;
+      if(nums[i] + p > nums[j] && nums[j] > nums[k] + g) fits.push([nums[i], nums[j], nums[k]]);
+    }
+    if(fits.length !== 1) continue;            // two arrangements would leave the question without one answer
+    const fit = fits[0], asksMid = Math.random() < 0.35;
+    return {kind:'order', nums, p, g, fit, asksMid, ans: asksMid ? fit[1] : fit[0] + fit[2]};
+  }
+}
+// Задача 10: each letter sits a given distance from the same number, on either side of
+// it. Sending them opposite ways opens the widest gap — the two distances added.
+function genGap(){
+  const c = 10 + rnd(30);
+  const d1 = 1 + rnd(8);
+  let d2 = 1 + rnd(8);
+  while(d2 === d1) d2 = 1 + rnd(8);            // equal distances would make the two letters interchangeable
+  return {kind:'sumdiff', shape:'gap', c, d1, d2, ans: d1 + d2};
+}
 function genSumDiff(){
+  if(Math.random() < 0.4) return genGap();
   const d = 1 + rnd(6);
   const a = d + rnd(9);          // the smaller number stays at or above zero, so both sums exist
   return {kind:'sumdiff', a, d, slots:2, ans: 2*a + d, alt:[2*a - d]};
@@ -1111,7 +1140,41 @@ function cutRectSvg(a, extra){
     '<text x="' + (a*u + extra*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
     'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">B</text></svg></div>';
 }
+// Задача 12: two perimeters told in different units, so the square has to be brought
+// to centimetres before the comparison means anything.
+function genTriSq(){
+  for(;;){
+    const dm = 1 + rnd(2);
+    const P = 40 * dm;
+    const a = 2 + rnd(5), b = a + 1 + rnd(4), c = b + 1 + rnd(4);
+    if(c >= a + b) continue;                   // three lengths only close into a triangle if the short two beat the long one
+    const p = a + b + c;
+    if(p >= P) continue;
+    return {kind:'sqcut', shape:4, dm, P, sides:[a, b, c], p, ans: P - p};
+  }
+}
+// Both shapes drawn to one scale, so the square looking bigger is not a coincidence.
+function triSqSvg(q){
+  const [p, r, L] = q.sides.slice().sort((x, y) => x - y);   // L is the longest, so it makes the base
+  const ax = (L*L + r*r - p*p) / (2*L), ay = Math.sqrt(Math.max(1, r*r - ax*ax));
+  const S = 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
+  const t = (x, y, txt) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+    '" text-anchor="middle" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
+  const sx = (L + 4) * u;
+  return '<div class="fig"><svg viewBox="-16 -16 ' + (232).toFixed(0) + ' ' + (H + 34).toFixed(1) +
+    '" role="img" aria-label="триъгълник и квадрат">' +
+    '<g stroke="var(--ink)" stroke-width="2.2" fill="none" stroke-linejoin="round">' +
+    '<path d="M0 ' + H.toFixed(1) + 'L' + (L*u).toFixed(1) + ' ' + H.toFixed(1) + 'L' + (ax*u).toFixed(1) +
+      ' ' + (H - ay*u).toFixed(1) + 'Z"/>' +
+    '<rect x="' + sx.toFixed(1) + '" y="' + (H - S*u).toFixed(1) + '" width="' + (S*u).toFixed(1) +
+      '" height="' + (S*u).toFixed(1) + '"/></g>' +
+    t(L*u/2, H + 15, L + ' см') +
+    t(ax*u/2 - 9, H - ay*u/2, r + ' см') +
+    t((ax + L)*u/2 + 9, H - ay*u/2, p + ' см') +
+    t(sx + S*u/2, H + 15, q.dm + ' дм') + '</svg></div>';
+}
 function genSqCut(){
+  if(Math.random() < 0.28) return genTriSq();
   if(Math.random() < 0.3){
     // Задача 13: a sheet cut into a square and what is left over. The square's side is
     // the whole height, so the leftover width comes out of the half-perimeter.
@@ -1352,7 +1415,13 @@ const NAMES = [['Хари', 'посадил'], ['Мая', 'посадила'], [
 function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
   const n = 4 + rnd(9), d = 2 + rnd(5);
-  const shape = rnd(3);
+  const shape = rnd(4);
+  if(shape === 3){
+    // Задача 11: told in дециметри, asked in метри — the gap count is the same puzzle,
+    // with a conversion sitting in front of it.
+    const k = 2 + rnd(2), m = 6 + rnd(11);   // a whole metre between trees would make the conversion do nothing
+    return {kind:'trees', who, did, n:m, d:k, dm: 10*k, shape, len: (m - 1)*k, ans: (m - 1)*k};
+  }
   return {kind:'trees', who, did, n, d, shape, len: (n - 1) * d,
           ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
 }
@@ -1614,6 +1683,7 @@ function raw(level){
     if(level === 43) return genCoins();
     if(level === 44) return genCross();
     if(level === 45) return genCards();
+    if(level === 46) return genOrder();
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
@@ -1803,7 +1873,10 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'trees'){
-    const ask = q.shape === 0
+    const ask = q.shape === 3
+      ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
+        q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
+      : q.shape === 0
       ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
         q.d + '</span> метра едно от друго. Колко метра е дълга редицата?'
       : q.shape === 1
@@ -1899,6 +1972,13 @@ function drawQ(q){
       q.d2 + '</span> см ' + two + ' от точка <b>B</b> е отбелязана точка <b>C</b>. Колко сантиметра е разстоянието от <b>A</b> до <b>C</b>?</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
   }
+  if(q.kind === 'sqcut' && q.shape === 4){
+    return '<div class="ask">Триъгълник има страни <span class="num">' + q.sides.join('</span> см, <span class="num">') +
+      '</span> см. Квадрат има страна <span class="num">' + q.dm +
+      '</span> дм. С колко сантиметра обиколката на <b>квадрата</b> е по-голяма от обиколката на <b>триъгълника</b>?</div>' +
+      triSqSvg(q) +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
+  }
   if(q.kind === 'sqcut' && q.shape === 3){
     return '<div class="ask">Разрязах правоъгълен лист с обиколка <span class="num">' + q.P +
       '</span> см на квадрат <b>A</b> със страна <span class="num">' + q.a +
@@ -1938,6 +2018,21 @@ function drawQ(q){
         (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':';
     return '<div class="ask">' + head + '</div>' +
       '<div class="given">' + rel + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'order'){
+    return '<div class="ask">Поставете числата <span class="num">' + bgList(q.nums) +
+      '</span> в квадратчетата, така че да е вярно:</div>' +
+      '<div class="given">■ + ' + q.p + ' &gt; □ &gt; ■ + ' + q.g + '</div>' +
+      '<div class="ask">' + (q.asksMid ? 'Кое число е в <b>празното</b> квадратче □?'
+                                       : 'Колко е <b>сборът</b> на числата в <b>оцветените</b> квадратчета ■?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
+  if(q.kind === 'sumdiff' && q.shape === 'gap'){
+    return '<div class="ask">Разликата на числото <b>A</b> и <span class="num">' + q.c +
+      '</span> е <span class="num">' + q.d1 + '</span>. Разликата на числото <b>B</b> и <span class="num">' +
+      q.c + '</span> е <span class="num">' + q.d2 +
+      '</span>. Колко е <b>най-голямата възможна</b> разлика на числата A и B?</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'sumdiff'){
@@ -2069,6 +2164,8 @@ function eqText(q){
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? 'квадратите' : 'без квадратите') + ' → ' + q.ans
     : q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
   if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
+  if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + ' дм → ' + q.P + ', триъгълник ' +
+    q.sides.join('+') + ' = ' + q.p + ' → ' + q.ans;
   if(q.kind === 'sqcut') return q.shape === 3
     ? 'лист с обиколка ' + q.P + ', квадрат ' + q.a + ' → ' + q.ans
     : 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
@@ -2078,6 +2175,8 @@ function eqText(q){
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
     (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
+  if(q.kind === 'order') return q.nums.join(', ') + ' → ' + q.fit.join(', ') + ' → ' + q.ans;
+  if(q.kind === 'sumdiff' && q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + ' от ' + q.c + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
   if(q.kind === 'digits' && q.shape === 2) return 'едната цифра ' + q.d + ', другата ' +
     (q.smaller ? 'по-малка' : 'по-голяма') + ' → ' + q.ans;
@@ -2266,8 +2365,11 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; ' + Math.max(val, q.total) + ' − ' + Math.min(val, q.total) + ' = ' + q.ans;
   }
   if(q.kind === 'trees'){
-    if(!full) return 'Разстоянията са с едно по-малко от дръвчетата.';
+    if(!full) return q.shape === 3 ? 'Разстоянията са с едно по-малко от дръвчетата — и мерките трябва да съвпадат.'
+                                   : 'Разстоянията са с едно по-малко от дръвчетата.';
     const gaps = q.n - 1;
+    if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, а между ' + q.n + ' дръвчета има <b>' +
+      gaps + '</b> разстояния &nbsp;→&nbsp; ' + gaps + ' × ' + q.d + ' = ' + q.ans;
     if(q.shape === 0) return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
       (gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans : gaps + ' × ' + q.d + ' = ' + q.ans);
     if(q.shape === 1) return q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
@@ -2349,6 +2451,12 @@ function whyWork(q, full){
       (q.back ? 'обратно &nbsp;→&nbsp; ' + q.d2 + ' − ' + q.d1 : 'напред &nbsp;→&nbsp; ' + q.d1 + ' + ' + q.d2) +
       ' = ' + q.ans;
   }
+  if(q.kind === 'sqcut' && q.shape === 4){
+    if(!full) return 'Двете обиколки са в различни мерки — изравни ги първо.';
+    return q.dm + ' дм = <b>' + (10*q.dm) + '</b> см &nbsp;→&nbsp; квадратът е 4 × ' + (10*q.dm) + ' = <b>' + q.P +
+      '</b>, триъгълникът е ' + q.sides.join(' + ') + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; ' +
+      q.P + ' − ' + q.p + ' = ' + q.ans;
+  }
   if(q.kind === 'sqcut' && q.shape === 3){
     if(!full) return 'Половината обиколка са двете различни страни, взети по веднъж.';
     const half = q.P / 2, wide = half - q.a;
@@ -2395,6 +2503,19 @@ function whyWork(q, full){
       ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
     return head + 'трябва ? + ' + q.C + ' ≥ ' + q.L + ', значи ? ≥ ' + lim +
       ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'order'){
+    if(!full) return 'Пробвай подрежданията — само едно от тях става.';
+    const f = q.fit;
+    const head = 'става само ' + f[0] + ' + ' + q.p + ' &gt; ' + f[1] + ' &gt; ' + f[2] + ' + ' + q.g +
+      ' &nbsp;→&nbsp; <b>' + (f[0] + q.p) + ' &gt; ' + f[1] + ' &gt; ' + (f[2] + q.g) + '</b> &nbsp;→&nbsp; ';
+    return head + (q.asksMid ? 'в празното квадратче е ' + q.ans : f[0] + ' + ' + f[2] + ' = ' + q.ans);
+  }
+  if(q.kind === 'sumdiff' && q.shape === 'gap'){
+    if(!full) return 'Всяко от двете може да е от едната или от другата страна.';
+    return 'A е ' + (q.c - q.d1) + ' или ' + (q.c + q.d1) + ', B е ' + (q.c - q.d2) + ' или ' + (q.c + q.d2) +
+      ' &nbsp;→&nbsp; най-далече са <b>' + (q.c - q.d1) + '</b> и <b>' + (q.c + q.d2) + '</b> &nbsp;→&nbsp; ' +
+      (q.c + q.d2) + ' − ' + (q.c - q.d1) + ' = ' + q.ans;
   }
   if(q.kind === 'sumdiff'){
     if(!full) return 'Другото число може да е по-малко или по-голямо — намери и двата сбора.';
