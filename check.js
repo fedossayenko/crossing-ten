@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]){
+for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37]){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
@@ -36,7 +36,7 @@ for(const L of [1,2,7,4,5,6,3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,2
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + 36 + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + 37 + ' levels: arithmetic, worked line, summary line and layout all agree');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -77,12 +77,59 @@ for(const L of [19, 21, 28, 29, 34]){
 console.log('figures: balanced, scaled to a viewBox, coloured only from theme tokens');
 
 // задача 16: every generated cut must be a triangle that could actually exist
-for(let i = 0; i < 5000; i++){
-  const q = raw(22), d = q.ans;
+let cutShapes = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(22);
+  if(q.shape === 1){                       // a triangle cut off a square along one side
+    cutShapes++;
+    if(q.P !== 4*q.c) throw new Error('square perimeter is not four sides');
+    if(q.p <= 2*q.c) throw new Error('a triangle of ' + q.p + ' cannot sit on a side of ' + q.c);
+    if(q.ans !== q.P - q.c + (q.p - q.c)) throw new Error('cut-square perimeter wrong: ' + JSON.stringify(q));
+    continue;
+  }
+  const d = q.ans;
   if(q.p1 + q.p2 !== q.P + 2*d) throw new Error('perimeters do not add up: ' + JSON.stringify(q));
   if(q.p1 <= 2*d || q.p2 <= 2*d) throw new Error('half with perimeter ' + Math.min(q.p1,q.p2) + ' cannot hold a cut of ' + d);
 }
-console.log('triangle cuts: perimeters add up and both halves are possible triangles');
+if(!cutShapes) throw new Error('the square-and-triangle shape never turned up');
+console.log('shared edges: split triangles add up, and a triangle cut off a square keeps a possible shape');
+
+// задача 20: the closed form must match an exhaustive search over the final counts
+for(let i = 0; i < 2000; i++){
+  const q = raw(37);
+  let best = Infinity;
+  for(let W = 0; W <= 40; W++) for(let D = 0; D <= 40; D++){
+    if(W < q.wo || W < q.bs || D < q.ws || W + D < q.bc) continue;
+    best = Math.min(best, (W-q.wo) + (D-q.ws) + (W-q.bs) + (W+D-q.bc));
+  }
+  if(best !== q.ans) throw new Error('shapes puzzle: search says ' + best + ', answer says ' + q.ans);
+  const drawn = { wo:0, ws:0, bs:0, bc:0 };
+  q.row.forEach(t => drawn[t]++);
+  if(drawn.wo !== q.wo || drawn.ws !== q.ws || drawn.bs !== q.bs || drawn.bc !== q.bc)
+    throw new Error('the drawn row does not match the counts the answer assumes');
+}
+{ // the worksheet's own row: ○ ■ ● ○ ■ □ ■
+  let best = Infinity;
+  for(let W = 0; W <= 40; W++) for(let D = 0; D <= 40; D++){
+    if(W < 2 || W < 3 || D < 1 || W + D < 1) continue;
+    best = Math.min(best, (W-2) + (D-1) + (W-3) + (W+D-1));
+  }
+  if(best !== 4) throw new Error('worksheet instance of задача 20 should be 4');
+}
+console.log('shapes puzzle: matches an exhaustive search, the row matches the counts, worksheet instance gives 4');
+
+// задача 17: the smallest sum really is the k smallest distinct numbers
+for(let i = 0; i < 3000; i++){
+  const q = raw(13);
+  if(q.shape !== 2) continue;
+  const pool = [];
+  for(let v = q.two ? 10 : 0; v <= (q.two ? 99 : 9); v++) pool.push(v);
+  pool.sort((a, b) => q.small ? a - b : b - a);
+  const want = pool.slice(0, q.k).reduce((t, v) => t + v, 0);
+  if(want !== q.ans) throw new Error('extreme sum wrong: ' + JSON.stringify(q));
+  if(new Set(q.list).size !== q.k) throw new Error('the chosen numbers must be different');
+}
+console.log('extreme sums: taking the k smallest or largest distinct numbers gives the stated total');
 
 // задача 20: the compact pivot scan must agree with a plain double loop
 for(let i = 0; i < 4000; i++){

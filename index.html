@@ -648,6 +648,7 @@ const LEVELS = [
   { id:16, op:'w', grp:'puzzle', eq:'Вместо ?',    desc:'How many digits make the statement false' },
   { id:18, op:'w', grp:'puzzle', eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum' },
   { id:15, op:'w', grp:'puzzle', eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
+  { id:37, op:'w', grp:'puzzle', eq:'Фигури',     desc:'Add the fewest shapes to make two counts match' },
   { id:33, op:'w', grp:'puzzle', eq:'Цветя',      desc:'Petals of three kinds adding to a total' },
   { id:35, op:'w', grp:'puzzle', eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
   { id:36, op:'w', grp:'puzzle', eq:'Бонбони',    desc:'Ways to share sweets so everyone gets one' },
@@ -720,6 +721,15 @@ function genPairsTens(){
 // Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
 // pair usually breaking the pattern, so the structure is checked and not assumed.
 function genPairsSub(){
+  if(Math.random() < 0.4){
+    // Задача 19: one minuend throughout, subtrahends climbing — so the differences
+    // count down and pair off from the ends.
+    const M = 12 + rnd(12);
+    const k = 4 + rnd(3);
+    const terms = [];
+    for(let i = 0; i <= k; i++) terms.push({op: i ? '+' : '', n: M}, {op:'−', n: M - k + i});
+    return {kind:'pairs', shape:'run', terms, M, k, paired:k + 1, ans: k*(k+1)/2};
+  }
   const start = 11 + rnd(10);
   const k = 3 + rnd(2);
   const terms = [];
@@ -756,7 +766,7 @@ function genBox(){
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
 
-const BGNUM = {2:'две', 3:'три', 4:'четири'};
+const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест'};
 const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и ' + a[a.length-1];
 
 // Задача 5: counting a range given as a condition. The wording rotates — including
@@ -785,7 +795,16 @@ const NAMED = [
   { nm:'най-малкото трицифрено число',   v:100 }
 ];
 function genNamed(){
-  if(Math.random() < 0.4){
+  if(Math.random() < 0.3){
+    // Задача 17: the smallest (or largest) sum of k different numbers — take the k
+    // smallest, or the k largest. Zero counts as a one-digit number.
+    const k = 3 + rnd(4);
+    const small = Math.random() < 0.6, two = Math.random() < 0.3;
+    const list = [];
+    for(let i = 0; i < k; i++) list.push(small ? (two ? 10 : 0) + i : (two ? 99 : 9) - i);
+    return {kind:'named', shape:2, k, small, two, list, ans: list.reduce((t, v) => t + v, 0)};
+  }
+  if(Math.random() < 0.55){
     const t = NAMED[rnd(NAMED.length)];
     return {kind:'named', shape:0, nm:t.nm, ans:t.v};
   }
@@ -883,6 +902,13 @@ function genSqCut(){
 
 // Задача 16: the cut edge belongs to both halves, so the two perimeters count it twice.
 function genShared(){
+  if(Math.random() < 0.4){
+    // Задача 18: a triangle cut off a square along one whole side. The boundary loses
+    // that side and gains the triangle's other two.
+    const c = 3 + rnd(6);
+    const p = 2*c + 1 + rnd(12);
+    return {kind:'shared', shape:1, c, P: 4*c, p, ans: 4*c - c + (p - c)};
+  }
   for(;;){
     const c = 2 + rnd(8);
     const P = 12 + rnd(18);
@@ -891,7 +917,7 @@ function genShared(){
     const p2 = tot - p1;
     // each half must be a possible triangle: its other two sides together beat the cut
     if(p1 <= 2*c || p2 <= 2*c || p1 >= P + c || p2 >= P + c) continue;
-    return {kind:'shared', P, p1, p2, ans: c};
+    return {kind:'shared', shape:0, P, p1, p2, ans: c};
   }
 }
 
@@ -1169,6 +1195,24 @@ function candyWays(n, kids){
   return out;
 }
 
+// Задача 20: only additions are allowed. Raising the white circles costs three (the
+// circle, a black square to match it, and a black circle), while raising the white
+// squares costs two — so when the black circles already outnumber the whites, the
+// squares are the cheaper way to catch up.
+const SHAPE_GLYPH = { wo:'○', ws:'□', bs:'■', bc:'●' };
+function genShapes(){
+  for(;;){
+    const wo = 1 + rnd(3), ws = rnd(3), bs = 1 + rnd(4), bc = rnd(5);
+    const W = Math.max(wo, bs);
+    const D = Math.max(ws, bc - W);
+    const ans = 3*W + 2*D - (wo + ws + bs + bc);
+    if(ans < 2 || ans > 12) continue;
+    const row = shuffle(Array(wo).fill('wo').concat(
+      Array(ws).fill('ws'), Array(bs).fill('bs'), Array(bc).fill('bc')));
+    return {kind:'shapes', wo, ws, bs, bc, row, W, D, ans};
+  }
+}
+
 function raw(level){
   for(;;){
     let a, b;
@@ -1207,6 +1251,7 @@ function raw(level){
     if(level === 34) return genPaint();
     if(level === 35) return genTwoDig();
     if(level === 36) return genCandy();
+    if(level === 37) return genShapes();
     // Mixed draws from the levels chosen in the picker, and — when asked — sometimes a sum
     // needing no regrouping at all, so she has to decide whether to cross.
     const mix = mixList();
@@ -1279,6 +1324,11 @@ function drawQ(q){
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   const cm = ' <span class="unit">см</span>';
+  if(q.kind === 'shapes'){
+    return '<div class="ask">Колко <b>най-малко</b> фигури общо трябва да добавим, така че черните квадрати ■ да са толкова, колкото белите кръгове ○, а черните кръгове ● да са толкова, колкото са <b>всичките бели</b> фигури?</div>' +
+      '<div class="seq" style="letter-spacing:.2em">' + q.row.map(t => SHAPE_GLYPH[t]).join(' ') + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + '</div>';
+  }
   if(q.kind === 'flowers'){
     return '<div class="ask">Имаме цветя с по <span class="num">' + bgList(q.p) +
       '</span> листенца — и от трите вида. Листенцата на всички цветя са общо <span class="num">' +
@@ -1413,6 +1463,12 @@ function drawQ(q){
       sqSvg(q.parts, q.side) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slot + cm + '</div>';
   }
+  if(q.kind === 'shared' && q.shape === 1){
+    return '<div class="ask">От квадрат с обиколка <span class="num">' + q.P +
+      '</span> см е изрязан триъгълник с обиколка <span class="num">' + q.p +
+      '</span> см, който има обща страна с квадрата. Колко см е обиколката на получената фигура?</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + slot + cm + '</div>';
+  }
   if(q.kind === 'shared'){
     return '<div class="ask">Триъгълник с обиколка <span class="num">' + q.P +
       '</span> см разрязали на два триъгълника с обиколки <span class="num">' + q.p1 +
@@ -1453,7 +1509,10 @@ function drawQ(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
   if(q.kind === 'named'){
-    const ask = q.shape === 0
+    const ask = q.shape === 2
+      ? 'Колко е най-' + (q.small ? 'малкият' : 'големият') + ' сбор на <b>' + BGNUM[q.k] +
+        ' различни</b> ' + (q.two ? 'двуцифрени' : 'едноцифрени') + ' числа?'
+      : q.shape === 0
       ? 'Кое е ' + q.nm + '?'
       : 'Съберете най-малкото двуцифрено и най-голямото едноцифрено число. С колко полученият сбор е ' +
         (q.R > 19 ? 'по-малък' : 'по-голям') + ' от <span class="num">' + q.R + '</span>?';
@@ -1488,10 +1547,13 @@ function eqText(q){
     : q.shape === 1 ? 'по-малки от ' + q.n
     : q.shape === 2 ? 'от ' + q.a + ' до ' + q.b
     : 'между ' + q.a + ' и ' + q.b) + ' → ' + q.ans;
+  if(q.kind === 'named' && q.shape === 2) return 'най-' + (q.small ? 'малките ' : 'големите ') +
+    q.k + ' числа → ' + q.ans;
   if(q.kind === 'named') return q.shape === 0 ? q.nm + ' = ' + q.ans
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   if(q.kind === 'grow') return BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ' +
     (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
+  if(q.kind === 'shapes') return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
   if(q.kind === 'flowers') return 'по ' + q.p.join(', ') + ' листенца, общо ' + q.T + ' → ' + q.ans;
   if(q.kind === 'paint') return q.R + '×' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans;
   if(q.kind === 'twodig') return 'сбор ' + q.S + ' → ' + q.lo + ' и ' + q.hi + ' → ' + q.ans;
@@ -1511,7 +1573,9 @@ function eqText(q){
   if(q.kind === 'rects') return q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
   if(q.kind === 'line') return 'A → B ' + q.d1 + ', B → C ' + q.d2 + (q.back ? ' назад' : ' напред') + ' → ' + q.ans;
   if(q.kind === 'sqcut') return 'страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ' + q.ans;
-  if(q.kind === 'shared') return q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
+  if(q.kind === 'shared') return q.shape === 1
+    ? 'квадрат ' + q.P + ', триъгълник ' + q.p + ' → ' + q.ans
+    : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + ' и разлика ' + q.d + ' → ' + (2*q.a - q.d) + ' и ' + q.ans;
@@ -1524,6 +1588,13 @@ function eqText(q){
 
 // On a first miss she gets the method, not the answer; the worked line comes after.
 function whyWork(q, full){
+  if(q.kind === 'pairs' && q.shape === 'run'){
+    if(!full) return 'Извади всяка двойка — числата, които получаваш, вървят надолу.';
+    const vals = [];
+    for(let i = q.k; i >= 0; i--) vals.push(i);
+    return q.M + ' − ' + (q.M - q.k) + ' = ' + q.k + ', ' + q.M + ' − ' + (q.M - q.k + 1) + ' = ' + (q.k - 1) +
+      ', … &nbsp;→&nbsp; ' + vals.join(' + ') + ' = ' + q.ans;
+  }
   if(q.kind === 'pairs' && q.shape === 'sub'){
     if(!full) return 'Групирай ги по двойки — всяка дава кръгло число.';
     const ts = q.terms;
@@ -1560,6 +1631,13 @@ function whyWork(q, full){
     if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
+  }
+  if(q.kind === 'shapes'){
+    if(!full) return 'Белите квадратчета също се броят към белите фигури.';
+    return 'сега ○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc +
+      ' &nbsp;→&nbsp; накрая <b>○' + q.W + ' □' + q.D + ' ■' + q.W + ' ●' + (q.W + q.D) +
+      '</b> &nbsp;→&nbsp; добавяме ' + (q.W - q.wo) + ' + ' + (q.D - q.ws) + ' + ' + (q.W - q.bs) +
+      ' + ' + (q.W + q.D - q.bc) + ' = ' + q.ans;
   }
   if(q.kind === 'flowers'){
     if(!full) return 'От всеки вид има поне по едно цвете — пробвай колко от най-малките.';
@@ -1691,6 +1769,12 @@ function whyWork(q, full){
     if(q.shape === 1) return add(q.side, 4) + ' = ' + q.ans;
     return found + ', обиколката ѝ е <b>' + (4*q.small) + '</b> &nbsp;→&nbsp; ' + add(4*q.small, q.parts*q.parts) + ' = ' + q.ans;
   }
+  if(q.kind === 'shared' && q.shape === 1){
+    if(!full) return 'Общата страна изчезва, а другите две се появяват.';
+    return 'страната на квадрата е <b>' + q.c + '</b> см &nbsp;→&nbsp; другите две страни на триъгълника са ' +
+      q.p + ' − ' + q.c + ' = <b>' + (q.p - q.c) + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + q.c + ' + ' +
+      (q.p - q.c) + ' = ' + q.ans;
+  }
   if(q.kind === 'shared'){
     if(!full) return 'Общата страна е в двете обиколки.';
     return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + '</b>, а обиколката е ' + q.P +
@@ -1744,7 +1828,10 @@ function whyWork(q, full){
       ' &nbsp;(<b>без краищата</b>) &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'named'){
-    if(!full) return q.shape === 0 ? 'Колко цифри трябва да има числото?' : 'Първо сборът, после сравнението.';
+    if(!full) return q.shape === 2 ? 'Вземи възможно най-' + (q.small ? 'малките' : 'големите') + ' различни числа.'
+            : q.shape === 0 ? 'Колко цифри трябва да има числото?' : 'Първо сборът, после сравнението.';
+    if(q.shape === 2) return 'най-' + (q.small ? 'малките' : 'големите') + ' са <b>' + q.list.join(', ') +
+      '</b> &nbsp;→&nbsp; ' + q.list.join(' + ') + ' = ' + q.ans;
     if(q.shape === 0) return q.nm + ' е <b>' + q.ans + '</b>';
     return '10 + 9 = <b>19</b> &nbsp;→&nbsp; ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
   }
