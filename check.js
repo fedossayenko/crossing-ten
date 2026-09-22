@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -889,6 +889,67 @@ for(let i = 0; i < 3000; i++){
 }
 console.log('choosing the signs: matches an exhaustive search of every sign pattern, worksheet instance gives 2');
 
+// задача 1 and 5: a number said in tens, ones and hundreds
+const seenTens = {};
+for(let i = 0; i < 6000; i++){
+  const q = raw(51);
+  seenTens[q.shape] = 1;
+  const want = q.shape === 0 ? (q.N - q.c) / 10
+             : q.shape === 1 ? (10*q.a + 10*q.b + 10*q.m) / 100
+             : q.shape === 2 ? q.N - 10*q.t
+             : 100*q.a + 10*q.b + q.c;
+  if(want !== q.ans) throw new Error('shape ' + q.shape + ' does not balance: ' + JSON.stringify(q));
+  const shown = strip(drawQ(q));
+  if(q.shape < 2 && (q.ans < 0 || q.ans > 9)) throw new Error('the box is asked for as a digit but holds ' + q.ans);
+  if(q.shape < 2 && shown.indexOf('Коя цифра') < 0) throw new Error('a single digit should be asked for as a цифра');
+  if(q.shape >= 2 && shown.indexOf('Кое число') < 0) throw new Error('a whole number should be asked for as a число');
+  if(/\b1 (единици|десетици|стотици)\b/.test(shown)) throw new Error('„1 единици" — Bulgarian wants the singular');
+}
+if(Object.keys(seenTens).length !== 4) throw new Error('all four spellings should turn up');
+{ // задачи 1 and 5 as printed
+  if(lastNum(why({kind:'tens', shape:0, c:20, N:50, ans:3}, true)) !== 3)
+    throw new Error('50 = □ tens + 20 ones should be 3');
+  if(lastNum(why({kind:'tens', shape:1, a:7, b:8, m:5, ans:2}, true)) !== 2)
+    throw new Error('7 tens + 8 tens + 50 ones should be 2 hundreds');
+}
+console.log('tens and ones: every spelling balances and agrees with its numeral, worksheet instances give 3 and 2');
+
+// задачи 2 and 4: both sides say the same thing
+let balanced = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(11);
+  if(q.shape !== 'bal') continue;
+  balanced++;
+  const L = q.plus ? q.x + q.y : q.x - q.y;
+  if(L !== q.L) throw new Error('the side that can be worked out is wrong');
+  const right = (q.form === 0 || q.form === 3) ? q.N - q.ans : q.ans + q.N;
+  if(right !== q.L) throw new Error('the two sides do not come out equal: ' + JSON.stringify(q));
+  if(q.ans < 1 || q.ans > 99) throw new Error('the box left the range she works in');
+}
+if(!balanced) throw new Error('the balance shape should turn up');
+{ // задачи 2 and 4 as printed
+  if(lastNum(why({kind:'box', shape:'bal', form:0, x:31, y:29, N:95, L:60, plus:true, ans:35}, true)) !== 35)
+    throw new Error('31 + 29 = 95 − □ should be 35');
+  if(lastNum(why({kind:'box', shape:'bal', form:1, x:100, y:40, N:20, L:60, plus:false, ans:40}, true)) !== 40)
+    throw new Error('100 − 40 = □ + 20 should be 40');
+}
+console.log('both sides equal: the two sides agree whichever way the box sits, worksheet instances give 35 and 40');
+
+// задача 3: the same two numbers, added once and taken away once
+let sames = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(10);
+  if(!q.same) continue;
+  sames++;
+  if(q.p !== q.x || q.q !== q.y) throw new Error('the pair is not the same on both sides');
+  if(q.S - q.D !== q.ans || q.ans !== 2*q.y) throw new Error('the gap is not twice the smaller number');
+  if(q.x <= q.y) throw new Error('the difference would go negative');
+}
+if(!sames) throw new Error('the same-pair comparison should turn up');
+if(lastNum(why({kind:'cmp', shape:2, same:1, x:31, y:13, p:31, q:13, S:44, D:18, less:false, ans:26}, true)) !== 26)
+  throw new Error('31 + 13 against 31 − 13 should be 26');
+console.log('same pair both ways: the gap is twice the smaller number, worksheet instance gives 26');
+
 // задача 12: conversions and the cut both land on whole centimetres
 for(let i = 0; i < 4000; i++){
   const q = raw(32);
@@ -971,7 +1032,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 49) throw new Error('parsed ' + rows.length + ' levels, expected 49');
+  if(rows.length !== 50) throw new Error('parsed ' + rows.length + ' levels, expected 50');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1006,7 +1067,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 49 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 50 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {

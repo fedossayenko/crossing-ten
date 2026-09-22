@@ -681,6 +681,7 @@ const LEVELS = [
   { id:25, op:'w', grp:'count', needs:[12], d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
   { id:24, op:'w', grp:'count', needs:[12], d:4, eq:'Колко сбора?', desc:'How many different results two numbers can make' },
   { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false' },
+  { id:51, op:'w', grp:'num', d:3, eq:'Десетици', desc:'A number said in tens, ones and hundreds' },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare' },
   { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds' },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum' },
@@ -866,6 +867,12 @@ function genCmp(){
             ans: drop.reduce((t, i) => t + terms[i], 0)};
   }
   if(pickShape < 0.70){
+    if(Math.random() < 0.35){
+      // Задача 3: the very same two numbers, added once and taken away once — so the
+      // smaller one is the whole of the gap, twice over.
+      const y = 3 + rnd(15), x = y + 2 + rnd(30);
+      return {kind:'cmp', shape:2, same:1, x, y, p:x, q:y, S: x + y, D: x - y, less:false, ans: 2*y};
+    }
     // Задача 4: a sum against a difference.
     for(;;){
       const x = 2 + rnd(18), y = 2 + rnd(18);
@@ -880,6 +887,24 @@ function genCmp(){
     const big = a + b, small = (a%10) + Math.floor(a/10) + (b%10) + Math.floor(b/10);
     if(big > 89 || big - small < 10) continue;
     return {kind:'cmp', shape:0, a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
+  }
+}
+// Задача 2 and 4: the two sides say the same thing. One side can be worked out, and the
+// unknown is then read off the other — which way round the box sits decides the last step.
+function genBalance(){
+  for(;;){
+    const form = rnd(4);                        // 0: x+y = N−□   1: x−y = □+N   2: x+y = □+N   3: x−y = N−□
+    const round = Math.random() < 0.35;
+    const x = round ? 10*(3 + rnd(8)) : 11 + rnd(80);
+    const y = round ? 10*(1 + rnd(6)) : 11 + rnd(60);
+    const plus = form === 0 || form === 2;
+    if(!plus && x <= y) continue;
+    const L = plus ? x + y : x - y;
+    if(L < 5 || L > 100) continue;
+    const N = round ? 10*(1 + rnd(9)) : 5 + rnd(90);
+    const box = (form === 0 || form === 3) ? N - L : L - N;
+    if(box < 1 || box > 99) continue;
+    return {kind:'box', shape:'bal', form, x, y, N, L, plus, ans: box};
   }
 }
 // Задача 6: the unknown sits in an addition of round tens, and is then used in a
@@ -900,8 +925,9 @@ function genTwoBox(){
 // Задача 4: an unknown inside a subtraction, where the other side is itself a sum.
 function genBox(){
   const pick = Math.random();
-  if(pick < 0.33) return genTwoBox();
-  if(pick < 0.62) return genPlusBox();
+  if(pick < 0.26) return genTwoBox();
+  if(pick < 0.48) return genPlusBox();
+  if(pick < 0.74) return genBalance();
   const box = 2 + rnd(8);
   const r = 1 + rnd(9);
   const b = box + r;
@@ -1629,6 +1655,33 @@ function genCrates(){
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
+const PLACE = {1:['единица','единици'], 10:['десетица','десетици'], 100:['стотица','стотици']};
+const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
+// Задача 1 and 5: a number said in tens, ones and hundreds instead of digits. Ten ones
+// make a десетица and ten десетици a стотица, so the same amount has many spellings.
+function genTens(){
+  const shape = rnd(4);
+  if(shape === 0){                              // 50 = □ десетици + 20 единици
+    const ans = 2 + rnd(8);
+    const c = Math.random() < 0.6 ? 10*(1 + rnd(4)) : 2 + rnd(8);
+    return {kind:'tens', shape, c, N: 10*ans + c, ans};
+  }
+  if(shape === 1){                              // 7 десетици + 8 десетици + 50 единици = □ стотици
+    const ans = 1 + rnd(2);
+    for(;;){
+      const a = 2 + rnd(8), b = 2 + rnd(8), m = 10*ans - a - b;
+      if(m < 2 || m > 9) continue;
+      return {kind:'tens', shape, a, b, m, ans};
+    }
+  }
+  if(shape === 2){                              // 74 = 5 десетици + □ единици
+    const t = 2 + rnd(7), ans = 1 + rnd(29);
+    return {kind:'tens', shape, t, N: 10*t + ans, ans};
+  }
+  const a = 1 + rnd(2), b = 2 + rnd(8), c = 1 + rnd(9);   // 2 стотици + 4 десетици + 7 единици = □
+  return {kind:'tens', shape:3, a, b, c, ans: 100*a + 10*b + c};
+}
+
 // Задача 17: "a sum of p equal addends" is another way of saying "divides by p". Wanted
 // both ways at once, so the count divides by both — and the smallest one past the bound.
 const PAIRS = [[2,3,6], [2,4,4], [2,5,10], [3,4,12], [2,6,6], [2,7,14], [3,2,6], [4,3,12]];
@@ -1833,6 +1886,7 @@ function raw(level){
     if(level === 48) return genBoth();
     if(level === 49) return genMultiple();
     if(level === 50) return genSigns();
+    if(level === 51) return genTens();
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
@@ -2191,6 +2245,20 @@ function drawQ(q){
       '<div class="given">' + rel + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'tens'){
+    const B = '<span class="circle">□</span>';
+    // the box holds a single digit in the first two, a whole number in the others
+    const ask = 'Ко' + (q.shape < 2 ? 'я цифра' : 'е число') + ' трябва да поставим вместо ' + B +
+      ', така че да е вярно равенството?';
+    const eq = q.shape === 0 ? q.N + ' = ' + B + ' ' + PLACE[10][1] + ' + ' + places(q.c, 1)
+             : q.shape === 1 ? places(q.a, 10) + ' + ' + places(q.b, 10) + ' + ' + places(10*q.m, 1) +
+                               ' = ' + B + ' ' + PLACE[100][1]
+             : q.shape === 2 ? q.N + ' = ' + places(q.t, 10) + ' + ' + B + ' ' + PLACE[1][1]
+             : places(q.a, 100) + ' + ' + places(q.b, 10) + ' + ' + places(q.c, 1) + ' = ' + B;
+    return '<div class="ask">' + ask + '</div>' +
+      '<div class="given">' + eq + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'multiple'){
     return '<div class="ask">В ' + q.g[2] + ' има <b>повече от</b> <span class="num">' + q.N + '</span> ' + q.g[0] +
       '. Техният брой можем да запишем като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми и като сбор на <b>' +
@@ -2300,6 +2368,15 @@ function drawQ(q){
       ' Пресметнете сбора на останалите числа.</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'box' && q.shape === 'bal'){
+    const B = '<span class="circle">□</span>';
+    const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
+    const right = (q.form === 0 || q.form === 3) ? q.N + ' − ' + B : B + ' + ' + q.N;
+    return '<div class="ask">Кое число трябва да поставим вместо ' + B +
+      ', така че да е вярно равенството?</div>' +
+      '<div class="given">' + left + ' = ' + right + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + B + ' = ' + slot + '</div>';
+  }
   if(q.kind === 'box' && q.shape === 'plus'){
     const sq = '<span class="circle">■</span>';
     return '<div class="ask">Пресметнете ' + sq + ' − <span class="num">' + q.p + '</span>, ако</div>' +
@@ -2325,8 +2402,11 @@ function eqText(q){
   if(!q.kind) return q.a + ' ' + (q.op === '-' ? '−' : '+') + ' ' + q.b + ' = ' + answer(q);
   if(q.kind === 'cmp' && q.shape === 3) return q.L.join('+') + ' срещу ' + q.R.join('+') + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.shape === 1) return q.terms.join('+') + ' срещу ' + q.kept.join('+') + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.same) return q.x + '±' + q.y + ' → ' + q.S + ' и ' + q.D + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ') срещу (' + q.p + '−' + q.q + ') → ' + q.ans;
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
+  if(q.kind === 'box' && q.shape === 'bal') return q.x + (q.plus ? '+' : '−') + q.y + ' = ' + q.L +
+    ' → □ = ' + q.ans;
   if(q.kind === 'box' && q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
   if(q.kind === 'box' && q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
@@ -2388,6 +2468,7 @@ function eqText(q){
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? ' вярно' : ' невярно') +
     (q.asksSum ? ', сборът' : '') + ' → ' + q.ans;
+  if(q.kind === 'tens') return 'разредни единици → ' + q.ans;
   if(q.kind === 'multiple') return 'кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N + ' → ' + q.ans;
   if(q.kind === 'signs') return q.a + '…' + q.b + ' = ' + q.T + ' → минуси: ' + q.ans;
   if(q.kind === 'crates') return q.T + ' кг, първите две ' + q.ab + ', втората с ' + q.d +
@@ -2465,6 +2546,11 @@ function whyWork(q, full){
     if(!full) return 'Общите събираеми се съкращават.';
     return 'общите събираеми ' + q.kept.join(' + ') + ' се съкращават &nbsp;→&nbsp; остава ' +
       q.gone.join(' + ') + ' = ' + q.ans;
+  }
+  if(q.kind === 'cmp' && q.same){
+    if(!full) return 'Двете числа са едни и същи — какво прави по-малкото веднъж горе и веднъж долу?';
+    return q.y + ' веднъж се прибавя и веднъж се изважда &nbsp;→&nbsp; цялата разлика е двойно по-голяма от ' +
+      q.y + ' &nbsp;→&nbsp; ' + q.y + ' + ' + q.y + ' = ' + q.ans;
   }
   if(q.kind === 'cmp' && q.shape === 2){
     if(!full) return 'Пресметни сбора и разликата поотделно.';
@@ -2741,6 +2827,17 @@ function whyWork(q, full){
     return head + 'трябва ? + ' + q.C + ' ≥ ' + q.L + ', значи ? ≥ ' + lim +
       ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.kind === 'tens'){
+    if(!full) return 'Всяка десетица е десет единици, а всяка стотица — десет десетици.';
+    if(q.shape === 0) return q.N + ' − ' + q.c + ' = <b>' + (q.N - q.c) + '</b> &nbsp;→&nbsp; ' +
+      (q.N - q.c) + ' са ' + q.ans + ' ' + PLACE[10][1];
+    if(q.shape === 1) return places(q.a, 10) + ' = ' + (10*q.a) + ', ' + places(q.b, 10) + ' = ' + (10*q.b) +
+      ', ' + places(10*q.m, 1) + ' = ' + (10*q.m) + ' &nbsp;→&nbsp; ' + (10*q.a) + ' + ' + (10*q.b) + ' + ' +
+      (10*q.m) + ' = <b>' + (100*q.ans) + '</b> &nbsp;→&nbsp; това са ' + q.ans + ' ' + PLACE[100][1];
+    if(q.shape === 2) return places(q.t, 10) + ' = <b>' + (10*q.t) + '</b> &nbsp;→&nbsp; ' + q.N + ' − ' +
+      (10*q.t) + ' = ' + q.ans;
+    return (100*q.a) + ' + ' + (10*q.b) + ' + ' + q.c + ' = ' + q.ans;
+  }
   if(q.kind === 'multiple'){
     if(!full) return 'Сбор на равни събираеми значи, че числото се дели точно на техния брой.';
     return 'дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; значи се дели на <b>' + q.L +
@@ -2855,6 +2952,14 @@ function whyWork(q, full){
     return '<b>' + q.gone + ' = ' + (q.bigger ? (q.gone - q.d) + ' + ' + q.d : (q.gone + q.d) + ' − ' + q.d) +
       '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
       ' &nbsp;→&nbsp; ' + q.set.filter(v => v !== q.gone).join(' + ') + ' = ' + q.ans;
+  }
+  if(q.shape === 'bal'){
+    if(!full) return 'Едната страна може да се пресметне докрай — започни оттам.';
+    const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
+    const tail = (q.form === 0 || q.form === 3)
+      ? '□ = ' + q.N + ' − ' + q.L + ' = ' + q.ans
+      : '□ = ' + q.L + ' − ' + q.N + ' = ' + q.ans;
+    return left + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tail;
   }
   if(q.shape === 'plus'){
     if(!full) return 'Намери първо какво стои в квадратчето.';
