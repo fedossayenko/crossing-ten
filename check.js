@@ -16,7 +16,7 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -1350,6 +1350,89 @@ if(lastNum(why({kind:'bucket', p:3, q:5, V:14, ans:3}, true)) !== 3)
   throw new Error('a 14-litre vessel with a 3 or 5 litre bucket takes 3 fills');
 console.log('which bucket: the vessel overflows for one size and not the other, worksheet instance gives 3');
 
+// задача 17: the most or the fewest of one weekday in a run of days
+let bounds = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(25);
+  if(q.shape !== 'bound') continue;
+  bounds++;
+  // count them for every possible starting weekday and take the real extreme
+  let lo = 99, hi = 0;
+  for(let start = 0; start < 7; start++){
+    let n = 0;
+    for(let d = 0; d < q.n; d++) if((start + d) % 7 === 0) n++;
+    lo = Math.min(lo, n); hi = Math.max(hi, n);
+  }
+  if(q.ans !== (q.most ? hi : lo)) throw new Error('the extreme is wrong for ' + q.n + ' days');
+  if(lo === hi) throw new Error('with a whole number of weeks there is nothing to choose between');
+  if(/1 цели седмици/.test(strip(why(q, true)))) throw new Error('one week is „една цяла седмица", not „1 цели"');
+}
+if(!bounds) throw new Error('the most-or-fewest shape should turn up');
+if(lastNum(why({kind:'weekday', shape:'bound', n:22, most:true, day:DAYS[5], ans:4}, true)) !== 4)
+  throw new Error('22 days hold at most 4 Saturdays');
+console.log('most or fewest: matches a count from every starting weekday, worksheet instance gives 4');
+
+// задача 19: two runs stepping by two, one odd and one even
+let runs = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(10);
+  if(!q.runs) continue;
+  runs++;
+  if(q.A.some((v, k) => k && v !== q.A[k-1] + 2) || q.B.some((v, k) => k && v !== q.B[k-1] + 2))
+    throw new Error('a run does not step by two');
+  if(q.A[0] % 2 === q.B[0] % 2) throw new Error('one run should be odd and the other even');
+  if(q.sa !== q.A.reduce((t, v) => t + v, 0) || q.sb !== q.B.reduce((t, v) => t + v, 0))
+    throw new Error('a stated sum is wrong');
+  if(q.ans !== Math.abs(q.sa - q.sb) || q.ans < 1) throw new Error('the gap between the sums is wrong');
+  if(q.big !== (q.sa > q.sb ? 0 : 1)) throw new Error('the question names the wrong one as bigger');
+  if(q.A.concat(q.B).some(v => v < 1)) throw new Error('a run dipped to nothing');
+}
+if(!runs) throw new Error('the two-runs shape should turn up');
+{ // задача 19 as printed
+  const A = [3,5,7,9,11,13,15,17], B = [2,4,6,8,10,12,14,16,18];
+  const q = {kind:'cmp', runs:1, A, B, sa:80, sb:90, nm:['Деми','Мария'], back:true, big:1, ans:10};
+  if(lastNum(why(q, true)) !== 10) throw new Error('Maria beats Demi by 10');
+}
+console.log('two runs: each steps by two, odd against even, worksheet instance gives 10');
+
+// задача 18: how many are above someone, from who beat whom
+for(let i = 0; i < 4000; i++){
+  const q = raw(57);
+  if(new Set(q.who).size !== q.n) throw new Error('the boys must all be different');
+  if(q.k < 1 || q.k > q.n - 2) throw new Error('the named boy must have someone above and below him');
+  if(q.ans !== (q.asksAbove ? q.k : q.n - 1 - q.k)) throw new Error('the answer is not the one asked for');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf(q.who[q.k]) < 0 || shown.indexOf('само') < 0) throw new Error('the second fact is missing');
+  if(/по-много/.test(shown)) throw new Error('„по-много" is not Bulgarian — it wants „повече"');
+}
+{ // задача 18 as printed
+  const q = {kind:'rank', who:['Алекс','Виктор','Борис','Георги'], n:4, k:2, asksAbove:true, ans:2};
+  if(lastNum(why(q, true)) !== 2) throw new Error('two boys score above Boris');
+}
+console.log('the ranking: being above only a few pins how many are above you, worksheet instance gives 2');
+
+// задача 20: the snail, checked against a day-by-day climb
+for(let i = 0; i < 4000; i++){
+  const q = raw(58);
+  let at = 0, day = 0;
+  while(true){
+    day++;
+    at += q.up;
+    if(at >= q.H) break;
+    day++;
+    at -= q.down;
+    if(day > 200) throw new Error('the snail never gets there');
+  }
+  if(day !== q.ans) throw new Error('climbing it day by day takes ' + day + ', answer says ' + q.ans);
+  if(q.up <= q.down) throw new Error('a snail that slips back further than it climbs never arrives');
+  if(q.ans % 2 === 0) throw new Error('the top is always reached on a climbing day');
+}
+{ // задача 20 as printed: 23 metres, up 8 and back 5
+  const q = {kind:'snail', H:23, up:8, down:5, gain:3, k:5, ans:11};
+  if(lastNum(why(q, true)) !== 11) throw new Error('that snail reaches the top on day 11');
+}
+console.log('the snail: matched day by day against the climb, worksheet instance gives 11');
+
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0, boards = 0;
 for(let i = 0; i < 4000; i++){
@@ -1456,7 +1539,7 @@ eval(head + body + test);
   const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
-  if(rows.length !== 55) throw new Error('parsed ' + rows.length + ' levels, expected 55');
+  if(rows.length !== 57) throw new Error('parsed ' + rows.length + ' levels, expected 57');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
@@ -1491,7 +1574,7 @@ eval(head + body + test);
       rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
-  console.log('level table: all 55 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  console.log('level table: all 57 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
 
   // every element the script looks up must exist in the markup
   {

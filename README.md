@@ -48,7 +48,7 @@ sorted easiest first inside each group:
 ## The training path
 
 The picker opens with one recommendation — *Start here*, then *Next up* — and a bar
-showing how many of the 55 are learned.
+showing how many of the 57 are learned.
 
 - **Learned** means at least four in five right first try, over at least fifteen
   questions — so a single round is never enough evidence on its own.
@@ -64,7 +64,7 @@ showing how many of the 55 are learned.
   group than the last is preferred — six geometry levels in a row sticks less well
   than mixing them, and is duller. When nothing at that difficulty comes from another
   group, it will pull a level one step harder forward instead. This keeps the longest
-  single-group run to two.
+  single-group run to three.
 
 `node check.js` walks the whole path from nothing learned and fails if it cannot
 reach every level, suggests something before its groundwork, drops more than one step
