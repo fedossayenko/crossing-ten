@@ -674,7 +674,7 @@ const LEVELS = [
   { id:5, op:'+', needs:[4], d:2, eq:'27 + 15', desc:'Two digits plus two, with a carry' },
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:'Crossing a hundred' },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right' },
-  { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — addends into tens, or ± pairs' },
+  { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel' },
   { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one' },
   { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition' },
   { id:25, op:'w', grp:'count', needs:[12], d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers' },
@@ -688,7 +688,7 @@ const LEVELS = [
   { id:23, op:'w', grp:'num', needs:[13], d:4, eq:'□△ − 9', desc:'Digits standing in for a two-digit number' },
   { id:27, op:'w', grp:'seq', d:4, eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked' },
   { id:26, op:'w', grp:'seq', d:4, eq:'Редица', desc:'Smaller on the left, bigger on the right' },
-  { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the number in the circle, then use it' },
+  { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the hidden number — or two of them — then use it' },
   { id:15, op:'w', grp:'find', d:4, eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another' },
   { id:29, op:'w', grp:'find', needs:[11], d:4, eq:'Плодове', desc:'Three fruit, three totals — find one from the others' },
   { id:37, op:'w', grp:'find', needs:[11], d:5, eq:'Фигури', desc:'Add the fewest shapes to make two counts match' },
@@ -784,9 +784,27 @@ function genPairsTens(){
   terms[0].op = '';
   return {kind:'pairs', shape:'tens', base:10, terms, paired:k, extra:0, subs:[s1, s2], ans: k*10 - s1 - s2};
 }
+// Задача 1: every middle number is taken away and put straight back, so the whole
+// chain collapses to the first number minus the last. Walking it left to right works
+// too — spotting that it need not be walked is the point.
+function genCancel(){
+  const start = 8 + rnd(13);
+  const k = 3 + rnd(2);
+  let mids;
+  if(Math.random() < 0.5){                       // the worksheet shape: a step down each time
+    mids = [];
+    for(let i = 1; i <= k; i++) mids.push(start - i);
+  } else {
+    mids = shuffle(Array.from({length: start - 1}, (_, i) => i + 1)).slice(0, k);
+  }
+  const terms = [{op:'', n:start}];
+  mids.forEach((n, i) => { terms.push({op:'−', n}); if(i < k - 1) terms.push({op:'+', n}); });
+  return {kind:'pairs', shape:'cancel', terms, start, last: mids[k-1], ans: start - mids[k-1]};
+}
 // Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
 // pair usually breaking the pattern, so the structure is checked and not assumed.
 function genPairsSub(){
+  if(Math.random() < 0.3) return genCancel();
   if(Math.random() < 0.4){
     // Задача 19: one minuend throughout, subtrahends climbing — so the differences
     // count down and pair off from the ends.
@@ -811,9 +829,27 @@ function genPairsSub(){
 }
 // Задача 3: how much bigger one sum is than the other. Asked the other way round
 // some of the time, so the wording has to be read rather than guessed.
+// Задача 3: the two sums line up term by term, so pairing them off beats adding both —
+// one pair carries a ten, the rest nudge by one or two.
+function genNear(){
+  for(;;){
+    const n = 3, L = [], R = [], d = [];
+    for(let i = 0; i < n; i++) d.push(rnd(5) - 2);
+    d[rnd(n)] = 10 * (1 + rnd(2)) + rnd(3);   // one whole ten at least, or the pairing buys nothing
+    let tot = 0, ok = true;
+    for(let i = 0; i < n; i++){
+      R.push(1 + rnd(12));
+      L.push(R[i] + d[i]);
+      if(L[i] < 1 || d[i] === 0) ok = false;   // a pair that says nothing is a pair she has to read for nothing
+      tot += d[i];
+    }
+    if(ok && tot > 0) return {kind:'cmp', shape:3, L, R, ans: tot, flip: Math.random() < 0.4};
+  }
+}
 function genCmp(){
   const pickShape = Math.random();
-  if(pickShape < 0.28){
+  if(pickShape < 0.22) return genNear();
+  if(pickShape < 0.45){
     // Задача 3: the two sums share terms, so the shared ones cancel and only the
     // leftovers matter.
     const n = 3 + rnd(2);
@@ -824,7 +860,7 @@ function genCmp(){
     return {kind:'cmp', shape:1, terms, kept, gone: drop.map(i => terms[i]),
             ans: drop.reduce((t, i) => t + terms[i], 0)};
   }
-  if(pickShape < 0.52){
+  if(pickShape < 0.70){
     // Задача 4: a sum against a difference.
     for(;;){
       const x = 2 + rnd(18), y = 2 + rnd(18);
@@ -841,8 +877,16 @@ function genCmp(){
     return {kind:'cmp', shape:0, a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
   }
 }
+// Задача 2: two unknowns, one in each given. Each is a missing addend on its own,
+// and what is wanted is not either of them but what they make together.
+function genTwoBox(){
+  const sq = 1 + rnd(9), tri = 1 + rnd(9);
+  const p = 1 + rnd(9), r = 1 + rnd(9);
+  return {kind:'box', shape:'two', p, r, sq, tri, ans: sq + tri};
+}
 // Задача 4: an unknown inside a subtraction, where the other side is itself a sum.
 function genBox(){
+  if(Math.random() < 0.45) return genTwoBox();
   const box = 2 + rnd(8);
   const r = 1 + rnd(9);
   const b = box + r;
@@ -1614,6 +1658,14 @@ function drawQ(q){
     return '<div class="line" style="font-size:clamp(19px,calc((100vw - 56px)/' +
            (e.length*0.56).toFixed(2) + '),40px)">' + e + slot + '</div>';
   }
+  if(q.kind === 'cmp' && q.shape === 3){
+    const L = '<span class="num">' + q.L.join(' + ') + '</span>';
+    const R = '<span class="num">' + q.R.join(' + ') + '</span>';
+    return '<div class="ask">' + (q.flip
+        ? 'С колко сборът ' + R + ' е <b>по-малък</b> от сбора ' + L + '?'
+        : 'С колко сборът ' + L + ' е <b>по-голям</b> от сбора ' + R + '?') +
+      '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
+  }
   if(q.kind === 'cmp' && q.shape === 1){
     return '<div class="ask">С колко сборът <span class="num">' + q.terms.join(' + ') +
       '</span> е <b>по-голям</b> от сбора <span class="num">' + q.kept.join(' + ') + '</span>?</div>' +
@@ -1936,6 +1988,14 @@ function drawQ(q){
       ' Пресметнете сбора на останалите числа.</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + slot + '</div>';
   }
+  if(q.kind === 'box' && q.shape === 'two'){
+    const sym = c => '<span class="circle">' + c + '</span>';
+    return '<div class="ask">Пресметнете ' + sym('■') + ' + ' + sym('□') + ', ако</div>' +
+      '<div class="given">' + q.p + ' + ' + sym('□') + ' = ' + (q.p + q.tri) + ' &nbsp;и&nbsp; ' +
+      q.r + ' + ' + sym('■') + ' = ' + (q.r + q.sq) + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + sym('■') + ' + ' + sym('□') +
+      ' = ' + slot + '</div>';
+  }
   return '<div class="ask">Пресметни, ако</div>' +
     '<div class="given">' + q.b + ' − <span class="circle">◯</span> = ' + q.x + ' − ' + q.y + '</div>' +
     '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.a +
@@ -1944,9 +2004,11 @@ function drawQ(q){
 
 function eqText(q){
   if(!q.kind) return q.a + ' ' + (q.op === '-' ? '−' : '+') + ' ' + q.b + ' = ' + answer(q);
+  if(q.kind === 'cmp' && q.shape === 3) return q.L.join('+') + ' срещу ' + q.R.join('+') + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.shape === 1) return q.terms.join('+') + ' срещу ' + q.kept.join('+') + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ') срещу (' + q.p + '−' + q.q + ') → ' + q.ans;
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
+  if(q.kind === 'box' && q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
   if(q.kind === 'count') return (q.sum ? 'сборът, ' : 'броят, ') + (q.natural ? 'естествени, ' : '') +
     'от ' + q.lo + ' до ' + q.hi + ' → ' + q.ans;
@@ -2010,6 +2072,12 @@ function eqText(q){
 
 // On a first miss she gets the method, not the answer; the worked line comes after.
 function whyWork(q, full){
+  if(q.kind === 'pairs' && q.shape === 'cancel'){
+    if(!full) return 'Всяко число по средата се маха и веднага се връща.';
+    const gone = q.terms.filter(t => t.op === '+').map(t => t.n);
+    return gone.map(n => '−' + n + ' + ' + n).join(', ') + ' — всяко дава нула &nbsp;→&nbsp; остава <b>' +
+      q.start + ' − ' + q.last + '</b> = ' + q.ans;
+  }
   if(q.kind === 'pairs' && q.shape === 'run'){
     if(!full) return 'Извади всяка двойка — числата, които получаваш, вървят надолу.';
     const vals = [];
@@ -2048,6 +2116,15 @@ function whyWork(q, full){
     const steps = [run];
     q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
     return 'Стъпка по стъпка: <b>' + steps.join(', ') + '</b>';
+  }
+  if(q.kind === 'cmp' && q.shape === 3){
+    if(!full) return 'Сравни ги по двойки, вместо да събираш.';
+    const pr = [], ds = q.L.map((v, i) => v - q.R[i]);
+    q.L.forEach((v, i) => pr.push(v + ' е с ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' повече' : ' по-малко')));
+    // the gains added up first, then the losses taken off — so the running total never dips
+    const bits = ds.slice().sort((x, y) => y - x)
+      .map((d, i) => (i ? (d < 0 ? ' − ' : ' + ') : '') + Math.abs(d));
+    return 'по двойки: ' + pr.join(', ') + ' &nbsp;→&nbsp; ' + bits.join('') + ' = ' + q.ans;
   }
   if(q.kind === 'cmp' && q.shape === 1){
     if(!full) return 'Общите събираеми се съкращават.';
@@ -2369,6 +2446,12 @@ function whyWork(q, full){
     return '<b>' + q.gone + ' = ' + (q.bigger ? (q.gone - q.d) + ' + ' + q.d : (q.gone + q.d) + ' − ' + q.d) +
       '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
       ' &nbsp;→&nbsp; ' + q.set.filter(v => v !== q.gone).join(' + ') + ' = ' + q.ans;
+  }
+  if(q.shape === 'two'){
+    if(!full) return 'Намери първо всяко от двете поотделно.';
+    return '□ = ' + (q.p + q.tri) + ' − ' + q.p + ' = <b>' + q.tri + '</b>, &nbsp;■ = ' +
+      (q.r + q.sq) + ' − ' + q.r + ' = <b>' + q.sq + '</b> &nbsp;→&nbsp; ' +
+      q.sq + ' + ' + q.tri + ' = ' + q.ans;
   }
   if(!full) return 'Първо пресметни дясната страна.';
   return q.x + ' − ' + q.y + ' = ' + q.r + ' &nbsp;→&nbsp; <b>◯ = ' + q.b + ' − ' + q.r + ' = ' + q.box +

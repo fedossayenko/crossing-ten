@@ -151,9 +151,18 @@ if(accepts({kind:'t', ans:0}, [''])) throw new Error('an empty box must not coun
 console.log('twenty-pairs: every pair makes twenty, zero turns up as an answer and is accepted');
 
 // the two new comparison shapes
-let sh1 = 0, sh2 = 0;
+let sh1 = 0, sh2 = 0, sh3 = 0;
 for(let i = 0; i < 6000; i++){
   const q = raw(10);
+  if(q.shape === 3){
+    sh3++;
+    const sum = a => a.reduce((t, v) => t + v, 0);
+    if(q.L.length !== q.R.length) throw new Error('term-by-term sums must line up');
+    if(sum(q.L) - sum(q.R) !== q.ans || q.ans < 1) throw new Error('term-by-term answer wrong: ' + JSON.stringify(q));
+    if(q.L.concat(q.R).some(v => v < 1)) throw new Error('a term dropped below one');
+    if(q.L.some((v, k) => v === q.R[k])) throw new Error('a pair with nothing to say between it');
+    if(!q.L.some((v, k) => Math.abs(v - q.R[k]) >= 10)) throw new Error('no pair carries a ten, so nothing is worth spotting');
+  }
   if(q.shape === 1){
     sh1++;
     const total = q.terms.reduce((t, v) => t + v, 0), keptSum = q.kept.reduce((t, v) => t + v, 0);
@@ -168,8 +177,58 @@ for(let i = 0; i < 6000; i++){
     if(q.less !== (q.D > q.S)) throw new Error('the wording does not match which side is bigger');
   }
 }
-if(!sh1 || !sh2) throw new Error('both new comparison shapes should turn up: ' + sh1 + ', ' + sh2);
-console.log('comparisons: cancelling sums and sum-against-difference both hold, and the wording follows the numbers');
+if(!sh1 || !sh2 || !sh3) throw new Error('all three comparison shapes should turn up: ' + sh1 + ', ' + sh2 + ', ' + sh3);
+// задача 3 and задача 4 as printed
+if(lastNum(why({kind:'cmp', shape:3, L:[1,8,21], R:[2,7,11], ans:10, flip:false}, true)) !== 10)
+  throw new Error('1+8+21 against 2+7+11 should come out 10');
+if(lastNum(why({kind:'cmp', shape:2, x:15, y:25, p:60, q:10, S:40, D:50, less:true, ans:10}, true)) !== 10)
+  throw new Error('15+25 against 60-10 should come out 10');
+console.log('comparisons: cancelling, term-by-term and sum-against-difference all hold, and the wording follows the numbers');
+
+// задача 1: a chain whose middle numbers are taken away and put straight back
+let cancels = 0, stepped = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(9);
+  if(q.shape !== 'cancel') continue;
+  cancels++;
+  let run = q.terms[0].n;
+  q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; if(run < 0) throw new Error('chain dips below zero'); });
+  if(run !== q.ans) throw new Error('cancelling chain: left-to-right gives ' + run + ', answer says ' + q.ans);
+  if(q.start - q.last !== q.ans) throw new Error('the collapsed form disagrees with the walk');
+  const plus = q.terms.filter(t => t.op === '+').map(t => t.n);
+  const minus = q.terms.filter(t => t.op === '−').map(t => t.n);
+  if(plus.length !== minus.length - 1) throw new Error('every middle number needs both its signs, and only the last one stands alone');
+  if(plus.some((n, k) => n !== minus[k])) throw new Error('a returned number does not match the one taken away');
+  if(new Set(minus).size !== minus.length) throw new Error('the same number turns up twice as a subtrahend');
+  if(q.terms.every((t, k) => k < 2 || t.n === q.terms[k-2].n - 1)) stepped++;
+}
+if(!cancels || !stepped) throw new Error('cancelling chains, and the stepping-down shape, should both turn up');
+{ // the worksheet instance: 9 − 8 + 8 − 7 + 7 − 6 + 6 − 5
+  const terms = [{op:'', n:9}];
+  [8,7,6,5].forEach((n, i) => { terms.push({op:'−', n}); if(i < 3) terms.push({op:'+', n}); });
+  const q = {kind:'pairs', shape:'cancel', terms, start:9, last:5, ans:4};
+  if(lastNum(why(q, true)) !== 4) throw new Error('9-8+8-7+7-6+6-5 should come out 4');
+}
+console.log('cancelling chains: the walk and the collapsed form agree, worksheet instance gives 4');
+
+// задача 2: two unknowns, one in each given
+let twos = 0;
+for(let i = 0; i < 6000; i++){
+  const q = raw(11);
+  if(q.shape !== 'two') continue;
+  twos++;
+  if(q.sq + q.tri !== q.ans) throw new Error('the two unknowns do not add to the answer');
+  if([q.sq, q.tri, q.p, q.r].some(v => v < 1 || v > 9)) throw new Error('a value left the single digits');
+  const shown = strip(drawQ(q));
+  if(shown.indexOf(String(q.p + q.tri)) < 0 || shown.indexOf(String(q.r + q.sq)) < 0)
+    throw new Error('a given total is missing from the question');
+  if(shown.split('■').length !== 4 || shown.split('□').length !== 4)
+    throw new Error('each symbol should appear in the ask, in a given and in the answer line');
+}
+if(!twos) throw new Error('the two-unknown shape should turn up');
+if(lastNum(why({kind:'box', shape:'two', p:5, r:4, tri:3, sq:5, ans:8}, true)) !== 8)
+  throw new Error('5+box=8 with 4+box=9 should come out 8');
+console.log('two unknowns: each given fixes one symbol, worksheet instance gives 8');
 
 // the circle level now reaches every start from 7 to 20
 {
