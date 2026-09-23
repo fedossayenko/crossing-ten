@@ -978,6 +978,15 @@ newRound();
 // straight to the exercise (the mascot switches player).
 if(FIRST) openEdit(PLAYER, true);
 
+// A home-screen app stays open for days. Coming back to the screen between rounds, it
+// picks up a newer build, told by the page's Last-Modified (no header: nothing happens).
+function newerBuild(){
+  if(document.visibilityState !== 'visible' || window.claude || midRound() || COMP) return;
+  fetch(location.pathname, { method:'HEAD', cache:'no-cache' }).then(r => {
+    if(Date.parse(r.headers.get('last-modified')) > Date.parse(document.lastModified) + 60000){ chose(); location.reload(); }
+  }).catch(() => {});
+}
+document.addEventListener('visibilitychange', newerBuild);
 // Offline play and same-build-everywhere for the Pages copy; the artifact frame has no use for it.
 if('serviceWorker' in navigator && window.isSecureContext && !window.claude)
   navigator.serviceWorker.register('sw.js').catch(() => {});
