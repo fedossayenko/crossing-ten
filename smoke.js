@@ -34,12 +34,19 @@ const server = http.createServer((req, res) => {
   await cmd('Runtime.enable'); await cmd('Page.enable');
   await cmd('Page.navigate', { url });
   await new Promise(r => setTimeout(r, 1500));
+  const settle = () => new Promise(r => setTimeout(r, 1500));
+  const run = async expr => {
+    const r = await cmd('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
+    if(r.result.exceptionDetails) errors.push(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
+    const v = r.result.result && r.result.result.value;
+    return typeof v === 'string' ? v : undefined;
+  };
   // Load it a second time so the page runs through its service worker, as a returning device does.
-  await cmd('Page.reload'); await new Promise(r => setTimeout(r, 1500));
+  await cmd('Page.reload'); await settle();
 
   // Inside the page: for every level, pick it, miss the first question twice (hint, then
   // the reveal), answer the rest correctly, and land on the end-of-round sheet.
-  const drive = `(async () => {
+  const play = `(async () => {
     const tick = () => new Promise(r => setTimeout(r, 0));
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     const type = v => String(v).split('').forEach(key);
@@ -66,11 +73,41 @@ const server = http.createServer((req, res) => {
     if($('stats').hidden) out.push('progress did not open');
     return JSON.stringify({ out, rounds: LOCAL.rounds.length });
   })()`;
-  const r = await cmd('Runtime.evaluate', { expression: drive, awaitPromise: true, returnByValue: true });
-  if(r.result.exceptionDetails) errors.push(r.result.exceptionDetails.exception?.description);
-  const res = r.result.result && r.result.result.value ? JSON.parse(r.result.result.value) : { out: ['driver returned nothing'] };
-  const bad = errors.concat(res.out);
+  const res = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
+  const bad = res.out.slice();
+  const expect = (cond, what) => { if(!cond) bad.push(what); };
+  const page = async expr => JSON.parse(await run('JSON.stringify(' + expr + ')') || '{}');
+
+  // A first launch is one Bulgarian player with the cat, and asks nothing.
+  const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length }');
+  expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1, 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
+
+  // Two players: the launch asks who is playing; picking the other one reloads into her
+  // language, mascot and (empty) log, and every level still plays.
+  if(!process.argv[2]){
+    await run(`localStorage.setItem('crossingten.players', JSON.stringify({ cur:'p1', list:[
+      { id:'p1', name:'Ани', mascot:'fox', lang:'uk' }, { id:'p2', name:'Иво', mascot:'owl', lang:'en' }] }));
+      sessionStorage.clear(); location.reload(); 1`);
+    await settle();
+    const ask = await page('{ lang: document.documentElement.lang, open: !$("players").hidden, tiles: document.querySelectorAll(".pchoose").length, fox: !!$("cat").querySelector("ellipse[rx=\'68\']") }');
+    expect(ask.lang === 'uk' && ask.open && ask.tiles === 2 && ask.fox, 'two players did not ask who is playing: ' + JSON.stringify(ask));
+    await run(`document.querySelector('.pchoose[data-id="p2"]').click(); 1`);
+    await settle();
+    const p2 = await page('{ id: PLAYER.id, lang: document.documentElement.lang, again: $("again").textContent, rounds: LOCAL.rounds.length, open: !$("players").hidden }');
+    expect(p2.id === 'p2' && p2.lang === 'en' && p2.again === 'New round' && p2.rounds === 0 && !p2.open, 'switching player went wrong: ' + JSON.stringify(p2));
+    const res2 = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
+    bad.push(...res2.out.map(x => 'second player: ' + x));
+    // Adding a player through the form: name, mascot, language, save.
+    await run(`$('who').click(); $('pAdd').click(); $('pName').value = 'Мая';
+      document.querySelector('.mchoice[data-m="bun"]').click(); document.querySelector('#pLang button[data-l="bg"]').click();
+      $('pSave').click(); 1`);
+    await settle();
+    const p3 = await page('{ n: PLAYERS.list.length, name: PLAYER.name, mascot: PLAYER.mascot, lang: document.documentElement.lang, ears: $("cat").querySelectorAll(".ear ellipse").length }');
+    expect(p3.n === 3 && p3.name === 'Мая' && p3.mascot === 'bun' && p3.lang === 'bg' && p3.ears === 4, 'adding a player went wrong: ' + JSON.stringify(p3));
+  }
+  bad.unshift(...errors);
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }
-  console.log('smoke: played every level in Chrome, ' + res.rounds + ' rounds logged, no script errors');
+  console.log('smoke: played every level in Chrome' + (process.argv[2] ? '' : ' for two players') + ', ' + res.rounds +
+    ' rounds logged, no script errors' + (process.argv[2] ? '' : '; asking, switching and adding players all work'));
   done(0);
 });

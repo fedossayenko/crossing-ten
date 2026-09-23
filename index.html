@@ -5,96 +5,31 @@
 
 <div class="app">
   <div class="top">
-    <div class="catwrap">
-      <svg class="cat" id="cat" data-mood="idle" viewBox="0 0 240 224" aria-hidden="true">
-        <g class="whole">
-          <path class="tail" d="M170,204 C212,208 226,178 212,156 C204,143 187,142 180,154"
-                stroke="var(--fur)" stroke-width="15" stroke-linecap="round" fill="none"/>
-          <g class="body">
-            <path d="M120,120 C158,120 175,158 178,190 C180,207 168,209 120,209
-                     C72,209 60,207 62,190 C65,158 82,120 120,120 Z" fill="var(--fur)"/>
-            <path d="M120,132 C138,140 144,162 144,186 C144,202 136,208 120,210
-                     C104,208 96,202 96,186 C96,162 102,140 120,132 Z" fill="var(--fur-light)" opacity=".72"/>
-            <g class="paw paw-l">
-              <ellipse cx="100" cy="203" rx="19" ry="9" fill="var(--fur-light)"/>
-              <path d="M93,201 v6 M100,200 v7 M107,201 v6" stroke="var(--fur-dark)" stroke-width="2" stroke-linecap="round" opacity=".42"/>
-            </g>
-            <g class="paw paw-r">
-              <ellipse cx="140" cy="203" rx="19" ry="9" fill="var(--fur-light)"/>
-              <path d="M133,201 v6 M140,200 v7 M147,201 v6" stroke="var(--fur-dark)" stroke-width="2" stroke-linecap="round" opacity=".42"/>
-            </g>
-          </g>
-          <g class="head">
-            <g class="ear ear-l">
-              <path d="M80,60 L64,14 L114,40 Z" fill="var(--fur)"/>
-              <path d="M84,55 L76,28 L104,43 Z" fill="var(--rose)" opacity=".8"/>
-            </g>
-            <g class="ear ear-r">
-              <path d="M160,60 L176,14 L126,40 Z" fill="var(--fur)"/>
-              <path d="M156,55 L164,28 L136,43 Z" fill="var(--rose)" opacity=".8"/>
-            </g>
-            <ellipse cx="120" cy="88" rx="63" ry="54" fill="var(--fur)"/>
-            <path d="M100,44 q7,13 4,25 M120,40 q0,14 0,24 M140,44 q-7,13 -4,25"
-                  stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" opacity=".38" fill="none"/>
-            <ellipse cx="120" cy="107" rx="28" ry="21" fill="var(--fur-light)"/>
-            <g class="eyes-open only-idle">
-              <ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/>
-              <ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>
-              <ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/>
-              <ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/>
-              <circle cx="93" cy="79" r="2.8" fill="#fff" opacity=".9"/>
-              <circle cx="139" cy="79" r="2.8" fill="#fff" opacity=".9"/>
-            </g>
-            <g class="eyes-open only-sad">
-              <ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/>
-              <ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>
-              <ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/>
-              <ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/>
-            </g>
-            <g class="only-sad">
-              <path d="M83,64 L108,73 M157,64 L132,73" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" fill="none"/>
-            </g>
-            <g class="only-happy">
-              <path d="M85,89 q12,-15 24,0 M131,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-              <path class="spark" d="M186,66 l0,-16 M178,58 l16,0" stroke="var(--good)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-              <path class="spark b" d="M56,52 l0,-12 M50,46 l12,0" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/>
-            </g>
-            <path d="M120,112 l-9,-7 h18 Z" fill="var(--rose)"/>
-            <path class="only-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7"
-                  stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>
-            <path class="only-happy" d="M120,113 v4 M120,117 q-2,11 -13,7 M120,117 q2,11 13,7"
-                  stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <path class="only-sad" d="M120,113 v5 M109,128 q11,-9 22,0"
-                  stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <path d="M104,110 C84,105 68,104 52,107 M104,116 C84,117 66,120 50,125
-                     M136,110 C156,105 172,104 188,107 M136,116 C156,117 174,120 190,125"
-                  stroke="var(--fur-light)" stroke-width="2.2" stroke-linecap="round" fill="none"/>
-          </g>
-        </g>
-      </svg>
-    </div>
+    <button class="catwrap" id="who" data-t-aria="changePlayer">
+      <svg class="cat" id="cat" data-mood="idle" viewBox="0 0 240 224" aria-hidden="true"></svg>
+    </button>
     <button class="levelpill" id="levelPill" aria-haspopup="dialog">42 − 17</button>
     <div class="icons">
-      <button class="icon" id="muteBtn" aria-pressed="true" aria-label="Sound" title="Sound">
+      <button class="icon" id="muteBtn" aria-pressed="true" data-t-aria="sound">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="wave1" d="M16.5 8.5a5 5 0 0 1 0 7"/>
           <path id="wave2" d="M19.5 6a9 9 0 0 1 0 12"/><path id="waveX" d="M17 9.5l5 5M22 9.5l-5 5" style="display:none"/>
         </svg>
       </button>
-      <button class="icon" id="speakBtn" aria-pressed="true" aria-label="Read the sum aloud" title="Read the sum aloud">
+      <button class="icon" id="speakBtn" aria-pressed="true" data-t-aria="speak">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 3a4 4 0 0 1 4 4v4a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4z"/>
           <path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
         </svg>
       </button>
-      <button class="icon" id="statsBtn" aria-label="Progress" title="Progress">
+      <button class="icon" id="statsBtn" data-t-aria="progress">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
         </svg>
       </button>
     </div>
   </div>
-  <div class="dots" id="dots" aria-label="Progress"></div>
+  <div class="dots" id="dots" data-t-aria="progress"></div>
 
   <div class="card" id="card">
     <div class="card-in">
@@ -108,19 +43,19 @@
     <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
     <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
     <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
-    <button class="key del" data-k="del" aria-label="Delete">⌫</button>
+    <button class="key del" data-k="del" data-t-aria="del">⌫</button>
     <button class="key" data-k="0">0</button>
-    <button class="key go" data-k="go" id="go" aria-label="Check answer">✓</button>
+    <button class="key go" data-k="go" id="go" data-t-aria="check">✓</button>
   </div>
 </div>
 
-<div class="sheet" id="picker" hidden role="dialog" aria-label="Choose a level">
+<div class="sheet" id="picker" hidden role="dialog" data-t-aria="chooseLevel">
   <div class="sheet-in">
-    <div class="score" style="font-size:clamp(24px,5vw,32px)">Choose a level</div>
-    <div class="warnline" id="pickWarn" hidden>Picking a level ends the round in progress.</div>
+    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="chooseLevel"></div>
+    <div class="warnline" id="pickWarn" hidden data-t="pickWarn"></div>
     <div id="nextUp"></div>
     <div id="pickAll"></div>
-    <div class="actions"><button class="btn ghost" id="closePick">Cancel</button></div>
+    <div class="actions"><button class="btn ghost" id="closePick" data-t="cancel"></button></div>
   </div>
 </div>
 
@@ -131,44 +66,44 @@
     <div class="score" id="score"></div>
     <div id="earnedWrap" hidden></div>
     <div id="missWrap" hidden>
-      <div class="lab" style="margin-bottom:8px">Worth another look</div>
+      <div class="lab" style="margin-bottom:8px" data-t="worthLook"></div>
       <div class="misslist" id="misslist"></div>
     </div>
     <div class="actions">
-      <button class="btn" id="again">New round</button>
-      <button class="btn ghost" id="redo" hidden>Practice the misses</button>
+      <button class="btn" id="again" data-t="newRound"></button>
+      <button class="btn ghost" id="redo" hidden data-t="redo"></button>
     </div>
-    <button class="btn ghost" id="toStats">See progress</button>
+    <button class="btn ghost" id="toStats" data-t="seeProgress"></button>
   </div>
 </div>
 
 <div class="sheet" id="stats" hidden>
   <div class="sheet-in">
     <div class="sheetcat" id="statscat"></div>
-    <div class="score" style="font-size:clamp(24px,5vw,32px)">Progress</div>
+    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="progress"></div>
     <div class="bigstat" id="tiles"></div>
-    <div class="lab">Badges</div>
+    <div class="lab" data-t="badges"></div>
     <div class="badges" id="badges"></div>
     <div id="trendWrap" hidden>
-      <div class="lab" style="margin-bottom:8px">Last rounds, first try</div>
+      <div class="lab" style="margin-bottom:8px" data-t="trend"></div>
       <div class="trend" id="trend"></div>
     </div>
     <div id="byLevelWrap" hidden>
-      <div class="lab" style="margin-bottom:8px">By level</div>
+      <div class="lab" style="margin-bottom:8px" data-t="byLevel"></div>
       <div id="byLevel" style="display:flex;flex-direction:column;gap:9px"></div>
     </div>
     <div id="troubleWrap" hidden>
-      <div class="lab" style="margin-bottom:8px">Trouble spots — the crossing step</div>
+      <div class="lab" style="margin-bottom:8px" data-t="trouble"></div>
       <div class="chips" id="trouble"></div>
-      <button class="btn" id="practise" style="margin-top:11px">Practise these</button>
+      <button class="btn" id="practise" style="margin-top:11px" data-t="practise"></button>
     </div>
-    <div class="empty" id="statsEmpty" hidden>No rounds finished yet. Play one and this fills up.</div>
+    <div class="empty" id="statsEmpty" hidden data-t="statsEmpty"></div>
 
-    <div class="lab">For grown-ups</div>
+    <div class="lab" data-t="grownups"></div>
     <div class="advice" id="advice"></div>
     <div class="setrow">
-      <span style="font-weight:700;font-size:14.5px">Sums per round</span>
-      <div class="seg" id="lenSeg" role="group" aria-label="Sums per round">
+      <span style="font-weight:700;font-size:14.5px" data-t="perRound"></span>
+      <div class="seg" id="lenSeg" role="group" data-t-aria="perRound">
         <button data-n="5" aria-pressed="false">5</button>
         <button data-n="10" aria-pressed="true">10</button>
         <button data-n="20" aria-pressed="false">20</button>
@@ -176,16 +111,41 @@
     </div>
     <div class="synced" id="synced"></div>
     <div class="setrow">
-      <span style="font-weight:700;font-size:14.5px">Move progress between devices</span>
+      <span style="font-weight:700;font-size:14.5px" data-t="move"></span>
       <div class="seg">
-        <button id="xfer">Copy</button>
-        <button id="xferIn">Paste</button>
+        <button id="xfer" data-t="copy"></button>
+        <button id="xferIn" data-t="paste"></button>
       </div>
     </div>
     <div class="actions">
-      <button class="btn" id="closeStats">Back</button>
-      <button class="btn warn" id="reset">Reset progress</button>
+      <button class="btn" id="closeStats" data-t="back"></button>
+      <button class="btn warn" id="reset" data-t="reset"></button>
     </div>
+  </div>
+</div>
+
+<div class="sheet" id="players" hidden role="dialog" data-t-aria="whoPlays">
+  <div class="sheet-in">
+    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="whoPlays"></div>
+    <div class="empty" data-t="eachOwn"></div>
+    <div class="players" id="playerList"></div>
+    <div class="actions"><button class="btn ghost" id="closePlayers" data-t="cancel"></button></div>
+  </div>
+</div>
+
+<div class="sheet" id="playerEdit" hidden role="dialog" data-t-aria="player">
+  <div class="sheet-in">
+    <div class="score" style="font-size:clamp(24px,5vw,32px)" id="editTitle"></div>
+    <label class="field"><span class="lab" data-t="name"></span><input id="pName" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false"></label>
+    <div class="lab" data-t="mascot"></div>
+    <div class="mascots" id="pMascot" role="group" data-t-aria="mascot"></div>
+    <div class="lab" data-t="language"></div>
+    <div class="seg" id="pLang" role="group" data-t-aria="language"></div>
+    <div class="actions">
+      <button class="btn" id="pSave" data-t="save"></button>
+      <button class="btn ghost" id="pCancel" data-t="cancel"></button>
+    </div>
+    <div class="actions"><button class="btn warn" id="pDelete" data-t="delPlayer"></button></div>
   </div>
 </div>
 
@@ -243,6 +203,9 @@
 <script src="kinds/cards.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/levels.js"></script>
+<script src="js/players.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/mascots.js"></script>
 <script src="js/app.js"></script>
 
 </body></html>

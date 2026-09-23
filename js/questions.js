@@ -71,15 +71,15 @@ function eqText(q){
 // On a first miss she gets the method, not the answer; the worked line comes after.
 function why(q, full){
   if(q.kind) return KIND[q.kind].why(q, full);
-  const a = q.a, b = q.b, o = a%10, t = a-o, bo = b%10, bt = b-bo;
+  const a = q.a, b = q.b, o = a%10, ten = a-o, bo = b%10, bt = b-bo;
   if(q.op === '-'){
     if(o < bo){
-      const lend = t - 10, ones = o + 10;
+      const lend = ten - 10, ones = o + 10;
       const head = a + ' = <b>' + lend + ' + ' + ones + '</b>';
       return full ? head + ' &nbsp;→&nbsp; ' + ones + ' − ' + bo + ' = ' + (ones-bo) + ', &nbsp;' + lend + ' − ' + bt + ' = ' + (lend-bt) : head;
     }
-    return full ? o + ' − ' + bo + ' = ' + (o-bo) + ', &nbsp;' + t + ' − ' + bt + ' = ' + (t-bt) + ' &nbsp;(no borrow needed)'
-                : 'No borrow needed — the ones, then the tens.';
+    return full ? o + ' − ' + bo + ' = ' + (o-bo) + ', &nbsp;' + ten + ' − ' + bt + ' = ' + (ten-bt) + ' &nbsp;' + t('noBorrowNote')
+                : t('noBorrow');
   }
   if(a < 10 && b < 10){
     const up = 10 - a;
@@ -88,8 +88,8 @@ function why(q, full){
   }
   if(o + bo >= 10){
     const head = o + ' + ' + bo + ' = <b>' + (o+bo) + '</b>';
-    return full ? head + ' &nbsp;→&nbsp; ' + t + ' + ' + bt + ' = ' + (t+bt) + ', &nbsp;' + (t+bt) + ' + ' + (o+bo) + ' = ' + (a+b) : head;
+    return full ? head + ' &nbsp;→&nbsp; ' + ten + ' + ' + bt + ' = ' + (ten+bt) + ', &nbsp;' + (ten+bt) + ' + ' + (o+bo) + ' = ' + (a+b) : head;
   }
-  return full ? o + ' + ' + bo + ' = ' + (o+bo) + ', &nbsp;' + t + ' + ' + bt + ' = ' + (t+bt) + ' &nbsp;(no carry needed)'
-              : 'No carry needed — the ones, then the tens.';
+  return full ? o + ' + ' + bo + ' = ' + (o+bo) + ', &nbsp;' + ten + ' + ' + bt + ' = ' + (ten+bt) + ' &nbsp;' + t('noCarryNote')
+              : t('noCarry');
 }

@@ -18,7 +18,10 @@ level in Chrome.
 | `js/levels.js` | the level table: difficulty, group, prerequisites, and which generator makes it |
 | `js/core.js` | what more than one kind shares (`rnd`, the answer box, a few drawing helpers) |
 | `js/questions.js` | the plain sums, and the dispatch from a level to its kind |
-| `js/app.js` | the page: rounds, keypad, cat, progress, picker, storage, sync |
+| `js/players.js` | who is playing, and where each player's rounds are kept |
+| `js/i18n.js` | every word of the interface in Bulgarian, Ukrainian and English |
+| `js/mascots.js` | the cat, fox, owl and bunny: one shared face, each animal only its fur |
+| `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage, sync |
 | `sw.js` | serves the latest build, falls back to the cache offline |
 
 Everything is a classic script sharing one global scope, loaded in the order the
@@ -28,6 +31,19 @@ to `js/levels.js`, and add a check to `check.js`.
 
 `node build-artifact.js` folds everything back into one `artifact.html` for the Claude
 artifact copy, which cannot load files beside it.
+
+## Players, languages and mascots
+
+Tap the mascot to see who is playing. Each player has a name, one of four mascots and
+an interface language (Bulgarian by default); task text stays Bulgarian whatever the
+language, since that is the language of the worksheets. With two or more players, each
+launch starts by asking who is playing.
+
+Every player's rounds live under her own storage key. The first player keeps the key
+the app always used, so everything played before there were players is hers without
+moving anything. The mascots share one face, so the moods (idle, happy, sad, nod,
+tilt, wiggle, dance, party) move any of them; a new animal is only its fur in
+`js/mascots.js` and a name in each language.
 
 ## How difficulty is assigned
 
@@ -108,13 +124,13 @@ original worksheet instance of each task.
 
 ## Progress storage
 
-The GitHub copy keeps her rounds in that browser's local storage — per device, not
-synced. The twenty rounds she played while this lived as a Claude artifact are carried
+The GitHub copy keeps each player's rounds in that browser's local storage — per
+device, not synced. The twenty rounds she played while this lived as a Claude artifact are carried
 across once per device by a seed in the page; rounds carry ids, so nothing is
 duplicated.
 
 To move progress from one device to another, open **Progress → Copy** on the device
-that has the history, then **Paste** on the other. The whole log is gzipped into a
+that has the history, then **Paste** on the other, with the same player chosen on both. The whole log is gzipped into a
 link; pasting it (or opening it) merges it in — rounds already there are skipped,
 because every round carries an id. A full 400-round log comes to about 6 000
 characters. Nothing leaves the two devices; there is no server behind the Pages build.

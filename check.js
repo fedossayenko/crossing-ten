@@ -6,6 +6,7 @@ const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
 const scripts = [...src.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const js = scripts.map(read).join('\n');
 const head = `
+const localStorage = undefined;   // no browser storage here: players.js falls back to one player
 let W = {max:1, m:{}};
 const LOCAL = {mix:[1,2,4,5], plain:true};
 function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }
@@ -1579,7 +1580,7 @@ eval(head + body + test);
   {
     const markup = src.split('<script>')[0];
     const have = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
-    ['slot0','slot1','wave1','wave2','waveX'].forEach(i => have.add(i));   // drawn at runtime
+    ['slot0','slot1','wave1','wave2','waveX','pAdd'].forEach(i => have.add(i));   // drawn at runtime
     const looked = [...new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]))];
     const gone = looked.filter(i => !have.has(i));
     if(gone.length) throw new Error('the script looks up elements that are not in the page: ' + gone.join(', '));
@@ -1619,6 +1620,55 @@ eval(head + body + test);
     `;
     eval(levelsSrc + nextSrc + walk);
   }
+}
+
+/* The scripts share one global scope, so a name declared at the top of two files stops the
+   later file from running at all - the page loads with half its code missing. */
+{
+  const seen = {};
+  scripts.forEach(f => read(f).split('\n').forEach(l => {
+    const m = l.match(/^(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/);
+    if(!m) return;
+    if(seen[m[1]]) throw new Error(m[1] + ' is declared in both ' + seen[m[1]] + ' and ' + f);
+    seen[m[1]] = f;
+  }));
+  console.log('one global scope: ' + Object.keys(seen).length + ' top-level names across ' + scripts.length + ' scripts, none declared twice');
+}
+
+/* Every language says everything English says, with the same shape: a string where English
+   has a string, a function that returns text where English has one, and a description for
+   every level. Missing text would fall back to English in the middle of a Bulgarian page. */
+{
+  const T = eval('(function(){ const PLAYER = { lang:"en" };' + read('js/i18n.js') + '; return { TEXT, LANGS, t, get LANG(){ return LANG; } }; })()');
+  const args = [3, 7, 12];
+  const sample = v => typeof v === 'function' ? v(...args) : v;
+  const shape = v => Array.isArray(v) ? 'list' + v.length : typeof v === 'function' ? 'text' : typeof v === 'object' ? 'map' : typeof v;
+  const levelIds = [...js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).matchAll(/\{ id:(\d+),/g)].map(m => m[1]);
+  let n = 0;
+  for(const lang of Object.keys(T.LANGS)){
+    const L = T.TEXT[lang], E = T.TEXT.en;
+    for(const k of Object.keys(E)){
+      if(!(k in L)) throw new Error(lang + ' is missing ' + k);
+      if(shape(L[k]) !== shape(E[k])) throw new Error(lang + '.' + k + ' is a ' + shape(L[k]) + ', English has a ' + shape(E[k]));
+      if(shape(E[k]) === 'map') for(const j of Object.keys(E[k]))
+        if(!(j in L[k]) || String(L[k][j]).length === 0) throw new Error(lang + '.' + k + '.' + j + ' is missing');
+      for(let c = 0; c < 30; c++){
+        const v = typeof L[k] === 'function' ? L[k](c, c + 1, c + 2) : sample(L[k]);
+        if(typeof L[k] === 'function' && (typeof v !== 'string' || !v || /undefined|NaN/.test(v))) throw new Error(lang + '.' + k + '(' + c + ') gives ' + v);
+      }
+      n++;
+    }
+    if(lang !== 'en') levelIds.forEach(id => { if(!(L.desc || {})[id]) throw new Error(lang + ' has no description for level ' + id); });
+  }
+  const groups = (read('js/levels.js').split('const PICK_GROUPS = [')[1].split('];')[0].match(/\{ nm:'/g) || []).length;
+  Object.keys(T.LANGS).forEach(lang => { if(T.TEXT[lang].groups.length !== groups) throw new Error(lang + ' names ' + T.TEXT[lang].groups.length + ' picker groups, the picker has ' + groups); });
+  const mascots = [...read('js/mascots.js').matchAll(/^  (\w+): \{$/gm)].map(m => m[1]);
+  Object.keys(T.LANGS).forEach(lang => mascots.forEach(m => { if(!T.TEXT[lang].mascots[m]) throw new Error(lang + ' has no name for the ' + m); }));
+  const used = [...new Set([...(js + src).matchAll(/\bt\('(\w+)'|data-t(?:-aria)?="(\w+)"/g)].map(m => m[1] || m[2]))];
+  const unknown = used.filter(k => !(k in T.TEXT.en));
+  if(unknown.length) throw new Error('the page asks for text no language has: ' + unknown.join(', '));
+  console.log('languages: ' + Object.keys(T.LANGS).join(', ') + ' each carry all ' + (n / 3) + ' texts, ' + levelIds.length +
+    ' level descriptions, ' + groups + ' group names and ' + mascots.length + ' mascot names; all ' + used.length + ' keys the page uses exist');
 }
 
 /* The transfer link: what one device packs, the other has to read back unchanged. */

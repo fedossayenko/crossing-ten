@@ -3,13 +3,14 @@ const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, sett
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- local log ---------- */
-const LS = 'crossingten.v3';
+const LS = roundsKey(PLAYER);
 let LOCAL = { rounds:[], muted:false, speak:true, n:10 };
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
 // The rounds she played while this lived as a Claude artifact, carried across once per
-// device. Each round has an id, so a device that already has them keeps its own copy.
+// device to the first player. Each round has an id, so a device that already has them
+// keeps its own copy.
 const SEED = [{"id":"r1790015038315_7cn3d","ts":1790015038315,"day":"2026-09-21","level":4,"n":10,"firstTry":8,"seen":["+:7-6","+:8-9","+:8-8","+:4-7","+:8-5","+:9-2","+:7-7","+:8-7","+:4-8","+:6-9"],"missed":["+:8-9","+:8-8"]},{"id":"r1790015105375_3mi4t","ts":1790015105375,"day":"2026-09-21","level":4,"n":10,"firstTry":10,"seen":["+:8-3","+:6-7","+:6-6","+:6-7","+:8-7","+:6-8","+:8-9","+:9-4","+:9-8","+:8-9"],"missed":[]},{"id":"r1790015141891_7ovx6","ts":1790015141891,"day":"2026-09-21","level":2,"n":10,"firstTry":0,"seen":["-:2-9","-:4-6","-:3-8","-:0-5","-:4-9","-:0-8","-:0-5","-:0-8","-:5-9","-:5-9"],"missed":["-:2-9","-:4-6","-:3-8","-:0-5","-:4-9","-:0-8","-:0-5","-:0-8","-:5-9","-:5-9"]},{"id":"r1790015260526_087bm","ts":1790015260526,"day":"2026-09-21","level":4,"n":10,"firstTry":10,"seen":["+:5-7","+:7-7","+:9-3","+:7-4","+:7-9","+:8-4","+:8-4","+:9-2","+:5-8","+:8-4"],"missed":[]},{"id":"r1790058153930_948f0","ts":1790058153930,"day":"2026-09-22","level":2,"n":10,"firstTry":10,"seen":["-:5-8","-:3-9","-:2-7","-:5-8","-:0-2","-:5-9","-:2-4","-:2-7","-:0-5","-:4-5"],"missed":[]},{"id":"r1790058354010_o4c4h","ts":1790058354010,"day":"2026-09-22","level":1,"n":10,"firstTry":9,"seen":["-:7-9","-:8-9","-:6-7","-:3-4","-:2-4","-:2-9","-:5-8","-:3-5","-:0-9","-:6-7"],"missed":["-:0-9"]},{"id":"r1790058861955_pzjc9","ts":1790058861955,"day":"2026-09-22","level":8,"n":10,"firstTry":10,"seen":["w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain","w:chain"],"missed":[]},{"id":"r1790059304036_61pv5","ts":1790059304036,"day":"2026-09-22","level":9,"n":10,"firstTry":8,"seen":["w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs","w:pairs"],"missed":["w:pairs","w:pairs"]},{"id":"r1790064620994_56lld","ts":1790064620994,"day":"2026-09-22","level":11,"n":10,"firstTry":9,"seen":["w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box","w:box"],"missed":["w:box"]},{"id":"r1790065438571_k9bpe","ts":1790065438571,"day":"2026-09-22","level":18,"n":10,"firstTry":9,"seen":["w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits","w:digits"],"missed":["w:digits"]},{"id":"r1790065992600_z3jg4","ts":1790065992600,"day":"2026-09-22","level":15,"n":10,"firstTry":6,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":["w:erase","w:erase","w:erase","w:erase"]},{"id":"r1790066770456_if76o","ts":1790066770456,"day":"2026-09-22","level":15,"n":10,"firstTry":7,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":["w:erase","w:erase","w:erase"]},{"id":"r1790067548274_mgn9c","ts":1790067548274,"day":"2026-09-22","level":15,"n":10,"firstTry":10,"seen":["w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase","w:erase"],"missed":[]},{"id":"r1790068253029_ag759","ts":1790068253029,"day":"2026-09-22","level":10,"n":10,"firstTry":9,"seen":["w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp","w:cmp"],"missed":["w:cmp"]},{"id":"r1790076611158_kof1b","ts":1790076611158,"day":"2026-09-22","level":16,"n":10,"firstTry":7,"seen":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"],"missed":["w:ineq","w:ineq","w:ineq"]},{"id":"r1790077520842_ze4z7","ts":1790077520842,"day":"2026-09-22","level":16,"n":10,"firstTry":5,"seen":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"],"missed":["w:ineq","w:ineq","w:ineq","w:ineq","w:ineq"]},{"id":"r1790078936561_9bl1n","ts":1790078936561,"day":"2026-09-22","level":34,"n":10,"firstTry":5,"seen":["w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint"],"missed":["w:paint","w:paint","w:paint","w:paint","w:paint"]},{"id":"r1790079610004_5y87l","ts":1790079610004,"day":"2026-09-22","level":34,"n":10,"firstTry":10,"seen":["w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint","w:paint"],"missed":[]},{"id":"r1790080408348_nybp6","ts":1790080408348,"day":"2026-09-22","level":12,"n":10,"firstTry":4,"seen":["w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count"],"missed":["w:count","w:count","w:count","w:count","w:count","w:count"]},{"id":"r1790080992408_znvck","ts":1790080992408,"day":"2026-09-22","level":12,"n":10,"firstTry":5,"seen":["w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count","w:count"],"missed":["w:count","w:count","w:count","w:count","w:count"]}];
-(function(){
+if(PLAYER.id === 'p1') (function(){
   const have = {};
   LOCAL.rounds.forEach(r => have[r.id] = true);
   const add = SEED.filter(r => !have[r.id]);
@@ -22,6 +23,15 @@ function saveLocal(){
   try { localStorage.setItem(LS, JSON.stringify({ rounds: LOCAL.rounds.slice(-400), muted: LOCAL.muted,
     speak: LOCAL.speak, n: LOCAL.n })); } catch(e){}
 }
+
+/* ---------- language and mascot ---------- */
+document.documentElement.lang = LANG;
+document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+document.querySelectorAll('[data-t-aria]').forEach(el => {
+  el.setAttribute('aria-label', t(el.dataset.tAria));
+  if(el.classList.contains('icon')) el.title = t(el.dataset.tAria);
+});
+wearMascot($('cat'), PLAYER.mascot);
 
 /* ---------- sound ---------- */
 let AC = null;
@@ -60,14 +70,14 @@ paintMute();
 /* ---------- speech ---------- */
 const CAN_SPEAK = 'speechSynthesis' in window;
 if(!CAN_SPEAK) $('speakBtn').hidden = true;
-function sayWords(q){ return q.a + (q.op === '-' ? ' minus ' : ' plus ') + q.b; }
+function sayWords(q){ return q.a + t(q.op === '-' ? 'minus' : 'plus') + q.b; }
 function speak(q, force){
   if(!CAN_SPEAK || !LOCAL.speak || !q || q.kind) return;   // nothing to read out for the worksheet tasks
   if(!force && !S.touched) return;          // no audio before she has touched anything
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(sayWords(q));
-    u.rate = .8; u.pitch = 1.05;
+    u.lang = LANG_TAG[LANG]; u.rate = .8; u.pitch = 1.05;
     speechSynthesis.speak(u);
   } catch(e){}
 }
@@ -147,16 +157,18 @@ const GLYPH = {
   yarn:'<circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5.6 7.2c4.4 1.8 7.2 5.8 8 12.8M18.4 7.2c-4.4 1.8-7.2 5.8-8 12.8M3.6 13.8c4-.8 7.6-3.4 9.8-7.8" fill="none" stroke="currentColor" stroke-width="1.6"/>'
 };
 const icon = k => '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' + GLYPH[k] + '</svg>';
+// Names and conditions are in js/i18n.js, under badge.<id>: [name, what it takes].
 const BADGES = [
-  { id:'first',   g:'paw',   nm:'First round',   need:'Finish a round',      has:s => s.rounds >= 1 },
-  { id:'ten',     g:'fish',  nm:'Ten rounds',    need:'10 rounds',           has:s => s.rounds >= 10 },
-  { id:'perfect', g:'star',  nm:'Perfect round', need:'All right first try', has:s => s.perfect >= 1 },
-  { id:'streak3', g:'sun',   nm:'Three days',    need:'3 days running',      has:s => s.streakBest >= 3 },
-  { id:'streak7', g:'moon',  nm:'A whole week',  need:'7 days running',      has:s => s.streakBest >= 7 },
-  { id:'s100',    g:'box',   nm:'100 sums',      need:'100 sums',            has:s => s.sums >= 100 },
-  { id:'s500',    g:'yarn',  nm:'500 sums',      need:'500 sums',            has:s => s.sums >= 500 },
-  { id:'levels',  g:'crown', nm:'Every level',   need:'Try 7 different levels',    has:s => Object.keys(s.lvl).length >= 7 }
+  { id:'first',   g:'paw',   has:s => s.rounds >= 1 },
+  { id:'ten',     g:'fish',  has:s => s.rounds >= 10 },
+  { id:'perfect', g:'star',  has:s => s.perfect >= 1 },
+  { id:'streak3', g:'sun',   has:s => s.streakBest >= 3 },
+  { id:'streak7', g:'moon',  has:s => s.streakBest >= 7 },
+  { id:'s100',    g:'box',   has:s => s.sums >= 100 },
+  { id:'s500',    g:'yarn',  has:s => s.sums >= 500 },
+  { id:'levels',  g:'crown', has:s => Object.keys(s.lvl).length >= 7 }
 ];
+const badgeName = b => t('badge')[b.id][0], badgeNeed = b => t('badge')[b.id][1];
 const earnedSet = rounds => { const s = statsFrom(rounds); return BADGES.filter(b => b.has(s)).map(b => b.id); };
 
 /* ---------- cat ---------- */
@@ -165,15 +177,15 @@ function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
 function catFor(score, total){ return score >= total - 2 ? 'happy' : score >= total/2 ? 'idle' : 'sad'; }
 
 // How a round ends. The bottom tier is encouraging, not sad: the child who scores
-// low is the one who most needs to come back tomorrow.
+// low is the one who most needs to come back tomorrow. What each says is tiers[i] in js/i18n.js.
 const TIERS = [
-  { min:1,   mood:'party',  say:'Every one. ',     tune:[523,659,784,1047,1319,1047,1319,1568], gap:.11 },
-  { min:.8,  mood:'dance',  say:'Nearly all. ',    tune:[523,659,784,1047,880,988,1175],        gap:.13 },
-  { min:.6,  mood:'wiggle', say:'Good going. ',    tune:[523,659,784,880],                      gap:.15 },
-  { min:.4,  mood:'nod',    say:'Halfway there. ', tune:[523,659,784],                          gap:.17 },
-  { min:0,   mood:'tilt',   say:'Keep going — ',   tune:[440,554],                              gap:.22 }
+  { min:1,   mood:'party',      tune:[523,659,784,1047,1319,1047,1319,1568], gap:.11 },
+  { min:.8,  mood:'dance',     tune:[523,659,784,1047,880,988,1175],        gap:.13 },
+  { min:.6,  mood:'wiggle',    tune:[523,659,784,880],                      gap:.15 },
+  { min:.4,  mood:'nod',    tune:[523,659,784],                          gap:.17 },
+  { min:0,   mood:'tilt',     tune:[440,554],                              gap:.22 }
 ];
-function tierFor(score, total){ const f = total ? score/total : 0; return TIERS.find(t => f >= t.min); }
+function tierFor(score, total){ const f = total ? score/total : 0; return TIERS.find(x => f >= x.min); }
 function confetti(n, spread){
   const box = $('confetti');
   const cols = ['var(--good)','var(--warm)','var(--accent)','var(--rose)','var(--eye)'];
@@ -260,7 +272,7 @@ function check(){
     $('card').className = 'card ok';
     $('verdict').className = 'verdict ok';
     const quick = S.tries === 0;
-    $('verdict').textContent = quick ? 'Yes!' : 'Got it.';
+    $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
     $('hint').innerHTML = why(q, true);
     mood('happy');
     quick ? sfx.good() : sfx.ok();
@@ -277,7 +289,7 @@ function check(){
   setTimeout(() => $('card').classList.remove('shake'), 340);
   if(S.tries === 1){
     $('verdict').className = 'verdict no';
-    $('verdict').textContent = 'Not yet — try once more.';
+    $('verdict').textContent = t('notYet');
     $('hint').innerHTML = why(q);
     S.parts = S.parts.map(() => ''); S.at = 0; paintSlot();
   } else {
@@ -301,13 +313,12 @@ function finish(){
   clearTimers();
   const got = S.results.filter(Boolean).length;
   const secs = Math.round((Date.now() - S.t0)/1000);
-  const mins = Math.floor(secs/60);
-  const time = mins ? mins + ' min ' + (secs%60) + ' s' : secs + ' s';
+  const time = t('time', Math.floor(secs/60), secs%60);
   const tier = tierFor(got, S.qs.length);
   let best = 0, run = 0;
   S.results.forEach(r => { run = r ? run+1 : 0; if(run > best) best = run; });
-  const streakLine = best >= 3 ? ' · best run ' + best + ' in a row' : '';
-  $('score').innerHTML = tier.say + got + ' out of ' + S.qs.length + ' first try.<small>' + time + streakLine + '</small>';
+  const streakLine = best >= 3 ? t('bestRun', best) : '';
+  $('score').innerHTML = t('tiers')[TIERS.indexOf(tier)] + t('score', got, S.qs.length) + '<small>' + time + streakLine + '</small>';
   putCat('sheetcat', tier.mood);
   sfx.tune(tier.tune, tier.gap);
   const clean = got === S.qs.length;
@@ -350,13 +361,13 @@ function finish(){
   });
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
-  if(DB) DB.collection('rounds').doc(LOCAL.rounds[LOCAL.rounds.length-1].id).set(LOCAL.rounds[LOCAL.rounds.length-1]).catch(() => {});
+  if(DB) DB.collection(DBC).doc(LOCAL.rounds[LOCAL.rounds.length-1].id).set(LOCAL.rounds[LOCAL.rounds.length-1]).catch(() => {});
 
   const fresh = earnedSet(LOCAL.rounds).filter(id => before.indexOf(id) < 0);
   $('earnedWrap').hidden = fresh.length === 0;
   $('earnedWrap').innerHTML = fresh.map(id => {
     const b = BADGES.find(x => x.id === id);
-    return '<div class="newbadge">' + icon(b.g) + '<div><b>' + b.nm + '</b><span>New badge</span></div></div>';
+    return '<div class="newbadge">' + icon(b.g) + '<div><b>' + badgeName(b) + '</b><span>' + t('newBadge') + '</span></div></div>';
   }).join('');
 
   $('sheet').hidden = false;
@@ -364,19 +375,19 @@ function finish(){
 
 /* ---------- progress ---------- */
 function advice(st){
-  if(st.rounds < 3) return 'A few more rounds and this will have something useful to say.';
+  if(st.rounds < 3) return t('fewRounds');
   const sub = st.byOp['-'], add = st.byOp['+'];
   const pct = o => o.seen ? Math.round(100*(o.seen - o.miss)/o.seen) : null;
   const ps = pct(sub), pa = pct(add);
   const bits = [];
-  if(ps !== null && sub.seen >= 15) bits.push('Take away is at ' + ps + '%');
-  if(pa !== null && add.seen >= 15) bits.push('adding is at ' + pa + '%');
+  if(ps !== null && sub.seen >= 15) bits.push(t('subAt', ps));
+  if(pa !== null && add.seen >= 15) bits.push(t('addAt', pa));
   let out = bits.length ? bits.join(', ') + '. ' : '';
   if(ps !== null && pa !== null && sub.seen >= 15 && add.seen >= 15){
-    out += Math.abs(ps - pa) < 8 ? 'The two are level. ' : (ps > pa ? 'Adding is the weaker one. ' : 'Take away is the weaker one. ');
+    out += t(Math.abs(ps - pa) < 8 ? 'level' : ps > pa ? 'addWeak' : 'subWeak');
   }
-  if(st.trouble.length) out += 'The step costing most is ' + factLabel(st.trouble[0].key) + ' (missed ' + st.trouble[0].miss + ' of ' + st.trouble[0].seen + ').';
-  return out || 'Nothing stands out yet — the misses are spread evenly.';
+  if(st.trouble.length) out += t('costing', factLabel(st.trouble[0].key), st.trouble[0].miss, st.trouble[0].seen);
+  return out || t('even');
 }
 function renderStats(){
   const st = statsFrom(LOCAL.rounds);
@@ -387,15 +398,15 @@ function renderStats(){
   putCat('statscat', any ? catFor(st.first, st.sums) : 'idle');
   const pc = st.sums ? Math.round(100*st.first/st.sums) : 0;
   $('tiles').innerHTML =
-    '<div class="tile"><span class="n">' + st.sums + '</span><span class="t">sums practised</span></div>' +
-    '<div class="tile"><span class="n">' + pc + '%</span><span class="t">right first try</span></div>' +
-    '<div class="tile"><span class="n">' + st.streak + '</span><span class="t">day' + (st.streak === 1 ? '' : 's') + ' in a row</span></div>';
+    '<div class="tile"><span class="n">' + st.sums + '</span><span class="t">' + t('sumsDone') + '</span></div>' +
+    '<div class="tile"><span class="n">' + pc + '%</span><span class="t">' + t('firstTry') + '</span></div>' +
+    '<div class="tile"><span class="n">' + st.streak + '</span><span class="t">' + t('daysRow', st.streak) + '</span></div>';
 
   $('badges').innerHTML = BADGES.map(b => {
     const got = b.has(st);
     return '<div class="badge' + (got ? ' got' : '') + '">' + icon(b.g) +
-           '<span class="nm">' + b.nm + '</span>' +
-           (got ? '' : '<span class="need">' + b.need + '</span>') + '</div>';
+           '<span class="nm">' + badgeName(b) + '</span>' +
+           (got ? '' : '<span class="need">' + badgeNeed(b) + '</span>') + '</div>';
   }).join('');
 
   const last = LOCAL.rounds.slice(-12);
@@ -417,8 +428,8 @@ function renderStats(){
            '<span class="pc">' + p + '% · ' + d.n + '</span></div>';
   }).join('');
 
-  $('trouble').innerHTML = st.trouble.map(t =>
-    '<div class="chip"><span class="eq">' + factLabel(t.key) + '</span><span class="r">missed ' + t.miss + '/' + t.seen + '</span></div>'
+  $('trouble').innerHTML = st.trouble.map(x =>
+    '<div class="chip"><span class="eq">' + factLabel(x.key) + '</span><span class="r">' + t('missed', x.miss, x.seen) + '</span></div>'
   ).join('');
 
   $('advice').textContent = advice(st);
@@ -448,17 +459,17 @@ document.querySelectorAll('#lenSeg button').forEach(b => b.onclick = () => {
 let resetArmed = null;
 $('reset').onclick = async () => {
   if(!resetArmed){
-    resetArmed = setTimeout(() => { resetArmed = null; $('reset').classList.remove('armed'); $('reset').textContent = 'Reset progress'; }, 3500);
-    $('reset').classList.add('armed'); $('reset').textContent = 'Tap again to erase';
+    resetArmed = setTimeout(() => { resetArmed = null; $('reset').classList.remove('armed'); $('reset').textContent = t('reset'); }, 3500);
+    $('reset').classList.add('armed'); $('reset').textContent = t('resetArm');
     return;
   }
   clearTimeout(resetArmed); resetArmed = null;
-  $('reset').classList.remove('armed'); $('reset').textContent = 'Reset progress';
+  $('reset').classList.remove('armed'); $('reset').textContent = t('reset');
   const ids = LOCAL.rounds.map(r => r.id);
   LOCAL.rounds = []; saveLocal();
   W = weightsFrom(LOCAL.rounds);
   renderStats();
-  if(DB) for(const id of ids){ try { await DB.collection('rounds').doc(id).delete(); } catch(e){ break; } }
+  if(DB) for(const id of ids){ try { await DB.collection(DBC).doc(id).delete(); } catch(e){ break; } }
 };
 
 /* ---------- level picker ---------- */
@@ -467,11 +478,11 @@ function paintPill(){ $('levelPill').textContent = LEVEL_NAME[S.level]; }
 // what to practise without turning the picker into a log.
 function ago(ts){
   const today = dayKey(Date.now()), then = dayKey(ts);
-  if(today === then) return 'today';
+  if(today === then) return t('today');
   const days = Math.round((Date.parse(today + 'T12:00:00') - Date.parse(then + 'T12:00:00')) / 86400000);
-  if(days === 1) return 'yesterday';
-  if(days < 7) return days + ' days ago';
-  return new Date(ts).toLocaleDateString(undefined, { day:'numeric', month:'short' });
+  if(days === 1) return t('yesterday');
+  if(days < 7) return t('daysAgo', days);
+  return new Date(ts).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'short' });
 }
 function levelHistory(rounds){
   const m = {};
@@ -530,7 +541,7 @@ function buildPicker(){
   const M = mastery(LOCAL.rounds);
   const stat = l => {
     const h = hist[l.id];
-    if(!h) return '<span class="last none"><i>not tried yet</i></span>';
+    if(!h) return '<span class="last none"><i>' + t('notTried') + '</i></span>';
     const f = h.last.n ? h.last.firstTry / h.last.n : 0;
     const col = f >= .8 ? 'var(--good)' : f >= .5 ? 'var(--warm)' : 'var(--bad)';
     const life = h.rounds > 1 ? ' · ' + Math.round(100 * h.f / h.n) + '%' : '';
@@ -539,11 +550,10 @@ function buildPicker(){
   };
   // how hard it is, on the rubric in the README: operations, reading, search,
   // number size and how easy the trap is to miss — five dots
-  const hard = l => '<span class="dots5" title="Difficulty ' + l.d + ' of 5" aria-label="Difficulty ' +
-    l.d + ' of 5">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
+  const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
     '<span class="eq">' + l.eq + hard(l) + '</span>' +
-    '<span class="desc">' + l.desc + '</span>' +
+    '<span class="desc">' + levelDesc(l) + '</span>' +
     (M[l.id] && M[l.id].done ? '<span class="tick">✓</span>' : '') + stat(l) + '</button>';
   const m = mastery(LOCAL.rounds);
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
@@ -552,17 +562,17 @@ function buildPicker(){
   const learned = LEVELS.filter(l => m[l.id] && m[l.id].done).length;
   const met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = '<div class="nextwrap"><div class="lab">' +
-    (!met ? 'Start here' : met < LEVELS.length ? 'Try this next' : 'Needs work') + '</div>' +
+    t(!met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</div>' +
     (nx ? '<button class="pick now" data-lvl="' + nx.id + '"><span class="eq">' + nx.eq +
-          hard(nx) + '</span><span class="desc">' + nx.desc + '</span>' +
+          hard(nx) + '</span><span class="desc">' + levelDesc(nx) + '</span>' +
           stat(nx) + '</button>'
-        : '<div class="advice">Every level learned. Keep the ones she enjoys in rotation.</div>') +
+        : '<div class="advice">' + t('allLearned') + '</div>') +
     '<div class="progress"><span class="track"><i style="width:' +
-    Math.round(100*learned/LEVELS.length) + '%"></i></span><span>' + learned + ' of ' +
-    LEVELS.length + ' learned</span></div></div>';
-  $('pickAll').innerHTML = PICK_GROUPS.map(g => {
+    Math.round(100*learned/LEVELS.length) + '%"></i></span><span>' + t('learnedOf', learned, LEVELS.length) +
+    '</span></div></div>';
+  $('pickAll').innerHTML = PICK_GROUPS.map((g, k) => {
     const rows = LEVELS.filter(g.has).map(row).join('');
-    return rows ? '<div class="lab">' + g.nm + '</div><div class="pickgroup">' + rows + '</div>' : '';
+    return rows ? '<div class="lab">' + t('groups')[k] + '</div><div class="pickgroup">' + rows + '</div>' : '';
   }).join('');
   document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
@@ -575,12 +585,86 @@ $('levelPill').onclick = () => { buildPicker(); $('pickWarn').hidden = !midRound
 $('closePick').onclick = () => { $('picker').hidden = true; };
 paintPill();
 
+/* ---------- players ----------
+   Tap the mascot to change player. Switching reloads the page: every setting, the log,
+   the language and the mascot then come up exactly as a fresh launch would. */
+const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const playerName = p => p.name || t('playerN', PLAYERS.list.indexOf(p) + 1);
+const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+function chose(){ try { sessionStorage.setItem('crossingten.chosen', '1'); } catch(e){} }
+function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); location.reload(); }
+function learnedBy(p){
+  let rounds = LOCAL.rounds;
+  if(p !== PLAYER) try { rounds = (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ rounds = []; }
+  const m = mastery(rounds);
+  return LEVELS.filter(l => m[l.id] && m[l.id].done).length;
+}
+function openPlayers(){
+  $('playerList').innerHTML = PLAYERS.list.map(p =>
+    '<div class="ptile">' +
+      '<button class="pchoose" data-id="' + p.id + '" aria-pressed="' + (p === PLAYER) + '">' + mascotSvg(p.mascot) +
+        '<b>' + esc(playerName(p)) + '</b><span>' + t('learnedN', learnedBy(p)) + '</span></button>' +
+      '<button class="icon pedit" data-edit="' + p.id + '" aria-label="' + t('edit') + ': ' + esc(playerName(p)) + '">' + EDIT_ICON + '</button>' +
+    '</div>').join('') +
+    '<button class="padd" id="pAdd">' + t('addPlayer') + '</button>';
+  document.querySelectorAll('.pchoose').forEach(b => b.onclick = () => {
+    if(b.dataset.id === PLAYER.id){ chose(); $('players').hidden = true; } else switchTo(b.dataset.id);
+  });
+  document.querySelectorAll('.pedit').forEach(b => b.onclick = () => openEdit(PLAYERS.list.find(p => p.id === b.dataset.edit)));
+  $('pAdd').onclick = () => openEdit(null);
+  $('playerEdit').hidden = true; $('players').hidden = false;
+}
+let EDIT = null, delArmed = null;
+function openEdit(p){
+  const taken = PLAYERS.list.map(x => x.mascot);
+  EDIT = p ? Object.assign({}, p)
+           : { id:'p' + Date.now().toString(36), name:'', lang:LANG,
+               mascot: Object.keys(MASCOTS).find(k => taken.indexOf(k) < 0) || 'cat' };
+  $('editTitle').textContent = p ? playerName(p) : t('newPlayer');
+  $('pName').value = EDIT.name;
+  $('pName').placeholder = p ? playerName(p) : t('playerN', PLAYERS.list.length + 1);
+  $('pDelete').parentNode.hidden = !p || PLAYERS.list.length < 2;
+  clearTimeout(delArmed); delArmed = null; $('pDelete').classList.remove('armed'); $('pDelete').textContent = t('delPlayer');
+  paintEdit();
+  $('players').hidden = true; $('playerEdit').hidden = false;
+}
+function paintEdit(){
+  $('pMascot').innerHTML = Object.keys(MASCOTS).map(k => '<button class="mchoice" data-m="' + k + '" aria-pressed="' +
+    (k === EDIT.mascot) + '">' + mascotSvg(k) + '<span>' + t('mascots')[k] + '</span></button>').join('');
+  $('pLang').innerHTML = Object.keys(LANGS).map(k => '<button data-l="' + k + '" lang="' + k + '" aria-pressed="' +
+    (k === EDIT.lang) + '">' + LANGS[k] + '</button>').join('');
+  document.querySelectorAll('.mchoice').forEach(b => b.onclick = () => { EDIT.mascot = b.dataset.m; paintEdit(); });
+  document.querySelectorAll('#pLang button').forEach(b => b.onclick = () => { EDIT.lang = b.dataset.l; paintEdit(); });
+}
+$('pSave').onclick = () => {
+  EDIT.name = $('pName').value.trim().slice(0, 20);
+  const old = PLAYERS.list.find(p => p.id === EDIT.id);
+  if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
+  savePlayers();
+  // A new player starts playing at once; the current one reloads to wear the change.
+  if(!old || EDIT.id === PLAYER.id) switchTo(EDIT.id); else openPlayers();
+};
+$('pCancel').onclick = openPlayers;
+$('pDelete').onclick = () => {
+  if(!delArmed){
+    delArmed = setTimeout(() => { delArmed = null; $('pDelete').classList.remove('armed'); $('pDelete').textContent = t('delPlayer'); }, 3500);
+    $('pDelete').classList.add('armed'); $('pDelete').textContent = t('delArm');
+    return;
+  }
+  clearTimeout(delArmed); delArmed = null;
+  PLAYERS.list = PLAYERS.list.filter(p => p.id !== EDIT.id);
+  try { localStorage.removeItem(roundsKey(EDIT)); } catch(e){}
+  if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
+};
+$('who').onclick = openPlayers;
+$('closePlayers').onclick = () => { chose(); $('players').hidden = true; };
+
 /* ---------- controls ---------- */
 $('pad').addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
 $('again').onclick = () => newRound();
 $('card').addEventListener('click', () => { if(S.settled) next(); });
 document.addEventListener('keydown', e => {
-  if(!$('sheet').hidden || !$('stats').hidden || !$('picker').hidden) return;
+  if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input')) return;
   if(e.key >= '0' && e.key <= '9') press(e.key);
   else if(e.key === 'Backspace') press('del');
   else if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press('go'); }
@@ -588,18 +672,20 @@ document.addEventListener('keydown', e => {
 
 /* ---------- shared mirror ---------- */
 const builtOn = () => {
-  try { return ' · build ' + new Date(document.lastModified)
-    .toLocaleString(undefined, { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
+  try { return t('build') + new Date(document.lastModified)
+    .toLocaleString(LANG_TAG[LANG], { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
   catch(e){ return ''; }
 };
-const heldHere = () => 'On this device only · ' + LOCAL.rounds.length + ' rounds held here';
+const heldHere = () => t('heldHere', LOCAL.rounds.length);
+// The artifact database keeps each player's rounds apart; the first keeps the original name.
+const DBC = PLAYER.id === 'p1' ? 'rounds' : 'rounds_' + PLAYER.id;
 let DB = null;
 (async () => {
   const db = window.claude && await claude.use('db');
   if(!db) { $('synced').textContent = heldHere() + builtOn(); return; }
   DB = db;
   try {
-    const snap = await db.collection('rounds').orderBy('ts','desc').limit(300).get();
+    const snap = await db.collection(DBC).orderBy('ts','desc').limit(300).get();
     const remote = snap.docs.map(d => d.data()).filter(r => r && r.id);
     const byId = {};
     LOCAL.rounds.forEach(r => byId[r.id] = r);
@@ -608,10 +694,10 @@ let DB = null;
     LOCAL.rounds = Object.keys(byId).map(k => byId[k]).sort((x,y) => x.ts - y.ts).slice(-400);
     saveLocal();
     W = weightsFrom(LOCAL.rounds);
-    $('synced').textContent = 'Synced across your devices · ' + LOCAL.rounds.length + ' rounds kept' + builtOn();
+    $('synced').textContent = t('synced', LOCAL.rounds.length) + builtOn();
     if(!$('stats').hidden) renderStats();
     const pending = LOCAL.rounds.filter(r => !remoteIds[r.id]).slice(-20);
-    for(const r of pending){ try { await db.collection('rounds').doc(r.id).set(r); } catch(e){ break; } }
+    for(const r of pending){ try { await db.collection(DBC).doc(r.id).set(r); } catch(e){ break; } }
   } catch(e){
     $('synced').textContent = heldHere() + builtOn();
   }
@@ -668,19 +754,19 @@ function makeXfer(){ pack(LOCAL.rounds).then(c => { XFER = location.origin + loc
 $('xfer').onclick = () => {
   if(!XFER) { makeXfer(); return; }
   navigator.clipboard.writeText(XFER).then(
-    () => say('Copied ' + LOCAL.rounds.length + ' rounds · tap Paste on the other device'),
-    () => prompt('Copy this and paste it on the other device', XFER));
+    () => say(t('copied', LOCAL.rounds.length)),
+    () => prompt(t('copyPrompt'), XFER));
 };
 $('xferIn').onclick = () => {
   const take = async code => {
     const m = String(code || '').trim().match(/(?:#t=)?([A-Za-z0-9_-]{16,})\s*$/);
-    if(!m) { say('Nothing to paste - copy on the other device first'); return; }
-    try { const n = mergeRounds(await unpack(m[1])); say(n ? 'Brought over ' + n + ' rounds · ' + LOCAL.rounds.length + ' held here' : 'Nothing new to bring over'); }
-    catch(e){ say('That code would not open'); }
+    if(!m) { say(t('nothingToPaste')); return; }
+    try { const n = mergeRounds(await unpack(m[1])); say(n ? t('brought', n) + ' · ' + heldHere() : t('nothingNew')); }
+    catch(e){ say(t('wontOpen')); }
   };
   if(navigator.clipboard && navigator.clipboard.readText)
-    navigator.clipboard.readText().then(take, () => take(prompt('Paste the code from the other device')));
-  else take(prompt('Paste the code from the other device'));
+    navigator.clipboard.readText().then(take, () => take(prompt(t('pastePrompt'))));
+  else take(prompt(t('pastePrompt')));
 };
 (async () => {
   const hash = location.hash.match(/^#t=(.+)$/);
@@ -688,8 +774,8 @@ $('xferIn').onclick = () => {
   history.replaceState(null, '', location.pathname + location.search);
   try {
     const n = mergeRounds(await unpack(decodeURIComponent(hash[1])));
-    $('synced').textContent = (n ? 'Brought over ' + n + ' rounds' : 'Nothing new to bring over') + builtOn();
-  } catch(e){ $('synced').textContent = 'That transfer link would not open' + builtOn(); }
+    $('synced').textContent = (n ? t('brought', n) : t('nothingNew')) + builtOn();
+  } catch(e){ $('synced').textContent = t('linkWontOpen') + builtOn(); }
 })();
 
 // Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
@@ -699,6 +785,10 @@ $('xferIn').onclick = () => {
   document.addEventListener(g, e => e.preventDefault(), { passive: false }));
 
 newRound();
+// Two or more players: each launch starts by asking who is playing.
+let chosen = false;
+try { chosen = !!sessionStorage.getItem('crossingten.chosen'); } catch(e){}
+if(PLAYERS.list.length > 1 && !chosen) openPlayers();
 
 // Offline play and same-build-everywhere for the Pages copy; the artifact frame has no use for it.
 if('serviceWorker' in navigator && window.isSecureContext && !window.claude)
