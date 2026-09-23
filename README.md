@@ -38,8 +38,8 @@ artifact copy, which cannot load files beside it.
 
 Tap the mascot to see who is playing. Each player has a name, one of four mascots and
 an interface language (Bulgarian by default). Task text comes in Bulgarian or Ukrainian;
-an English player gets the Bulgarian, the language of the worksheets. With two or more
-players, each launch starts by asking who is playing.
+an English player gets the Bulgarian, the language of the worksheets. Only the very first
+launch on a device asks who is playing; after that the app opens straight on the exercise.
 
 Every player's rounds live under her own storage key. The first player keeps the key
 the app always used, so everything played before there were players is hers without

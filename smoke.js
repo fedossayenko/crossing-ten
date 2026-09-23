@@ -124,8 +124,10 @@ const server = http.createServer((req, res) => {
       { id:'p1', name:'Ани', mascot:'fox', lang:'en' }, { id:'p2', name:'Иво', mascot:'owl', lang:'uk' }] }));
       sessionStorage.clear(); location.reload(); 1`);
     await settle();
-    const ask = await page('{ lang: document.documentElement.lang, open: !$("players").hidden, tiles: document.querySelectorAll(".pchoose").length, fox: !!$("cat").querySelector("ellipse[rx=\'68\']") }');
-    expect(ask.lang === 'en' && ask.open && ask.tiles === 2 && ask.fox, 'two players did not ask who is playing: ' + JSON.stringify(ask));
+    const ask = await page('{ lang: document.documentElement.lang, open: !$("players").hidden || !$("playerEdit").hidden, fox: !!$("cat").querySelector("ellipse[rx=\'68\']") }');
+    expect(ask.lang === 'en' && !ask.open && ask.fox, 'a later launch did not go straight to the exercise: ' + JSON.stringify(ask));
+    const tiles = await page('(() => { $("who").click(); return document.querySelectorAll(".pchoose").length; })()');
+    expect(tiles === 2, 'the mascot did not open the two players: ' + tiles);
     await run(`document.querySelector('.pchoose[data-id="p2"]').click(); 1`);
     await settle();
     const p2 = await page('{ id: PLAYER.id, lang: document.documentElement.lang, again: $("again").textContent, rounds: LOCAL.rounds.length, open: !$("players").hidden }');

@@ -995,12 +995,9 @@ $('xferIn').onclick = () => {
   if(nx){ S.level = nx.id; paintPill(); }
 }
 newRound();
-// The first launch on a device asks who she is; after that, with two or more players, each
-// launch starts by asking who is playing.
-let chosen = false;
-try { chosen = !!sessionStorage.getItem('crossingten.chosen'); } catch(e){}
+// Only the very first launch on a device asks who she is; every launch after that goes
+// straight to the exercise (the mascot switches player).
 if(FIRST) openEdit(PLAYER, true);
-else if(PLAYERS.list.length > 1 && !chosen) openPlayers();
 
 // Offline play and same-build-everywhere for the Pages copy; the artifact frame has no use for it.
 if('serviceWorker' in navigator && window.isSecureContext && !window.claude)
