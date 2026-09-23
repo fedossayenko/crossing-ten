@@ -6,7 +6,7 @@
    and a deleted player travels as a tombstone in PLAYERS.gone. The artifact copy has its
    own database and does not use this. */
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
-  || '';                                         // the deployed Worker; empty keeps sync out of sight
+  || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
 const FKEY = 'crossingten.family';
 let FAMILY = null;                              // { code, cursor, sent:{player:[ids]}, at }
 try { FAMILY = JSON.parse(localStorage.getItem(FKEY)); } catch(e){}
