@@ -1621,3 +1621,17 @@ eval(head + body + test);
     eval(levelsSrc + nextSrc + walk);
   }
 }
+
+/* The transfer link: what one device packs, the other has to read back unchanged. */
+const xfer = eval('(function(){' + js.slice(js.indexOf('const b64enc'), js.indexOf('function mergeRounds')) + 'return {pack, unpack};})()');
+const sample = [];
+for(let i = 0; i < 400; i++) sample.push({ id:'r' + (1790000000000 + i) + '_abcde', ts: 1790000000000 + i*1000,
+  day:'2026-09-22', level: 1 + (i % 57), n:10, firstTry: i % 11,
+  seen: Array(10).fill('w:erase'), missed: Array(i % 11).fill('w:erase') });
+xfer.pack(sample).then(async code => {
+  const back = await xfer.unpack(code);
+  if(JSON.stringify(back) !== JSON.stringify(sample)) throw new Error('the transfer link does not read back what it packed');
+  if(/[^A-Za-z0-9_-]/.test(code)) throw new Error('the transfer link carries characters a URL would mangle');
+  if(code.length > 30000) throw new Error('the transfer link is ' + code.length + ' characters - too long to hand over');
+  console.log('transfer link: a full 400-round log packs into ' + code.length + ' characters and reads back unchanged');
+});

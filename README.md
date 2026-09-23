@@ -84,3 +84,13 @@ The GitHub copy keeps her rounds in that browser's local storage — per device,
 synced. The twenty rounds she played while this lived as a Claude artifact are carried
 across once per device by a seed in the page; rounds carry ids, so nothing is
 duplicated.
+
+To move progress from one device to another, open **Progress → Send link** on the
+device that has the history. The whole log is gzipped into the link's hash, so opening
+that link on the other device merges it in — rounds already there are skipped, because
+every round carries an id. A full 400-round log comes to about 6 000 characters, short
+enough to AirDrop or message across. Nothing leaves the two devices; there is no server
+behind the Pages build.
+
+The Claude artifact copy syncs on its own through the artifact database, so if both
+devices open the artifact link rather than the Pages one, no transfer is needed.
