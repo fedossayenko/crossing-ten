@@ -764,7 +764,7 @@ function buildPicker(){
   };
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.grade !== 2 ? ' <span class="gtag">' + t('gradeN', l.grade) + '</span>' : '') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>' + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));

@@ -588,4 +588,5 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .compcard > svg{width:24px; height:24px; color:var(--accent); flex:0 0 auto}
 .compicon{width:40px; height:40px; border-radius:12px; background:rgba(47,111,143,.16); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; flex:0 0 auto}
 .compicon svg{width:24px; height:24px}
-.gtag{font-size:11px; font-weight:900; color:var(--warmink); background:var(--warmbg); border-radius:999px; padding:2px 8px; vertical-align:middle; white-space:nowrap}
+.gtag{font-size:11px; font-weight:900; color:var(--accent-ink); background:rgba(47,111,143,.16); border-radius:999px; padding:2px 8px; vertical-align:middle; white-space:nowrap}
+.gtag.g3{color:var(--warmink); background:var(--warmbg)}
