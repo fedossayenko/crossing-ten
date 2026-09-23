@@ -297,9 +297,9 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .key.del svg{width:26px; height:26px}
 .key.go{background:var(--tint); border-color:rgba(255,255,255,.35); color:#fff; box-shadow:var(--tint-shadow); font-size:30px}
 
-/* A phone in portrait has roughly 660px of viewport: shrink the figure, the question
+/* A phone in portrait has 660–850px of viewport: shrink the figure, the question
    and the keys so a question with a drawing still fits without scrolling. */
-@media (orientation:portrait) and (max-height:760px){
+@media (orientation:portrait) and (max-height:900px){
   .card{gap:6px; padding:10px 14px 12px}
   .card-in{gap:6px}
   .ask{font-size:clamp(14px,3.9vw,18px); line-height:1.34}
@@ -552,7 +552,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .fb.tip > div:last-child{display:flex; align-items:center; justify-content:space-between; gap:8px 14px; flex-wrap:wrap}
 .fb.tip .tenframe{width:min(168px,48%); margin:0}
 .brand .logo{background:var(--tint)}
-@media (orientation:portrait) and (max-height:760px){
+@media (orientation:portrait) and (max-height:900px){
   .card:has(.fb) .sum{font-size:26px}
   .fb{padding:7px 10px; gap:3px}
   .hint{gap:6px}
@@ -614,3 +614,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 }
 /* the paper's progress track shows in the dark too */
 .dots .ctrack{background:var(--line)}
+.gtag.gb{color:var(--good); background:var(--goodbg)}
+/* figures that sit under a long task: a smaller drawing, and a line that is only as tall as it is */
+.fig.small svg{height:clamp(64px,13vh,120px)}
+.fig.wide svg{height:auto; width:100%; max-width:340px}

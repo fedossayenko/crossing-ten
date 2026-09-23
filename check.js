@@ -1873,3 +1873,30 @@ eval(head + body + test);
   }});
   console.log('МБГ Есен 3 клас, задачи 6–10: as printed (3, 80, 5 or 3, 18, 211), and ' + Object.values(n).reduce((a, b) => a + b, 0) + ' more by brute force');
 }
+
+/* МБГ Есен, 3 клас, задачи 11–15: as printed, and by brute force. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, LEVELS }; })()');
+  const orig = [
+    [{kind:'star', k:4, P:9, n:8, ans:45}, 45], [{kind:'segpts', k:5, p:5, d:5, ans:35}, 35],
+    [{kind:'midpt', AB:32, half:16, m:4, toB:true, ans:20}, 20], [{kind:'trisq', t:4, d:2, ans:5}, 5],
+    [{kind:'tiles', w:3, h:4, m:2, u:2, R:12, sq:8, dom:[[1,0],[2,1]], ans:28}, 28]
+  ];
+  orig.forEach(([q, want]) => { if(!Q.drawQ(q) || q.ans !== want) throw new Error(q.kind + ': the printed task should give ' + want); });
+  const n = {};
+  [69, 70, 71, 72, 73].forEach(id => { for(let i = 0; i < 300; i++){
+    const q = Q.raw(id);
+    n[q.kind] = (n[q.kind] || 0) + 1;
+    if(!Number.isInteger(q.ans) || q.ans < 1 || q.ans > 999) throw new Error(q.kind + ': answer ' + q.ans);
+    // each one worked the long way round
+    if(q.kind === 'star'){ const side = q.P*10 / q.n; if(Math.abs(4*side - q.ans) > 1e-9) throw new Error('star: 4 · ' + side + ' is not ' + q.ans); }
+    if(q.kind === 'segpts'){ let x = 0; for(let j = 0; j <= q.k; j++) x += q.p; if(x + q.d !== q.ans) throw new Error('segpts'); }
+    if(q.kind === 'midpt'){ const A = 0, B = q.AB, M = B / 2, N = M - q.m; if(!(N > A) || (q.toB ? B - N : N - A) !== q.ans) throw new Error('midpt'); }
+    if(q.kind === 'trisq'){ const side = 3*q.t / 3, P = side - q.d; if(P*10 / 4 !== q.ans) throw new Error('trisq'); }
+    if(q.kind === 'tiles'){
+      if(q.w*q.h !== q.sq + 2*q.m || q.dom.some(([r, c]) => c + 1 >= q.w) || new Set(q.dom.map(d => d[0])).size !== q.m) throw new Error('tiles: the tiling does not fit');
+      const side = q.R / 6; if(2*(q.w + q.h)*side !== q.ans) throw new Error('tiles');
+    }
+  }});
+  console.log('МБГ Есен 3 клас, задачи 11–15: as printed (45 мм, 35 см, 20 км, 5 мм, 28 см), and ' + Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' worked the long way');
+}

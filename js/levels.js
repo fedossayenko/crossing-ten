@@ -8,24 +8,20 @@ const LEVELS = [
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:'Crossing a hundred' },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right', gen:genChain },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', gen:genPairs },
-  { id:59, op:'w', grp:'chain', needs:[9], grade:3, d:3, eq:'20 − 2 · 5', desc:'Multiplication first, then + and − left to right', gen:genMulMix },
-  { id:61, op:'w', grp:'chain', needs:[59], grade:3, d:4, eq:'… · 0 …', desc:'A long expression where every product with a 0 is 0', gen:genZeros },
   { id:50, op:'w', grp:'chain', needs:[9], d:5, eq:'Плюс или минус', desc:'Choose the signs in a run — how many can be minus', gen:genSigns },
-  { id:63, op:'w', grp:'chain', needs:[59], grade:3, d:5, eq:'Два знака', desc:'Which two different signs make the equality true', gen:genTwoSigns },
+  { id:59, op:'w', grp:'chain', needs:[9], grade:3, d:2, eq:'20 − 2 · 5', desc:'Multiplication first, then + and − left to right', gen:genMulMix },
+  { id:61, op:'w', grp:'chain', needs:[59], grade:3, d:2, eq:'… · 0 …', desc:'A long expression where every product with a 0 is 0', gen:genZeros },
+  { id:63, op:'w', grp:'chain', needs:[59], grade:3, d:4, eq:'Два знака', desc:'Which two different signs make the equality true', gen:genTwoSigns },
   { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one', gen:genCandy },
   { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition', gen:genCount },
   { id:25, op:'w', grp:'count', needs:[12], d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers', gen:genWeekday },
   { id:24, op:'w', grp:'count', needs:[12], d:4, eq:'Колко сбора?', desc:'How many different results two numbers can make', gen:genSums },
-  { id:65, op:'w', grp:'count', needs:[24], grade:3, d:4, eq:'Колко двуцифрени?', desc:'How many different results two two-digit numbers can make', gen:genSumsTwo },
   { id:55, op:'w', grp:'count', needs:[12], d:4, eq:'Преброй цифрата', desc:'How often one digit turns up across a run of numbers', gen:genDigitRun },
   { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false', gen:genIneq },
+  { id:65, op:'w', grp:'count', needs:[24], grade:3, d:3, eq:'Колко двуцифрени?', desc:'How many different results two two-digit numbers can make', gen:genSumsTwo },
   { id:51, op:'w', grp:'num', d:3, eq:'Десетици', desc:'A number said in tens, ones and hundreds', gen:genTens },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare', gen:genNamed },
   { id:53, op:'w', grp:'num', needs:[13], d:4, eq:'Трицифрени', desc:'The smallest or largest three-digit number that fits a condition', gen:genThreeDig },
-  { id:60, op:'w', grp:'num', needs:[53], grade:3, d:4, eq:'Цифрите', desc:'The digits of the smallest or largest three-digit number that fits', gen:genDigProd },
-  { id:67, op:'w', grp:'num', needs:[60], grade:3, d:4, eq:'Произведение на цифрите', desc:'The largest or smallest three-digit number by its digits\' product — 0 counts', gen:genDigSum },
-  { id:66, op:'w', grp:'num', needs:[59], grade:3, d:4, eq:'Цифрата на единиците', desc:'Two numbers a set distance apart — which digits their product can end in', gen:genOddProd },
-  { id:64, op:'w', grp:'num', needs:[44, 59], grade:3, d:4, eq:'Изтрий цифри', desc:'Erase three digits from a product to reach a number', gen:genEraseMul },
   { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds', gen:genOrder },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum', gen:genTwoDig },
   { id:44, op:'w', grp:'num', needs:[8], d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true', gen:genCross },
@@ -34,13 +30,17 @@ const LEVELS = [
   { id:45, op:'w', grp:'num', needs:[13], d:4, eq:'Четири карти', desc:'Arrange four digits for the smallest difference', gen:genCards },
   { id:23, op:'w', grp:'num', needs:[13], d:4, eq:'□△ − 9', desc:'Digits standing in for a two-digit number', gen:genPlace },
   { id:54, op:'w', grp:'num', d:5, eq:'Судоку', desc:'Four by four: every row, column and box holds 1 to 4 once', gen:genSudoku },
+  { id:60, op:'w', grp:'num', needs:[53], grade:3, d:3, eq:'Цифрите', desc:'The digits of the smallest or largest three-digit number that fits', gen:genDigProd },
+  { id:66, op:'w', grp:'num', needs:[59], grade:3, d:3, eq:'Цифрата на единиците', desc:'Two numbers a set distance apart — which digits their product can end in', gen:genOddProd },
+  { id:67, op:'w', grp:'num', needs:[60], grade:3, d:4, eq:'Произведение на цифрите', desc:'The largest or smallest three-digit number by its digits\' product — 0 counts', gen:genDigSum },
+  { id:64, op:'w', grp:'num', needs:[44, 59], grade:3, d:5, eq:'Изтрий цифри', desc:'Erase three digits from a product to reach a number', gen:genEraseMul },
   { id:27, op:'w', grp:'seq', d:4, eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked', gen:genMissing },
   { id:26, op:'w', grp:'seq', d:4, eq:'Редица', desc:'Smaller on the left, bigger on the right', gen:genSeq },
   { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the hidden number — or two of them — then use it', gen:genBox },
-  { id:68, op:'w', grp:'find', needs:[11, 53], grade:3, d:4, eq:'Числото A', desc:'The one number from given digits that makes an inequality true', gen:genDigIneq },
   { id:15, op:'w', grp:'find', d:4, eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another', gen:genErase },
   { id:29, op:'w', grp:'find', needs:[11], d:4, eq:'Плодове', desc:'Three fruit, three totals — find one from the others', gen:genFruitEq },
   { id:37, op:'w', grp:'find', needs:[11], d:5, eq:'Фигури', desc:'Add the fewest shapes to make two counts match', gen:genShapes },
+  { id:68, op:'w', grp:'find', needs:[11, 53], grade:3, d:3, eq:'Числото A', desc:'The one number from given digits that makes an inequality true', gen:genDigIneq },
   { id:28, op:'w', grp:'word', d:2, eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference', gen:genFruit },
   { id:38, op:'w', grp:'word', d:3, eq:'Моливи', desc:'Colours counted by what they are not', gen:genPencils },
   { id:39, op:'w', grp:'word', d:3, eq:'Не достигат', desc:'Short by so many — so how many are there now?', gen:genShort },
@@ -49,7 +49,6 @@ const LEVELS = [
   { id:10, op:'w', grp:'word', needs:[5], d:3, eq:'С колко?', desc:'How much bigger one sum is than the other', gen:genCmp },
   { id:30, op:'w', grp:'word', needs:[10], d:3, eq:'Умаляемо', desc:'Naming the parts of a sum and a difference', gen:genTerm },
   { id:57, op:'w', grp:'word', d:4, eq:'Класирането', desc:'Who beat whom — and how many are above someone', gen:genRank },
-  { id:62, op:'w', grp:'word', needs:[10, 59], grade:3, d:4, eq:'+ 9 и − 9', desc:'Two long expressions that differ only at the end', gen:genPmGap },
   { id:48, op:'w', grp:'word', needs:[47], d:4, eq:'Два езика', desc:'Two groups that overlap — who is counted twice', gen:genBoth },
   { id:42, op:'w', grp:'word', d:4, eq:'Котките', desc:'Two cats and one box of food between them', gen:genCats },
   { id:43, op:'w', grp:'word', d:4, eq:'Монети', desc:'The one amount a handful of coins cannot pay', gen:genCoins },
@@ -57,6 +56,7 @@ const LEVELS = [
   { id:58, op:'w', grp:'word', d:5, eq:'Охлювът', desc:'Up by day, back by night — when the top is reached', gen:genSnail },
   { id:56, op:'w', grp:'word', d:5, eq:'Кофата', desc:'Filling a vessel until the two possible buckets tell apart', gen:genBucket },
   { id:33, op:'w', grp:'word', d:5, eq:'Цветя', desc:'Petals of three kinds adding to a total', gen:genFlowers },
+  { id:62, op:'w', grp:'word', needs:[10, 59], grade:3, d:3, eq:'+ 9 и − 9', desc:'Two long expressions that differ only at the end', gen:genPmGap },
   { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:'Along a line, right then left — how far apart?', gen:genLine },
   { id:40, op:'w', grp:'geo', d:3, eq:'AD = ?', desc:'Overlapping lengths along a line', gen:genSeg },
   { id:32, op:'w', grp:'geo', d:3, eq:'Ленти', desc:'Centimetres, decimetres and metres', gen:genRibbon },
@@ -66,11 +66,20 @@ const LEVELS = [
   { id:22, op:'w', grp:'geo', needs:[21], d:4, eq:'Обща страна', desc:'Two figures share an edge — what it costs the outline', gen:genShared },
   { id:34, op:'w', grp:'geo', needs:[19], d:4, eq:'Оцветени', desc:'Paint whole rows and columns — what is left', gen:genPaint },
   { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant', gen:genRects },
-  { id:41, op:'w', grp:'geo', needs:[40], d:4, eq:'Три точки', desc:'Three points on a line — two answers', gen:genThree }
+  { id:41, op:'w', grp:'geo', needs:[40], d:4, eq:'Три точки', desc:'Three points on a line — two answers', gen:genThree },
+  { id:71, op:'w', grp:'geo', needs:[20], grade:3, d:1, eq:'Селищата', desc:'A midpoint, and a place a few kilometres from it', gen:genMidPt },
+  { id:70, op:'w', grp:'geo', needs:[31], grade:3, d:2, eq:'Точки на отсечка', desc:'Points that cut a segment into equal parts, plus a piece beyond', gen:genSegPts },
+  { id:72, op:'w', grp:'geo', needs:[21], grade:3, d:3, eq:'Триъгълник и квадрат', desc:'A triangle\'s side against a square\'s perimeter, in millimetres', gen:genTriVsSq },
+  { id:73, op:'w', grp:'geo', needs:[21], grade:3, d:4, eq:'Плочки', desc:'Rectangles made of two squares, and the big rectangle they tile', gen:genPlates },
+  { id:69, op:'w', grp:'geo', needs:[21], grade:3, d:4, eq:'Звезда', desc:'Equilateral triangles on the sides of a square, and the square\'s perimeter', gen:genStar },
 ];
-// Where the levels come from: every one is modelled on a task from Математика без граници,
-// autumn round, 2nd grade unless its row says grade:3.
-LEVELS.forEach(l => { l.src = l.src || 'mbg-autumn'; l.grade = l.grade || 2; });
+// 3rd-grade rows are rated against each other, not on the 2nd-grade scale: multiplication is
+// the ordinary operation there, so their d spreads over 1–5 like the 2nd grade's does.
+// Where the levels come from: the plain sums (take away, add) are basics, the drill under
+// everything; every other level is modelled on a task from Математика без граници, autumn
+// round, 2nd grade unless its row says grade:3. A paper is one source and grade together.
+LEVELS.forEach(l => { l.src = l.src || (l.op === '-' || l.op === '+' ? 'basics' : 'mbg-autumn'); l.grade = l.grade || 2; });
+const paperOf = l => l.src === 'basics' ? 'basics' : l.src + '-' + l.grade;
 // Picker sections, in the order they appear. Levels inside each are sorted easiest
 // first in the LEVELS table above.
 const PICK_GROUPS = [

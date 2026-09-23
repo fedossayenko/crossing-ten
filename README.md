@@ -5,13 +5,16 @@ worksheets she is working through. Plain HTML, CSS and scripts; no build step, n
 dependencies. `node check.js` verifies every generator, `node smoke.js` plays every
 level in Chrome.
 
-Every level is modelled on a task from **Математика без граници (МБГ), autumn round**: 57
-from the 2nd-grade paper and 10 from the 3rd-grade one, tasks 1–10 (multiplication first,
+The plain sums (Take away, Add: 6 levels) are **Основи**, basics under everything. Every other
+level is modelled on a task from **Математика без граници (МБГ), autumn round**: 51
+from the 2nd-grade paper and 15 from the 3rd-grade one, tasks 1–15 (multiplication first,
 digits of the smallest three-digit number, products with a 0, two expressions that differ only
 at the end, which two signs make an equality true, erasing digits from a product, how many
 sums two two-digit numbers make, the digits a product can end in, a number by its digits'
-product, and the one number from given digits that fits an inequality). A level row carries `src` and `grade`; the
-picker filters by paper, marks 3rd-grade rows, and recommends the 3rd-grade levels only once
+product, and the one number from given digits that fits an inequality, a star of triangles round a
+square, points on a segment, a midpoint between villages, a triangle against a square, and a
+rectangle tiled by squares and two-square rectangles). A level row carries `src` and `grade`; the
+picker filters by paper (Основи, МБГ 2 клас, МБГ 3 клас), marks 3rd-grade rows, and recommends the 3rd-grade levels only once
 the 2nd-grade ones are learned. Competitions are drawn from the 2nd-grade levels.
 
 - Live: https://fedossayenko.github.io/crossing-ten/
@@ -104,6 +107,9 @@ a five-part rubric, scored 0–2 each and totalled out of 10:
 | **Trap** | none | one easy-to-miss detail | the task *is* the trap — two answers, a negation, double counting |
 
 Total 0–1 → 1 dot, 2–4 → 2, 5 → 3, 6–7 → 4, 8–10 → 5.
+
+The rubric is applied within a grade: the 3rd-grade levels are rated against each other, with
+multiplication counted as an ordinary operation, so they too run from 1 to 5 dots.
 
 Reading and Numbers are measured from the generators (question length, the ninetieth
 percentile of the numbers involved); the other three are judged. A purely measured
