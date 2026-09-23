@@ -463,7 +463,7 @@ function renderGrownUps(){
   const top = Object.keys(count).filter(s => t('slip')[s]).sort((a, b) => count[b] - count[a]);
   $('slipWrap').hidden = !top.length;
   $('slips').innerHTML = top.map(s => '<div class="chip"><span class="eq">' + t('slip')[s][0] + '</span><span class="r">' + count[s] + '×</span></div>').join('');
-  $('csv').hidden = !LOCAL.rounds.length;
+  $('csv').hidden = !LOCAL.rounds.length || !!window.claude;   // the artifact frame blocks plain downloads
 }
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
 function csvOf(rounds){
