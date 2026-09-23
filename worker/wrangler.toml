@@ -6,3 +6,7 @@ compatibility_date = "2026-09-01"
 binding = "DB"
 database_name = "crossing-ten"
 database_id = "76fb1bce-e694-4f77-a988-01516e5124c7"
+
+# Google sign-in's web client id (public); worker/.dev.vars swaps in a stand-in for wrangler dev.
+[vars]
+GOOGLE_CLIENT_ID = "760532949353-54t42jkfsrt9h7s5kne97u0r4p5qcvsf.apps.googleusercontent.com"

@@ -157,8 +157,9 @@ The server is a Cloudflare Worker with one D1 database (`worker/`), free tier. P
 are PBKDF2-SHA-256 (30 000 rounds, the most the free plan's ~10 ms of CPU allows; the count
 is stored per account) and five wrong ones in a row lock the account for 15 minutes. A login
 hands the device a random session token, kept on the server only as its SHA-256; **Log out**
-ends that one session. Google sign-in is built in but off until `GOOGLE_ID` in `js/sync.js`
-and `GOOGLE_CLIENT_ID` in `worker/wrangler.toml` hold a Google OAuth web client id; the
+ends that one session. Google sign-in uses the OAuth web client in the Google Cloud project `crossing-ten-95850`
+(`GOOGLE_ID` in `js/sync.js`, `GOOGLE_CLIENT_ID` in `worker/wrangler.toml`; it is in Testing
+mode, so only its listed test users can use it). The
 Worker checks Google's signature and keeps only the account's stable id, never its email.
 
 Rounds are events with ids, so merging is a set union and nothing can conflict; players are

@@ -8,7 +8,7 @@
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
   || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
 // Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
-const GOOGLE_ID = '';
+const GOOGLE_ID = '760532949353-54t42jkfsrt9h7s5kne97u0r4p5qcvsf.apps.googleusercontent.com';
 const FKEY = 'crossingten.family';
 // { token, name, cursor, sent:{player:[ids]}, at, failed }; a device from before accounts holds
 // only { code }, which its first signup turns into the account's family.
