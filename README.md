@@ -1,11 +1,33 @@
 # Crossing Ten
 
 Arithmetic practice for a Bulgarian grade-2 pupil, built around the olympiad
-worksheets she is working through. One self-contained `index.html`; no build step,
-no dependencies. `node check.js` verifies every generator.
+worksheets she is working through. Plain HTML, CSS and scripts; no build step, no
+dependencies. `node check.js` verifies every generator, `node smoke.js` plays every
+level in Chrome.
 
 - Live: https://fedossayenko.github.io/crossing-ten/
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.
+
+## Where things live
+
+| Path | What it holds |
+|---|---|
+| `index.html` | the markup, and the scripts in the order they load |
+| `app.css` | all styling |
+| `kinds/<kind>.js` | one question kind each: its generator, how it is drawn, its summary line and its hints |
+| `js/levels.js` | the level table: difficulty, group, prerequisites, and which generator makes it |
+| `js/core.js` | what more than one kind shares (`rnd`, the answer box, a few drawing helpers) |
+| `js/questions.js` | the plain sums, and the dispatch from a level to its kind |
+| `js/app.js` | the page: rounds, keypad, cat, progress, picker, storage, sync |
+| `sw.js` | serves the latest build, falls back to the cache offline |
+
+Everything is a classic script sharing one global scope, loaded in the order the
+`<script>` tags list them, so a kind can use anything in `js/core.js`. To add a level:
+write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row
+to `js/levels.js`, and add a check to `check.js`.
+
+`node build-artifact.js` folds everything back into one `artifact.html` for the Claude
+artifact copy, which cannot load files beside it.
 
 ## How difficulty is assigned
 
@@ -73,6 +95,12 @@ running.
 
 ## Checks
 
+`node smoke.js` opens the page in headless Chrome (twice, so the second load goes
+through the service worker), plays one round of every level through the real picker
+and keypad, missing the first question twice to reach the hint and the reveal, and
+fails on any script error. `node smoke.js artifact.html` does the same for the
+single-file build.
+
 `node check.js` generates thousands of questions per level and verifies the answer,
 the worked line, the summary line and the layout agree, plus targeted checks that
 compare a closed form against a brute-force search wherever one is used, and pin the
@@ -85,12 +113,14 @@ synced. The twenty rounds she played while this lived as a Claude artifact are c
 across once per device by a seed in the page; rounds carry ids, so nothing is
 duplicated.
 
-To move progress from one device to another, open **Progress → Send link** on the
-device that has the history. The whole log is gzipped into the link's hash, so opening
-that link on the other device merges it in — rounds already there are skipped, because
-every round carries an id. A full 400-round log comes to about 6 000 characters, short
-enough to AirDrop or message across. Nothing leaves the two devices; there is no server
-behind the Pages build.
+To move progress from one device to another, open **Progress → Copy** on the device
+that has the history, then **Paste** on the other. The whole log is gzipped into a
+link; pasting it (or opening it) merges it in — rounds already there are skipped,
+because every round carries an id. A full 400-round log comes to about 6 000
+characters. Nothing leaves the two devices; there is no server behind the Pages build.
+
+On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate** storage:
+play from one of them, and copy from the one she played on.
 
 The Claude artifact copy syncs on its own through the artifact database, so if both
 devices open the artifact link rather than the Pages one, no transfer is needed.

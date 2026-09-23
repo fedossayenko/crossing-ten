@@ -1,17 +1,16 @@
 // Self-check for the question generators. Run: node check.js
-const src = require('fs').readFileSync(__dirname + '/index.html', 'utf8');
-const js = src.split('<script>')[1].split('</script>')[0];
+const fs = require('fs');
+const src = fs.readFileSync(__dirname + '/index.html', 'utf8');
+const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
+// The scripts, in the order the page loads them; app.js is the page itself and needs a DOM.
+const scripts = [...src.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
+const js = scripts.map(read).join('\n');
 const head = `
-const rnd = n => Math.floor(Math.random()*n);
-const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=rnd(i+1),x=a[i];a[i]=a[j];a[j]=x} return a; };
 let W = {max:1, m:{}};
 const LOCAL = {mix:[1,2,4,5], plain:true};
-const MIXABLE = [1,2,7,4,5,6];
-const mixList = () => LOCAL.mix;
-const LEVEL_OP = {1:'-',2:'-',7:'-',4:'+',5:'+',6:'+'};
 function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }
 `;
-const body = js.slice(js.indexOf('/* ---------- the four worksheet tasks'), js.indexOf('/* ---------- cat ----------'));
+const body = scripts.filter(f => f !== 'js/app.js').map(read).join('\n');
 const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
@@ -1536,7 +1535,7 @@ eval(head + body + test);
 // The level table is a static thing, so it is checked on the file rather than through
 // the generators: every level rated, in a known group, and easiest first.
 {
-  const block = src.slice(src.indexOf('const LEVELS = ['), src.indexOf('// Picker sections'));
+  const block = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
   if(rows.length !== 57) throw new Error('parsed ' + rows.length + ' levels, expected 57');
@@ -1591,7 +1590,7 @@ eval(head + body + test);
   // suggest something whose groundwork is undone, never step back in difficulty, and
   // not grind one group for too long.
   {
-    const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
+    const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).replace(/, gen:\w+/g, '');
     const nextSrc = js.slice(js.indexOf('function nextUp(m'), js.indexOf('function buildPicker'));
     const walk = `
       const grp = l => l.grp || l.op;
