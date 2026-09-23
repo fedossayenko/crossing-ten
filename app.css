@@ -591,3 +591,26 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .gtag{font-size:11px; font-weight:900; color:var(--accent-ink); background:rgba(47,111,143,.16); border-radius:999px; padding:2px 8px; vertical-align:middle; white-space:nowrap}
 .gtag.g3{color:var(--warmink); background:var(--warmbg)}
 #nextUp{display:flex; flex-direction:column; gap:10px}   /* the progress bar a step clear of the card above it */
+/* Landscape with А/Б/В/Г: the options (and Skip) sit beside the question, not under it, so a
+   long task still fits a short screen — an iPad inside a browser has barely 550px of height. */
+@media (orientation:landscape) and (min-width:660px){
+  .card-in:has(> .choices:not([hidden])){
+    display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); column-gap:28px; row-gap:10px;
+    grid-template-areas:"stage choices" "stage skip" "verdict verdict" "hint hint";
+    grid-template-rows:auto auto; align-content:safe center; align-items:center;
+  }
+  .card-in:has(> .choices:not([hidden])) > .stage{grid-area:stage}
+  .card-in:has(> .choices:not([hidden])) > .choices{grid-area:choices; align-self:end}
+  .card-in:has(> .choices:not([hidden])) > #skipBtn{grid-area:skip; align-self:start}
+  .card-in:has(> .choices:not([hidden])) > .verdict{grid-area:verdict}
+  .card-in:has(> .choices:not([hidden])) > .hint{grid-area:hint}
+  .card:has(.fb) .card-in:has(> .choices:not([hidden])){align-content:start}
+}
+/* A short landscape screen: a smaller mascot, so the header takes less of the height. */
+@media (orientation:landscape) and (max-height:640px){
+  .catwrap{width:clamp(48px,9vh,64px)}
+  .app{gap:6px}
+  .card{gap:6px; padding:10px 16px 12px}
+}
+/* the paper's progress track shows in the dark too */
+.dots .ctrack{background:var(--line)}
