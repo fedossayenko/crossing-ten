@@ -7,13 +7,14 @@ level in Chrome.
 
 The plain sums (Take away, Add: 6 levels) are **Основи**, basics under everything. Every other
 level is modelled on a task from **Математика без граници (МБГ), autumn round**: 51
-from the 2nd-grade paper and 15 from the 3rd-grade one, tasks 1–15 (multiplication first,
+from the 2nd-grade paper and 20 from the 3rd-grade one, the whole paper, tasks 1–20 (multiplication first,
 digits of the smallest three-digit number, products with a 0, two expressions that differ only
 at the end, which two signs make an equality true, erasing digits from a product, how many
 sums two two-digit numbers make, the digits a product can end in, a number by its digits'
 product, and the one number from given digits that fits an inequality, a star of triangles round a
 square, points on a segment, a midpoint between villages, a triangle against a square, and a
-rectangle tiled by squares and two-square rectangles). A level row carries `src` and `grade`; the
+rectangle tiled by squares and two-square rectangles, a new sign ◎, a cross of products, the
+number left out of a sum, numbers rewritten in two steps, and sharing oranges two ways). A level row carries `src` and `grade`; the
 picker filters by paper (Основи, МБГ 2 клас, МБГ 3 клас), marks 3rd-grade rows, and recommends the 3rd-grade levels only once
 the 2nd-grade ones are learned. Competitions are drawn from the 2nd-grade levels.
 

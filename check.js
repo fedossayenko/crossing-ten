@@ -1900,3 +1900,52 @@ eval(head + body + test);
   }});
   console.log('МБГ Есен 3 клас, задачи 11–15: as printed (45 мм, 35 см, 20 км, 5 мм, 28 см), and ' + Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' worked the long way');
 }
+
+/* МБГ Есен, 3 клас, задачи 16–20: as printed, and by brute force. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, accepts, answers, circPairs }; })()');
+  // 16: 12 ◎ 4 = 16 : 8 = 2
+  if((12 + 4) / (12 - 4) !== 2 || !Q.circPairs().some(([a, b]) => a === 12 && b === 4)) throw new Error('task 16: 12 ◎ 4 should be 2');
+  // 17: column 1 = 8, row 1 = 6, row 2 = 4 → column 2 = 3, and a whole-number filling exists
+  let fill = 0;
+  for(let a = 1; a <= 8; a++) for(let b = 1; b <= 6; b++) for(let c = 1; c <= 8; c++) for(let d = 1; d <= 4; d++)
+    if(a*c === 8 && a*b === 6 && c*d === 4){ fill++; if(b*d !== 3) throw new Error('task 17: a filling gives ' + b*d); }
+  if(!fill) throw new Error('task 17: no whole-number filling');
+  // 18: 2, 3, 5, 6, 7, 18 by 3 → 2 or 5, both accepted in either order, nothing else
+  const q18 = {kind:'dropone', nums:[2,3,5,6,7,18], m:3, tot:41, slots:2, ans:2, alt:[5]};
+  if(!Q.accepts(q18, ['5', '2']) || Q.accepts(q18, ['2', '3'])) throw new Error('task 18: 2 and 5');
+  [2, 3, 5, 6, 7, 18].forEach(v => { if(((41 - v) % 3 === 0) !== (v === 2 || v === 5)) throw new Error('task 18: leaving out ' + v); });
+  // 19: 6, 8, 24, 16 → 6, 8, 6, 4 → 12, 8, 12, 4 → 36
+  const q19 = {kind:'rewrite', nums:[6,8,24,16], d:4, m:3, p:2, s1:[6,8,6,4], s2:[12,8,12,4], ans:36};
+  if(q19.s2.reduce((a, b) => a + b, 0) !== 36 || !Q.drawQ(q19)) throw new Error('task 19: 36');
+  // 20: under 30, 7 each is 4 short, 6 each is exact → 24
+  const hits20 = [...Array(29).keys()].filter(N => N > 0 && N % 6 === 0 && 7*(N / 6) - N === 4);
+  if(hits20.join() !== '24') throw new Error('task 20: ' + hits20);
+
+  const n = {};
+  [74, 75, 76, 77, 78].forEach(id => { for(let i = 0; i < 300; i++){
+    const q = Q.raw(id);
+    n[q.kind] = (n[q.kind] || 0) + 1;
+    if(!Q.accepts(q, Q.answers(q).map(String))) throw new Error('level ' + id + ': its own answers are refused');
+    if(q.kind === 'circop' && ((q.x + q.y) % Math.abs(q.x - q.y) || (q.x + q.y) / Math.abs(q.x - q.y) !== q.ans)) throw new Error('circop: ' + q.x + ' ◎ ' + q.y);
+    if(q.kind === 'prodgrid'){
+      const [a, b, c, d] = q.c, sh = [a*c, a*b, c*d, b*d];
+      if(sh[q.ask] !== q.ans || sh[q.pair[0]]*sh[q.pair[1]] !== sh[q.same]*q.ans) throw new Error('prodgrid: ' + q.c);
+    }
+    if(q.kind === 'dropone'){
+      const want = q.nums.filter(v => (q.tot - v) % q.m === 0), got = Q.answers(q);
+      if(q.tot !== q.nums.reduce((a, b) => a + b, 0) || want.join() !== got.slice().sort((x, y) => x - y).join()) throw new Error('dropone: ' + q.nums + ' by ' + q.m);
+    }
+    if(q.kind === 'rewrite'){
+      const s1 = q.nums.map(v => v >= 10 ? v / q.d : v), s2 = s1.map(v => v % q.m === 0 ? v * q.p : v);
+      if(s1.some(v => !Number.isInteger(v)) || s2.reduce((a, b) => a + b, 0) !== q.ans) throw new Error('rewrite: ' + q.nums);
+    }
+    if(q.kind === 'twoshare'){
+      const ok = [...Array(q.L).keys()].filter(N => { for(let k = 1; k <= N; k++){
+        const exact = q.over ? q.a : q.b, other = q.over ? q.b : q.a;
+        if(exact*k === N && (q.over ? N - other*k === q.s : other*k - N === q.s)) return true; } return false; });
+      if(ok.join() !== String(q.ans)) throw new Error('twoshare: under ' + q.L + ' gives ' + ok);
+    }
+  }});
+  console.log('МБГ Есен 3 клас, задачи 16–20: as printed (2, 3, 2 or 5, 36, 24), and ' + Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
+}

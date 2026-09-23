@@ -618,3 +618,4 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 /* figures that sit under a long task: a smaller drawing, and a line that is only as tall as it is */
 .fig.small svg{height:clamp(64px,13vh,120px)}
 .fig.wide svg{height:auto; width:100%; max-width:340px}
+@media (orientation:portrait) and (max-height:700px){ .fig.small svg{height:clamp(56px,11vh,96px)} }
