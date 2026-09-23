@@ -1,0 +1,8 @@
+name = "crossing-ten-sync"
+main = "index.js"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "crossing-ten"
+database_id = "local-until-deployed"

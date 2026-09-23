@@ -368,6 +368,7 @@ function finish(){
   });
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
+  syncSoon();
   if(DB) DB.collection(DBC).doc(LOCAL.rounds[LOCAL.rounds.length-1].id).set(LOCAL.rounds[LOCAL.rounds.length-1]).catch(() => {});
 
   const fresh = earnedSet(LOCAL.rounds).filter(id => before.indexOf(id) < 0);
@@ -441,8 +442,46 @@ function renderStats(){
   ).join('');
 
   $('advice').textContent = advice(st);
+  renderGrownUps();
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === LOCAL.n)));
 }
+// For the grown-ups: how each group of levels is going this month, which slips keep coming
+// back, and the whole log as a spreadsheet.
+function renderGrownUps(){
+  const month = LOCAL.rounds.filter(r => r.ts > Date.now() - 30*86400000);
+  const byGrp = PICK_GROUPS.map((g, k) => {
+    const ids = new Set(LEVELS.filter(g.has).map(l => l.id));
+    const rs = month.filter(r => ids.has(r.level));
+    const n = rs.reduce((x, r) => x + r.n, 0), f = rs.reduce((x, r) => x + r.firstTry, 0);
+    return { nm: t('groups')[k], n, p: n ? Math.round(100*f/n) : 0 };
+  }).filter(g => g.n).sort((a, b) => b.p - a.p);
+  $('groupWrap').hidden = !byGrp.length;
+  $('byGroup').innerHTML = byGrp.map(g => '<div class="lvlrow"><span class="nm">' + g.nm + '</span>' +
+    '<span class="track"><i style="width:' + g.p + '%"></i></span><span class="pc">' + g.p + '% · ' + g.n + '</span></div>').join('');
+  const count = {};
+  month.forEach(r => (r.slips || []).forEach(s => { count[s] = (count[s] || 0) + 1; }));
+  const top = Object.keys(count).filter(s => t('slip')[s]).sort((a, b) => count[b] - count[a]);
+  $('slipWrap').hidden = !top.length;
+  $('slips').innerHTML = top.map(s => '<div class="chip"><span class="eq">' + t('slip')[s][0] + '</span><span class="r">' + count[s] + '×</span></div>').join('');
+  $('csv').hidden = !LOCAL.rounds.length;
+}
+// One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
+function csvOf(rounds){
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const rows = [t('csvHead')].concat(rounds.map(r => {
+    const d = new Date(r.ts), lv = LEVELS.find(l => l.id === r.level);
+    return [dayKey(r.ts), d.toTimeString().slice(0, 5), r.level, lv ? levelName(lv) : '', r.n, r.firstTry,
+            (r.slips || []).map(s => t('slip')[s] ? t('slip')[s][0] : s).join('; ')];
+  }));
+  return rows.map(row => row.map(v => q(/^[=+\-@]/.test(String(v)) ? "'" + v : v)).join(',')).join('\r\n');
+}
+$('csv').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff' + csvOf(LOCAL.rounds)], { type:'text/csv' }));
+  a.download = 'crossing-ten-' + (PLAYER.name || PLAYER.id) + '-' + dayKey(Date.now()) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
 function openStats(){ renderStats(); makeXfer(); $('stats').hidden = false; }
 $('statsBtn').onclick = openStats;
 $('toStats').onclick = openStats;
@@ -475,6 +514,7 @@ $('reset').onclick = async () => {
   $('reset').classList.remove('armed'); $('reset').textContent = t('reset');
   const ids = LOCAL.rounds.map(r => r.id);
   LOCAL.rounds = []; saveLocal();
+  PLAYER.resetAt = PLAYER.updated = Date.now(); savePlayers(); syncSoon();   // other devices drop her older rounds too
   W = weightsFrom(LOCAL.rounds);
   renderStats();
   if(DB) for(const id of ids){ try { await DB.collection(DBC).doc(id).delete(); } catch(e){ break; } }
@@ -646,6 +686,7 @@ function paintEdit(){
 }
 $('pSave').onclick = () => {
   EDIT.name = $('pName').value.trim().slice(0, 20);
+  EDIT.updated = Date.now();
   const old = PLAYERS.list.find(p => p.id === EDIT.id);
   if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
   savePlayers();
@@ -661,6 +702,7 @@ $('pDelete').onclick = () => {
   }
   clearTimeout(delArmed); delArmed = null;
   PLAYERS.list = PLAYERS.list.filter(p => p.id !== EDIT.id);
+  PLAYERS.gone.push({ id: EDIT.id, updated: Date.now() });   // so the other devices delete her too
   try { localStorage.removeItem(roundsKey(EDIT)); } catch(e){}
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
@@ -690,7 +732,7 @@ const DBC = PLAYER.id === 'p1' ? 'rounds' : 'rounds_' + PLAYER.id;
 let DB = null;
 (async () => {
   const db = window.claude && await claude.use('db');
-  if(!db) { $('synced').textContent = heldHere() + builtOn(); return; }
+  if(!db) { $('synced').textContent = heldHere() + builtOn(); return; }   // sync.js takes this line over when sync is on
   DB = db;
   try {
     const snap = await db.collection(DBC).orderBy('ts','desc').limit(300).get();
@@ -748,6 +790,7 @@ function mergeRounds(rounds){
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
   if(!$('stats').hidden) renderStats();
+  syncSoon();
   return add.length;
 }
 const say = t => { $('synced').textContent = t + builtOn(); };

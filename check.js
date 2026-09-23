@@ -2,7 +2,7 @@
 const fs = require('fs');
 const src = fs.readFileSync(__dirname + '/index.html', 'utf8');
 const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
-// The scripts, in the order the page loads them; app.js is the page itself and needs a DOM.
+// The scripts, in the order the page loads them; app.js and sync.js are the page itself and need a DOM.
 const scripts = [...src.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const js = scripts.map(read).join('\n');
 const head = `
@@ -12,7 +12,7 @@ let W = {max:1, m:{}};
 const LOCAL = {mix:[1,2,4,5], plain:true};
 function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }
 `;
-const body = scripts.filter(f => f !== 'js/app.js').map(read).join('\n');
+const body = scripts.filter(f => f !== 'js/app.js' && f !== 'js/sync.js').map(read).join('\n');
 const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };

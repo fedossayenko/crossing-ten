@@ -21,7 +21,9 @@ level in Chrome.
 | `js/players.js` | who is playing, and where each player's rounds are kept |
 | `js/i18n.js` | every word of the interface in Bulgarian, Ukrainian and English |
 | `js/mascots.js` | the cat, fox, owl and bunny: one shared face, each animal only its fur |
-| `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage, sync |
+| `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage |
+| `js/sync.js` | sync between devices through the Worker, by family code |
+| `worker/` | the sync server: a Cloudflare Worker (`index.js`) and its D1 tables (`schema.sql`) |
 | `sw.js` | serves the latest build, falls back to the cache offline |
 
 Everything is a classic script sharing one global scope, loaded in the order the
@@ -149,6 +151,27 @@ characters. Nothing leaves the two devices; there is no server behind the Pages 
 
 On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate** storage:
 play from one of them, and copy from the one she played on.
+
+### Sync
+
+**Progress → Sync between devices → Turn on** makes a family code (80 random bits,
+shown as `XXXX-XXXX-XXXX-XXXX`); **Copy** it, and on the other device tap **Join** — the
+code comes across on the clipboard like Copy/Paste. From then on the devices sync on
+launch, after every round and whenever the app comes back to the screen, and it all
+still works offline and catches up later.
+
+The server is a Cloudflare Worker with one D1 database (`worker/`), free tier. Rounds are
+events with ids, so merging is a set union and nothing can conflict; players are
+last-edit-wins; a reset or a deleted player travels to the other devices too. The code is
+the only credential and the server holds nothing but nicknames, mascots, languages and
+answer logs. `node worker/test.js` checks the server with two simulated devices (against
+`wrangler dev` or the deployed URL); `SMOKE_SYNC=<worker url> node smoke.js` runs two real
+browser "devices" through it. The artifact copy keeps using its own database.
+
+### For the grown-ups
+
+Under Progress: first try by group over the last 30 days, the slips that keep coming
+back, and **Download all rounds (CSV)**.
 
 The Claude artifact copy syncs on its own through the artifact database, so if both
 devices open the artifact link rather than the Pages one, no transfer is needed.

@@ -351,3 +351,5 @@ button.catwrap{background:none; border:0; padding:0; border-radius:16px}
 .card:has(.tenframe) .sum{font-size:clamp(32px,8vh,62px)}     /* make room for the picture, no scrolling */
 .slip{font-weight:800; margin-bottom:6px}
 .miss .wrote{font-size:13px; font-weight:800; color:var(--ink)}
+
+.code{font-family:ui-monospace,Menlo,monospace; letter-spacing:.04em; -webkit-user-select:text; user-select:text}
