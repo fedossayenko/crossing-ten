@@ -1797,7 +1797,7 @@ eval(head + body + test);
   Q.LEVELS.filter(l => l.grade === 3).forEach(L => { for(let i = 0; i < 400; i++){
     const q = Q.raw(L.id);
     byKind[q.kind] = (byKind[q.kind] || 0) + 1;
-    if(!Q.accepts(q, [String(q.ans)])) throw new Error('level ' + L.id + ': its own answer is refused');
+    if(!Q.accepts(q, [q.ans].concat(q.alt || []).map(String))) throw new Error('level ' + L.id + ': its own answer is refused');
     if(q.kind === 'mulmix' && calc(Q.mulMixExpr(q)) !== q.ans) throw new Error('mulmix: ' + Q.mulMixExpr(q) + ' is not ' + q.ans);
     if(q.kind === 'zeros' && calc(Q.zerosExpr(q)) !== q.ans) throw new Error('zeros: ' + Q.zerosExpr(q) + ' is not ' + q.ans);
     if(q.kind === 'pmgap' && calc('(' + Q.pmBig(q) + ') - (' + Q.pmSmall(q) + ')') !== q.ans) throw new Error('pmgap: the gap is not ' + q.ans);
@@ -1816,4 +1816,60 @@ eval(head + body + test);
     if(q.traps && q.traps.length && c.options && !c.options.some(o => o.v === q.traps[0])) throw new Error(q.kind + ': its own trap was left out of the options');
   }});
   console.log('МБГ Есен 3 клас: the five printed tasks read and solve as on the paper; ' + Object.keys(byKind).map(k => byKind[k] + ' ' + k).join(', ') + ' checked by brute force');
+}
+
+/* МБГ Есен, 3 клас, задачи 6–10: as printed, and by brute force. */
+{
+  const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, accepts, answers, eraseWays, digIneqCands, digIneqHolds, DIG_COND, SUMS_TWO, LEVELS }; })()');
+  const has = (q, text) => { const s = strip(Q.drawQ(q)).replace(/\s+/g, ' '); if(s.indexOf(text) < 0) throw new Error(q.kind + ' does not read "' + text + '": ' + s); };
+  // 6: 12 · 31 · 41 → 24, the erased digits add to 3, whichever way
+  const w6 = Q.eraseWays([12, 31, 41], 3).filter(w => w.vals.reduce((a, b) => a*b, 1) === 24);
+  if(!w6.length || w6.some(w => w.gone.reduce((a, b) => a + b, 0) !== 3)) throw new Error('task 6: 12 · 31 · 41 → 24 should always erase digits adding to 3');
+  // 7: sums of two two-digit numbers that are two-digit: 20 … 99, 80 of them
+  const q7 = {kind:'sums', shape:3, v:0, lo:20, hi:99, ans:80};
+  has(q7, 'Колко различни двуцифрени числа можем да получим при събирането на две двуцифрени числа?');
+  // 8: odd, differ by 2, two-digit product → units 5 or 3
+  const q8 = {kind:'oddprod', odd:true, d:2, tens:false, pairs:[[1,3],[3,5],[5,7],[7,9]], two:[[3,5],[5,7],[7,9]], slots:2, ans:5, alt:[3]};
+  has(q8, 'Разликата на две нечетни едноцифрени числа е 2, а произведението им е двуцифрено число.');
+  if(!Q.accepts(q8, ['3', '5']) || Q.accepts(q8, ['5', '5'])) throw new Error('task 8: 5 and 3, in either order, and only those');
+  // 9: the largest three-digit number with a one-digit digit product is 990 (0 is one-digit), digits add to 18
+  const big9 = [...Array(900).keys()].map(i => i + 100).filter(Q.DIG_COND[5][2]).pop();
+  if(big9 !== 990) throw new Error('task 9: the largest is 990, not ' + big9);
+  // 10: two 1s and a 2, 300 − A < A − 100 → only 211
+  const q10 = {kind:'digineq', a:1, b:2, cand: Q.digIneqCands(1, 2), more:true, c:300, d:100, ans:211};
+  has(q10, 'такова, че 300 − A < A − 100?');
+  if(q10.cand.join() !== '112,121,211' || q10.cand.filter(A => Q.digIneqHolds(q10, A)).join() !== '211') throw new Error('task 10: only 211 should work');
+
+  const n = {};
+  [64, 65, 66, 67, 68].forEach(id => { for(let i = 0; i < 300; i++){
+    const q = Q.raw(id);
+    n[id] = (n[id] || 0) + 1;
+    if(!Q.accepts(q, Q.answers(q).map(String))) throw new Error('level ' + id + ': its own answers are refused');
+    if(q.kind === 'erasemul'){
+      const hit = Q.eraseWays(q.nums, 3).filter(w => w.vals.reduce((a, b) => a*b, 1) === q.T);
+      if(!hit.length || hit.some(w => w.gone.reduce((a, b) => a + b, 0) !== q.ans)) throw new Error('erasemul: ' + q.nums.join('·') + ' → ' + q.T + ' is not always ' + q.ans);
+    }
+    if(q.kind === 'sums'){
+      const got = new Set();
+      for(let x = 10; x <= 99; x++) for(let y = 10; y <= 99; y++){ const r = Q.SUMS_TWO[q.v][2](x, y); if(r >= 0 && Q.SUMS_TWO[q.v][3](r)) got.add(r); }
+      if(got.size !== q.ans) throw new Error('sums: variant ' + q.v + ' counts ' + got.size + ', not ' + q.ans);
+    }
+    if(q.kind === 'oddprod'){
+      const want = new Set();
+      for(let x = 0; x <= 9; x++) for(let y = x; y <= 9; y++)
+        if(y - x === q.d && x % 2 === (q.odd ? 1 : 0) && x*y >= 10 && x*y <= 99) want.add(q.tens ? Math.floor(x*y / 10) : x*y % 10);
+      const got = [q.ans].concat(q.alt);
+      if(got.length !== want.size || got.some(v => !want.has(v)) || q.slots !== want.size) throw new Error('oddprod: ' + got + ' vs ' + [...want]);
+    }
+    if(q.kind === 'digprod'){
+      const all = [...Array(900).keys()].map(i => i + 100).filter(Q.DIG_COND[q.c][2]), m = q.big ? all[all.length - 1] : all[0];
+      if(m !== q.n || String(m).split('').reduce((a, b) => a + +b, 0) !== q.ans) throw new Error('digsum: ' + q.n + ' → ' + q.ans);
+    }
+    if(q.kind === 'digineq'){
+      const ok = q.cand.filter(A => Q.digIneqHolds(q, A));
+      if(ok.length !== 1 || ok[0] !== q.ans || q.d < 1 || q.cand.some(A => q.c - A < 0 || A - q.d < 0)) throw new Error('digineq: ' + JSON.stringify(q));
+    }
+  }});
+  console.log('МБГ Есен 3 клас, задачи 6–10: as printed (3, 80, 5 or 3, 18, 211), and ' + Object.values(n).reduce((a, b) => a + b, 0) + ' more by brute force');
 }

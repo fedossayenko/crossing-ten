@@ -6,9 +6,11 @@ dependencies. `node check.js` verifies every generator, `node smoke.js` plays ev
 level in Chrome.
 
 Every level is modelled on a task from **Математика без граници (МБГ), autumn round**: 57
-from the 2nd-grade paper and 5 from the 3rd-grade one (multiplication first, digits of the
-smallest three-digit number, products with a 0, two expressions that differ only at the end,
-and which two signs make an equality true). A level row carries `src` and `grade`; the
+from the 2nd-grade paper and 10 from the 3rd-grade one, tasks 1–10 (multiplication first,
+digits of the smallest three-digit number, products with a 0, two expressions that differ only
+at the end, which two signs make an equality true, erasing digits from a product, how many
+sums two two-digit numbers make, the digits a product can end in, a number by its digits'
+product, and the one number from given digits that fits an inequality). A level row carries `src` and `grade`; the
 picker filters by paper, marks 3rd-grade rows, and recommends the 3rd-grade levels only once
 the 2nd-grade ones are learned. Competitions are drawn from the 2nd-grade levels.
 
