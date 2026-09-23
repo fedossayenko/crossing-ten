@@ -85,6 +85,13 @@ const FACE =
   '<g class="only-happy"><path d="M85,89 q12,-15 24,0 M131,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark" d="M186,66 l0,-16 M178,58 l16,0" stroke="var(--good)" stroke-width="4.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark b" d="M56,52 l0,-12 M50,46 l12,0" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
+// thinking: bubbles rising; sleepy: eyes shut, a small round mouth, zzz
+const FACE_MORE =
+  '<g class="only-think"><circle cx="190" cy="46" r="4" fill="#fff" stroke="#5F6675" stroke-width="2"/><circle cx="202" cy="30" r="6" fill="#fff" stroke="#5F6675" stroke-width="2"/>' +
+  '<circle cx="218" cy="8" r="9" fill="#fff" stroke="#5F6675" stroke-width="2"/></g>' +
+  '<g class="only-sleep"><path d="M83,86 q14,8 28,0 M129,86 q14,8 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
+  '<path d="M120,113 v5 M115,125 a5,3.5 0 1 0 10,0 a5,3.5 0 1 0 -10,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+  '<path class="zz" d="M188,44 h12 l-12,12 h12 M206,20 h16 l-16,16 h16" stroke="#5F6675" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>';
 const MOUTHS =
   '<path class="only-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7" stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
   '<path class="only-happy" d="M120,113 v4 M120,117 q-2,11 -13,7 M120,117 q2,11 13,7" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
@@ -94,7 +101,7 @@ function mascotInner(key){
   return '<g class="whole"><g class="tail">' + m.tail + '</g>' +
     '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g></g>' +
     '<g class="head"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
-    m.head + FACE + m.nose + MOUTHS + m.whiskers + '</g></g>';
+    m.head + FACE + FACE_MORE + m.nose + MOUTHS + m.whiskers + '</g></g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
 const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;

@@ -55,10 +55,8 @@ function accepts(q, parts){
 
 function drawQ(q){
   if(!q.kind){
-    return '<div class="sum" title="Tap to hear it">' +
-      '<div class="op" style="visibility:hidden" aria-hidden="true">−</div><div>' + q.a + '</div>' +
-      '<div class="op">' + (q.op === '-' ? '−' : '+') + '</div><div>' + q.b + '</div>' +
-      '<div class="rule"></div>' + SLOT + '</div>';
+    return '<div class="sum"><span>' + q.a + '</span><span class="op">' + (q.op === '-' ? '−' : '+') + '</span><span>' + q.b +
+      '</span><span class="op">=</span>' + SLOT + '</div>';
   }
   return KIND[q.kind].draw(q);
 }
@@ -72,7 +70,7 @@ function eqText(q){
 // plain sum that crosses a ten, the method comes with a picture of it (tenFrame).
 function why(q, full){
   if(q.kind) return KIND[q.kind].why(q, full);
-  return full ? whySum(q, true) : whySum(q, false) + tenFrame(q);
+  return full ? whySum(q, true) : '<span>' + whySum(q, false) + '</span>' + tenFrame(q);
 }
 function whySum(q, full){
   const a = q.a, b = q.b, o = a%10, ten = a-o, bo = b%10, bt = b-bo;

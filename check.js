@@ -1611,7 +1611,7 @@ eval(head + body + test);
   {
     const markup = src.split('<script>')[0];
     const have = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
-    ['slot0','slot1','wave1','wave2','waveX','pAdd'].forEach(i => have.add(i));   // drawn at runtime
+    ['slot0','slot1','wave1','wave2','waveX','pAdd','reveal'].forEach(i => have.add(i));   // drawn at runtime
     const looked = [...new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]))];
     const gone = looked.filter(i => !have.has(i));
     if(gone.length) throw new Error('the script looks up elements that are not in the page: ' + gone.join(', '));

@@ -8,18 +8,18 @@
     <button class="catwrap" id="who" data-t-aria="changePlayer">
       <svg class="cat" id="cat" data-mood="idle" viewBox="0 0 240 224" aria-hidden="true"></svg>
     </button>
-    <button class="levelpill" id="levelPill" aria-haspopup="dialog">42 − 17</button>
+    <div class="topmid">
+      <button class="levelpill" id="levelPill" aria-haspopup="dialog">
+        <span id="levelName">42 − 17</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="sub" id="sub"></div>
+    </div>
     <div class="icons">
       <button class="icon" id="muteBtn" aria-pressed="true" data-t-aria="sound">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 9v6h4l5 4V5L8 9H4z"/><path id="wave1" d="M16.5 8.5a5 5 0 0 1 0 7"/>
           <path id="wave2" d="M19.5 6a9 9 0 0 1 0 12"/><path id="waveX" d="M17 9.5l5 5M22 9.5l-5 5" style="display:none"/>
-        </svg>
-      </button>
-      <button class="icon" id="speakBtn" aria-pressed="true" data-t-aria="speak">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3a4 4 0 0 1 4 4v4a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4z"/>
-          <path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
         </svg>
       </button>
       <button class="icon" id="statsBtn" data-t-aria="progress">
@@ -32,6 +32,13 @@
   <div class="dots" id="dots" data-t-aria="progress"></div>
 
   <div class="card" id="card">
+    <div class="cardtop">
+      <span class="qnum" id="qnum"></span>
+      <button class="read" id="readBtn" data-t-aria="speak">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>
+        <span data-t="readMe"></span>
+      </button>
+    </div>
     <div class="card-in">
       <div class="stage" id="stage"></div>
       <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
@@ -43,133 +50,209 @@
     <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
     <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
     <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
-    <button class="key del" data-k="del" data-t-aria="del">⌫</button>
+    <button class="key del" data-k="del" data-t-aria="del">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H9l-6 7 6 7h12z"/><path d="M17 9l-6 6M11 9l6 6"/></svg>
+    </button>
     <button class="key" data-k="0">0</button>
     <button class="key go" data-k="go" id="go" data-t-aria="check">✓</button>
   </div>
 </div>
 
+<!-- Choose a level -->
 <div class="sheet" id="picker" hidden role="dialog" data-t-aria="chooseLevel">
-  <div class="sheet-in">
-    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="chooseLevel"></div>
+  <div class="sheet-in wide">
+    <div class="bar">
+      <button class="icon back" id="closePick" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 data-t="chooseLevel"></h1>
+      <span class="who" id="pickWho"></span>
+    </div>
     <div class="warnline" id="pickWarn" hidden data-t="pickWarn"></div>
-    <div id="nextUp"></div>
-    <div id="pickAll"></div>
-    <div class="actions"><button class="btn ghost" id="closePick" data-t="cancel"></button></div>
+    <div class="pickcols">
+      <div class="pickside">
+        <div class="chips filt" id="pickTopics" role="group" data-t-aria="topic"></div>
+        <div id="nextUp"></div>
+      </div>
+      <div id="pickAll"></div>
+    </div>
   </div>
 </div>
 
+<!-- End of a round -->
 <div class="sheet" id="sheet" hidden>
   <div class="confetti" id="confetti" aria-hidden="true"></div>
   <div class="sheet-in">
     <div class="sheetcat" id="sheetcat"></div>
-    <div class="score" id="score"></div>
+    <div class="result">
+      <div class="big" id="score"></div>
+      <div class="rsub" id="scoreSub"></div>
+      <div class="stars" id="stars"></div>
+    </div>
+    <div class="banner good" id="learnedCard" hidden></div>
     <div id="earnedWrap" hidden></div>
     <div id="missWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="worthLook"></div>
-      <div class="misslist" id="misslist"></div>
+      <div class="lab" data-t="worthLook"></div>
+      <div class="gcard list" id="misslist"></div>
     </div>
-    <div class="actions">
+    <div class="stack">
       <button class="btn" id="again" data-t="newRound"></button>
-      <button class="btn ghost" id="redo" hidden data-t="redo"></button>
+      <div class="row">
+        <button class="btn ghost" id="redo" hidden data-t="redo"></button>
+        <button class="btn ghost" id="toStats" data-t="seeProgress"></button>
+      </div>
     </div>
-    <button class="btn ghost" id="toStats" data-t="seeProgress"></button>
   </div>
 </div>
 
-<div class="sheet" id="stats" hidden>
-  <div class="sheet-in">
-    <div class="sheetcat" id="statscat"></div>
-    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="progress"></div>
+<!-- Progress, for her: badges and how the last rounds went -->
+<div class="sheet" id="stats" hidden role="dialog" data-t-aria="progress">
+  <div class="sheet-in wide">
+    <div class="bar">
+      <button class="icon back" id="closeStats" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 data-t="badges"></h1>
+      <span class="who num" id="badgeCount"></span>
+    </div>
+    <div class="gcard nextbadge" id="nextBadge" hidden></div>
+    <div class="gcard">
+      <div class="gtitle"><b data-t="allBadges"></b><span data-t="tapBadge"></span></div>
+      <div class="badges" id="badges"></div>
+      <div class="badgeneed" id="badgeNeed" aria-live="polite"></div>
+    </div>
     <div class="bigstat" id="tiles"></div>
-    <div class="lab" data-t="badges"></div>
-    <div class="badges" id="badges"></div>
-    <div id="trendWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="trend"></div>
+    <div class="gcard" id="trendWrap" hidden>
+      <div class="gtitle"><b data-t="trend"></b></div>
       <div class="trend" id="trend"></div>
     </div>
-    <div id="byLevelWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="byLevel"></div>
-      <div id="byLevel" style="display:flex;flex-direction:column;gap:9px"></div>
-    </div>
-    <div id="troubleWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="trouble"></div>
-      <div class="chips" id="trouble"></div>
-      <button class="btn" id="practise" style="margin-top:11px" data-t="practise"></button>
-    </div>
     <div class="empty" id="statsEmpty" hidden data-t="statsEmpty"></div>
+    <button class="btn ghost" id="toParent" data-t="grownups"></button>
+  </div>
+</div>
 
-    <div class="lab" data-t="grownups"></div>
-    <div class="advice" id="advice"></div>
-    <div id="groupWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="byGroup"></div>
-      <div id="byGroup" style="display:flex;flex-direction:column;gap:9px"></div>
+<!-- For the grown-ups -->
+<div class="sheet" id="parent" hidden role="dialog" data-t-aria="grownups">
+  <div class="sheet-in wide">
+    <div class="bar">
+      <button class="icon back" id="closeParent" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 data-t="grownups"></h1>
+      <span class="who" id="parentWho"></span>
     </div>
-    <div id="slipWrap" hidden>
-      <div class="lab" style="margin-bottom:8px" data-t="slipsTitle"></div>
-      <div class="chips" id="slips"></div>
-    </div>
-    <button class="btn ghost" id="csv" data-t="csv"></button>
-    <div class="setrow">
-      <span style="font-weight:700;font-size:14.5px" data-t="perRound"></span>
-      <div class="seg" id="lenSeg" role="group" data-t-aria="perRound">
-        <button data-n="5" aria-pressed="false">5</button>
-        <button data-n="10" aria-pressed="true">10</button>
-        <button data-n="20" aria-pressed="false">20</button>
-      </div>
-    </div>
-    <div class="synced" id="synced"></div>
-    <div id="syncRow">
-      <div class="setrow" id="syncOff">
-        <span style="font-weight:700;font-size:14.5px" data-t="syncTitle"></span>
-        <div class="seg">
-          <button id="syncStart" data-t="syncStart"></button>
-          <button id="syncJoin" data-t="syncJoinBtn"></button>
+    <div class="parentcols">
+      <div class="parentside">
+        <div class="ptiles" id="ptiles"></div>
+        <div class="gcard family" id="syncRow">
+          <div class="famhead">
+            <span class="famicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9H7z"/><path d="M9 14l2 2 4-4"/></svg></span>
+            <div class="famtext">
+              <b id="syncOffTitle" data-t="syncTitle"></b>
+              <b id="syncOnTitle" hidden><span data-t="syncCodeLabel"></span> <span class="code" id="syncCode"></span></b>
+              <span class="synced" id="synced"></span>
+            </div>
+          </div>
+          <div class="seg" id="syncOff">
+            <button id="syncStart" data-t="syncStart"></button>
+            <button id="syncJoin" data-t="syncJoinBtn"></button>
+          </div>
+          <div class="seg" id="syncOnRow" hidden>
+            <button id="syncCopy" data-t="copy"></button>
+            <button id="syncLeave" data-t="syncLeave"></button>
+          </div>
+        </div>
+        <div class="gcard">
+          <div class="gtitle"><b data-t="move"></b></div>
+          <div class="seg">
+            <button id="xfer" data-t="copy"></button>
+            <button id="xferIn" data-t="paste"></button>
+          </div>
         </div>
       </div>
-      <div class="setrow" id="syncOnRow" hidden>
-        <span style="font-weight:700;font-size:14.5px"><span data-t="syncCodeLabel"></span> <b class="code" id="syncCode"></b></span>
-        <div class="seg">
-          <button id="syncCopy" data-t="copy"></button>
-          <button id="syncLeave" data-t="syncLeave"></button>
+      <div class="parentmain">
+        <div class="gcard" id="groupWrap" hidden>
+          <div class="gtitle"><b data-t="byGroupTitle"></b><span data-t="last30"></span></div>
+          <div class="bars" id="byGroup"></div>
+        </div>
+        <div class="gcard" id="slipWrap" hidden>
+          <div class="gtitle"><b data-t="slipsTitleShort"></b><span data-t="last30"></span></div>
+          <div class="sliplist" id="slips"></div>
+        </div>
+        <div class="gcard" id="troubleWrap" hidden>
+          <div class="gtitle"><b data-t="trouble"></b></div>
+          <div class="chips" id="trouble"></div>
+          <button class="btn ghost" id="practise" data-t="practise"></button>
+        </div>
+        <div class="gcard" id="byLevelWrap" hidden>
+          <div class="gtitle"><b data-t="byLevel"></b></div>
+          <div class="bars" id="byLevel"></div>
+        </div>
+        <div class="gcard advice" id="advice"></div>
+        <div class="gcard">
+          <div class="setrow">
+            <b data-t="perRound"></b>
+            <div class="seg" id="lenSeg" role="group" data-t-aria="perRound">
+              <button data-n="5" aria-pressed="false">5</button>
+              <button data-n="10" aria-pressed="true">10</button>
+              <button data-n="20" aria-pressed="false">20</button>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <button class="btn ghost" id="csv" data-t="csv"></button>
+          <button class="btn warn" id="reset" data-t="reset"></button>
         </div>
       </div>
-    </div>
-    <div class="setrow">
-      <span style="font-weight:700;font-size:14.5px" data-t="move"></span>
-      <div class="seg">
-        <button id="xfer" data-t="copy"></button>
-        <button id="xferIn" data-t="paste"></button>
-      </div>
-    </div>
-    <div class="actions">
-      <button class="btn" id="closeStats" data-t="back"></button>
-      <button class="btn warn" id="reset" data-t="reset"></button>
     </div>
   </div>
 </div>
 
+<!-- Who is playing -->
 <div class="sheet" id="players" hidden role="dialog" data-t-aria="whoPlays">
   <div class="sheet-in">
-    <div class="score" style="font-size:clamp(24px,5vw,32px)" data-t="whoPlays"></div>
-    <div class="empty" data-t="eachOwn"></div>
+    <div class="bar brand">
+      <span class="logo" aria-hidden="true">10</span>
+      <b class="appname" data-t="appName"></b>
+      <button class="icon" id="parentBtn" data-t-aria="grownups"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M19 6h1M4 12h3M11 12h9M4 18h11M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></button>
+    </div>
+    <div class="headline">
+      <h1 data-t="whoPlays"></h1>
+      <p data-t="eachOwn"></p>
+    </div>
     <div class="players" id="playerList"></div>
-    <div class="actions"><button class="btn ghost" id="closePlayers" data-t="cancel"></button></div>
+    <div class="gcard family" id="playersSync" hidden>
+      <div class="famhead">
+        <span class="famicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9H7z"/><path d="M9 14l2 2 4-4"/></svg></span>
+        <div class="famtext"><b data-t="familyOn"></b><span class="synced" id="playersSynced"></span></div>
+      </div>
+    </div>
+    <p class="footnote" data-t="eachKept"></p>
+    <button class="btn ghost" id="closePlayers" data-t="back"></button>
   </div>
 </div>
 
+<!-- A player's profile: name, mascot, language, and her settings -->
 <div class="sheet" id="playerEdit" hidden role="dialog" data-t-aria="player">
   <div class="sheet-in">
-    <div class="score" style="font-size:clamp(24px,5vw,32px)" id="editTitle"></div>
-    <label class="field"><span class="lab" data-t="name"></span><input id="pName" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false"></label>
-    <div class="lab" data-t="mascot"></div>
-    <div class="mascots" id="pMascot" role="group" data-t-aria="mascot"></div>
-    <div class="lab" data-t="language"></div>
-    <div class="seg" id="pLang" role="group" data-t-aria="language"></div>
-    <div class="actions">
-      <button class="btn" id="pSave" data-t="save"></button>
-      <button class="btn ghost" id="pCancel" data-t="cancel"></button>
+    <div class="bar">
+      <button class="icon back" id="pCancel" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="editTitle"></h1>
     </div>
+    <p class="welcomesub" id="editSub" hidden></p>
+    <div class="gcard">
+      <div class="namerow">
+        <span class="avatar" id="pAvatar"></span>
+        <label class="field"><span class="lab" data-t="name"></span><input id="pName" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false"></label>
+      </div>
+      <div class="lab" data-t="mascot"></div>
+      <div class="mascots" id="pMascot" role="radiogroup" data-t-aria="mascot"></div>
+    </div>
+    <div class="gcard">
+      <div class="lab" data-t="language"></div>
+      <div class="radios" id="pLang" role="radiogroup" data-t-aria="language"></div>
+    </div>
+    <div class="gcard toggles" id="pToggles">
+      <label class="toggle"><span data-t="sound"></span><input type="checkbox" role="switch" id="pSound"></label>
+      <label class="toggle"><span data-t="readAloud"></span><input type="checkbox" role="switch" id="pSpeak"></label>
+      <label class="toggle"><span data-t="calm"></span><input type="checkbox" role="switch" id="pCalm"></label>
+    </div>
+    <button class="btn" id="pSave" data-t="save"></button>
+    <button class="btn ghost" id="welcomeJoin" hidden data-t="joinFamily"></button>
     <div class="actions"><button class="btn warn" id="pDelete" data-t="delPlayer"></button></div>
   </div>
 </div>

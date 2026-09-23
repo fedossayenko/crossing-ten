@@ -109,6 +109,7 @@ function syncNow(){
     saveFamily();
     paintSync();
     if(!$('stats').hidden) renderStats();
+    if(!$('parent').hidden) renderParent();
     syncing = null;
     if(reload){ chose(); location.reload(); }
     return !FAMILY.failed;
@@ -117,12 +118,16 @@ function syncNow(){
 }
 
 function paintSync(){
+  $('playersSync').hidden = !SYNC_ON || !FAMILY;
   if(!SYNC_ON){ $('syncRow').hidden = true; return; }
-  $('syncOff').hidden = !!FAMILY; $('syncOnRow').hidden = !FAMILY;
+  $('syncOff').hidden = $('syncOffTitle').hidden = !!FAMILY;
+  $('syncOnRow').hidden = $('syncOnTitle').hidden = !FAMILY;
   if(!FAMILY) return;
   $('syncCode').textContent = showCode(FAMILY.code);
-  $('synced').textContent = (FAMILY.failed ? t('syncFailed') : FAMILY.at ?
-    t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing')) + builtOn();
+  const line = FAMILY.failed ? t('syncFailed') : FAMILY.at ?
+    t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing');
+  $('synced').textContent = line + builtOn();
+  $('playersSynced').textContent = line;
 }
 function startSync(code){
   FAMILY = { code, cursor:0, sent:{}, at:0 };
@@ -130,15 +135,19 @@ function startSync(code){
   return syncNow();
 }
 $('syncStart').onclick = () => { startSync(newCode()); };
-$('syncJoin').onclick = () => {
+// Join a family: the code comes from the clipboard (copied on the other device), or is typed.
+function joinFamily(done){
   const take = code => {
     const c = readCode(code);
-    if(!c){ say(t('syncBadCode')); return; }
-    startSync(c).then(ok => { if(ok) say(t('syncJoined')); });
+    if(!c){ say(t('syncBadCode')); if(!$('playerEdit').hidden) alert(t('syncBadCode')); return; }
+    startSync(c).then(ok => { if(ok) say(t('syncJoined')); if(done) done(ok); });
   };
   if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(take, () => take(prompt(t('syncPrompt'))));
   else take(prompt(t('syncPrompt')));
-};
+}
+$('syncJoin').onclick = () => joinFamily();
+// On a new device's welcome screen: join, and come up as the family's players.
+$('welcomeJoin').onclick = () => joinFamily(ok => { if(ok){ savePlayers(); chose(); location.reload(); } });
 $('syncCopy').onclick = () => {
   const c = showCode(FAMILY.code);
   navigator.clipboard.writeText(c).then(() => say(t('syncCopiedCode')), () => prompt(t('syncPrompt'), c));

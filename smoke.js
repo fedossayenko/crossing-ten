@@ -80,8 +80,17 @@ const server = http.createServer((req, res) => {
   const page = async expr => JSON.parse(await run('JSON.stringify(' + expr + ')') || '{}');
 
   // A first launch is one Bulgarian player with the cat, and asks nothing.
-  const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length }');
-  expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1, 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
+  const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length, welcome: !$("playerEdit").hidden && $("editTitle").textContent, rounds: LOCAL.rounds.length }');
+  expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1 && first.welcome === 'Добре дошли!', 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
+  // the welcome speaks the language she picks at once, and once saved it does not come back
+  if(!process.argv[2]){
+    const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
+      document.querySelector('#pLang input[value="bg"]').click(); $('pName').value = 'Ани'; return r; })()`);
+    expect(uk.title === 'Ласкаво просимо!' && uk.save === 'Почати', 'the welcome did not switch language: ' + JSON.stringify(uk));
+    await run(`$('pSave').click(); 1`); await settle();
+    const after = await page('{ welcome: !$("playerEdit").hidden, name: PLAYER.name, lang: document.documentElement.lang }');
+    expect(!after.welcome && after.name === 'Ани' && after.lang === 'bg', 'the welcome did not save the player: ' + JSON.stringify(after));
+  }
 
   // A named mistake: 35 for 42 − 17 is a borrowed ten never taken off. The hint names it and
   // draws the ten-frame; the end-of-round sheet says what she wrote and what it was.
@@ -90,7 +99,7 @@ const server = http.createServer((req, res) => {
     newRound([{ a:42, b:17, op:'-' }]);
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     key('3'); key('5'); key('go');
-    const hint = { slip: !!$('hint').querySelector('.slip'), frame: !!$('hint').querySelector('.tenframe') };
+    const hint = { slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe') };
     key('3'); key('5'); key('go'); key('go');
     return Object.assign(hint, { wrote: ($('misslist').querySelector('.wrote') || {}).textContent || '',
       logged: LOCAL.rounds[LOCAL.rounds.length - 1].slips });
@@ -98,7 +107,7 @@ const server = http.createServer((req, res) => {
   expect(slip.slip && slip.frame && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
     'the forgotten borrow was not named: ' + JSON.stringify(slip));
   // ...and the grown-ups see it: the slip counted, the groups charted, every round in the CSV
-  const grown = await page(`(() => { $('statsBtn').click();
+  const grown = await page(`(() => { $('statsBtn').click(); $('toParent').click();
     const csv = csvOf(LOCAL.rounds).split('\\r\\n');
     return { slips: $('slips').textContent, groups: $('byGroup').children.length, rows: csv.length, n: LOCAL.rounds.length,
              head: csv[0], last: csv[csv.length - 1] }; })()`);
@@ -122,7 +131,7 @@ const server = http.createServer((req, res) => {
     bad.push(...res2.out.map(x => 'second player, in Ukrainian: ' + x));
     // Adding a player through the form: name, mascot, language, save.
     await run(`$('who').click(); $('pAdd').click(); $('pName').value = 'Мая';
-      document.querySelector('.mchoice[data-m="bun"]').click(); document.querySelector('#pLang button[data-l="bg"]').click();
+      document.querySelector('.mchoice[data-m="bun"]').click(); document.querySelector('#pLang input[value="bg"]').click();
       $('pSave').click(); 1`);
     await settle();
     const p3 = await page('{ n: PLAYERS.list.length, name: PLAYER.name, mascot: PLAYER.mascot, lang: document.documentElement.lang, ears: $("cat").querySelectorAll(".ear ellipse").length }');

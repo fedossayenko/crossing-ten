@@ -13,7 +13,7 @@ level in Chrome.
 | Path | What it holds |
 |---|---|
 | `index.html` | the markup, and the scripts in the order they load |
-| `app.css` | all styling |
+| `app.css` | all styling: the glass look of the design canvas, light and dark |
 | `kinds/<kind>.js` | one question kind each: its generator, how it is drawn, its summary line and its hints |
 | `js/levels.js` | the level table: difficulty, group, prerequisites, and which generator makes it |
 | `js/core.js` | what more than one kind shares (`rnd`, the answer box, a few drawing helpers) |
@@ -139,9 +139,8 @@ original worksheet instance of each task.
 ## Progress storage
 
 The GitHub copy keeps each player's rounds in that browser's local storage — per
-device, not synced. The twenty rounds she played while this lived as a Claude artifact are carried
-across once per device by a seed in the page; rounds carry ids, so nothing is
-duplicated.
+device, not synced until sync is turned on. The very first launch on a device asks for the
+player's name, mascot and language (or joins a family that already plays elsewhere).
 
 To move progress from one device to another, open **Progress → Copy** on the device
 that has the history, then **Paste** on the other, with the same player chosen on both. The whole log is gzipped into a

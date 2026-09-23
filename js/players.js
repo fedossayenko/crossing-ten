@@ -3,7 +3,9 @@
 // players is simply hers - nothing is moved or rewritten.
 const PKEY = 'crossingten.players';
 let PLAYERS = { list:[{ id:'p1', name:'', mascot:'cat', lang:'bg' }], cur:'p1', gone:[] };   // gone: deleted players, for sync
+let FIRST = false;                              // nobody has set this device up yet
 try {
+  FIRST = localStorage.getItem(PKEY) === null;
   const s = JSON.parse(localStorage.getItem(PKEY));
   if(s && s.list && s.list.length) PLAYERS = Object.assign({ gone:[] }, s);
 } catch(e){}
