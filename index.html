@@ -498,8 +498,11 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
     </div>
     <div class="synced" id="synced"></div>
     <div class="setrow">
-      <span style="font-weight:700;font-size:14.5px">Move progress to another device</span>
-      <button class="btn ghost" id="xfer">Send link</button>
+      <span style="font-weight:700;font-size:14.5px">Move progress between devices</span>
+      <div class="seg">
+        <button id="xfer">Copy</button>
+        <button id="xferIn">Paste</button>
+      </div>
     </div>
     <div class="actions">
       <button class="btn" id="closeStats">Back</button>
@@ -4273,7 +4276,7 @@ const builtOn = () => {
 let DB = null;
 (async () => {
   const db = window.claude && await claude.use('db');
-  if(!db) { $('synced').textContent = 'Saved on this device only' + builtOn(); return; }
+  if(!db) { $('synced').textContent = heldHere() + builtOn(); return; }
   DB = db;
   try {
     const snap = await db.collection('rounds').orderBy('ts','desc').limit(300).get();
@@ -4290,7 +4293,7 @@ let DB = null;
     const pending = LOCAL.rounds.filter(r => !remoteIds[r.id]).slice(-20);
     for(const r of pending){ try { await db.collection('rounds').doc(r.id).set(r); } catch(e){ break; } }
   } catch(e){
-    $('synced').textContent = 'Saved on this device only' + builtOn();
+    $('synced').textContent = heldHere() + builtOn();
   }
 })();
 
@@ -4333,16 +4336,32 @@ function mergeRounds(rounds){
   if(!$('stats').hidden) renderStats();
   return add.length;
 }
-// Safari hands out the clipboard and the share sheet only inside the tap itself, and
-// zipping is async - so the link is built when the panel opens, not when it is pressed.
+const heldHere = () => 'On this device only · ' + LOCAL.rounds.length + ' rounds held here';
+const say = t => { $('synced').textContent = t + builtOn(); };
+// Safari hands out the clipboard only inside the tap itself, and zipping is async - so
+// the code is built when the panel opens, not when the button is pressed.
 let XFER = '';
 function makeXfer(){ pack(LOCAL.rounds).then(c => { XFER = location.origin + location.pathname + '#t=' + c; }, () => {}); }
+// The clipboard, not a link: a page added to the home screen keeps its own storage,
+// separate from Safari's, so a tapped link lands in the wrong jar. Copy on one device,
+// paste in the other - and between an iPad and an iPhone on one account the clipboard
+// crosses by itself.
 $('xfer').onclick = () => {
   if(!XFER) { makeXfer(); return; }
-  if(navigator.share) { navigator.share({ url: XFER }).catch(() => {}); return; }
   navigator.clipboard.writeText(XFER).then(
-    () => { $('synced').textContent = 'Link copied - open it on the other device' + builtOn(); },
-    () => prompt('Copy this link and open it on the other device', XFER));
+    () => say('Copied ' + LOCAL.rounds.length + ' rounds · tap Paste on the other device'),
+    () => prompt('Copy this and paste it on the other device', XFER));
+};
+$('xferIn').onclick = () => {
+  const take = async code => {
+    const m = String(code || '').trim().match(/(?:#t=)?([A-Za-z0-9_-]{16,})\s*$/);
+    if(!m) { say('Nothing to paste - copy on the other device first'); return; }
+    try { const n = mergeRounds(await unpack(m[1])); say(n ? 'Brought over ' + n + ' rounds · ' + LOCAL.rounds.length + ' held here' : 'Nothing new to bring over'); }
+    catch(e){ say('That code would not open'); }
+  };
+  if(navigator.clipboard && navigator.clipboard.readText)
+    navigator.clipboard.readText().then(take, () => take(prompt('Paste the code from the other device')));
+  else take(prompt('Paste the code from the other device'));
 };
 (async () => {
   const hash = location.hash.match(/^#t=(.+)$/);
