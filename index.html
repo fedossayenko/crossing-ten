@@ -41,8 +41,10 @@
     </div>
     <div class="card-in">
       <div class="stage" id="stage"></div>
+      <div class="choices" id="choices" role="group" data-t-aria="answers" hidden></div>
       <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
       <div class="hint" id="hint"></div>
+      <button class="btn ghost" id="skipBtn" hidden data-t="skip"></button>
     </div>
   </div>
 
@@ -71,6 +73,7 @@
       <div class="pickside">
         <div class="chips filt" id="pickTopics" role="group" data-t-aria="topic"></div>
         <div id="nextUp"></div>
+        <button class="gcard compcard" id="compStart"></button>
       </div>
       <div id="pickAll"></div>
     </div>
@@ -183,6 +186,13 @@
               <button data-n="5" aria-pressed="false">5</button>
               <button data-n="10" aria-pressed="true">10</button>
               <button data-n="20" aria-pressed="false">20</button>
+            </div>
+          </div>
+          <div class="setrow">
+            <b data-t="answerBy"></b>
+            <div class="seg" id="ansSeg" role="group" data-t-aria="answerBy">
+              <button data-c="0" aria-pressed="true" data-t="typeIt"></button>
+              <button data-c="1" aria-pressed="false" data-t="chooseIt"></button>
             </div>
           </div>
         </div>
@@ -326,7 +336,9 @@
 <script src="js/players.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/mascots.js"></script>
+<script src="js/choice.js"></script>
 <script src="js/app.js"></script>
+<script src="js/compete.js"></script>
 <script src="js/sync.js"></script>
 
 </body></html>

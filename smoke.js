@@ -142,6 +142,53 @@ const server = http.createServer((req, res) => {
     const p3 = await page('{ n: PLAYERS.list.length, name: PLAYER.name, mascot: PLAYER.mascot, lang: document.documentElement.lang, ears: $("cat").querySelectorAll(".ear ellipse").length }');
     expect(p3.n === 3 && p3.name === 'Мая' && p3.mascot === 'bun' && p3.lang === 'bg' && p3.ears === 4, 'adding a player went wrong: ' + JSON.stringify(p3));
   }
+  // Multiple choice in training: a wrong option is crossed out, the right one ends the task.
+  if(!process.argv[2]){
+    const ch = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      $('ansSeg').querySelector('[data-c="1"]').click(); await wait(100);
+      const q = S.qs[S.i], shown = { opts: document.querySelectorAll('#choices .ch').length, pad: $('pad').hidden, choices: !$('choices').hidden };
+      const wrong = q.options.find(o => o.id !== q.pick).id;
+      document.querySelector('#choices .ch[data-o="' + wrong + '"]').click(); await wait(100);
+      shown.crossed = document.querySelector('#choices .ch[data-o="' + wrong + '"]').disabled;
+      shown.hint = !!document.querySelector('#hint .fb.no');
+      document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(100);
+      shown.settled = S.settled; shown.dbg = [S.i, q.pick, S.parts, S.tries, S.revealed, JSON.stringify(q.options), q === S.qs[S.i]]; shown.green = !!document.querySelector('#choices .ch.ok');
+      $('ansSeg').querySelector('[data-c="0"]').click(); newRound(); await wait(100);
+      shown.back = !$('pad').hidden && $('choices').hidden;
+      return JSON.stringify(shown); })()`) || '{}');
+    expect(ch.opts === 4 && ch.pad && ch.choices && ch.crossed && ch.hint && ch.settled && ch.green && ch.back, 'multiple choice went wrong: ' + JSON.stringify(ch));
+
+    // A competition: 20 tasks, 15 of them А/Б/В/Г; one skipped comes back last; 12 right; points at the end.
+    const cp = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
+      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden };
+      $('skipBtn').click(); await wait(50); out.afterSkip = S.i;
+      const order = [];
+      for(let step = 0; step < 25 && COMP; step++){
+        const q = S.qs[S.i], right = order.length < 12;
+        order.push(S.i);
+        if(q.options){
+          const id = right ? q.pick : q.options.find(o => o.id !== q.pick).id;
+          document.querySelector('#choices .ch[data-o="' + id + '"]').click();
+        } else {
+          for(let slot = 0; slot < (q.slots || 1); slot++){ [...(right ? String(answers(q)[slot]) : '999')].forEach(K); K('go'); }
+        }
+        await wait(600);
+      }
+      out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
+      const r = LOCAL.rounds[LOCAL.rounds.length - 1];
+      out.round = { level: r.level, n: r.n, firstTry: r.firstTry, pts: r.pts, max: r.max, levels: (r.levels || []).length };
+      out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
+      return JSON.stringify(out); })()`) || '{}');
+    const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
+    expect(cp.n === 20 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
+      cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
+      cp.badge && cp.comp === null, 'the competition went wrong: ' + JSON.stringify(cp));
+    await run(`$('sheet').hidden = true; 1`);
+  }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC && !process.argv[2]){
@@ -191,6 +238,6 @@ const server = http.createServer((req, res) => {
   bad.unshift(...errors);
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }
   console.log('smoke: played every level in Chrome' + (process.argv[2] ? '' : ' for two players') + ', ' + res.rounds +
-    ' rounds logged, no script errors' + (process.argv[2] ? '' : '; asking, switching and adding players all work'));
+    ' rounds logged, no script errors' + (process.argv[2] ? '' : '; asking, switching and adding players, А/Б/В/Г and a 20-task competition all work'));
   done(0);
 });

@@ -21,7 +21,9 @@ level in Chrome.
 | `js/players.js` | who is playing, and where each player's rounds are kept |
 | `js/i18n.js` | every word of the interface in Bulgarian, Ukrainian and English |
 | `js/mascots.js` | the cat, fox, owl and bunny: one shared face, each animal only its fur |
+| `js/choice.js` | a question asked as А/Б/В/Г: the options, made from her likely slips |
 | `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage |
+| `js/compete.js` | competition mode: an МБГ-style paper of 20 tasks in an hour, for points |
 | `js/sync.js` | sync between devices through the Worker, by family account |
 | `worker/` | the sync server: a Cloudflare Worker (`index.js`) and its D1 tables (`schema.sql`) |
 | `sw.js` | serves the latest build, falls back to the cache offline |
@@ -58,6 +60,25 @@ the small ones digit taken from the big one, a carried ten dropped, the wrong si
 off. A real misconception is named in the hint straight away ("did you take the ten off
 the tens?"); the end-of-round sheet shows what she wrote and what it most likely was, and
 each round records its slips for the grown-ups.
+
+## Multiple choice and competitions
+
+**For grown-ups → Answers → А Б В Г** asks every one-box question with four options
+instead of the keypad. The options are the right answer plus wrong ones from her likely
+slips: a ten lost or gained at the crossing, flipped digits, the other operation, one off.
+They are made when the round is built and go in order of size, as on a paper; a wrong
+tap crosses that option out and shows the same hint as a wrong typed answer. How many
+options there are comes from the data (`q.options`), not from the screen.
+
+**Choose a level → Competition** is an МБГ-style paper: 20 tasks in 60 minutes, easiest
+first (four bands of five, difficulty 1–2 up to 4–5, no two in a row from one group), each
+worth its difficulty in points. Tasks 1–15 are А/Б/В/Г and 16–20 are typed, as on the real
+paper. Nothing is marked until the end or until the clock runs out, and **Skip for now**
+sends a task to the back of the queue. The tasks come from the levels' own generators,
+never from the competitions' papers, which are copyrighted. A paper is saved as one round
+with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round.
+Two badges go with it: **Състезател** (finish a competition) and **Изследовател** (tasks
+from all nine groups), sixteen in all.
 
 ## How difficulty is assigned
 

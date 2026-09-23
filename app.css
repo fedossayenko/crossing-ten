@@ -318,6 +318,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   .top{grid-area:top} .dots{grid-area:dots} .card{grid-area:card}
   .pad{grid-area:pad; align-content:center}
   .key{height:clamp(50px,14vh,80px)}
+  .app:has(.pad[hidden]){grid-template-columns:1fr; grid-template-areas:"top" "dots" "card"}   /* А/Б/В/Г: no keys, full width */
   .sum{font-size:clamp(40px,12vh,72px)}
 }
 
@@ -559,3 +560,28 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .gbtn{display:flex; justify-content:center; min-height:44px}
 #lForm .btn{flex:none}
 #lMsg:empty{display:none}
+/* multiple choice: А/Б/В/Г, two to a row, glass like the keys */
+.choices{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; width:100%}
+.ch{display:flex; align-items:center; gap:12px; min-height:64px; padding:0 14px; border-radius:22px; border:2px solid var(--glass-edge);
+  background:var(--glass); color:var(--ink); font:inherit; text-align:left; cursor:pointer}
+.ch .lt{width:32px; height:32px; border-radius:50%; background:rgba(47,111,143,.16); color:var(--accent-ink); display:inline-flex;
+  align-items:center; justify-content:center; font-size:15px; font-weight:900; flex:0 0 auto}
+.ch .v{font-family:Fredoka,Nunito,sans-serif; font-size:26px; font-weight:500; font-variant-numeric:tabular-nums}
+.ch[aria-pressed="true"]{border-color:var(--accent)}
+.ch.ok{border-color:var(--good); background:var(--goodbg)} .ch.ok .lt{background:var(--good); color:#fff}
+.ch.no{opacity:.5} .ch.no .v{text-decoration:line-through}
+.ch:active{transform:scale(.97)}
+#skipBtn{flex:none; align-self:stretch}
+/* competition: how far through the paper, and the clock, in place of the dots */
+.dots .ctrack{flex:1; height:10px; border-radius:999px; background:rgba(22,35,46,.15); overflow:hidden; align-self:center}
+.dots .ctrack i{display:block; height:100%; border-radius:999px; background:var(--accent)}
+.dots .cnum,.dots .clock{font-family:Fredoka,Nunito,sans-serif; font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums}
+.dots .clock{padding:3px 10px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-edge); color:var(--ink)}
+.compcard{flex-direction:row; align-items:center; gap:12px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; flex:none}
+.compcard .nm{flex:1; display:flex; flex-direction:column; gap:3px; min-width:0}
+.compcard .lab{color:var(--accent-ink); font-size:11px}
+.compcard b{font-size:16px; font-weight:900}
+.compcard .meta{font-size:13px; font-weight:700; color:var(--muted)}
+.compcard > svg{width:24px; height:24px; color:var(--accent); flex:0 0 auto}
+.compicon{width:40px; height:40px; border-radius:12px; background:rgba(47,111,143,.16); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; flex:0 0 auto}
+.compicon svg{width:24px; height:24px}

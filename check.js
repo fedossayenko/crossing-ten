@@ -12,7 +12,7 @@ let W = {max:1, m:{}};
 const LOCAL = {mix:[1,2,4,5], plain:true};
 function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }
 `;
-const body = scripts.filter(f => f !== 'js/app.js' && f !== 'js/sync.js').map(read).join('\n');
+const body = scripts.filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f)).map(read).join('\n');
 const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
@@ -1611,7 +1611,7 @@ eval(head + body + test);
   {
     const markup = src.split('<script>')[0];
     const have = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
-    ['slot0','slot1','wave1','wave2','waveX','pAdd','reveal'].forEach(i => have.add(i));   // drawn at runtime
+    ['slot0','slot1','wave1','wave2','waveX','pAdd','reveal','compClock'].forEach(i => have.add(i));   // drawn at runtime
     const looked = [...new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]))];
     const gone = looked.filter(i => !have.has(i));
     if(gone.length) throw new Error('the script looks up elements that are not in the page: ' + gone.join(', '));
@@ -1740,3 +1740,28 @@ eval(head + body + test);
   console.log('mistakes: forgotten borrow, flipped digits, dropped carry, wrong sign and off-by-one are each recognised; ten-frames show the crossing step exactly');
 }
 
+
+/* Multiple choice: on every level that can be asked that way, exactly one option is right
+   (the one marked as the answer), the others are distinct, whole and not negative, the
+   options go in order of size, and drawing them draws no random number. */
+{
+  const Q = eval('(function(){' + head + body + '; return { withChoices, choiceHtml, raw, accepts, LEVELS, R: () => RANDS }; })()');
+  let asked = 0, slipsOffered = 0;
+  Q.LEVELS.forEach(L => {
+    for(let i = 0; i < 200; i++){
+      const q = Q.withChoices(Q.raw(L.id));
+      if(!q.options) continue;
+      asked++;
+      const vs = q.options.map(o => o.v), right = q.options.filter(o => Q.accepts(q, [String(o.v)]));
+      if(q.options.length !== 4 || new Set(vs).size !== 4 || vs.some(v => !Number.isInteger(v) || v < 0))
+        throw new Error('level ' + L.id + ': bad options ' + vs.join(', '));
+      if(right.length !== 1 || right[0].id !== q.pick) throw new Error('level ' + L.id + ': ' + right.length + ' right options in ' + vs.join(', '));
+      if(vs.some((v, k) => k && v < vs[k - 1])) throw new Error('level ' + L.id + ': options out of order ' + vs.join(', '));
+      if(vs.some(v => Math.abs(v - q.options[q.pick].v) === 10)) slipsOffered++;
+      const r0 = Q.R(); Q.choiceHtml(q, [q.pick === 0 ? 1 : 0], true, 2);
+      if(Q.R() !== r0) throw new Error('level ' + L.id + ': drawing the options drew a random number');
+    }
+  });
+  if(slipsOffered < asked / 2) throw new Error('the lost-or-gained ten is offered too rarely: ' + slipsOffered + ' of ' + asked);
+  console.log('multiple choice: ' + asked + ' questions asked as А/Б/В/Г, each with one right option, in order, a ten-off slip among them in ' + Math.round(100 * slipsOffered / asked) + '%');
+}

@@ -3,7 +3,9 @@ const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, sett
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0 };
+let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false };
+// a competition under way (js/compete.js), and its clock
+let COMP = null, compTick = null;
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
@@ -104,7 +106,8 @@ const dayKey = ms => new Date(ms - new Date(ms).getTimezoneOffset()*60000).toISO
 function statsFrom(rounds){
   let sums = 0, first = 0, perfect = 0;
   const lvl = {}, seen = {}, miss = {}, byOp = { '-':{seen:0,miss:0}, '+':{seen:0,miss:0} }, days = {}, langs = {};
-  let bestRun = 0, clean10 = 0, fixed = 0;
+  let bestRun = 0, clean10 = 0, fixed = 0, comps = 0;
+  const grps = {};
   rounds.forEach(r => {
     sums += r.n; first += r.firstTry;
     if(r.n > 0 && r.firstTry === r.n) perfect++;
@@ -112,8 +115,9 @@ function statsFrom(rounds){
     bestRun = Math.max(bestRun, r.best || 0);
     if(r.lang) langs[r.lang] = true;
     if(r.redo) fixed += r.firstTry;                        // mistakes put right in "practise the misses"
-    const L = lvl[r.level] || (lvl[r.level] = {n:0,f:0});
-    L.n += r.n; L.f += r.firstTry;
+    if(r.level === 'comp') comps++;                        // a competition spans many levels: it is no level's record
+    else { const L = lvl[r.level] || (lvl[r.level] = {n:0,f:0}); L.n += r.n; L.f += r.firstTry; }
+    (r.levels || [r.level]).forEach(id => { const l = LEVELS.find(x => x.id === id); if(l) grps[PICK_GROUPS.findIndex(g => g.has(l))] = true; });
     (r.seen||[]).forEach(k => { seen[k] = (seen[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].seen++; });
     (r.missed||[]).forEach(k => { miss[k] = (miss[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].miss++; });
     days[r.day] = true;
@@ -138,7 +142,7 @@ function statsFrom(rounds){
     .sort((x,y) => y.rate - x.rate || y.seen - x.seen).slice(0,6);
   const m = mastery(rounds);
   return { rounds:rounds.length, sums, first, perfect, lvl, byOp, streak, streakBest, trouble, bestRun, clean10, fixed,
-           langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
+           comps, groups: Object.keys(grps).filter(k => k >= 0).length, langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
 }
 
 /* ---------- badges ----------
@@ -165,7 +169,9 @@ const GLYPH = {
   globe:['stroke', 'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18'],
   redo:['stroke', 'M3 12a9 9 0 1 0 3-6.7M3 4v5h5M8.5 12.5l2.5 2.5L16 10'],
   curious:['stroke', 'M10.5 10.5m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M15.5 15.5L21 21M8.8 8.6a1.9 1.9 0 0 1 3.6.6c0 1.2-1.9 1.4-1.9 2.6M10.5 14.2v.1'],
-  bridge:['stroke', 'M2 17h20M4 17V9M20 17V9M4 9c4-4 12-4 16 0M8 17v-5M12 17v-6M16 17v-5']
+  bridge:['stroke', 'M2 17h20M4 17V9M20 17V9M4 9c4-4 12-4 16 0M8 17v-5M12 17v-6M16 17v-5'],
+  stopwatch:['stroke', 'M12 13m-7 0a7 7 0 1 0 14 0a7 7 0 1 0-14 0M12 9.5v3.5l2.5 1.5M10 2h4M12 2v4M18 6l1.5-1.5'],
+  compass:['stroke', 'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M15.5 8.5l-2 5-5 2 2-5z']
 };
 const THROUGH_TEN = [1, 2, 7, 4, 5, 6];            // the ladders that cross a ten
 const BADGES = [
@@ -182,7 +188,9 @@ const BADGES = [
   { id:'polyglot',g:'globe',   fam:'rose',  prog:s => [s.langs, 2] },
   { id:'fixed',   g:'redo',    fam:'green', prog:s => [s.fixed, 10] },
   { id:'curious', g:'curious', fam:'grape', prog:s => [s.curious, 10] },
-  { id:'master',  g:'bridge',  fam:'green', prog:s => [s.throughTen, THROUGH_TEN.length] }
+  { id:'master',  g:'bridge',  fam:'green', prog:s => [s.throughTen, THROUGH_TEN.length] },
+  { id:'racer',   g:'stopwatch', fam:'teal', prog:s => [s.comps, 1] },
+  { id:'explorer',g:'compass', fam:'warm',  prog:s => [s.groups, PICK_GROUPS.length] }
 ];
 BADGES.forEach(b => { b.has = s => { const [a, n] = b.prog(s); return a >= n; }; });
 const badgeName = b => t('badge')[b.id][0], badgeNeed = b => t('badge')[b.id][1];
@@ -241,9 +249,13 @@ function putCat(slot, m){
 }
 
 /* ---------- round flow ---------- */
-function newRound(qs){
+const plainQ = ({ options, pick, pts, lvl, ...q }) => q;
+// comp: a competition's own tasks, which come with their options and points already
+function newRound(qs, comp){
+  if(!comp){ COMP = null; clearInterval(compTick); }
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
-  S.i = 0; S.results = []; S.typed = []; S.slip = []; S.second = []; S.redo = false; S.t0 = Date.now();
+  if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
+  S.i = 0; S.results = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
   ['sheet', 'stats', 'picker', 'parent'].forEach(id => { $(id).hidden = true; });
   $('confetti').innerHTML = '';
   show();
@@ -261,7 +273,10 @@ function show(){
   S.tries = 0; S.revealed = false; S.settled = false;
   clearTimers();
   $('stage').innerHTML = drawQ(q);
-  $('qnum').textContent = t('taskOf', S.i + 1, S.qs.length);
+  $('qnum').textContent = COMP ? t('compTask', S.i + 1, q.pts) : t('taskOf', S.i + 1, S.qs.length);
+  $('choices').hidden = !q.options; $('pad').hidden = !!q.options;
+  $('skipBtn').hidden = !COMP;
+  if(q.options) paintChoices();
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
   $('hint').innerHTML = '';
@@ -274,10 +289,17 @@ function show(){
 function paintSlot(){
   S.parts.forEach((p, i) => {
     const el = $('slot' + i);
-    if(el) el.innerHTML = p + (!S.revealed && i === S.at ? '<span class="caret"></span>' : '');
+    if(el) el.innerHTML = p + (!S.revealed && i === S.at && !S.qs[S.i].options ? '<span class="caret"></span>' : '');   // nothing to type with А/Б/В/Г
   });
 }
 function paintDots(){
+  if(COMP){      // a paper has no marks until the end: how far she is, and the clock
+    const done = Object.keys(COMP.ans).length;
+    $('dots').innerHTML = '<span class="ctrack"><i style="width:' + Math.round(100 * done / S.qs.length) + '%"></i></span>' +
+      '<span class="cnum">' + done + ' / ' + S.qs.length + '</span><span class="clock" id="compClock">' + compLeft() + '</span>';
+    $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
+    return;
+  }
   $('dots').innerHTML = S.qs.map((_, k) => {
     const r = S.results[k];
     return '<span class="dot ' + (r === true ? 'ok' : r === false ? 'no' : '') + ' ' + (k === S.i ? 'now' : '') + '"></span>';
@@ -311,8 +333,25 @@ const MARK = { ok:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" s
                no:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' };
 const box = (kind, head, body, side) => '<div class="fb ' + kind + '"><div class="fbhead"><span class="mark">' + MARK[kind] + '</span>' +
   head + (side ? '<span class="v">' + side + '</span>' : '') + '</div>' + (body ? '<div>' + body + '</div>' : '') + '</div>';
+// A tap on А/Б/В/Г is the same as typing that number and pressing ✓.
+function paintChoices(){
+  const q = S.qs[S.i];
+  $('choices').innerHTML = choiceHtml(q, S.crossed[S.i], S.settled && !COMP, COMP ? COMP.picked[S.i] : undefined);
+  $('choices').querySelectorAll('.ch').forEach(b => b.onclick = e => { e.stopPropagation(); choose(+b.dataset.o); });   // not also the card's "tap to go on"
+}
+function choose(id){
+  S.touched = true; wake();
+  if(S.settled){ next(); return; }
+  const q = S.qs[S.i];
+  S.parts = [String(q.options[id].v)];
+  if(COMP) COMP.picked[S.i] = id;
+  else if(id !== q.pick) (S.crossed[S.i] = S.crossed[S.i] || []).push(id);
+  check();
+  paintChoices();
+}
 function check(){
   if(S.parts.some(p => p === '')) return;
+  if(COMP){ compAnswer(); return; }
   const q = S.qs[S.i];
   if(accepts(q, S.parts)){
     if(S.results[S.i] === undefined) S.results[S.i] = S.tries === 0;
@@ -361,6 +400,7 @@ function reveal(){
   $('go').textContent = '→';
   mood('nod');
   paintSlot(); paintDots();
+  if(q.options) paintChoices();
 }
 function next(){
   clearTimers();
@@ -377,9 +417,12 @@ function finish(){
   const lv = LEVELS.find(l => l.id === S.level) || { eq:'' };
   let best = 0, run = 0;
   S.results.forEach(r => { run = r ? run+1 : 0; if(run > best) best = run; });
-  $('score').textContent = t('scoreBig', got, n);
-  $('scoreSub').textContent = t('firstTryAt', levelName(lv));
-  const stars = got === n ? 3 : got >= .8*n ? 2 : got >= .5*n ? 1 : 0;
+  // a competition counts points, each task worth its difficulty
+  const pts = COMP ? S.qs.reduce((a, q, k) => a + (S.results[k] ? q.pts : 0), 0) : got;
+  const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
+  $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
+  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(Date.now() - COMP.t0)) : t('firstTryAt', levelName(lv));
+  const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
   $('stars').setAttribute('aria-label', t('starsOf', stars));
   putCat('sheetcat', tier.mood);
@@ -429,7 +472,9 @@ function finish(){
   LOCAL.rounds.push({
     id: 'r' + now + '_' + Math.random().toString(36).slice(2,7),
     ts: now, day: dayKey(now),
-    level: S.level, n, firstTry: got, best, lang: LANG,
+    level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
+    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: COMP ? Math.round((Date.now() - COMP.t0) / 1000) : undefined,
+    levels: COMP ? S.qs.map(q => q.lvl) : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
@@ -442,7 +487,7 @@ function finish(){
 
   // a level learned this very round
   const nowM = mastery(LOCAL.rounds)[S.level];
-  const learned = nowM && nowM.done && !(was && was.done);
+  const learned = !COMP && nowM && nowM.done && !(was && was.done);
   $('learnedCard').hidden = !learned;
   if(learned) $('learnedCard').innerHTML = '<span class="bicon">' + MARK.ok.replace('width="16" height="16"', 'width="22" height="22"') +
     '</span><div><b>' + t('learnedNew') + '</b><span>' + levelName(lv) + ' · ' + t('learnedRule') + '</span></div>';
@@ -454,6 +499,8 @@ function finish(){
     return '<div class="newbadge">' + medal(b, true) + '<div><b>' + badgeName(b) + '</b><span>' + t('newBadge') + '</span></div></div>';
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
+  $('again').onclick = COMP ? () => startComp() : () => newRound();
+  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); }
 
   $('sheet').hidden = false;
 }
@@ -556,6 +603,7 @@ function renderParent(){
   }).join('');
   $('advice').textContent = advice(st);
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === LOCAL.n)));
+  document.querySelectorAll('#ansSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.c === '1') === !!LOCAL.choice)));
   $('csv').hidden = !LOCAL.rounds.length || !!window.claude;   // the artifact frame blocks plain downloads
 }
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
@@ -563,7 +611,7 @@ function csvOf(rounds){
   const q = v => '"' + String(v).replace(/"/g, '""') + '"';
   const rows = [t('csvHead')].concat(rounds.map(r => {
     const d = new Date(r.ts), lv = LEVELS.find(l => l.id === r.level);
-    return [dayKey(r.ts), d.toTimeString().slice(0, 5), r.level, lv ? levelName(lv) : '', r.n, r.firstTry,
+    return [dayKey(r.ts), d.toTimeString().slice(0, 5), r.level, lv ? levelName(lv) : r.level === 'comp' ? t('compName') + ' · ' + r.pts + ' / ' + r.max : '', r.n, r.firstTry,
             (r.slips || []).map(s => t('slip')[s] ? t('slip')[s][0] : s).join('; ')];
   }));
   return rows.map(row => row.map(v => q(/^[=+\-@]/.test(String(v)) ? "'" + v : v)).join(',')).join('\r\n');
@@ -600,6 +648,11 @@ $('practise').onclick = () => {
   if(set.length) newRound(shuffle(set));
 };
 
+document.querySelectorAll('#ansSeg button').forEach(b => b.onclick = () => {
+  LOCAL.choice = b.dataset.c === '1'; saveLocal();
+  document.querySelectorAll('#ansSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  if(!midRound()) newRound();
+});
 document.querySelectorAll('#lenSeg button').forEach(b => b.onclick = () => {
   LOCAL.n = +b.dataset.n; saveLocal();
   document.querySelectorAll('#lenSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
