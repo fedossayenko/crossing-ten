@@ -988,6 +988,12 @@ $('xferIn').onclick = () => {
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(g =>
   document.addEventListener(g, e => e.preventDefault(), { passive: false }));
 
+// A launch starts on the level the picker would recommend, not on a fixed one.
+{
+  const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
+  const nx = nextUp(mastery(LOCAL.rounds), lastLvl && (lastLvl.grp || lastLvl.op));
+  if(nx){ S.level = nx.id; paintPill(); }
+}
 newRound();
 // The first launch on a device asks who she is; after that, with two or more players, each
 // launch starts by asking who is playing.

@@ -73,7 +73,10 @@ const server = http.createServer((req, res) => {
     if($('stats').hidden) out.push('progress did not open');
     return JSON.stringify({ out, rounds: LOCAL.rounds.length });
   })()`;
+  // a launch opens on the recommended level, not on a fixed one
+  const launch = JSON.parse(await run('JSON.stringify({ start: S.level, suggested: nextUp(mastery(LOCAL.rounds), null).id })') || '{}');
   const res = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
+  if(launch.start !== launch.suggested) res.out.push('the launch did not open the recommended level: ' + JSON.stringify(launch));
   const bad = res.out.slice();
   const expect = (cond, what) => { if(!cond) bad.push(what); };
   const t_bg_wrote = 'ти написа 35 · забравен заем от десетиците';
