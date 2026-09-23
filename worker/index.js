@@ -8,7 +8,7 @@
 //   POST /google {credential}             a Google ID token → {token}; with a Bearer session it
 //                                          links that Google account to the family instead
 //   POST /logout                          ends this session
-//   POST /sync   {since, players, gone, rounds} → {cursor, players, gone, rounds, more}
+//   POST /sync   {since, players, gone, rounds} → {cursor, players, gone, rounds, more, account}
 // Sync sends what the server has not seen from this device and replies with what this device
 // has not seen. Rounds carry ids and never change, so merging is a set union (INSERT OR
 // IGNORE). Players are last-write-wins on `updated`; a player's resetAt drops her older
@@ -177,6 +177,7 @@ export default {
       rounds: rows.map(r => ({ player: r.player, round: JSON.parse(r.body) })),
       players: people.results.filter(p => !p.gone).map(p => JSON.parse(p.body)),
       gone: people.results.filter(p => p.gone).map(p => ({ id: p.id, updated: p.updated })),
+      account: await nameOf(db, family),     // the family name, or null for a family made with Google alone
       now
     });
   }

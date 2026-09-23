@@ -137,9 +137,11 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
     ok(G.status === 200 && G.body.name === fam && (await pull(G.body.token)).rounds.length === 1201, 'Google should open the linked family');
     // a Google account never seen before starts a new family, which can take a password later
     const N = await call('/google', { credential: googleToken('new-' + tag) });
+    ok((await call('/sync', {}, N.body.token)).body.account === null, 'a Google-only family should have no family name yet');
     ok(N.status === 201 && (await pull(N.body.token)).rounds.length === 0, 'a new Google account should start an empty family');
     await call('/sync', { rounds: [round('n1', 1)] }, N.body.token);
     const NP = (await signup('google family ' + tag, {}, N.body.token)).body.token;
+    ok((await call('/sync', {}, N.body.token)).body.account === 'google family ' + tag, 'the Google session should now see the family name');
     ok(NP && (await pull(NP)).rounds.some(r => r.round.id === 'n1'), 'a password added to a Google family should open the same family');
   }
   console.log('sync: accounts, lockout, ' + (LOCAL ? 'Google, ' : '') + 'migration, merging, paging, last-edit-wins, reset, deletion and family isolation all hold against ' + BASE);

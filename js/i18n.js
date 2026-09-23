@@ -81,7 +81,9 @@ en: {
   nameTaken:'That family name is taken — log in, or choose another', wrongPass:'Wrong family name or password',
   locked:m => 'Too many tries — wait ' + m + ' min', googleLinked:'Google is linked — it now opens this family',
   syncedAt:t => 'Synced at ' + t, syncing:'Syncing…', syncFailed:'Offline — will sync when back online',
-  syncJoined:'Logged in — progress will match on every device'
+  syncJoined:'Logged in — progress will match on every device',
+  setPass:'Set a family name and password', passSet:'Done — the family name and password now open this family too',
+  setPassSub:'For the devices that do not use Google: they log in with this family name and password, into this same family.'
 },
 bg: {
   sound:'Звук', speak:'Прочети задачата на глас', progress:'Напредък', del:'Изтрий', check:'Провери отговора',
@@ -158,6 +160,8 @@ bg: {
   locked:m => 'Твърде много опити — изчакай ' + m + ' мин', googleLinked:'Google е свързан — вече отваря това семейство',
   syncedAt:t => 'Синхронизирано в ' + t, syncing:'Синхронизира се…', syncFailed:'Няма връзка — ще се синхронизира, щом се появи',
   syncJoined:'Готово — напредъкът ще е еднакъв на всички устройства',
+  setPass:'Задай семейно име и парола', passSet:'Готово — семейното име и паролата вече също отварят това семейство',
+  setPassSub:'За устройствата без Google: те влизат с това семейно име и парола в същото семейство.',
   desc:{
     1:'Двуцифрено минус едноцифрено, с преминаване през десетицата',
     2:'Двуцифрено минус двуцифрено, със заемане',
@@ -294,6 +298,8 @@ uk: {
   locked:m => 'Забагато спроб — зачекай ' + m + ' хв', googleLinked:'Google під’єднано — тепер він відкриває цю родину',
   syncedAt:t => 'Синхронізовано о ' + t, syncing:'Синхронізація…', syncFailed:'Немає зв’язку — синхронізую, щойно з’явиться',
   syncJoined:'Готово — прогрес буде однаковим на всіх пристроях',
+  setPass:'Задати сімейне ім’я і пароль', passSet:'Готово — сімейне ім’я і пароль тепер теж відкривають цю родину',
+  setPassSub:'Для пристроїв без Google: вони входять із цим сімейним ім’ям і паролем у ту саму родину.',
   eq:{ 50:'Плюс чи мінус', 36:'Цукерки', 12:'Скільки? Сума?', 25:'Скільки вівторків?', 24:'Скільки сум?', 55:'Порахуй цифру',
     16:'Замість ?', 51:'Десятки', 13:'Найменше', 53:'Трицифрові', 46:'Розстав', 35:'Два двоцифрові', 44:'Закресли',
     49:'Кратні', 18:'Сума цифр', 45:'Чотири картки', 54:'Судоку', 27:'Пропущені', 26:'Ряд', 15:'Яке стерли?',

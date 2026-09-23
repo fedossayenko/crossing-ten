@@ -151,6 +151,7 @@
             <button class="btn" id="syncLogin" data-t="logIn"></button>
           </div>
           <div class="stack" id="syncOnRow" hidden>
+            <button class="btn ghost" id="syncSetPass" hidden data-t="setPass"></button>
             <button class="btn ghost" id="syncLeave" data-t="logOut"></button>
           </div>
           <div class="gbtn" id="gLink" hidden></div>
@@ -256,7 +257,7 @@
       <button class="icon back" id="loginBack" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <h1 data-t="account"></h1>
     </div>
-    <p class="welcomesub" data-t="accountSub"></p>
+    <p class="welcomesub" id="lSub"></p>
     <form class="gcard" id="lForm">
       <label class="field"><span class="lab" data-t="familyName"></span><input id="lName" name="username" maxlength="40" autocomplete="username" autocapitalize="words" spellcheck="false" required></label>
       <label class="field"><span class="lab" data-t="password"></span><input id="lPass" name="password" type="password" minlength="8" maxlength="200" autocomplete="current-password" required></label>

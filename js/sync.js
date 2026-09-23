@@ -10,7 +10,7 @@ const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl
 // Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
 const GOOGLE_ID = '760532949353-54t42jkfsrt9h7s5kne97u0r4p5qcvsf.apps.googleusercontent.com';
 const FKEY = 'crossingten.family';
-// { token, name, cursor, sent:{player:[ids]}, at, failed }; a device from before accounts holds
+// { token, name, account, cursor, sent:{player:[ids]}, at, failed }; a device from before accounts holds
 // only { code }, which its first signup turns into the account's family.
 let FAMILY = null;
 try { FAMILY = JSON.parse(localStorage.getItem(FKEY)); } catch(e){}
@@ -100,6 +100,7 @@ function syncNow(){
         const r = res.body;
         batch.forEach(x => (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id));
         reload = mergeFromServer(r) || reload;
+        FAMILY.account = r.account;          // null: a family made with Google alone, still without a family name
         FAMILY.cursor = r.cursor;
         if(!r.more && out.length <= batch.length) break;
       }
@@ -126,8 +127,9 @@ function paintSync(){
   if(!SYNC_ON){ $('syncRow').hidden = true; return; }
   $('syncOff').hidden = $('syncOffTitle').hidden = IN();
   $('syncOnRow').hidden = $('syncOnTitle').hidden = !IN();
+  $('syncSetPass').hidden = !IN() || FAMILY.account !== null;
   if(!IN()){ $('gLink').hidden = true; return; }
-  $('syncCode').textContent = FAMILY.name || '';
+  $('syncCode').textContent = FAMILY.account || FAMILY.name || '';
   const line = FAMILY.failed ? t('syncFailed') : FAMILY.at ?
     t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing');
   $('synced').textContent = line + builtOn();
@@ -136,13 +138,20 @@ function paintSync(){
 }
 
 /* ---------- logging in ---------- */
-let LOGIN_WELCOME = false;
-function openLogin(welcome){
-  LOGIN_WELCOME = !!welcome;
+let LOGIN_WELCOME = false, SETTING = false;
+// welcome: from a new device's welcome screen; set: a Google family choosing a family name and password
+function openLogin(welcome, set){
+  LOGIN_WELCOME = !!welcome; SETTING = !!set;
+  $('lLogin').hidden = SETTING;
+  $('gSign').hidden = true;
+  $('lSub').textContent = t(SETTING ? 'setPassSub' : 'accountSub');
+  $('lSignup').textContent = t(SETTING ? 'setPass' : 'signUp');
+  $('lSignup').className = SETTING ? 'btn' : 'btn ghost';
+  $('lPass').autocomplete = SETTING ? 'new-password' : 'current-password';
   $('lMsg').textContent = '';
   $('lPass').value = '';
   $('login').hidden = false;
-  googleButton($('gSign'));
+  if(!SETTING) googleButton($('gSign'));
 }
 function loggedIn(token, name){
   // everything this device holds goes up once; the server keeps each round once
@@ -164,14 +173,20 @@ async function logIn(signup){
   let r = null;
   try { r = await account(signup ? '/signup' : '/login', { name, password, code: signup && FAMILY && FAMILY.code || undefined }); } catch(e){}
   $('lLogin').disabled = $('lSignup').disabled = false;
+  if(r && r.body.token && SETTING){     // same family, now with a name and password too
+    Object.assign(FAMILY, { token: r.body.token, name: r.body.name, account: r.body.name });
+    saveFamily(); $('login').hidden = true; paintSync(); say(t('passSet'));
+    return;
+  }
   if(r && r.body.token) return loggedIn(r.body.token, r.body.name);
   $('lMsg').textContent = !r ? t('syncFailed') : r.status === 409 ? t('nameTaken') : r.status === 429 ?
     t('locked', Math.ceil((r.body.retry || 900) / 60)) : r.status === 401 ? t('wrongPass') : t('syncFailed');
 }
-$('lForm').onsubmit = e => { e.preventDefault(); logIn(false); };
+$('lForm').onsubmit = e => { e.preventDefault(); logIn(SETTING); };
 $('lSignup').onclick = () => logIn(true);
 $('loginBack').onclick = () => { $('login').hidden = true; };
 $('syncLogin').onclick = () => openLogin(false);
+$('syncSetPass').onclick = () => openLogin(false, true);
 // On a new device's welcome screen: log in, and come up as the family's players.
 $('welcomeJoin').onclick = () => openLogin(true);
 $('syncLeave').onclick = () => {
