@@ -93,20 +93,20 @@ function eqPairs(q){
 }
 function whyPairs(q, full){
   if(q.kind === 'pairs' && q.shape === 'cancel'){
-    if(!full) return 'Всяко число по средата се маха и веднага се връща.';
+    if(!full) return tr('Всяко число по средата се маха и веднага се връща.', 'Кожне число посередині віднімається і відразу додається назад.');
     const gone = q.terms.filter(t => t.op === '+').map(t => t.n);
-    return gone.map(n => '−' + n + ' + ' + n).join(', ') + ' — всяко дава нула &nbsp;→&nbsp; остава <b>' +
+    return gone.map(n => '−' + n + ' + ' + n).join(', ') + tr(' — всяко дава нула &nbsp;→&nbsp; остава <b>', ' — кожна пара дає нуль &nbsp;→&nbsp; залишається <b>') +
       q.start + ' − ' + q.last + '</b> = ' + q.ans;
   }
   if(q.kind === 'pairs' && q.shape === 'run'){
-    if(!full) return 'Извади всяка двойка — числата, които получаваш, вървят надолу.';
+    if(!full) return tr('Извади всяка двойка — числата, които получаваш, вървят надолу.', 'Обчисли кожну пару — числа, які виходять, зменшуються.');
     const vals = [];
     for(let i = q.k; i >= 0; i--) vals.push(i);
     return q.M + ' − ' + (q.M - q.k) + ' = ' + q.k + ', ' + q.M + ' − ' + (q.M - q.k + 1) + ' = ' + (q.k - 1) +
       ', … &nbsp;→&nbsp; ' + vals.join(' + ') + ' = ' + q.ans;
   }
   if(q.kind === 'pairs' && q.shape === 'sub'){
-    if(!full) return 'Групирай ги по двойки — всяка дава кръгло число.';
+    if(!full) return tr('Групирай ги по двойки — всяка дава кръгло число.', 'Згрупуй їх парами — кожна дає кругле число.');
     const ts = q.terms;
     let g = '', run = 0, odd = '', rest = 0;
     for(let k = 0; k < ts.length; k += 2){
@@ -116,11 +116,11 @@ function whyPairs(q, full){
       else { odd += (odd ? ', ' : '') + piece + ' = ' + v; rest += v; }
     }
     if(!odd) return g + ' = ' + q.ans;
-    return g + ' = <b>' + run + '</b>, &nbsp;после ' + odd + ' &nbsp;→&nbsp; ' +
+    return g + ' = <b>' + run + '</b>, &nbsp;' + tr('после ', 'потім ') + odd + ' &nbsp;→&nbsp; ' +
       run + ' + ' + rest + ' = ' + q.ans;
   }
   if(q.kind === 'pairs'){
-    if(!full) return 'Търси двойки, които заедно правят кръгло число.';
+    if(!full) return tr('Търси двойки, които заедно правят кръгло число.', 'Шукай пари, які разом дають кругле число.');
     const ts = q.terms;
     let g = '';
     for(let k = 0; k < q.paired*2; k += 2) g += (g ? ' + ' : '') + '<b>(' + ts[k].n + ' + ' + ts[k+1].n + ')</b>';

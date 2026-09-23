@@ -43,31 +43,45 @@ function genRibbon(){
   }
 }
 
+const ribbonUkTimes = n => ({one:'раз', few:'рази'})[new Intl.PluralRules('uk').select(n)] || 'разів';
 function drawRibbon(q){
   if(q.kind === 'ribbon' && q.shape === 4){
     const pt = n => n === 1 ? 'път' : 'пъти';
-    return '<div class="ask">Използваме пръчка с дължина <span class="num">' + q.a +
+    return '<div class="ask">' + tr('Използваме пръчка с дължина <span class="num">' + q.a +
       ' см</span>, за да премерим дължината на една дъска. Сложили сме пръчката <span class="num">' + q.k +
       '</span> ' + pt(q.k) + ' и остават още <span class="num">' + q.left +
-      '</span> см за премерване. Колко <b>дециметра</b> е дълга дъската?</div>' +
+      '</span> см за премерване. Колко <b>дециметра</b> е дълга дъската?',
+      'Паличкою завдовжки <span class="num">' + q.a +
+      ' см</span> вимірюємо довжину однієї дошки. Ми приклали паличку <span class="num">' + q.k +
+      '</span> ' + ribbonUkTimes(q.k) + ', і лишилося виміряти ще <span class="num">' + q.left +
+      '</span> см. Скільки <b>дециметрів</b> завдовжки дошка?') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + ' <span class="unit">дм</span></div>';
   }
   if(q.kind === 'ribbon' && q.shape === 3){
     const long = q.a + ' ' + (q.inDm ? 'дм' : 'см'), pt = n => n === 1 ? 'път' : 'пъти';
-    return '<div class="ask">Имам две пръчки — с дължина <span class="num">' + long +
+    return '<div class="ask">' + tr('Имам две пръчки — с дължина <span class="num">' + long +
       '</span> и с дължина <span class="num">' + q.b + ' см</span>. С тях премерих дължината на една дъска. ' +
       'Пръчката от <span class="num">' + long + '</span> използвах <span class="num">' + q.k + '</span> ' + pt(q.k) +
       ', а пръчката от <span class="num">' + q.b + ' см</span> — <span class="num">' + q.m + '</span> ' + pt(q.m) +
-      '. Колко сантиметра е дължината на дъската?</div>' +
+      '. Колко сантиметра е дължината на дъската?',
+      'Є дві палички — завдовжки <span class="num">' + long +
+      '</span> і завдовжки <span class="num">' + q.b + ' см</span>. Ними виміряли довжину однієї дошки. ' +
+      'Паличку завдовжки <span class="num">' + long + '</span> приклали <span class="num">' + q.k + '</span> ' + ribbonUkTimes(q.k) +
+      ', а паличку завдовжки <span class="num">' + q.b + ' см</span> — <span class="num">' + q.m + '</span> ' + ribbonUkTimes(q.m) +
+      '. Скільки сантиметрів завдовжки дошка?') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
   }
   if(q.kind === 'ribbon'){
     const ask = q.shape === 0
-      ? (q.toCm ? 'Колко сантиметра са <span class="num">' + q.n + '</span> ' + q.u.nm + '?'
-                : 'Колко ' + (q.u.nm === 'дм' ? 'дециметра' : 'метра') + ' са <span class="num">' + q.cm + '</span> см?')
+      ? (q.toCm ? tr('Колко сантиметра са <span class="num">' + q.n + '</span> ' + q.u.nm + '?',
+                     'Скільки сантиметрів у <span class="num">' + q.n + '</span> ' + q.u.nm + '?')
+                : tr('Колко ' + (q.u.nm === 'дм' ? 'дециметра' : 'метра') + ' са <span class="num">' + q.cm + '</span> см?',
+                     'Скільки ' + (q.u.nm === 'дм' ? 'дециметрів' : 'метрів') + ' у <span class="num">' + q.cm + '</span> см?'))
       : q.shape === 1
-      ? 'Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>отрежем</b> от нея, за да остане лента с дължина <span class="num">' + q.t + '</span> ' + q.u.nm + '?'
-      : 'Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>добавим</b>, за да стане дълга <span class="num">' + q.t + '</span> ' + q.u.nm + '?';
+      ? tr('Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>отрежем</b> от нея, за да остане лента с дължина <span class="num">' + q.t + '</span> ' + q.u.nm + '?',
+           'Стрічка завдовжки <span class="num">' + q.L + '</span> см. Скільки сантиметрів треба <b>відрізати</b> від неї, щоб лишилася стрічка завдовжки <span class="num">' + q.t + '</span> ' + q.u.nm + '?')
+      : tr('Лента е дълга <span class="num">' + q.L + '</span> см. Колко сантиметра трябва да <b>добавим</b>, за да стане дълга <span class="num">' + q.t + '</span> ' + q.u.nm + '?',
+           'Стрічка завдовжки <span class="num">' + q.L + '</span> см. Скільки сантиметрів треба <b>додати</b>, щоб вона стала завдовжки <span class="num">' + q.t + '</span> ' + q.u.nm + '?');
     const unit = q.shape === 0 && !q.toCm ? q.u.nm : 'см';
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT +
@@ -77,16 +91,18 @@ function drawRibbon(q){
 function eqRibbon(q){
   if(q.kind === 'ribbon' && q.shape === 4) return q.k + '×' + q.a + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
   if(q.kind === 'ribbon' && q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
-  if(q.kind === 'ribbon') return (q.shape === 0 ? 'преобразуване' : q.L + ' см към ' + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
+  if(q.kind === 'ribbon') return (q.shape === 0 ? tr('преобразуване', 'перетворення') : q.L + tr(' см към ', ' см до ') + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
 }
 function whyRibbon(q, full){
   if(q.kind === 'ribbon' && q.shape === 4){
-    if(!full) return 'Първо цялата дъска в сантиметри, чак после я преобразувай.';
+    if(!full) return tr('Първо цялата дъска в сантиметри, чак после я преобразувай.',
+      'Спочатку знайди довжину всієї дошки в сантиметрах, а вже потім переводь.');
     return q.k + ' × ' + q.a + ' = <b>' + (q.k*q.a) + '</b> &nbsp;→&nbsp; ' + (q.k*q.a) + ' + ' + q.left +
-      ' = <b>' + q.cm + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм, значи ' + q.ans;
+      ' = <b>' + q.cm + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм, ' + tr('значи', 'отже') + ' ' + q.ans;
   }
   if(q.kind === 'ribbon' && q.shape === 3){
-    if(!full) return 'Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.';
+    if(!full) return tr('Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.',
+      'Кожну паличку прикладають стільки разів, скільки сказано, — і одиниці вимірювання мають збігатися.');
     const head = q.inDm ? q.a + ' дм = <b>' + q.aCm + ' см</b> &nbsp;→&nbsp; ' : '';
     return head + q.k + ' × ' + q.aCm + ' = <b>' + (q.k*q.aCm) + '</b>, &nbsp;' + q.m + ' × ' + q.b +
       ' = <b>' + (q.m*q.b) + '</b> &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans;
@@ -94,8 +110,9 @@ function whyRibbon(q, full){
   if(q.kind === 'ribbon'){
     // the reminder must not state the factor: for a plain conversion that IS the answer
     if(!full) return q.shape === 0
-      ? 'Колко сантиметра има в един ' + (q.u.nm === 'дм' ? 'дециметър' : 'метър') + '?'
-      : 'Първо преобразувай всичко в сантиметри.';
+      ? tr('Колко сантиметра има в един ' + (q.u.nm === 'дм' ? 'дециметър' : 'метър') + '?',
+           'Скільки сантиметрів в одному ' + (q.u.nm === 'дм' ? 'дециметрі' : 'метрі') + '?')
+      : tr('Първо преобразувай всичко в сантиметри.', 'Спочатку переведи все в сантиметри.');
     if(q.shape === 0) return q.toCm
       ? '1 ' + q.u.nm + ' = ' + q.u.cm + ' см &nbsp;→&nbsp; ' + q.n + ' ' + q.u.nm + ' = ' + q.ans + ' см'
       : q.u.cm + ' см = 1 ' + q.u.nm + ' &nbsp;→&nbsp; ' + q.cm + ' см = ' + q.ans + ' ' + q.u.nm;

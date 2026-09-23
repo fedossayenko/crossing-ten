@@ -25,11 +25,12 @@ function genOrder(){
 
 function drawOrder(q){
   if(q.kind === 'order'){
-    return '<div class="ask">Поставете числата <span class="num">' + bgList(q.nums) +
-      '</span> в квадратчетата, така че да е вярно:</div>' +
+    return '<div class="ask">' + tr('Поставете числата', 'Поставте числа') + ' <span class="num">' + bgList(q.nums) +
+      '</span> ' + tr('в квадратчетата, така че да е вярно:', 'у квадратики так, щоб було правильно:') + '</div>' +
       '<div class="given">■ + ' + q.p + ' &gt; □ &gt; ■ + ' + q.g + '</div>' +
-      '<div class="ask">' + (q.asksMid ? 'Кое число е в <b>празното</b> квадратче □?'
-                                       : 'Колко е <b>сборът</b> на числата в <b>оцветените</b> квадратчета ■?') + '</div>' +
+      '<div class="ask">' + (q.asksMid ? tr('Кое число е в <b>празното</b> квадратче □?', 'Яке число в <b>порожньому</b> квадратику □?')
+                                       : tr('Колко е <b>сборът</b> на числата в <b>оцветените</b> квадратчета ■?',
+                                            'Яка <b>сума</b> чисел у <b>зафарбованих</b> квадратиках ■?')) + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
@@ -38,11 +39,11 @@ function eqOrder(q){
 }
 function whyOrder(q, full){
   if(q.kind === 'order'){
-    if(!full) return 'Пробвай подрежданията — само едно от тях става.';
+    if(!full) return tr('Пробвай подрежданията — само едно от тях става.', 'Спробуй різні розстановки — підходить лише одна.');
     const f = q.fit;
-    const head = 'става само ' + f[0] + ' + ' + q.p + ' &gt; ' + f[1] + ' &gt; ' + f[2] + ' + ' + q.g +
+    const head = tr('става само ', 'підходить лише ') + f[0] + ' + ' + q.p + ' &gt; ' + f[1] + ' &gt; ' + f[2] + ' + ' + q.g +
       ' &nbsp;→&nbsp; <b>' + (f[0] + q.p) + ' &gt; ' + f[1] + ' &gt; ' + (f[2] + q.g) + '</b> &nbsp;→&nbsp; ';
-    return head + (q.asksMid ? 'в празното квадратче е ' + q.ans : f[0] + ' + ' + f[2] + ' = ' + q.ans);
+    return head + (q.asksMid ? tr('в празното квадратче е ', 'у порожньому квадратику ') + q.ans : f[0] + ' + ' + f[2] + ' = ' + q.ans);
   }
 }
 KIND.order = { draw:drawOrder, eq:eqOrder, why:whyOrder };

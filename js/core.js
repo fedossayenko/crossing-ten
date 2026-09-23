@@ -4,13 +4,20 @@
 const rnd = n => Math.floor(Math.random()*n);
 const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
 const KIND = {};                     // kinds/*.js register { draw, eq, why } here
+// Task text in the player's language: tr('Колко са?', 'Скільки їх?'). Bulgarian is the
+// original and the fallback; anything not yet translated simply stays Bulgarian. Both
+// sides are plain strings, so a translation may regroup a whole phrase, not just a word.
+const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
 const SLOT = '<span class="slot" id="slot0"></span>';
 const CM = ' <span class="unit">см</span>';
 
 const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
 
 const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
-const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + ' и ' + a[a.length-1];
+// Ukrainian number words: masculine and neuter nouns take UKNUM (два числа), feminine ones UKNUM_F (дві цифри).
+const UKNUM = {2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять', 10:'десять'};
+const UKNUM_F = Object.assign({}, UKNUM, {2:'дві'});
+const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + tr(' и ', ' і ') + a[a.length-1];
 
 function antSvg(x, y, u){
   const k = (u/34).toFixed(3);
@@ -45,5 +52,6 @@ function fruitBody(t){
 }
 
 // Задача 11: n trees in a row leave n − 1 gaps. Asked three ways round.
-const NAMES = [['Хари', 'посадил'], ['Мая', 'посадила'], ['Ния', 'посадила'],
-               ['Борис', 'посадил'], ['Ива', 'посадила'], ['Асен', 'посадил']];
+// [name, Bulgarian "planted", Ukrainian name, Ukrainian "planted"]
+const NAMES = [['Хари', 'посадил', 'Харі', 'посадив'], ['Мая', 'посадила', 'Мая', 'посадила'], ['Ния', 'посадила', 'Нія', 'посадила'],
+               ['Борис', 'посадил', 'Борис', 'посадив'], ['Ива', 'посадила', 'Іва', 'посадила'], ['Асен', 'посадил', 'Асен', 'посадив']];

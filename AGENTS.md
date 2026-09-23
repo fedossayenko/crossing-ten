@@ -15,8 +15,11 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - A new kind file goes into `index.html` before `js/questions.js`; its level row goes in
   `js/levels.js` with `gen:` and a `d:` from the rubric in `README.md`.
 - Pin the worksheet's original instance and add a brute-force check in `check.js`.
-- Task text is Bulgarian. Interface text is `t('key')` from `js/i18n.js`, in bg, uk and en;
-  a new key goes into all three (check.js fails otherwise).
+- Task text is written in both languages with `tr('Bulgarian', 'Ukrainian')` from `js/core.js`;
+  interface text is `t('key')` from `js/i18n.js`, in bg, uk and en. check.js fails on a missing
+  key, on Bulgarian left in Ukrainian task text, and on a render that draws a random number.
+- Never change the Bulgarian output of an existing kind by accident, nor the order of `rnd()`
+  calls in a generator: both languages must ask the same question from the same seed.
 - All scripts share one global scope: a top-level name must be unique across every file
   (check.js fails otherwise; `smoke.js` catches the page failing to load).
 - After a change, `node build-artifact.js` rebuilds the single-file artifact copy.

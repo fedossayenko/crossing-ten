@@ -21,20 +21,26 @@ function genFlowers(){
   }
 }
 
+const flowersPl = (n, f) => f[['one','few','many'].indexOf(new Intl.PluralRules('uk').select(n))];
 function drawFlowers(q){
   if(q.kind === 'flowers'){
-    return '<div class="ask">Имаме цветя с по <span class="num">' + bgList(q.p) +
+    return '<div class="ask">' + tr('Имаме цветя с по <span class="num">' + bgList(q.p) +
       '</span> листенца — и от трите вида. Листенцата на всички цветя са общо <span class="num">' +
-      q.T + '</span>. Колко са цветята?</div>' +
+      q.T + '</span>. Колко са цветята?',
+      'Маємо квіти з <span class="num">' + bgList(q.p) +
+      '</span> пелюстками — усіх трьох видів. На всіх квітах разом <span class="num">' +
+      q.T + '</span> ' + flowersPl(q.T, ['пелюстка', 'пелюстки', 'пелюсток']) + '. Скільки всього квіток?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqFlowers(q){
-  if(q.kind === 'flowers') return 'по ' + q.p.join(', ') + ' листенца, общо ' + q.T + ' → ' + q.ans;
+  if(q.kind === 'flowers') return tr('по ' + q.p.join(', ') + ' листенца, общо ', 'пелюсток ' + q.p.join(', ') + ', разом ') +
+    q.T + ' → ' + q.ans;
 }
 function whyFlowers(q, full){
   if(q.kind === 'flowers'){
-    if(!full) return 'От всеки вид има поне по едно цвете — пробвай колко от най-малките.';
+    if(!full) return tr('От всеки вид има поне по едно цвете — пробвай колко от най-малките.',
+      'Кожного виду є щонайменше по одній квітці — спробуй, скільки може бути найменших.');
     const ways = [];
     for(let x = 1; x*q.p[0] < q.T; x++)
       for(let y = 1; x*q.p[0] + y*q.p[1] < q.T; y++){
@@ -42,7 +48,8 @@ function whyFlowers(q, full){
         if(rest > 0 && rest % q.p[2] === 0)
           ways.push(x + '×' + q.p[0] + ' + ' + y + '×' + q.p[1] + ' + ' + (rest/q.p[2]) + '×' + q.p[2]);
       }
-    return '<b>' + ways.join('</b>, или <b>') + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' + q.ans + ' цветя';
+    return '<b>' + ways.join(tr('</b>, или <b>', '</b>, або <b>')) + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' + q.ans + ' ' +
+      tr('цветя', flowersPl(q.ans, ['квітка', 'квітки', 'квіток']));
   }
 }
 KIND.flowers = { draw:drawFlowers, eq:eqFlowers, why:whyFlowers };

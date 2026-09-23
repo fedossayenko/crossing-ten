@@ -19,9 +19,27 @@ function genTrees(){
           ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
 }
 
+const treesPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+const treesN = n => n + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
+const treesM = n => treesPl(n, 'метр', 'метри', 'метрів');
+const treesGaps = n => treesPl(n, 'проміжок', 'проміжки', 'проміжків');
+function treesUkAsk(q){
+  const nm = NAMES.find(x => x[0] === q.who), who = nm[2], did = nm[3], num = x => '<span class="num">' + x + '</span>';
+  const trees = n => num(n) + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
+  if(q.shape === 3) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + num(q.dm) +
+    ' дм одне від одного. Скільки <b>метрів</b> завдовжки цей ряд?';
+  if(q.shape === 0) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + num(q.d) + ' ' +
+    treesM(q.d) + ' одне від одного. Скільки метрів завдовжки цей ряд?';
+  if(q.shape === 1) return who + ' ' + did + ' деревця в один ряд завдовжки ' + num(q.len) + ' ' + treesM(q.len) +
+    ' на відстані ' + num(q.d) + ' ' + treesM(q.d) + ' одне від одного. Скільки деревець ' +
+    (/в$/.test(did) ? 'він' : 'вона') + ' ' + did + '?';
+  return who + ' ' + did + ' ' + trees(q.n) + ' в ряд завдовжки ' + num(q.len) + ' ' + treesM(q.len) +
+    ' на однаковій відстані. Скільки метрів між двома сусідніми деревцями?';
+}
+
 function drawTrees(q){
   if(q.kind === 'trees'){
-    const ask = q.shape === 3
+    const ask = LANG === 'uk' ? treesUkAsk(q) : q.shape === 3
       ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
         q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
       : q.shape === 0
@@ -38,23 +56,27 @@ function drawTrees(q){
   }
 }
 function eqTrees(q){
-  if(q.kind === 'trees') return q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans;
+  if(q.kind === 'trees') return tr(q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans,
+    treesN(q.n) + ', ' + q.d + ' м, ряд ' + q.len + ' м → ' + q.ans);
 }
 function whyTrees(q, full){
   if(q.kind === 'trees'){
-    if(!full) return q.shape === 3 ? 'Разстоянията са с едно по-малко от дръвчетата — и мерките трябва да съвпадат.'
-                                   : 'Разстоянията са с едно по-малко от дръвчетата.';
+    if(!full) return q.shape === 3 ? tr('Разстоянията са с едно по-малко от дръвчетата — и мерките трябва да съвпадат.',
+                                        'Проміжків на один менше, ніж деревець, — і одиниці вимірювання мають збігатися.')
+                                   : tr('Разстоянията са с едно по-малко от дръвчетата.', 'Проміжків на один менше, ніж деревець.');
     const gaps = q.n - 1;
-    if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, а между ' + q.n + ' дръвчета има <b>' +
-      gaps + '</b> разстояния &nbsp;→&nbsp; ' + gaps + ' × ' + q.d + ' = ' + q.ans;
-    if(q.shape === 0) return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
-      (q.d === 1 ? 'по един метър всяко, значи ' + q.ans
+    const between = tr('между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния',
+      'між ' + q.n + (q.n % 10 === 1 && q.n % 100 !== 11 ? ' деревцем' : ' деревцями') + ' <b>' + gaps + '</b> ' + treesGaps(gaps));
+    if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, ' + 'а ' + between + ' &nbsp;→&nbsp; ' + gaps + ' × ' + q.d + ' = ' + q.ans;
+    if(q.shape === 0) return between + ' &nbsp;→&nbsp; ' +
+      (q.d === 1 ? tr('по един метър всяко, значи ', 'по одному метру кожен, отже ') + q.ans
        : gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans
        : gaps + ' × ' + q.d + ' = ' + q.ans);
-    if(q.shape === 1) return q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
-      '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans;
-    return 'между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния &nbsp;→&nbsp; ' +
-      q.len + ' м, разделени на ' + gaps + ' → ' + q.ans;
+    if(q.shape === 1) return tr(q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
+      '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans,
+      q.len + ' м кроками по ' + q.d + ' м дають <b>' + gaps + '</b> ' + treesGaps(gaps) +
+      ' &nbsp;→&nbsp; деревець на одне більше: ' + q.ans);
+    return between + ' &nbsp;→&nbsp; ' + q.len + tr(' м, разделени на ', ' м, поділені на ') + gaps + ' → ' + q.ans;
   }
 }
 KIND.trees = { draw:drawTrees, eq:eqTrees, why:whyTrees };

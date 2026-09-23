@@ -21,22 +21,24 @@ function genErase(){
 function drawErase(q){
   if(q.kind === 'erase'){
     const which = q.bigger
-      ? 'Изтрих едно от числата, което е <b>по-голямо</b> с <span class="num">' + q.d + '</span> от друго от тях.'
-      : 'Едното от тях, което е <b>по-малко</b> с <span class="num">' + q.d + '</span> от друго от тях, изтрих.';
-    return '<div class="ask">Записах числата <span class="num">' + bgList(q.set) + '</span>. ' + which +
-      ' Пресметнете сбора на останалите числа.</div>' +
+      ? tr('Изтрих едно от числата, което е <b>по-голямо</b> с <span class="num">' + q.d + '</span> от друго от тях.',
+           'Одне з чисел, яке на <span class="num">' + q.d + '</span> <b>більше</b> за інше з них, стерли.')
+      : tr('Едното от тях, което е <b>по-малко</b> с <span class="num">' + q.d + '</span> от друго от тях, изтрих.',
+           'Одне з них, яке на <span class="num">' + q.d + '</span> <b>менше</b> за інше з них, стерли.');
+    return '<div class="ask">' + tr('Записах числата', 'Записали числа') + ' <span class="num">' + bgList(q.set) + '</span>. ' + which +
+      tr(' Пресметнете сбора на останалите числа.', ' Обчисліть суму решти чисел.') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqErase(q){
-  if(q.kind === 'erase') return bgList(q.set) + ', изтрито ' + q.gone + ' → ' + q.ans;
+  if(q.kind === 'erase') return bgList(q.set) + tr(', изтрито ', ', стерто ') + q.gone + ' → ' + q.ans;
 }
 function whyErase(q, full){
   if(q.kind === 'erase'){
-    if(!full) return q.bigger ? 'Кое число е точно толкова по-голямо от друго?'
-                              : 'Кое число е точно толкова по-малко от друго?';
+    if(!full) return q.bigger ? tr('Кое число е точно толкова по-голямо от друго?', 'Яке число рівно на стільки більше за інше?')
+                              : tr('Кое число е точно толкова по-малко от друго?', 'Яке число рівно на стільки менше за інше?');
     return '<b>' + q.gone + ' = ' + (q.bigger ? (q.gone - q.d) + ' + ' + q.d : (q.gone + q.d) + ' − ' + q.d) +
-      '</b> &nbsp;→&nbsp; изтриваме ' + q.gone +
+      '</b> &nbsp;→&nbsp; ' + tr('изтриваме ', 'стираємо ') + q.gone +
       ' &nbsp;→&nbsp; ' + q.set.filter(v => v !== q.gone).join(' + ') + ' = ' + q.ans;
   }
 }

@@ -29,28 +29,36 @@ function genThreeDig(){
   }
 }
 
+const thrUkPos = {'стотиците':'сотень', 'десетиците':'десятків', 'единиците':'одиниць'};
 function drawThr(q){
   if(q.kind === 'thr'){
-    const which = 'най-' + (q.small ? 'малкото' : 'голямото') + ' трицифрено число, записано с <b>три различни цифри</b>';
-    const pinned = which + ' и <b>цифра на ' + POSN[q.pos] + ' ' + q.dig + '</b>';
+    const which = tr('най-' + (q.small ? 'малкото' : 'голямото') + ' трицифрено число, записано с <b>три различни цифри</b>',
+      'най' + (q.small ? 'менше' : 'більше') + ' трицифрове число, записане <b>трьома різними цифрами</b>');
+    const pinned = which + tr(' и <b>цифра на ' + POSN[q.pos] + ' ' + q.dig + '</b>',
+      ', з <b>цифрою ' + q.dig + ' в розряді ' + thrUkPos[POSN[q.pos]] + '</b>');
     const ask = q.shape === 0
-      ? 'Кое е ' + pinned + '?'
-      : 'С колко ' + pinned + ' е <b>по-' + (q.small ? 'голямо' : 'малко') + '</b> от ' + which + '?';
+      ? tr('Кое е ', 'Яке ') + pinned + '?'
+      : tr('С колко ' + pinned + ' е <b>по-' + (q.small ? 'голямо' : 'малко') + '</b> от ' + which + '?',
+           'На скільки ' + pinned + ', <b>' + (q.small ? 'більше' : 'менше') + '</b> за ' + which + '?');
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqThr(q){
-  if(q.kind === 'thr') return (q.small ? 'най-малко' : 'най-голямо') + ', ' + POSN[q.pos] + '=' + q.dig +
-    ' → ' + q.a + (q.shape === 1 ? ' срещу ' + q.base + ' → ' + q.ans : '');
+  if(q.kind === 'thr') return tr((q.small ? 'най-малко' : 'най-голямо') + ', ' + POSN[q.pos] + '=' + q.dig,
+    (q.small ? 'найменше' : 'найбільше') + ', розряд ' + thrUkPos[POSN[q.pos]] + ' = ' + q.dig) +
+    ' → ' + q.a + (q.shape === 1 ? tr(' срещу ', ' проти ') + q.base + ' → ' + q.ans : '');
 }
 function whyThr(q, full){
   if(q.kind === 'thr'){
-    if(!full) return 'Подреждай цифрите отпред назад — първата тежи най-много.';
-    const found = 'с ' + q.dig + ' на ' + POSN[q.pos] + ' най-' + (q.small ? 'малкото' : 'голямото') +
-      ' е <b>' + q.a + '</b>';
+    if(!full) return tr('Подреждай цифрите отпред назад — първата тежи най-много.',
+      'Добирай цифри зліва направо — перша важить найбільше.');
+    const best = tr('най-' + (q.small ? 'малкото' : 'голямото'), 'най' + (q.small ? 'менше' : 'більше'));
+    const found = tr('с ' + q.dig + ' на ' + POSN[q.pos] + ' ' + best + ' е <b>' + q.a + '</b>',
+      best + ' число з цифрою ' + q.dig + ' в розряді ' + thrUkPos[POSN[q.pos]] + ' — <b>' + q.a + '</b>');
     if(q.shape === 0) return found.replace('<b>' + q.a + '</b>', q.a);
-    return 'без условие най-' + (q.small ? 'малкото' : 'голямото') + ' е <b>' + q.base + '</b>, а ' +
+    return tr('без условие ' + best + ' е <b>' + q.base + '</b>, а ',
+      'без умови ' + best + ' — <b>' + q.base + '</b>, а ') +
       found + ' &nbsp;→&nbsp; ' + Math.max(q.a, q.base) + ' − ' + Math.min(q.a, q.base) + ' = ' + q.ans;
   }
 }

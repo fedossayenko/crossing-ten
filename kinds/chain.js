@@ -32,11 +32,11 @@ function eqChain(q){
 }
 function whyChain(q, full){
   if(q.kind === 'chain'){
-    if(!full) return 'Стъпка по стъпка, отляво надясно.';
+    if(!full) return tr('Стъпка по стъпка, отляво надясно.', 'Крок за кроком, зліва направо.');
     let run = q.terms[0].n;
     const steps = [run];
     q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
-    return 'Стъпка по стъпка: <b>' + steps.join(', ') + '</b>';
+    return tr('Стъпка по стъпка: ', 'Крок за кроком: ') + '<b>' + steps.join(', ') + '</b>';
   }
 }
 KIND.chain = { draw:drawChain, eq:eqChain, why:whyChain };

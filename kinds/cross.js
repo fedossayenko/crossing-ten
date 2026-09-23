@@ -29,23 +29,25 @@ function genCross(){
 
 function drawCross(q){
   if(q.kind === 'cross'){
-    return '<div class="ask">Коя цифра трябва да се зачеркне, за да се получи вярно равенство?</div>' +
+    return '<div class="ask">' + tr('Коя цифра трябва да се зачеркне, за да се получи вярно равенство?', 'Яку цифру треба закреслити, щоб вийшла правильна рівність?') + '</div>' +
       '<div class="given">' + q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqCross(q){
-  if(q.kind === 'cross') return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + ' → зачерква се ' + q.ans;
+  if(q.kind === 'cross') return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + tr(' → зачерква се ', ' → закреслюємо ') + q.ans;
 }
 function whyCross(q, full){
   if(q.kind === 'cross'){
     const names = ['първото число', 'второто число', 'третото число', 'сбора'];
     const after = [q.A, q.B, q.C, q.D];
     after[q.hit.t] = q.hit.left;
-    return !full ? 'Пресметни лявата страна — с колко се разминава?'
-      : q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + (q.A + q.B + q.C) + ', а трябва ' + q.D +
-        ' &nbsp;→&nbsp; ' + (/^[вф]/.test(names[q.hit.t]) ? 'във ' : 'в ') + names[q.hit.t] + ' зачеркваме <b>' + q.ans + '</b>: ' +
-        after[0] + ' + ' + after[1] + ' + ' + after[2] + ' = ' + after[3] + ' &nbsp;→&nbsp; цифрата е ' + q.ans;
+    const ukIn = ['у першому числі', 'у другому числі', 'у третьому числі', 'у сумі'];
+    return !full ? tr('Пресметни лявата страна — с колко се разминава?', 'Обчисли ліву сторону — на скільки вона відрізняється від правої?')
+      : q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + (q.A + q.B + q.C) + tr(', а трябва ', ', а має бути ') + q.D +
+        ' &nbsp;→&nbsp; ' + tr((/^[вф]/.test(names[q.hit.t]) ? 'във ' : 'в ') + names[q.hit.t] + ' зачеркваме <b>',
+                               ukIn[q.hit.t] + ' закреслюємо <b>') + q.ans + '</b>: ' +
+        after[0] + ' + ' + after[1] + ' + ' + after[2] + ' = ' + after[3] + tr(' &nbsp;→&nbsp; цифрата е ', ' &nbsp;→&nbsp; це цифра ') + q.ans;
   }
 }
 KIND.cross = { draw:drawCross, eq:eqCross, why:whyCross };

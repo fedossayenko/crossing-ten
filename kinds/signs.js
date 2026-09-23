@@ -27,27 +27,40 @@ function genSigns(){
   }
 }
 
+// How the signs are written, on this question's own numbers: one minus that does not land
+// on the target, so the example shows the format without solving the task.
+function signsExample(q){
+  const total = q.nums.reduce((t, v) => t + v, 0);
+  const minus = [q.nums[q.nums.length - 1], q.nums[1]].find(v => total - 2*v !== q.T && total - 2*v >= 0);
+  const line = q.nums.map((v, i) => i === 0 ? '' + v : (v === minus ? ' − ' : ' + ') + v).join('');
+  return line + ' = ' + (minus === undefined ? total : total - 2*minus);
+}
 function drawSigns(q){
   if(q.kind === 'signs'){
-    return '<div class="ask">Естествените числа от <span class="num">' + q.a + '</span> до <span class="num">' +
+    return tr('<div class="ask">Естествените числа от <span class="num">' + q.a + '</span> до <span class="num">' +
       q.b + '</span> включително се записват едно след друго. Поставете между тях знаците „+" или „−", ' +
-      'за да получим числото <span class="num">' + q.T + '</span>. Колко <b>най-много</b> могат да са минусите?</div>' +
+      'за да получим числото <span class="num">' + q.T + '</span>. Колко <b>най-много</b> могат да са минусите?</div>',
+      '<div class="ask">Натуральні числа від <span class="num">' + q.a + '</span> до <span class="num">' +
+      q.b + '</span> включно записано одне за одним. Поставте між ними знаки «+» або «−», ' +
+      'щоб отримати число <span class="num">' + q.T + '</span>. Скільки <b>найбільше</b> може бути мінусів?</div>') +
       '<div class="seq">' + q.nums.join(' &nbsp;') + '</div>' +
-      '<div class="note">Например: 3 − 4 − 5 + 6 + 7 = 7</div>' +
+      '<div class="note">' + tr('Например', 'Наприклад') + ': ' + signsExample(q) + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqSigns(q){
-  if(q.kind === 'signs') return q.a + '…' + q.b + ' = ' + q.T + ' → минуси: ' + q.ans;
+  if(q.kind === 'signs') return q.a + '…' + q.b + ' = ' + q.T + tr(' → минуси: ', ' → мінуси: ') + q.ans;
 }
 function whySigns(q, full){
   if(q.kind === 'signs'){
-    if(!full) return 'Всяко число, което обърнеш, сваля сбора два пъти със себе си.';
+    if(!full) return tr('Всяко число, което обърнеш, сваля сбора два пъти със себе си.',
+      'Мінус перед числом зменшує суму на це число двічі.');
     const total = q.nums.reduce((t, v) => t + v, 0), drop = (total - q.T) / 2;
     const line = q.nums.map((v, i) => i ? (q.wit.indexOf(v) >= 0 ? ' − ' : ' + ') + v : v).join('');
-    return 'всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ' +
+    return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
+      'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
       drop + ' &nbsp;→&nbsp; ' + q.wit.join(' + ') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
-      ' &nbsp;→&nbsp; минусите са ' + q.ans;
+      tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
   }
 }
 KIND.signs = { draw:drawSigns, eq:eqSigns, why:whySigns };

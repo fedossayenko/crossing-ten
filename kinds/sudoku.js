@@ -71,29 +71,34 @@ function sudokuSvg(q){
              '<line x1="' + P + '" y1="' + at + '" x2="' + (P + 4*u) + '" y2="' + at + '" stroke-width="' + w + '"/>';
   }
   return '<div class="fig"><svg viewBox="0 0 ' + (4*u + 2*P) + ' ' + (4*u + 2*P) +
-    '" role="img" aria-label="судоку четири на четири">' +
+    '" role="img" aria-label="' + tr('судоку четири на четири', 'судоку чотири на чотири') + '">' +
     '<g stroke="var(--ink)" stroke-linecap="square">' + lines + '</g>' + cells + '</svg></div>';
 }
 
 function drawSudoku(q){
   if(q.kind === 'sudoku'){
-    return '<div class="ask">Попълнете празните квадратчета с <span class="num">1</span>, <span class="num">2</span>, ' +
+    return tr('<div class="ask">Попълнете празните квадратчета с <span class="num">1</span>, <span class="num">2</span>, ' +
       '<span class="num">3</span> или <span class="num">4</span> така, че във всеки <b>ред</b>, всеки <b>стълб</b> ' +
       'и всяко <b>удебелено квадратче</b> числата от 1 до 4 да стоят точно по веднъж. ' +
-      'Колко е <b>сборът</b> на числата в <b>X</b> и <b>Y</b>?</div>' +
+      'Колко е <b>сборът</b> на числата в <b>X</b> и <b>Y</b>?</div>',
+      '<div class="ask">Заповніть порожні клітинки числами <span class="num">1</span>, <span class="num">2</span>, ' +
+      '<span class="num">3</span> або <span class="num">4</span> так, щоб у кожному <b>рядку</b>, кожному <b>стовпці</b> ' +
+      'і кожному <b>квадраті з товстою рамкою</b> числа від 1 до 4 траплялися рівно по одному разу. ' +
+      'Чому дорівнює <b>сума</b> чисел у <b>X</b> і <b>Y</b>?</div>') +
       sudokuSvg(q) +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqSudoku(q){
-  if(q.kind === 'sudoku') return 'судоку → X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;
+  if(q.kind === 'sudoku') return tr('судоку → ', 'розв’язок: ') + 'X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;
 }
 function whySudoku(q, full){
   if(q.kind === 'sudoku'){
-    if(!full) return 'Търси ред, стълб или квадратче, в което липсва само едно число.';
+    if(!full) return tr('Търси ред, стълб или квадратче, в което липсва само едно число.',
+      'Шукай рядок, стовпець або квадрат, де бракує лише одного числа.');
     // the whole solved grid, so she can see where her own filling went wrong
     const rows = [0,1,2,3].map(r => q.sol.slice(r*4, r*4 + 4).join(''));
-    return 'решението е <b>' + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
+    return tr('решението е <b>', 'розв’язок: <b>') + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
       q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans;
   }
 }

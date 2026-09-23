@@ -42,9 +42,9 @@ function drawFruiteq(q){
     const head = F.map((g, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : (q.signs[i] > 0 ? '' : '− ')) + g).join('');
     const cell = t => '<span>' + t + '</span>';
     const blank = cell('');
-    return '<div class="ask">Пресметнете</div>' +
+    return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
       '<div class="given">' + head + '</div>' +
-      '<div class="ask">ако</div>' +
+      '<div class="ask">' + tr('ако', 'якщо') + '</div>' +
       '<div class="grid4">' +
         cell(F[0]) + cell('+') + cell(F[1]) + cell('=') + cell(q.R1) +
         cell('+') + blank + cell('+') + blank + blank +
@@ -56,7 +56,7 @@ function drawFruiteq(q){
   }
   if(q.kind === 'fruiteq'){
     const F = q.f.map(ic);
-    return '<div class="ask">Пресметнете ' + F[q.askd[0]] + ' − ' + F[q.askd[1]] + ', ако:</div>' +
+    return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + F[q.askd[0]] + ' − ' + F[q.askd[1]] + tr(', ако:', ', якщо:') + '</div>' +
       '<div class="eqs"><span>' + F[1] + ' + ' + F[0] + ' = ' + q.s1 + '</span>' +
       '<span>' + F[0] + ' + ' + F[2] + ' = ' + q.s2 + '</span>' +
       '<span>' + F[2] + ' + ' + F[0] + ' + ' + F[1] + ' = ' + q.s3 + '</span></div>' +
@@ -69,19 +69,19 @@ function eqFruiteq(q){
 }
 function whyFruiteq(q, full){
   if(q.kind === 'fruiteq' && q.grid){
-    if(!full) return 'Двата стълба заедно съдържат всичките четири плода.';
+    if(!full) return tr('Двата стълба заедно съдържат всичките четири плода.', 'Два стовпці разом містять усі чотири фрукти.');
     const F = q.f.map(ic), v = [q.A, q.B, q.C, q.D];
     const both = q.C1 + q.C2, low = both - q.R1;
     const bits = v.map((x, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : '') + x);
-    return 'двата стълба заедно: ' + q.C1 + ' + ' + q.C2 + ' = ' + both + ', а горният ред е ' + q.R1 +
-      ' &nbsp;→&nbsp; долният ред заедно е ' + both + ' − ' + q.R1 + ' = <b>' + low +
-      '</b>, а разликата му е ' + q.R2 + ' &nbsp;→&nbsp; ' + F[2] + ' = <b>' + q.C + '</b>, ' + F[3] +
+    return tr('двата стълба заедно: ', 'два стовпці разом: ') + q.C1 + ' + ' + q.C2 + ' = ' + both + tr(', а горният ред е ', ', а верхній рядок — ') + q.R1 +
+      ' &nbsp;→&nbsp; ' + tr('долният ред заедно е ', 'нижній рядок разом — ') + both + ' − ' + q.R1 + ' = <b>' + low +
+      '</b>' + tr(', а разликата му е ', ', а його різниця — ') + q.R2 + ' &nbsp;→&nbsp; ' + F[2] + ' = <b>' + q.C + '</b>, ' + F[3] +
       ' = <b>' + q.D + '</b> &nbsp;→&nbsp; ' + F[0] + ' = ' + q.C1 + ' − ' + q.C + ' = <b>' + q.A +
       '</b>, ' + F[1] + ' = ' + q.R1 + ' − ' + q.A + ' = <b>' + q.B + '</b> &nbsp;→&nbsp; ' +
       bits.join('') + ' = ' + q.ans;
   }
   if(q.kind === 'fruiteq'){
-    if(!full) return 'Третото равенство съдържа първото — започни оттам.';
+    if(!full) return tr('Третото равенство съдържа първото — започни оттам.', 'Третя рівність містить першу — почни звідти.');
     const F = q.f.map(ic);
     const v = [q.a, q.b, q.c];
     return F[2] + ' = ' + q.s3 + ' − ' + q.s1 + ' = <b>' + q.c + '</b> &nbsp;→&nbsp; ' +

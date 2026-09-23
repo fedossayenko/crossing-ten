@@ -17,25 +17,39 @@ function genBoth(){
   }
 }
 
+const bothUkLang = {'английски':'англійську', 'френски':'французьку', 'немски':'німецьку', 'испански':'іспанську'};
+const bothUkPl = (n, one, few, many) => ({one, few})[new Intl.PluralRules('uk').select(n)] || many;
+const bothUkPupils = n => n + ' ' + bothUkPl(n, 'учень', 'учні', 'учнів');
+const bothUkStudy = n => bothUkPl(n, 'вивчає', 'вивчають', 'вивчають');
 function drawBoth(q){
   if(q.kind === 'both'){
-    return '<div class="ask">В един клас има <span class="num">' + q.T + '</span> ученика. От тях <span class="num">' +
+    return '<div class="ask">' + tr('В един клас има <span class="num">' + q.T + '</span> ученика. От тях <span class="num">' +
       q.A + '</span> учат <b>' + q.lang[0] + '</b> език, а <span class="num">' + q.B + '</span> — <b>' +
       q.lang[1] + '</b>. Колко ученици от този клас учат ' +
-      (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?') + '</div>' +
-      '<div class="note">Всеки ученик учи поне един от двата езика.</div>' +
+      (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?'),
+      'В одному класі <span class="num">' + q.T + '</span> ' + bothUkPl(q.T, 'учень', 'учні', 'учнів') +
+      '. З них <span class="num">' + q.A + '</span> ' + bothUkStudy(q.A) + ' <b>' + bothUkLang[q.lang[0]] +
+      '</b> мову, а <span class="num">' + q.B + '</span> — <b>' + bothUkLang[q.lang[1]] +
+      '</b>. Скільки учнів цього класу вивчають ' +
+      (q.asksBoth ? '<b>обидві</b> мови?' : '<b>лише ' + bothUkLang[q.lang[1]] + '</b> мову?')) + '</div>' +
+      '<div class="note">' + tr('Всеки ученик учи поне един от двата езика.', 'Кожен учень вивчає щонайменше одну з двох мов.') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqBoth(q){
-  if(q.kind === 'both') return q.T + ' ученика, ' + q.A + ' и ' + q.B + ', и двата: ' + q.both + ' → ' + q.ans;
+  if(q.kind === 'both') return tr(q.T + ' ученика, ' + q.A + ' и ' + q.B + ', и двата: ',
+    bothUkPupils(q.T) + ', ' + q.A + ' і ' + q.B + ', обидві: ') + q.both + ' → ' + q.ans;
 }
 function whyBoth(q, full){
   if(q.kind === 'both'){
-    if(!full) return 'Събери двата броя — излиза повече от учениците. Кой се брои два пъти?';
-    const head = q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учениците са ' + q.T + ' &nbsp;→&nbsp; <b>' +
-      q.both + '</b> учат и двата езика';
-    return q.asksBoth ? head : head + ' &nbsp;→&nbsp; само ' + q.lang[1] + ': ' + q.B + ' − ' + q.both + ' = ' + q.ans;
+    if(!full) return tr('Събери двата броя — излиза повече от учениците. Кой се брои два пъти?',
+      'Додай обидва числа — вийде більше, ніж учнів у класі. Кого пораховано двічі?');
+    const head = tr(q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учениците са ' + q.T + ' &nbsp;→&nbsp; <b>' +
+      q.both + '</b> учат и двата езика',
+      q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учнів ' + q.T + ' &nbsp;→&nbsp; <b>' +
+      q.both + '</b> ' + bothUkStudy(q.both) + ' обидві мови');
+    return q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
+      ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans;
   }
 }
 KIND.both = { draw:drawBoth, eq:eqBoth, why:whyBoth };

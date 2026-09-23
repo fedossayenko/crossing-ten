@@ -19,24 +19,31 @@ function fruitSvg(row){
     return '<g transform="translate(' + x + ' ' + y + ')">' + fruitBody(t) + '</g>';
   }).join('');
   return '<div class="fig"><svg viewBox="0 0 ' + cols*u + ' ' + rows*u +
-    '" role="img" aria-label="круши и ябълки">' + g + '</svg></div>';
+    '" role="img" aria-label="' + tr('круши и ябълки', 'груші та яблука') + '">' + g + '</svg></div>';
 }
 
+const fruitUk = (n, forms) => forms[{one:0, few:1}[new Intl.PluralRules('uk').select(n)] ?? 2];
+const fruitPear = n => fruitUk(n, ['груша', 'груші', 'груш']), fruitApple = n => fruitUk(n, ['яблуко', 'яблука', 'яблук']);
 function drawFruit(q){
   if(q.kind === 'fruit'){
-    return '<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
-      q.k + '</span> по-голям от броя на <b>крушите</b>?</div>' + fruitSvg(q.row) +
+    return tr('<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
+      q.k + '</span> по-голям от броя на <b>крушите</b>?</div>',
+      '<div class="ask">Скільки <b>яблук</b> треба додати, щоб їх стало на <span class="num">' +
+      q.k + '</span> більше, ніж <b>груш</b>?</div>') + fruitSvg(q.row) +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
   }
 }
 function eqFruit(q){
-  if(q.kind === 'fruit') return q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ' + q.ans;
+  if(q.kind === 'fruit') return tr(q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ',
+    q.pears + ' ' + fruitPear(q.pears) + ', ' + q.apples + ' ' + fruitApple(q.apples) + ', на ' + q.k + ' більше → ') + q.ans;
 }
 function whyFruit(q, full){
   if(q.kind === 'fruit'){
-    if(!full) return 'Преброй първо крушите, после ябълките.';
-    return 'круши: <b>' + q.pears + '</b>, ябълки: <b>' + q.apples + '</b> &nbsp;→&nbsp; трябват ' +
-      (q.pears + q.k) + ' ябълки &nbsp;→&nbsp; ' + (q.pears + q.k) + ' − ' + q.apples + ' = ' + q.ans;
+    if(!full) return tr('Преброй първо крушите, после ябълките.', 'Спочатку порахуй груші, потім яблука.');
+    return tr('круши: <b>' + q.pears + '</b>, ябълки: <b>' + q.apples + '</b> &nbsp;→&nbsp; трябват ' +
+      (q.pears + q.k) + ' ябълки &nbsp;→&nbsp; ',
+      'груш: <b>' + q.pears + '</b>, яблук: <b>' + q.apples + '</b> &nbsp;→&nbsp; треба ' +
+      (q.pears + q.k) + ' ' + fruitApple(q.pears + q.k) + ' &nbsp;→&nbsp; ') + (q.pears + q.k) + ' − ' + q.apples + ' = ' + q.ans;
   }
 }
 KIND.fruit = { draw:drawFruit, eq:eqFruit, why:whyFruit };

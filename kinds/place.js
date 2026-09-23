@@ -18,11 +18,11 @@ function genPlace(){
 
 function drawPlace(q){
   if(q.kind === 'place'){
-    const sq = '<span class="circle">□</span>', tr = '<span class="circle">△</span>';
-    const wanted = q.shape === 0 ? q.a + sq + ' − ' + tr : tr + sq + ' − ' + q.a;
-    return '<div class="ask">Вместо фигурите ' + sq + ' и ' + tr +
-      ' поставете <b>различни</b> цифри, така че:</div>' +
-      '<div class="given">' + sq + tr + ' − ' + q.k + ' = ' + q.R + '</div>' +
+    const sq = '<span class="circle">□</span>', tri = '<span class="circle">△</span>';
+    const wanted = q.shape === 0 ? q.a + sq + ' − ' + tri : tri + sq + ' − ' + q.a;
+    return '<div class="ask">' + tr('Вместо фигурите ' + sq + ' и ' + tri + ' поставете <b>различни</b> цифри, така че:',
+      'Замість фігур ' + sq + ' і ' + tri + ' поставте <b>різні</b> цифри так, щоб:') + '</div>' +
+      '<div class="given">' + sq + tri + ' − ' + q.k + ' = ' + q.R + '</div>' +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + wanted + ' = ' + SLOT + '</div>';
   }
 }
@@ -31,7 +31,7 @@ function eqPlace(q){
 }
 function whyPlace(q, full){
   if(q.kind === 'place'){
-    if(!full) return '□△ е двуцифрено число, а не умножение.';
+    if(!full) return tr('□△ е двуцифрено число, а не умножение.', '□△ — це двоцифрове число, а не множення.');
     const wanted = q.shape === 0 ? q.a + '' + q.t + ' − ' + q.u : '' + q.u + q.t + ' − ' + q.a;
     return '□△ = ' + q.R + ' + ' + q.k + ' = <b>' + q.N + '</b> &nbsp;→&nbsp; □ = ' + q.t + ', △ = ' + q.u +
       ' &nbsp;→&nbsp; ' + wanted + ' = ' + q.ans;

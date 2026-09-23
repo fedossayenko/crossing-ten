@@ -11,16 +11,22 @@ function genCoins(){
   return {kind:'coins', n1, n2, T, limit: T + 2, asksMax, ans: asksMax ? T : T + 1};
 }
 const coinWord = n => n === 1 ? 'монета' : 'монети';
+const coinsUkWord = n => ({one:'монету', few:'монети'})[new Intl.PluralRules('uk').select(n)] || 'монет';
 
 function drawCoins(q){
   if(q.kind === 'coins'){
-    const have = '<span class="num">' + q.n1 + '</span> ' + coinWord(q.n1) + ' от 1 евро и <span class="num">' +
-      q.n2 + '</span> ' + coinWord(q.n2) + ' от 2 евро';
+    const have = tr('<span class="num">' + q.n1 + '</span> ' + coinWord(q.n1) + ' от 1 евро и <span class="num">' +
+      q.n2 + '</span> ' + coinWord(q.n2) + ' от 2 евро',
+      '<span class="num">' + q.n1 + '</span> ' + coinsUkWord(q.n1) + ' по 1 євро і <span class="num">' +
+      q.n2 + '</span> ' + coinsUkWord(q.n2) + ' по 2 євро');
     return '<div class="ask">' + (q.asksMax
-      ? 'Коя е <b>най-голямата</b> сума, която можем да заплатим, ако имаме ' + have + '?'
-      : 'Коя сума, по-малка от <span class="num">' + q.limit + '</span> евро, <b>НЕ</b> може да се заплати, ако имаме ' +
-        have + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + ' <span class="unit">евро</span></div>';
+      ? tr('Коя е <b>най-голямата</b> сума, която можем да заплатим, ако имаме ' + have + '?',
+           'Яку <b>найбільшу</b> суму ми можемо заплатити, якщо маємо ' + have + '?')
+      : tr('Коя сума, по-малка от <span class="num">' + q.limit + '</span> евро, <b>НЕ</b> може да се заплати, ако имаме ' +
+        have + '?',
+           'Яку суму, меншу за <span class="num">' + q.limit + '</span> євро, <b>НЕ</b> можна заплатити, якщо маємо ' +
+        have + '?')) + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + ' <span class="unit">' + tr('евро', 'євро') + '</span></div>';
   }
 }
 function eqCoins(q){
@@ -28,10 +34,11 @@ function eqCoins(q){
 }
 function whyCoins(q, full){
   if(q.kind === 'coins'){
-    if(!full) return 'Монетите от 1 евро позволяват всяка сума до сбора.';
-    const total = q.n1 + ' + ' + (2*q.n2) + ' = <b>' + q.T + '</b> евро';
-    return 'всичко имаме ' + total + (q.asksMax ? '' :
-      ' &nbsp;→&nbsp; всяка сума до ' + q.T + ' може да се плати, значи не може ' + q.ans);
+    if(!full) return tr('Монетите от 1 евро позволяват всяка сума до сбора.', 'Монети по 1 євро дають змогу заплатити будь-яку суму аж до загальної.');
+    const total = q.n1 + ' + ' + (2*q.n2) + ' = <b>' + q.T + '</b> ' + tr('евро', 'євро');
+    return tr('всичко имаме ', 'усього маємо ') + total + (q.asksMax ? '' :
+      tr(' &nbsp;→&nbsp; всяка сума до ' + q.T + ' може да се плати, значи не може ',
+         ' &nbsp;→&nbsp; будь-яку суму до ' + q.T + ' можна заплатити, отже не можна ') + q.ans);
   }
 }
 KIND.coins = { draw:drawCoins, eq:eqCoins, why:whyCoins };

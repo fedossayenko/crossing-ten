@@ -6,6 +6,7 @@ const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
 const scripts = [...src.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const js = scripts.map(read).join('\n');
 const head = `
+const RAND = Math.random; let RANDS = 0; Math.random = () => (RANDS++, RAND());   // counts every random draw
 const localStorage = undefined;   // no browser storage here: players.js falls back to one player
 let W = {max:1, m:{}};
 const LOCAL = {mix:[1,2,4,5], plain:true};
@@ -16,6 +17,27 @@ const test = `
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\\d+/g); return m ? +m[m.length-1] : NaN; };
 let checked = 0; const kinds = {};
+// Ukrainian task text must be complete: Bulgarian-only words or letters left in it mean a
+// piece was missed (a text made only of shared words such as "5 см" is fine as it is).
+const BG_ONLY = new Set(('и е са от колко сбор сбора сборът сбори числата числото цифрите които която който което това тези още какво ' +
+  'трябва всеки всяка всяко всички между една един едно има няма със във ако или пресметнете пресметни намерете намери ' +
+  'запишете запиши разликата разлика когато тогава защото пъти дни ден седмица месец кога отговор отговора ' +
+  'получи получаваме остава останаха прибавяме изваждаме събираме значи тук само също').split(' '));
+const SAME = new Set('см дм м мм кг г л хв а в на не за до'.split(' '));
+const words = h => strip(h).replace(/&[a-z]+;/g, ' ').toLowerCase().match(/[а-яёїієґъѝ’'-]+/g) || [];
+function inUkrainian(L, q, bgTexts){
+  const r0 = RANDS;
+  LANG = 'uk';
+  const uk = [drawQ(q), eqText(q), why(q, true), why(q, false)];
+  LANG = 'bg';
+  if(RANDS !== r0) throw new Error('level ' + L + ': drawing the question in Ukrainian drew a random number');
+  uk.forEach((u, j) => {
+    const bad = words(u).filter(w => /[ъѝыэё]/.test(w) || /^(най|по)-/.test(w) || BG_ONLY.has(w));
+    if(bad.length) throw new Error('level ' + L + ': Bulgarian left in the Ukrainian text (' + bad.join(', ') + '): ' + strip(u));
+    if(u === bgTexts[j] && !words(u).every(w => SAME.has(w))) throw new Error('level ' + L + ': a text is not translated: ' + strip(u));
+  });
+  return uk;
+}
 const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
@@ -26,18 +48,27 @@ for(const L of IDS){
     if(q.kind){
       kinds[q.kind] = (kinds[q.kind]||0) + 1;
       const ok = [ans].concat(q.alt || []);
-      if(ok.indexOf(lastNum(why(q,true))) < 0) throw new Error('level ' + L + ': worked line lands on ' + lastNum(why(q,true)) + ', answer is ' + ans + ' -- ' + JSON.stringify(q));
-      if(ok.indexOf(lastNum(eqText(q))) < 0) throw new Error('level ' + L + ': summary line lands on ' + lastNum(eqText(q)) + ', answer is ' + ans);
-      const nums = (strip(why(q,false)).match(/\\d+/g) || []).map(Number);
-      if(nums.some(v => ok.indexOf(v) >= 0)) throw new Error('level ' + L + ': the first-miss nudge gives away the answer');
+      const r0 = RANDS, bg = [drawQ(q), eqText(q), why(q, true), why(q, false)];
+      if(RANDS !== r0) throw new Error('level ' + L + ': drawing a question drew a random number');
+      // the same rules in both languages: the worked line and summary end on the answer,
+      // and the first-miss nudge never gives it away
+      [['', bg], [' (Ukrainian)', inUkrainian(L, q, bg)]].forEach(([lang, [, eq, full, nudge]]) => {
+        if(ok.indexOf(lastNum(full)) < 0) throw new Error('level ' + L + lang + ': worked line lands on ' + lastNum(full) + ', answer is ' + ans + ' -- ' + JSON.stringify(q));
+        if(ok.indexOf(lastNum(eq)) < 0) throw new Error('level ' + L + lang + ': summary line lands on ' + lastNum(eq) + ', answer is ' + ans);
+        const nums = (strip(nudge).match(/\\d+/g) || []).map(Number);
+        if(nums.some(v => ok.indexOf(v) >= 0)) throw new Error('level ' + L + lang + ': the first-miss nudge gives away the answer');
+      });
     }
     const boxes = (drawQ(q).match(/class="slot"/g) || []).length;
     if(boxes !== (q.slots || 1)) throw new Error('level ' + L + ' draws ' + boxes + ' answer boxes but wants ' + (q.slots || 1));
+    LANG = 'uk'; const ukBoxes = (drawQ(q).match(/class="slot"/g) || []).length; LANG = 'bg';
+    if(ukBoxes !== boxes) throw new Error('level ' + L + ' draws ' + ukBoxes + ' answer boxes in Ukrainian, ' + boxes + ' in Bulgarian');
     if((q.alt || []).length && !q.slots) throw new Error('level ' + L + ' has alternatives but only one box');
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + IDS.length + ' levels: arithmetic, worked line, summary line and layout all agree');
+console.log('checked ' + checked + ' questions across ' + IDS.length + ' levels: arithmetic, worked line, summary line and layout all agree, in Bulgarian and in Ukrainian');
+console.log('Ukrainian: every worksheet text is translated, none left in Bulgarian, and drawing a question never draws a random number');
 console.log('worksheet kinds:', JSON.stringify(kinds));
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
@@ -1659,6 +1690,10 @@ eval(head + body + test);
       n++;
     }
     if(lang !== 'en') levelIds.forEach(id => { if(!(L.desc || {})[id]) throw new Error(lang + ' has no description for level ' + id); });
+    if(lang === 'uk'){
+      const names = [...js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).matchAll(/\{ id:(\d+),.*?eq:'(.*?)'/g)];
+      names.forEach(m => { if(/[А-Яа-я]/.test(m[2]) && !(L.eq || {})[m[1]]) throw new Error('uk has no name for level ' + m[1] + ' ' + m[2]); });
+    }
   }
   const groups = (read('js/levels.js').split('const PICK_GROUPS = [')[1].split('];')[0].match(/\{ nm:'/g) || []).length;
   Object.keys(T.LANGS).forEach(lang => { if(T.TEXT[lang].groups.length !== groups) throw new Error(lang + ' names ' + T.TEXT[lang].groups.length + ' picker groups, the picker has ' + groups); });
@@ -1669,6 +1704,40 @@ eval(head + body + test);
   if(unknown.length) throw new Error('the page asks for text no language has: ' + unknown.join(', '));
   console.log('languages: ' + Object.keys(T.LANGS).join(', ') + ' each carry all ' + (n / 3) + ' texts, ' + levelIds.length +
     ' level descriptions, ' + groups + ' group names and ' + mascots.length + ' mascot names; all ' + used.length + ' keys the page uses exist');
+}
+
+/* The signs task shows an example on its own numbers: correct arithmetic, and never the target. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, signsExample }; })()');
+  for(let i = 0; i < 3000; i++){
+    const q = Q.raw(50), ex = Q.signsExample(q), [lhs, rhs] = ex.split(' = ');
+    const val = lhs.split(/ (?=[+−])/).reduce((t, p) => t + (p[0] === '−' ? -+p.slice(2) : p[0] === '+' ? +p.slice(2) : +p), 0);
+    if(val !== +rhs || +rhs === q.T || lhs.split(/ [+−] /).map(Number).join() !== q.nums.join()) throw new Error('bad signs example: ' + ex + ' for ' + JSON.stringify(q));
+  }
+  console.log('signs example: always on the question’s own numbers, always correct, never the answer');
+}
+
+/* Naming a mistake: each classic slip on a plain sum is recognised from what she typed,
+   and the ten-frame shows exactly the crossing step - the right dots, the right ones
+   crossed out - and nothing at all when no ten is crossed. */
+{
+  const Q = eval('(function(){' + head + body + '; return { slipOf, tenFrame }; })()');
+  [[{a:42,b:17,op:'-'}, '35', 'forgotBorrow'], [{a:41,b:17,op:'-'}, '36', 'flipped'], [{a:42,b:17,op:'-'}, '59', 'wrongOp'],
+   [{a:27,b:15,op:'+'}, '32', 'forgotCarry'], [{a:8,b:5,op:'+'}, '3', 'wrongOpAdd'], [{a:42,b:17,op:'-'}, '26', 'offByOne'],
+   [{a:42,b:17,op:'-'}, '40', null], [{a:112,b:25,op:'-'}, '97', 'forgotBorrow'], [{kind:'erase', ans:7}, '8', null]
+  ].forEach(([q, typed, want]) => {
+    const got = Q.slipOf(q, [typed]);
+    if(got !== want) throw new Error(q.a + q.op + q.b + ' typed ' + typed + ' is read as ' + got + ', not ' + want);
+  });
+  for(let a = 1; a <= 9; a++) for(let b = 1; b <= 9; b++){
+    const svg = Q.tenFrame({a, b, op:'+'}), fill = (svg.match(/var\(--accent\)"/g) || []).length, more = (svg.match(/var\(--warm\)"/g) || []).length;
+    if(a + b < 10 ? svg !== '' : fill !== a || more !== b) throw new Error('ten-frame for ' + a + ' + ' + b + ' draws ' + fill + ' and ' + more);
+  }
+  for(let o = 0; o <= 9; o++) for(let bo = 0; bo <= 9; bo++){
+    const svg = Q.tenFrame({a:40 + o, b:10 + bo, op:'-'}), left = (svg.match(/var\(--accent\)"/g) || []).length, gone = (svg.match(/<path d="M[\d.]+,[\d.]+ L/g) || []).length;
+    if(o >= bo ? svg !== '' : left !== 10 - (bo - o) || gone !== bo || /undefined|NaN/.test(svg)) throw new Error('ten-frame for ' + (40+o) + ' − ' + (10+bo) + ': ' + left + ' left, ' + gone + ' crossed out');
+  }
+  console.log('mistakes: forgotten borrow, flipped digits, dropped carry, wrong sign and off-by-one are each recognised; ten-frames show the crossing step exactly');
 }
 
 /* The transfer link: what one device packs, the other has to read back unchanged. */

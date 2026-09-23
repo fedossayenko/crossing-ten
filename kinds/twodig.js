@@ -17,21 +17,26 @@ function genTwoDig(){
 
 function drawTwodig(q){
   if(q.kind === 'twodig'){
-    const what = q.ask === 0 ? 'От по-голямото извадете по-малкото. Колко е получената разлика?'
-               : q.ask === 1 ? 'Кое е по-голямото от тях?' : 'Кое е по-малкото от тях?';
-    return '<div class="ask">Сборът на две <b>различни</b> ' + (q.three ? 'трицифрени' : 'двуцифрени') +
-      ' числа е <span class="num">' + q.S + '</span>. ' + what + '</div>' +
+    const what = q.ask === 0 ? tr('От по-голямото извадете по-малкото. Колко е получената разлика?',
+                                  'Від більшого відніміть менше. Чому дорівнює отримана різниця?')
+               : q.ask === 1 ? tr('Кое е по-голямото от тях?', 'Яке з них більше?')
+               : tr('Кое е по-малкото от тях?', 'Яке з них менше?');
+    return '<div class="ask">' + tr('Сборът на две <b>различни</b> ' + (q.three ? 'трицифрени' : 'двуцифрени') +
+      ' числа е <span class="num">', 'Сума двох <b>різних</b> ' + (q.three ? 'трицифрових' : 'двоцифрових') +
+      ' чисел дорівнює <span class="num">') + q.S + '</span>. ' + what + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqTwodig(q){
-  if(q.kind === 'twodig') return 'сбор ' + q.S + ' → ' + q.lo + ' и ' + q.hi + ' → ' + q.ans;
+  if(q.kind === 'twodig') return tr('сбор ', 'сума ') + q.S + ' → ' + q.lo + tr(' и ', ' і ') + q.hi + ' → ' + q.ans;
 }
 function whyTwodig(q, full){
   if(q.kind === 'twodig'){
-    if(!full) return q.three ? 'Най-малкото трицифрено число е граница.' : 'Най-малкото двуцифрено число е граница.';
-    return 'числата могат да са само <b>' + q.lo + '</b> и <b>' + q.hi + '</b> &nbsp;→&nbsp; ' +
-      (q.ask === 0 ? q.hi + ' − ' + q.lo + ' = ' + q.ans : 'търсеното е ' + q.ans);
+    if(!full) return q.three ? tr('Най-малкото трицифрено число е граница.', 'Найменше трицифрове число — це межа.')
+                             : tr('Най-малкото двуцифрено число е граница.', 'Найменше двоцифрове число — це межа.');
+    return tr('числата могат да са само <b>' + q.lo + '</b> и <b>', 'числа можуть бути лише <b>' + q.lo + '</b> і <b>') +
+      q.hi + '</b> &nbsp;→&nbsp; ' +
+      (q.ask === 0 ? q.hi + ' − ' + q.lo + ' = ' + q.ans : tr('търсеното е ', 'шукане число — ') + q.ans);
   }
 }
 KIND.twodig = { draw:drawTwodig, eq:eqTwodig, why:whyTwodig };

@@ -26,27 +26,34 @@ function genTerm(){
   }
 }
 
+// Ukrainian [name, "of" in the locative, "in" after the name], keyed by the Bulgarian name
+const termUk = {'умаляемото':['зменшуване','різниці',' в '], 'умалителят':['від’ємник','різниці',' у '],
+                'първото събираемо':['перший доданок','сумі',' у '], 'второто събираемо':['другий доданок','сумі',' у ']};
 function drawTerm(q){
   if(q.kind === 'term'){
     const expr = '<span class="num">' + q.x + ' ' + q.t.op + ' ' + q.y + '</span>';
+    const uk = termUk[q.t.sub];
     const ask = q.shape === 0
-      ? 'Кое е <b>' + q.t.sub + '</b> в ' + q.t.of + ' ' + expr + '?'
-      : 'С колко сборът <span class="num">' + q.chain.join(' + ') + '</span> е <b>' +
-        (q.less ? 'по-малък' : 'по-голям') + '</b> от <b>' + q.t.obj + '</b> в ' + q.t.of + ' ' + expr + '?';
+      ? tr('Кое е <b>' + q.t.sub + '</b> в ' + q.t.of + ' ' + expr + '?',
+           'Чому дорівнює <b>' + uk[0] + '</b>' + uk[2] + uk[1] + ' ' + expr + '?')
+      : tr('С колко сборът <span class="num">' + q.chain.join(' + ') + '</span> е <b>' +
+        (q.less ? 'по-малък' : 'по-голям') + '</b> от <b>' + q.t.obj + '</b> в ' + q.t.of + ' ' + expr + '?',
+        'На скільки сума <span class="num">' + q.chain.join(' + ') + '</span> <b>' +
+        (q.less ? 'менша' : 'більша') + '</b> за <b>' + uk[0] + '</b>' + uk[2] + uk[1] + ' ' + expr + '?');
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqTerm(q){
-  if(q.kind === 'term') return (q.shape === 0 ? q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y
-    : 'сборът ' + q.total + ' срещу ' + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
+  if(q.kind === 'term') return (q.shape === 0 ? tr(q.t.sub + ' в ', termUk[q.t.sub][0] + termUk[q.t.sub][2]) + q.x + ' ' + q.t.op + ' ' + q.y
+    : tr('сборът ', 'сума ') + q.total + tr(' срещу ', ' проти ') + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
 }
 function whyTerm(q, full){
   if(q.kind === 'term'){
-    if(!full) return q.t.op === '−' ? 'Умаляемото е първото число, умалителят — второто.'
-                                    : 'Събираемите са числата, които събираме.';
+    if(!full) return q.t.op === '−' ? tr('Умаляемото е първото число, умалителят — второто.', 'Зменшуване — це перше число, від’ємник — друге.')
+                                    : tr('Събираемите са числата, които събираме.', 'Доданки — це числа, які ми додаємо.');
     const val = q.t.at === 0 ? q.x : q.y;
-    const head = q.t.sub + ' в ' + q.x + ' ' + q.t.op + ' ' + q.y + ' е <b>' + val + '</b>';
+    const head = tr(q.t.sub + ' в ', termUk[q.t.sub][0] + termUk[q.t.sub][2]) + q.x + ' ' + q.t.op + ' ' + q.y + tr(' е <b>', ' — <b>') + val + '</b>';
     if(q.shape === 0) return head;
     return q.chain.join(' + ') + ' = <b>' + q.total + '</b>, а ' + head +
       ' &nbsp;→&nbsp; ' + Math.max(val, q.total) + ' − ' + Math.min(val, q.total) + ' = ' + q.ans;

@@ -21,7 +21,8 @@ function genSeq(){
 
 function drawSeq(q){
   if(q.kind === 'seq'){
-    return '<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>' +
+    return tr('<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>',
+      '<div class="ask">Скільки чисел у ряду мають ліворуч лише менші числа, а праворуч — лише більші?</div>') +
       '<div class="seq">' + q.a.join(', ') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
   }
@@ -31,9 +32,10 @@ function eqSeq(q){
 }
 function whySeq(q, full){
   if(q.kind === 'seq'){
-    if(!full) return 'Провери всяко число: всички отляво по-малки, всички отдясно по-големи.';
-    return (q.hits.length === 1 ? 'това е само числото <b>' + q.hits[0] + '</b>'
-                                : 'това са <b>' + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
+    if(!full) return tr('Провери всяко число: всички отляво по-малки, всички отдясно по-големи.',
+      'Перевір кожне число: усі ліворуч менші, усі праворуч більші.');
+    return (q.hits.length === 1 ? tr('това е само числото <b>', 'це лише число <b>') + q.hits[0] + '</b>'
+                                : tr('това са <b>', 'це <b>') + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
   }
 }
 KIND.seq = { draw:drawSeq, eq:eqSeq, why:whySeq };

@@ -108,93 +108,111 @@ function genCmp(){
   }
 }
 
+// Ukrainian [nominative, genitive] of the runners, keyed by the Bulgarian name
+const cmpUkName = {'Деми':['Демі','Демі'], 'Мария':['Марія','Марії'], 'Ния':['Нія','Нії'], 'Ива':['Іва','Іви']};
 function drawCmp(q){
   if(q.kind === 'cmp' && q.shape === 3){
     const L = '<span class="num">' + q.L.join(' + ') + '</span>';
     const R = '<span class="num">' + q.R.join(' + ') + '</span>';
     return '<div class="ask">' + (q.flip
-        ? 'С колко сборът ' + R + ' е <b>по-малък</b> от сбора ' + L + '?'
-        : 'С колко сборът ' + L + ' е <b>по-голям</b> от сбора ' + R + '?') +
+        ? tr('С колко сборът ' + R + ' е <b>по-малък</b> от сбора ' + L + '?',
+             'На скільки сума ' + R + ' <b>менша</b> за суму ' + L + '?')
+        : tr('С колко сборът ' + L + ' е <b>по-голям</b> от сбора ' + R + '?',
+             'На скільки сума ' + L + ' <b>більша</b> за суму ' + R + '?')) +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'cmp' && q.runs){
     const line = a => '<span class="num">' + a.join(' + ') + '</span>';
     const small = 1 - q.big;
-    return '<div class="ask"><b>' + q.nm[0] + '</b> пресметнала вярно ' + line(q.A) + ', а <b>' +
+    const uk = q.nm.map(n => cmpUkName[n]);
+    return '<div class="ask">' + tr('<b>' + q.nm[0] + '</b> пресметнала вярно ' + line(q.A) + ', а <b>' +
       q.nm[1] + '</b> пресметнала вярно ' + line(q.back ? q.B.slice().reverse() : q.B) +
-      '. С колко сборът на <b>' + q.nm[q.big] + '</b> е по-голям от сбора на <b>' + q.nm[small] + '</b>?</div>' +
+      '. С колко сборът на <b>' + q.nm[q.big] + '</b> е по-голям от сбора на <b>' + q.nm[small] + '</b>?',
+      '<b>' + uk[0][0] + '</b> правильно обчислила ' + line(q.A) + ', а <b>' +
+      uk[1][0] + '</b> правильно обчислила ' + line(q.back ? q.B.slice().reverse() : q.B) +
+      '. На скільки сума в <b>' + uk[q.big][1] + '</b> більша, ніж у <b>' + uk[small][1] + '</b>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'cmp' && q.written){
-    return '<div class="ask">Пресметнете</div>' +
+    return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
       '<div class="given">(' + q.terms.join(' + ') + ') − (' + q.kept.join(' + ') + ')</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'cmp' && q.shape === 1){
-    return '<div class="ask">С колко сборът <span class="num">' + q.terms.join(' + ') +
-      '</span> е <b>по-голям</b> от сбора <span class="num">' + q.kept.join(' + ') + '</span>?</div>' +
+    return '<div class="ask">' + tr('С колко сборът <span class="num">' + q.terms.join(' + ') +
+      '</span> е <b>по-голям</b> от сбора <span class="num">' + q.kept.join(' + ') + '</span>?',
+      'На скільки сума <span class="num">' + q.terms.join(' + ') +
+      '</span> <b>більша</b> за суму <span class="num">' + q.kept.join(' + ') + '</span>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'cmp' && q.shape === 2){
-    return '<div class="ask">С колко сборът <span class="num">' + q.x + ' + ' + q.y +
+    return '<div class="ask">' + tr('С колко сборът <span class="num">' + q.x + ' + ' + q.y +
       '</span> е <b>' + (q.less ? 'по-малък' : 'по-голям') + '</b> от разликата <span class="num">' +
-      q.p + ' − ' + q.q + '</span>?</div>' +
+      q.p + ' − ' + q.q + '</span>?',
+      'На скільки сума <span class="num">' + q.x + ' + ' + q.y +
+      '</span> <b>' + (q.less ? 'менша' : 'більша') + '</b> за різницю <span class="num">' +
+      q.p + ' − ' + q.q + '</span>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'cmp'){
     const A = '<span class="num">' + q.a + ' + ' + q.b + '</span>';
     const B = '<span class="num">' + spread(q.a) + ' + ' + spread(q.b) + '</span>';
     return '<div class="ask">' + (q.flip
-        ? 'С колко сборът ' + B + ' е по-малък от сбора ' + A + '?'
-        : 'С колко сборът ' + A + ' е по-голям от сбора ' + B + '?') +
+        ? tr('С колко сборът ' + B + ' е по-малък от сбора ' + A + '?', 'На скільки сума ' + B + ' менша за суму ' + A + '?')
+        : tr('С колко сборът ' + A + ' е по-голям от сбора ' + B + '?', 'На скільки сума ' + A + ' більша за суму ' + B + '?')) +
       '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqCmp(q){
-  if(q.kind === 'cmp' && q.shape === 3) return q.L.join('+') + ' срещу ' + q.R.join('+') + ' → ' + q.ans;
-  if(q.kind === 'cmp' && q.shape === 1) return q.terms.join('+') + ' срещу ' + q.kept.join('+') + ' → ' + q.ans;
-  if(q.kind === 'cmp' && q.runs) return q.sa + ' срещу ' + q.sb + ' → ' + q.ans;
-  if(q.kind === 'cmp' && q.same) return q.x + '±' + q.y + ' → ' + q.S + ' и ' + q.D + ' → ' + q.ans;
-  if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ') срещу (' + q.p + '−' + q.q + ') → ' + q.ans;
+  const vs = tr(' срещу ', ' проти ');
+  if(q.kind === 'cmp' && q.shape === 3) return q.L.join('+') + vs + q.R.join('+') + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.shape === 1) return q.terms.join('+') + vs + q.kept.join('+') + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.runs) return q.sa + vs + q.sb + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.same) return q.x + '±' + q.y + ' → ' + q.S + tr(' и ', ' і ') + q.D + ' → ' + q.ans;
+  if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ')' + vs + '(' + q.p + '−' + q.q + ') → ' + q.ans;
   if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
 }
 function whyCmp(q, full){
   if(q.kind === 'cmp' && q.shape === 3){
-    if(!full) return 'Сравни ги по двойки, вместо да събираш.';
+    if(!full) return tr('Сравни ги по двойки, вместо да събираш.', 'Порівняй їх парами, а не додавай.');
     const pr = [], ds = q.L.map((v, i) => v - q.R[i]);
-    q.L.forEach((v, i) => pr.push(ds[i] === 0 ? v + ' е поравно'
-      : v + ' е с ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' повече' : ' по-малко')));
+    q.L.forEach((v, i) => pr.push(ds[i] === 0 ? v + tr(' е поравно', ' — порівну')
+      : v + tr(' е с ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' повече' : ' по-малко'),
+               ' — на ' + Math.abs(ds[i]) + (ds[i] > 0 ? ' більше' : ' менше'))));
     // the gains added up first, then the losses taken off — so the running total never dips
     const bits = ds.filter(d => d).sort((x, y) => y - x)
       .map((d, i) => (i ? (d < 0 ? ' − ' : ' + ') : '') + Math.abs(d));
-    return 'по двойки: ' + pr.join(', ') + ' &nbsp;→&nbsp; ' + bits.join('') + ' = ' + q.ans;
+    return tr('по двойки: ', 'парами: ') + pr.join(', ') + ' &nbsp;→&nbsp; ' + bits.join('') + ' = ' + q.ans;
   }
   if(q.kind === 'cmp' && q.shape === 1){
-    if(!full) return 'Общите събираеми се съкращават.';
-    const rest = q.gone.length === 1 ? 'остава само ' + q.ans
-                                     : 'остава ' + q.gone.join(' + ') + ' = ' + q.ans;
-    return 'общите събираеми ' + q.kept.slice().sort((a, b) => a - b).join(' + ') +
-      ' се съкращават &nbsp;→&nbsp; ' + rest;
+    if(!full) return tr('Общите събираеми се съкращават.', 'Спільні доданки скорочуються.');
+    const rest = q.gone.length === 1 ? tr('остава само ', 'залишається лише ') + q.ans
+                                     : tr('остава ', 'залишається ') + q.gone.join(' + ') + ' = ' + q.ans;
+    return tr('общите събираеми ', 'спільні доданки ') + q.kept.slice().sort((a, b) => a - b).join(' + ') +
+      tr(' се съкращават', ' скорочуються') + ' &nbsp;→&nbsp; ' + rest;
   }
   if(q.kind === 'cmp' && q.runs){
-    if(!full) return 'Събирай всеки от двата сбора по двойки от двата края.';
+    if(!full) return tr('Събирай всеки от двата сбора по двойки от двата края.', 'Кожну з двох сум додавай парами з обох кінців.');
     const show = a => a[0] + ' + ' + a[1] + ' + … + ' + a[a.length-1];
-    return q.nm[0] + ': ' + show(q.A) + ' = <b>' + q.sa + '</b>, &nbsp;' + q.nm[1] + ': ' + show(q.B) +
+    const nm = q.nm.map(n => tr(n, cmpUkName[n][0]));
+    return nm[0] + ': ' + show(q.A) + ' = <b>' + q.sa + '</b>, &nbsp;' + nm[1] + ': ' + show(q.B) +
       ' = <b>' + q.sb + '</b> &nbsp;→&nbsp; ' + Math.max(q.sa, q.sb) + ' − ' + Math.min(q.sa, q.sb) +
       ' = ' + q.ans;
   }
   if(q.kind === 'cmp' && q.same){
-    if(!full) return 'Двете числа са едни и същи — какво прави по-малкото веднъж горе и веднъж долу?';
-    return q.y + ' веднъж се прибавя и веднъж се изважда &nbsp;→&nbsp; цялата разлика е двойно по-голяма от ' +
-      q.y + ' &nbsp;→&nbsp; ' + q.y + ' + ' + q.y + ' = ' + q.ans;
+    if(!full) return tr('Двете числа са едни и същи — какво прави по-малкото веднъж горе и веднъж долу?',
+                        'Обидва числа ті самі — що робить менше з них, коли його раз додають, а раз віднімають?');
+    return tr(q.y + ' веднъж се прибавя и веднъж се изважда &nbsp;→&nbsp; цялата разлика е двойно по-голяма от ' + q.y,
+              q.y + ' один раз додається, а один раз віднімається &nbsp;→&nbsp; уся різниця вдвічі більша за ' + q.y) +
+      ' &nbsp;→&nbsp; ' + q.y + ' + ' + q.y + ' = ' + q.ans;
   }
   if(q.kind === 'cmp' && q.shape === 2){
-    if(!full) return 'Пресметни сбора и разликата поотделно.';
+    if(!full) return tr('Пресметни сбора и разликата поотделно.', 'Обчисли суму й різницю окремо.');
     return q.x + ' + ' + q.y + ' = <b>' + q.S + '</b>, &nbsp;' + q.p + ' − ' + q.q + ' = <b>' + q.D +
       '</b> &nbsp;→&nbsp; ' + Math.max(q.S, q.D) + ' − ' + Math.min(q.S, q.D) + ' = ' + q.ans;
   }
   if(q.kind === 'cmp'){
-    if(!full) return 'Пресметни двата сбора, после извади по-малкия.';
+    if(!full) return tr('Пресметни двата сбора, после извади по-малкия.', 'Обчисли обидві суми, потім відніми меншу.');
     return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
   }

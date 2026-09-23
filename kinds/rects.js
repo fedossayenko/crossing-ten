@@ -30,35 +30,42 @@ function genRects(){
 
 function drawRects(q){
   if(q.kind === 'rects' && q.shape === 1){
-    return '<div class="ask">Правоъгълникът с размери <span class="num">' + q.s +
+    return '<div class="ask">' + tr('Правоъгълникът с размери <span class="num">' + q.s +
       '</span> см и <span class="num">' + (q.n * q.s) + '</span> см е разделен на <b>' + BGNUM[q.n] +
       ' квадрата</b>. Колко сантиметра е сборът от обиколките на всички правоъгълници, които <b>' +
-      (q.squares ? 'са квадрати' : 'не са квадрати') + '</b>?</div>' +
+      (q.squares ? 'са квадрати' : 'не са квадрати') + '</b>?',
+      'Прямокутник зі сторонами <span class="num">' + q.s + '</span> см і <span class="num">' + (q.n * q.s) +
+      '</span> см поділено на <b>' + UKNUM[q.n] + ' квадрати</b>. Скільки сантиметрів становить сума периметрів усіх прямокутників, які <b>' +
+      (q.squares ? 'є квадратами' : 'не є квадратами') + '</b>?') + '</div>' +
       gridSvg(q.n, 1, 0, 0) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
   }
   if(q.kind === 'rects'){
-    return '<div class="ask">Колко са всички правоъгълници на чертежа, в които има мравка?</div>' +
+    return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има мравка?',
+      'Скільки всього на рисунку прямокутників, у яких є мурашка?') + '</div>' +
       gridSvg(q.W, q.H, q.c, q.r) +
-      '<div class="note">Квадратът е правоъгълник, на който всички страни са равни.</div>' +
+      '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
+      'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
   }
 }
 function eqRects(q){
   if(q.kind === 'rects') return q.shape === 1
-    ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? 'квадратите' : 'без квадратите') + ' → ' + q.ans
-    : q.W + '×' + q.H + ', мравката в ' + q.c + '/' + q.r + ' → ' + q.ans;
+    ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
+    : q.W + '×' + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
 }
 function whyRects(q, full){
   if(q.kind === 'rects' && q.shape === 1){
-    if(!full) return 'Брой всички правоъгълници, не само квадратчетата поотделно.';
-    return q.parts.map(pt => pt[1] + ' на ширина ' + (pt[0]*q.s) + ' см, обиколка ' + pt[2]).join('; &nbsp;') +
+    if(!full) return tr('Брой всички правоъгълници, не само квадратчетата поотделно.',
+      'Рахуй усі прямокутники, а не лише окремі квадратики.');
+    return q.parts.map(pt => pt[1] + tr(' на ширина ', ' завширшки ') + (pt[0]*q.s) + tr(' см, обиколка ', ' см, периметр ') + pt[2]).join('; &nbsp;') +
       ' &nbsp;→&nbsp; ' + q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans;
   }
   if(q.kind === 'rects'){
-    if(!full) return 'Правоъгълникът може да е от едно или от повече квадратчета.';
+    if(!full) return tr('Правоъгълникът може да е от едно или от повече квадратчета.',
+      'Прямокутник може складатися з одного або з кількох квадратиків.');
     const rep = n => Array(n).fill(q.wide).join(' + ');
-    return 'по ширина <b>' + q.wide + '</b>, по височина <b>' + q.tall + '</b> &nbsp;→&nbsp; ' +
+    return tr('по ширина <b>', 'по ширині <b>') + q.wide + tr('</b>, по височина <b>', '</b>, по висоті <b>') + q.tall + '</b> &nbsp;→&nbsp; ' +
       (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans);
   }
 }

@@ -41,7 +41,7 @@ function rulerSvg(q){
     'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l1 + '</text>' +
     '<text x="' + (x(to) + 8).toFixed(1) + '" y="' + (y + 4) + '" text-anchor="middle" font-size="13" ' +
     'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l2 + '</text>';
-  return '<div class="fig"><svg viewBox="-20 0 ' + (W + 40) + ' ' + H + '" role="img" aria-label="две отсечки върху линийка">' +
+  return '<div class="fig"><svg viewBox="-20 0 ' + (W + 40) + ' ' + H + '" role="img" aria-label="' + tr('две отсечки върху линийка', 'два відрізки на лінійці') + '">' +
     '<rect x="8" y="' + top + '" width="' + (W - 16) + '" height="26" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
     '<g stroke="var(--ink)" stroke-width="1.1">' + ticks + '</g>' + nums +
     bracket(q.a, q.b, 12, 'A', 'B') + bracket(q.c, q.d, 30, 'C', 'D') + '</svg></div>';
@@ -50,7 +50,7 @@ function segSvg(q){
   const W = 236, tot = q.p + q.q + q.r;
   const at = v => 14 + v / tot * (W - 28);
   const pts = [[at(0), 'A'], [at(q.p), 'C'], [at(q.p + q.q), 'B'], [at(tot), 'D']];
-  return '<div class="fig"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="четири точки върху права">' +
+  return '<div class="fig"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="' + tr('четири точки върху права', 'чотири точки на прямій') + '">' +
     '<line x1="4" y1="0" x2="' + (W - 4) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
     pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/>' +
       '<text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" ' +
@@ -60,7 +60,8 @@ function segSvg(q){
 
 function drawSeg(q){
   if(q.kind === 'seg' && q.shape === 'ruler'){
-    return '<div class="ask">Колко сантиметра е <b>сборът</b> от дължините на отсечките <b>AB</b> и <b>CD</b>?</div>' +
+    return tr('<div class="ask">Колко сантиметра е <b>сборът</b> от дължините на отсечките <b>AB</b> и <b>CD</b>?</div>',
+      '<div class="ask">Скільки сантиметрів становить <b>сума</b> довжин відрізків <b>AB</b> і <b>CD</b>?</div>') +
       rulerSvg(q) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
   }
@@ -77,12 +78,14 @@ function eqSeg(q){
 }
 function whySeg(q, full){
   if(q.kind === 'seg' && q.shape === 'ruler'){
-    if(!full) return 'Дължината не е числото, до което стига отсечката — гледай и откъде тръгва.';
-    return 'AB: от ' + q.a + ' до ' + q.b + ' &nbsp;→&nbsp; <b>' + q.AB + '</b>, &nbsp;CD: от ' + q.c +
-      ' до ' + q.d + ' &nbsp;→&nbsp; <b>' + q.CD + '</b> &nbsp;→&nbsp; ' + q.AB + ' + ' + q.CD + ' = ' + q.ans;
+    if(!full) return tr('Дължината не е числото, до което стига отсечката — гледай и откъде тръгва.',
+      'Довжина — це не число, до якого доходить відрізок: дивись і на те, звідки він починається.');
+    const from = tr('от ', 'від '), to = tr(' до ', ' до ');
+    return 'AB: ' + from + q.a + to + q.b + ' &nbsp;→&nbsp; <b>' + q.AB + '</b>, &nbsp;CD: ' + from + q.c +
+      to + q.d + ' &nbsp;→&nbsp; <b>' + q.CD + '</b> &nbsp;→&nbsp; ' + q.AB + ' + ' + q.CD + ' = ' + q.ans;
   }
   if(q.kind === 'seg'){
-    if(!full) return 'Отсечките се застъпват — намери първо AC.';
+    if(!full) return tr('Отсечките се застъпват — намери първо AC.', 'Відрізки накладаються — спочатку знайди AC.');
     return 'AC = AB − CB = ' + q.AB + ' − ' + q.q + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; AD = AC + CD = ' +
       q.p + ' + ' + q.CD + ' = ' + q.ans;
   }

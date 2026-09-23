@@ -76,27 +76,43 @@ const server = http.createServer((req, res) => {
   const res = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
   const bad = res.out.slice();
   const expect = (cond, what) => { if(!cond) bad.push(what); };
+  const t_bg_wrote = 'ти написа 35 · забравен заем от десетиците';
   const page = async expr => JSON.parse(await run('JSON.stringify(' + expr + ')') || '{}');
 
   // A first launch is one Bulgarian player with the cat, and asks nothing.
   const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length }');
   expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1, 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
 
+  // A named mistake: 35 for 42 − 17 is a borrowed ten never taken off. The hint names it and
+  // draws the ten-frame; the end-of-round sheet says what she wrote and what it was.
+  const slip = await page(`(() => {
+    $('sheet').hidden = true; $('stats').hidden = true;
+    newRound([{ a:42, b:17, op:'-' }]);
+    const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    key('3'); key('5'); key('go');
+    const hint = { slip: !!$('hint').querySelector('.slip'), frame: !!$('hint').querySelector('.tenframe') };
+    key('3'); key('5'); key('go'); key('go');
+    return Object.assign(hint, { wrote: ($('misslist').querySelector('.wrote') || {}).textContent || '',
+      logged: LOCAL.rounds[LOCAL.rounds.length - 1].slips });
+  })()`);
+  expect(slip.slip && slip.frame && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
+    'the forgotten borrow was not named: ' + JSON.stringify(slip));
+
   // Two players: the launch asks who is playing; picking the other one reloads into her
   // language, mascot and (empty) log, and every level still plays.
   if(!process.argv[2]){
     await run(`localStorage.setItem('crossingten.players', JSON.stringify({ cur:'p1', list:[
-      { id:'p1', name:'Ани', mascot:'fox', lang:'uk' }, { id:'p2', name:'Иво', mascot:'owl', lang:'en' }] }));
+      { id:'p1', name:'Ани', mascot:'fox', lang:'en' }, { id:'p2', name:'Иво', mascot:'owl', lang:'uk' }] }));
       sessionStorage.clear(); location.reload(); 1`);
     await settle();
     const ask = await page('{ lang: document.documentElement.lang, open: !$("players").hidden, tiles: document.querySelectorAll(".pchoose").length, fox: !!$("cat").querySelector("ellipse[rx=\'68\']") }');
-    expect(ask.lang === 'uk' && ask.open && ask.tiles === 2 && ask.fox, 'two players did not ask who is playing: ' + JSON.stringify(ask));
+    expect(ask.lang === 'en' && ask.open && ask.tiles === 2 && ask.fox, 'two players did not ask who is playing: ' + JSON.stringify(ask));
     await run(`document.querySelector('.pchoose[data-id="p2"]').click(); 1`);
     await settle();
     const p2 = await page('{ id: PLAYER.id, lang: document.documentElement.lang, again: $("again").textContent, rounds: LOCAL.rounds.length, open: !$("players").hidden }');
-    expect(p2.id === 'p2' && p2.lang === 'en' && p2.again === 'New round' && p2.rounds === 0 && !p2.open, 'switching player went wrong: ' + JSON.stringify(p2));
+    expect(p2.id === 'p2' && p2.lang === 'uk' && p2.again === 'Новий раунд' && p2.rounds === 0 && !p2.open, 'switching player went wrong: ' + JSON.stringify(p2));
     const res2 = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
-    bad.push(...res2.out.map(x => 'second player: ' + x));
+    bad.push(...res2.out.map(x => 'second player, in Ukrainian: ' + x));
     // Adding a player through the form: name, mascot, language, save.
     await run(`$('who').click(); $('pAdd').click(); $('pName').value = 'Мая';
       document.querySelector('.mchoice[data-m="bun"]').click(); document.querySelector('#pLang button[data-l="bg"]').click();

@@ -1,6 +1,7 @@
 // Interface text in each language. English is the reference: bg and uk carry every key
-// it has (check.js enforces it). Task text is Bulgarian whatever the language, and lives
-// with its kind in kinds/. A value is either a string or a function of the numbers in it.
+// it has (check.js enforces it). Task text lives with its kind in kinds/, in Bulgarian and
+// Ukrainian through tr(); an English player gets it in Bulgarian. A value is either a
+// string or a function of the numbers in it.
 const LANGS = { bg:'Български', uk:'Українська', en:'English' };
 const LANG_TAG = { bg:'bg-BG', uk:'uk-UA', en:'en-GB' };
 let LANG = LANGS[PLAYER.lang] ? PLAYER.lang : 'bg';
@@ -53,7 +54,16 @@ en: {
   name:'Name', mascot:'Mascot', language:'Language', save:'Save',
   delPlayer:'Delete player', delArm:'Tap again to delete', changePlayer:'Change player', edit:'Edit',
   learnedN:n => n + ' ' + pl(n, { one:'level learned', other:'levels learned' }),
-  mascots:{ cat:'Cat', fox:'Fox', owl:'Owl', bun:'Bunny' }
+  mascots:{ cat:'Cat', fox:'Fox', owl:'Owl', bun:'Bunny' },
+  tenAdd:(a, up, rest) => a + ' and ' + up + ' fill the first ten; ' + rest + ' more go into the second',
+  tenSub:(ones, take, fromTen) => ones + ' ones and a borrowed ten; take away ' + take + ': the ' + ones + ' ones first, then ' + fromTen + ' from the ten',
+  youWrote:v => 'you wrote ' + v,
+  slip:{ forgotBorrow:['the borrowed ten was not taken off', 'You borrowed a ten for the ones — did you take it off the tens?'],
+    flipped:['the small digit was taken from the big one', 'Can you take that many ones away? If not, borrow a ten first.'],
+    forgotCarry:['the carried ten was dropped', 'The ones make more than ten — where does that ten go?'],
+    wrongOp:['added instead of taking away', 'Look at the sign again.'],
+    wrongOpAdd:['took away instead of adding', 'Look at the sign again.'],
+    offByOne:['one off', ''] }
 },
 bg: {
   sound:'Звук', speak:'Прочети задачата на глас', progress:'Напредък', del:'Изтрий', check:'Провери отговора',
@@ -103,6 +113,15 @@ bg: {
   delPlayer:'Изтрий играча', delArm:'Натисни пак, за да изтриеш', changePlayer:'Смени играча', edit:'Промени',
   learnedN:n => n + ' ' + pl(n, { one:'ниво научено', other:'нива научени' }),
   mascots:{ cat:'Котка', fox:'Лисица', owl:'Бухал', bun:'Зайче' },
+  tenAdd:(a, up, rest) => a + ' и ' + up + ' пълнят първата десетица, още ' + rest + ' отиват във втората',
+  tenSub:(ones, take, fromTen) => ones + ' единици и една взета десетица; махаме ' + take + ': първо ' + ones + ' единици, после ' + fromTen + ' от десетицата',
+  youWrote:v => 'ти написа ' + v,
+  slip:{ forgotBorrow:['забравен заем от десетиците', 'Взе десетица назаем за единиците — махна ли я от десетиците?'],
+    flipped:['извадена малката цифра от голямата', 'Можеш ли да извадиш толкова единици? Ако не — първо вземи десетица назаем.'],
+    forgotCarry:['забравена пренесената десетица', 'Единиците правят повече от десет — къде отива тази десетица?'],
+    wrongOp:['събиране вместо изваждане', 'Погледни пак знака.'],
+    wrongOpAdd:['изваждане вместо събиране', 'Погледни пак знака.'],
+    offByOne:['с единица разлика', ''] },
   desc:{
     1:'Двуцифрено минус едноцифрено, с преминаване през десетицата',
     2:'Двуцифрено минус двуцифрено, със заемане',
@@ -212,6 +231,22 @@ uk: {
   delPlayer:'Видалити гравця', delArm:'Натисни ще раз, щоб видалити', changePlayer:'Змінити гравця', edit:'Змінити',
   learnedN:n => n + ' ' + pl(n, { one:'рівень вивчено', few:'рівні вивчено', many:'рівнів вивчено', other:'рівня вивчено' }),
   mascots:{ cat:'Котик', fox:'Лисичка', owl:'Сова', bun:'Зайчик' },
+  tenAdd:(a, up, rest) => a + ' і ' + up + ' заповнюють перший десяток, ще ' + rest + ' йдуть у другий',
+  tenSub:(ones, take, fromTen) => ones + ' одиниць і позичений десяток; забираємо ' + take + ': спершу ' + ones + ' одиниць, потім ' + fromTen + ' з десятка',
+  youWrote:v => 'твоя відповідь — ' + v,
+  slip:{ forgotBorrow:['забуто повернути позичений десяток', 'Для одиниць позичено десяток — а з десятків його забрано?'],
+    flipped:['від більшої цифри відняли меншу', 'Чи можна відняти стільки одиниць? Якщо ні — спершу позич десяток.'],
+    forgotCarry:['загубився перенесений десяток', 'Одиниці дають більше ніж десять — куди йде цей десяток?'],
+    wrongOp:['додавання замість віднімання', 'Поглянь ще раз на знак.'],
+    wrongOpAdd:['віднімання замість додавання', 'Поглянь ще раз на знак.'],
+    offByOne:['помилка на одиницю', ''] },
+  eq:{ 50:'Плюс чи мінус', 36:'Цукерки', 12:'Скільки? Сума?', 25:'Скільки вівторків?', 24:'Скільки сум?', 55:'Порахуй цифру',
+    16:'Замість ?', 51:'Десятки', 13:'Найменше', 53:'Трицифрові', 46:'Розстав', 35:'Два двоцифрові', 44:'Закресли',
+    49:'Кратні', 18:'Сума цифр', 45:'Чотири картки', 54:'Судоку', 27:'Пропущені', 26:'Ряд', 15:'Яке стерли?',
+    29:'Фрукти', 37:'Фігури', 28:'Яблука і груші', 38:'Олівці', 39:'Бракує', 47:'Три ящики', 14:'Нова сума',
+    10:'На скільки?', 30:'Зменшуване', 57:'Хто на якому місці', 48:'Дві мови', 42:'Кішки', 43:'Монети',
+    17:'Сума і різниця', 58:'Равлик', 56:'Відро', 33:'Квіти', 32:'Стрічки', 52:'Вирізаний кут', 31:'Деревця',
+    21:'Периметр', 22:'Спільна сторона', 34:'Розфарбовані', 19:'Прямокутники', 41:'Три точки' },
   desc:{
     1:'Двоцифрове мінус одноцифрове, з переходом через десяток',
     2:'Двоцифрове мінус двоцифрове, з позиченням',
@@ -275,3 +310,4 @@ uk: {
 };
 const t = (k, ...a) => { const v = k in TEXT[LANG] ? TEXT[LANG][k] : TEXT.en[k]; return typeof v === 'function' ? v(...a) : v; };
 const levelDesc = l => (TEXT[LANG].desc || {})[l.id] || l.desc;
+const levelName = l => (TEXT[LANG].eq || {})[l.id] || l.eq;

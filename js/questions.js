@@ -68,9 +68,13 @@ function eqText(q){
   return KIND[q.kind].eq(q);
 }
 
-// On a first miss she gets the method, not the answer; the worked line comes after.
+// On a first miss she gets the method, not the answer; the worked line comes after. For a
+// plain sum that crosses a ten, the method comes with a picture of it (tenFrame).
 function why(q, full){
   if(q.kind) return KIND[q.kind].why(q, full);
+  return full ? whySum(q, true) : whySum(q, false) + tenFrame(q);
+}
+function whySum(q, full){
   const a = q.a, b = q.b, o = a%10, ten = a-o, bo = b%10, bt = b-bo;
   if(q.op === '-'){
     if(o < bo){
@@ -92,4 +96,54 @@ function why(q, full){
   }
   return full ? o + ' + ' + bo + ' = ' + (o+bo) + ', &nbsp;' + ten + ' + ' + bt + ' = ' + (ten+bt) + ' &nbsp;' + t('noCarryNote')
               : t('noCarry');
+}
+
+// The crossing step on the ones, drawn as two ten-frames. Adding fills the first ten and
+// spills into the second; taking away borrows a whole ten and crosses the ones out of it
+// - the ones first, then the rest from the ten. Nothing to draw when no ten is crossed.
+function tenFrame(q){
+  const o = q.a % 10, bo = q.b % 10, cells = [];      // 20 cells: the first ten, then the second
+  let label;
+  if(q.op === '+'){
+    if(o + bo < 10) return '';
+    const up = 10 - o;
+    for(let i = 0; i < 20; i++) cells.push(i < o ? 'a' : i < o + bo ? 'b' : '');
+    label = t('tenAdd', o, up, bo - up);
+  } else {
+    if(o >= bo) return '';
+    const fromTen = bo - o;
+    for(let i = 0; i < 10; i++) cells.push(i < 10 - fromTen ? 'a' : 'x');
+    for(let i = 0; i < 10; i++) cells.push(i < o ? 'x' : '');
+    label = t('tenSub', o, bo, fromTen);
+  }
+  const C = 20, frame = f => '<rect x="' + (f*112 + 2) + '" y="2" width="' + 5*C + '" height="' + 2*C +
+    '" rx="5" fill="none" stroke="var(--line)" stroke-width="2"/>' +
+    '<path d="' + [1,2,3,4].map(k => 'M' + (f*112 + 2 + k*C) + ',2 v' + 2*C).join(' ') + ' M' + (f*112 + 2) + ',' + (2 + C) + ' h' + 5*C +
+    '" stroke="var(--line)" stroke-width="1.5"/>';
+  const dot = (c, i) => {
+    if(!c) return '';
+    const f = i < 10 ? 0 : 1, k = i % 10, x = f*112 + 2 + (k % 5)*C + C/2, y = 2 + Math.floor(k / 5)*C + C/2;
+    if(c === 'x') return '<circle cx="' + x + '" cy="' + y + '" r="6.5" fill="none" stroke="var(--muted)" stroke-width="2"/>' +
+      '<path d="M' + (x - 6) + ',' + (y + 6) + ' L' + (x + 6) + ',' + (y - 6) + '" stroke="var(--muted)" stroke-width="2" stroke-linecap="round"/>';
+    return '<circle cx="' + x + '" cy="' + y + '" r="6.5" fill="' + (c === 'a' ? 'var(--accent)' : 'var(--warm)') + '"/>';
+  };
+  return '<svg class="tenframe" viewBox="0 0 216 44" role="img" aria-label="' + label + '">' +
+    frame(0) + frame(1) + cells.map(dot).join('') + '</svg>';
+}
+
+// What a wrong answer to a plain sum most likely was. The first three are the mistakes
+// worth naming to her: a ten taken but not paid back, the small ones digit taken from the
+// big one, a carried ten dropped, or the wrong sign. Worksheet tasks are not guessed at.
+function slipOf(q, parts){
+  if(q.kind || parts.length !== 1 || parts[0] === '') return null;
+  const v = +parts[0], ans = answer(q), o = q.a % 10, bo = q.b % 10;
+  if(q.op === '-'){
+    if(v === q.a + q.b) return 'wrongOp';
+    if(o < bo && v === ans + 10) return 'forgotBorrow';
+    if(o < bo && v === (Math.floor(q.a/10) - Math.floor(q.b/10))*10 + (bo - o)) return 'flipped';
+  } else {
+    if(v === q.a - q.b) return 'wrongOpAdd';
+    if(o + bo >= 10 && v === ans - 10) return 'forgotCarry';
+  }
+  return Math.abs(v - ans) === 1 ? 'offByOne' : null;
 }

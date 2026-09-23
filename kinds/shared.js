@@ -9,7 +9,7 @@ function stackSvg(q){
     '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' +
     txt + '</text>';
   return '<div class="fig"><svg viewBox="-24 -22 ' + (W + 48).toFixed(1) + ' ' + (hh + aa + 44).toFixed(1) +
-    '" role="img" aria-label="квадрат с правоъгълник върху него">' +
+    '" role="img" aria-label="' + tr('квадрат с правоъгълник върху него', 'квадрат із прямокутником над ним') + '">' +
     '<g stroke="var(--ink)" stroke-width="2.2" fill="none" stroke-linejoin="round">' +
     '<rect x="0" y="0" width="' + W.toFixed(1) + '" height="' + (hh + aa).toFixed(1) + '"/>' +
     '<line x1="0" y1="' + hh.toFixed(1) + '" x2="' + W.toFixed(1) + '" y2="' + hh.toFixed(1) + '"/></g>' +
@@ -46,48 +46,60 @@ function genShared(){
 
 function drawShared(q){
   if(q.kind === 'shared' && q.shape === 2){
-    return '<div class="ask">Квадрат <b>ABCD</b> и правоъгълник <b>DCEF</b> имат обща страна <b>DC</b>. ' +
+    return '<div class="ask">' + tr('Квадрат <b>ABCD</b> и правоъгълник <b>DCEF</b> имат обща страна <b>DC</b>. ' +
       'Обиколката на правоъгълника <b>ABEF</b> е по-голяма от обиколката на правоъгълника <b>DCEF</b> с <span class="num">' +
-      q.d + '</span> см. Колко сантиметра е обиколката на <b>квадрата ABCD</b>?</div>' +
+      q.d + '</span> см. Колко сантиметра е обиколката на <b>квадрата ABCD</b>?',
+      'Квадрат <b>ABCD</b> і прямокутник <b>DCEF</b> мають спільну сторону <b>DC</b>. ' +
+      'Периметр прямокутника <b>ABEF</b> більший за периметр прямокутника <b>DCEF</b> на <span class="num">' +
+      q.d + '</span> см. Скільки сантиметрів становить периметр <b>квадрата ABCD</b>?') + '</div>' +
       stackSvg(q) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
   }
   if(q.kind === 'shared' && q.shape === 1){
-    return '<div class="ask">От квадрат с обиколка <span class="num">' + q.P +
+    return '<div class="ask">' + tr('От квадрат с обиколка <span class="num">' + q.P +
       '</span> см е изрязан триъгълник с обиколка <span class="num">' + q.p +
-      '</span> см, който има обща страна с квадрата. Колко см е обиколката на получената фигура?</div>' +
+      '</span> см, който има обща страна с квадрата. Колко см е обиколката на получената фигура?',
+      'Від квадрата з периметром <span class="num">' + q.P +
+      '</span> см відрізали трикутник з периметром <span class="num">' + q.p +
+      '</span> см, який має спільну сторону з квадратом. Скільки см становить периметр фігури, що залишилася?') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
   }
   if(q.kind === 'shared'){
-    return '<div class="ask">Триъгълник с обиколка <span class="num">' + q.P +
+    return '<div class="ask">' + tr('Триъгълник с обиколка <span class="num">' + q.P +
       '</span> см разрязали на два триъгълника с обиколки <span class="num">' + q.p1 +
-      '</span> см и <span class="num">' + q.p2 + '</span> см. Колко сантиметра е общата им страна?</div>' +
+      '</span> см и <span class="num">' + q.p2 + '</span> см. Колко сантиметра е общата им страна?',
+      'Трикутник з периметром <span class="num">' + q.P +
+      '</span> см розрізали на два трикутники з периметрами <span class="num">' + q.p1 +
+      '</span> см і <span class="num">' + q.p2 + '</span> см. Скільки сантиметрів завдовжки їхня спільна сторона?') + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
   }
 }
 function eqShared(q){
-  if(q.kind === 'shared' && q.shape === 2) return 'разлика ' + q.d + ' → страна ' + q.a + ' → ' + q.ans;
+  if(q.kind === 'shared' && q.shape === 2) return tr('разлика ', 'різниця ') + q.d + tr(' → страна ', ' → сторона ') + q.a + ' → ' + q.ans;
   if(q.kind === 'shared') return q.shape === 1
-    ? 'квадрат ' + q.P + ', триъгълник ' + q.p + ' → ' + q.ans
+    ? 'квадрат ' + q.P + tr(', триъгълник ', ', трикутник ') + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
 }
 function whyShared(q, full){
   if(q.kind === 'shared' && q.shape === 2){
-    if(!full) return 'Височината на горния правоъгълник влиза и в двете обиколки — тя отпада.';
-    return 'ABEF е по-висок от DCEF точно с AD, и то от двете страни &nbsp;→&nbsp; ' + q.d + ' : 2 = <b>' +
-      q.a + '</b> е страната на квадрата &nbsp;→&nbsp; 4 × ' + q.a + ' = ' + q.ans;
+    if(!full) return tr('Височината на горния правоъгълник влиза и в двете обиколки — тя отпада.',
+      'Висота верхнього прямокутника входить в обидва периметри — вона скорочується.');
+    return tr('ABEF е по-висок от DCEF точно с AD, и то от двете страни &nbsp;→&nbsp; ',
+      'ABEF вищий за DCEF саме на AD, і то з обох боків &nbsp;→&nbsp; ') + q.d + ' : 2 = <b>' +
+      q.a + tr('</b> е страната на квадрата &nbsp;→&nbsp; 4 × ', '</b> — це сторона квадрата &nbsp;→&nbsp; 4 × ') + q.a + ' = ' + q.ans;
   }
   if(q.kind === 'shared' && q.shape === 1){
-    if(!full) return 'Общата страна изчезва, а другите две се появяват.';
-    return 'страната на квадрата е <b>' + q.c + '</b> см &nbsp;→&nbsp; другите две страни на триъгълника са ' +
+    if(!full) return tr('Общата страна изчезва, а другите две се появяват.', 'Спільна сторона зникає, а дві інші з’являються.');
+    return tr('страната на квадрата е <b>' + q.c + '</b> см &nbsp;→&nbsp; другите две страни на триъгълника са ',
+      'сторона квадрата — <b>' + q.c + '</b> см &nbsp;→&nbsp; дві інші сторони трикутника разом — ') +
       q.p + ' − ' + q.c + ' = <b>' + (q.p - q.c) + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + q.c + ' + ' +
       (q.p - q.c) + ' = ' + q.ans;
   }
   if(q.kind === 'shared'){
-    if(!full) return 'Общата страна е в двете обиколки.';
-    return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + '</b>, а обиколката е ' + q.P +
+    if(!full) return tr('Общата страна е в двете обиколки.', 'Спільна сторона входить в обидва периметри.');
+    return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + tr('</b>, а обиколката е ', '</b>, а периметр — ') + q.P +
       ' &nbsp;→&nbsp; ' + (q.p1+q.p2) + ' − ' + q.P + ' = ' + (2*q.ans) +
-      ', това е общата страна <b>два пъти</b> &nbsp;→&nbsp; ' + q.ans;
+      tr(', това е общата страна <b>два пъти</b> &nbsp;→&nbsp; ', ' — це спільна сторона, узята <b>двічі</b> &nbsp;→&nbsp; ') + q.ans;
   }
 }
 KIND.shared = { draw:drawShared, eq:eqShared, why:whyShared };

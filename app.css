@@ -242,6 +242,7 @@ button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-sele
 .lab{font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted)}
 .actions{display:flex; gap:10px; flex-wrap:wrap}
 .btn{border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:14px; padding:13px 18px; font-weight:700; font-size:16px; flex:1 1 150px; min-height:48px}
+.sheet-in > .btn{flex:none}                 /* a lone button in a sheet: its flex-basis would become its height */
 .btn.ghost{background:transparent; color:var(--accent)}
 .btn.warn{border-color:var(--bad); color:var(--bad); background:transparent}
 .btn.warn.armed{background:var(--bad); color:#fff}
@@ -344,3 +345,9 @@ button.catwrap{background:none; border:0; padding:0; border-radius:16px}
 .mchoice[aria-pressed="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 9%, var(--card))}
 .mchoice .cat{height:64px; width:auto; max-width:100%}
 #pLang{flex-wrap:wrap}
+
+/* explanations */
+.tenframe{display:block; width:min(210px,66%); margin:8px auto 0}
+.card:has(.tenframe) .sum{font-size:clamp(32px,8vh,62px)}     /* make room for the picture, no scrolling */
+.slip{font-weight:800; margin-bottom:6px}
+.miss .wrote{font-size:13px; font-weight:800; color:var(--ink)}

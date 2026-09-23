@@ -58,27 +58,28 @@ function drawBox(q){
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
     const right = (q.form === 0 || q.form === 3) ? q.N + ' − ' + B
                 : q.form >= 4 ? B + ' − ' + q.N : B + ' + ' + q.N;
-    return '<div class="ask">Кое число трябва да поставим вместо ' + B +
-      ', така че да е вярно равенството?</div>' +
+    return '<div class="ask">' + tr('Кое число трябва да поставим вместо ' + B +
+      ', така че да е вярно равенството?', 'Яке число треба поставити замість ' + B +
+      ', щоб рівність була правильною?') + '</div>' +
       '<div class="given">' + left + ' = ' + right + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + B + ' = ' + SLOT + '</div>';
   }
   if(q.kind === 'box' && q.shape === 'plus'){
     const sq = '<span class="circle">■</span>';
-    return '<div class="ask">Пресметнете ' + sq + ' − <span class="num">' + q.p + '</span>, ако</div>' +
+    return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + sq + ' − <span class="num">' + q.p + '</span>' + tr(', ако', ', якщо') + '</div>' +
       '<div class="given">' + q.g + ' + ' + sq + ' = ' + q.S + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + sq + ' − ' + q.p +
       ' = ' + SLOT + '</div>';
   }
   if(q.kind === 'box' && q.shape === 'two'){
     const sym = c => '<span class="circle">' + c + '</span>';
-    return '<div class="ask">Пресметнете ' + sym('■') + ' + ' + sym('□') + ', ако</div>' +
-      '<div class="given">' + q.p + ' + ' + sym('□') + ' = ' + (q.p + q.tri) + ' &nbsp;и&nbsp; ' +
+    return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + sym('■') + ' + ' + sym('□') + tr(', ако', ', якщо') + '</div>' +
+      '<div class="given">' + q.p + ' + ' + sym('□') + ' = ' + (q.p + q.tri) + ' &nbsp;' + tr('и', 'і') + '&nbsp; ' +
       q.r + ' + ' + sym('■') + ' = ' + (q.r + q.sq) + '</div>' +
       '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + sym('■') + ' + ' + sym('□') +
       ' = ' + SLOT + '</div>';
   }
-  return '<div class="ask">Пресметни, ако</div>' +
+  return '<div class="ask">' + tr('Пресметни, ако', 'Обчисли, якщо') + '</div>' +
     '<div class="given">' + q.b + ' − <span class="circle">◯</span> = ' + q.x + ' − ' + q.y + '</div>' +
     '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.a +
     ' − <span class="circle">◯</span> = ' + SLOT + '</div>';
@@ -92,7 +93,7 @@ function eqBox(q){
 }
 function whyBox(q, full){
   if(q.shape === 'bal'){
-    if(!full) return 'Едната страна може да се пресметне докрай — започни оттам.';
+    if(!full) return tr('Едната страна може да се пресметне докрай — започни оттам.', 'Одну зі сторін можна обчислити до кінця — почни звідти.');
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
     const tail = (q.form === 0 || q.form === 3) ? '□ = ' + q.N + ' − ' + q.L + ' = ' + q.ans
                : q.form >= 4 ? '□ = ' + q.L + ' + ' + q.N + ' = ' + q.ans
@@ -100,17 +101,17 @@ function whyBox(q, full){
     return left + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tail;
   }
   if(q.shape === 'plus'){
-    if(!full) return 'Намери първо какво стои в квадратчето.';
+    if(!full) return tr('Намери първо какво стои в квадратчето.', 'Спочатку знайди, що стоїть у квадратику.');
     return '■ = ' + q.S + ' − ' + q.g + ' = <b>' + q.box + '</b> &nbsp;→&nbsp; ' +
       q.box + ' − ' + q.p + ' = ' + q.ans;
   }
   if(q.shape === 'two'){
-    if(!full) return 'Намери първо всяко от двете поотделно.';
+    if(!full) return tr('Намери първо всяко от двете поотделно.', 'Спочатку знайди кожне з двох чисел окремо.');
     return '□ = ' + (q.p + q.tri) + ' − ' + q.p + ' = <b>' + q.tri + '</b>, &nbsp;■ = ' +
       (q.r + q.sq) + ' − ' + q.r + ' = <b>' + q.sq + '</b> &nbsp;→&nbsp; ' +
       q.sq + ' + ' + q.tri + ' = ' + q.ans;
   }
-  if(!full) return 'Първо пресметни дясната страна.';
+  if(!full) return tr('Първо пресметни дясната страна.', 'Спочатку обчисли праву сторону.');
   return q.x + ' − ' + q.y + ' = ' + q.r + ' &nbsp;→&nbsp; <b>◯ = ' + q.b + ' − ' + q.r + ' = ' + q.box +
          '</b> &nbsp;→&nbsp; ' + q.a + ' − ' + q.box + ' = ' + q.ans;
 }

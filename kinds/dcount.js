@@ -30,30 +30,39 @@ function genDigitRun(){
 function drawDcount(q){
   if(q.kind === 'dcount'){
     const ask = q.shape === 0
-      ? 'Записах последователните числа от <span class="num">' + q.from + '</span> до <span class="num">' + q.to +
-        '</span>. <b>Колко пъти</b> използвах цифрата <span class="num">' + q.d + '</span>?'
-      : 'Записах последователните числа от <span class="num">' + q.from +
+      ? tr('Записах последователните числа от <span class="num">' + q.from + '</span> до <span class="num">' + q.to +
+        '</span>. <b>Колко пъти</b> използвах цифрата <span class="num">' + q.d + '</span>?',
+        'Записали підряд числа від <span class="num">' + q.from + '</span> до <span class="num">' + q.to +
+        '</span>. <b>Скільки разів</b> використали цифру <span class="num">' + q.d + '</span>?')
+      : tr('Записах последователните числа от <span class="num">' + q.from +
         '</span> до <span class="circle">□</span>. За записването им използвах <span class="num">' + q.k +
         '</span> цифри <span class="num">' + q.d +
-        '</span>. Кое е <b>най-голямото</b> число, което може да се постави вместо <span class="circle">□</span>?';
+        '</span>. Кое е <b>най-голямото</b> число, което може да се постави вместо <span class="circle">□</span>?',
+        'Записали підряд числа від <span class="num">' + q.from +
+        '</span> до <span class="circle">□</span>. Для їхнього запису використали <span class="num">' + q.k +
+        '</span> цифр <span class="num">' + q.d +
+        '</span>. Яке <b>найбільше</b> число можна поставити замість <span class="circle">□</span>?');
     return '<div class="ask">' + ask + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqDcount(q){
-  if(q.kind === 'dcount') return q.shape === 0 ? 'цифрата ' + q.d + ' от ' + q.from + ' до ' + q.to + ' → ' + q.ans
-    : q.k + ' пъти цифрата ' + q.d + ', от ' + q.from + ' → ' + q.ans;
+  if(q.kind === 'dcount') return q.shape === 0
+    ? tr('цифрата ' + q.d + ' от ' + q.from + ' до ' + q.to, 'цифра ' + q.d + ' від ' + q.from + ' до ' + q.to) + ' → ' + q.ans
+    : tr(q.k + ' пъти цифрата ' + q.d + ', от ', 'цифра ' + q.d + ' — ' + q.k + ' разів, від ') + q.from + ' → ' + q.ans;
 }
 function whyDcount(q, full){
   if(q.kind === 'dcount'){
-    if(!full) return 'Числата с две еднакви цифри се броят два пъти.';
+    if(!full) return tr('Числата с две еднакви цифри се броят два пъти.', 'Числа з двома однаковими цифрами рахуй двічі.');
     const top = q.shape === 0 ? q.to : q.ans, hits = [];
     for(let v = q.from; v <= top && hits.length < 12; v++)
       if(String(v).indexOf(String(q.d)) >= 0) hits.push(v);
     const list = hits.join(', ') + (hits.length >= 12 ? ', …' : '');
-    if(q.shape === 0) return 'цифрата я има в ' + list + ' &nbsp;→&nbsp; ' + q.ans;
-    return 'до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
-      ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ' + q.ans;
+    if(q.shape === 0) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans;
+    return tr('до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
+      ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ',
+      'до <b>' + q.ans + '</b> цифра з’явилася ' + q.k + ' разів (' + list +
+      ') &nbsp;→&nbsp; наступне число з нею буде далі, отже, ') + q.ans;
   }
 }
 KIND.dcount = { draw:drawDcount, eq:eqDcount, why:whyDcount };

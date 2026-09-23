@@ -212,7 +212,7 @@ function putCat(slot, m){
 /* ---------- round flow ---------- */
 function newRound(qs){
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
-  S.i = 0; S.results = []; S.t0 = Date.now();
+  S.i = 0; S.results = []; S.typed = []; S.slip = []; S.t0 = Date.now();
   $('sheet').hidden = true; $('stats').hidden = true; $('picker').hidden = true;
   $('confetti').innerHTML = '';
   show();
@@ -284,13 +284,17 @@ function check(){
   }
   S.results[S.i] = false;
   S.tries++;
+  // What she typed the first time, and what it most likely was: named on the end-of-round
+  // sheet, counted for the grown-ups, and - when it is a real misconception - hinted at now.
+  if(S.tries === 1){ S.typed[S.i] = S.parts.join(' · '); S.slip[S.i] = slipOf(q, S.parts); }
   mood('sad'); sfx.bad();
   $('card').classList.add('shake');
   setTimeout(() => $('card').classList.remove('shake'), 340);
   if(S.tries === 1){
     $('verdict').className = 'verdict no';
     $('verdict').textContent = t('notYet');
-    $('hint').innerHTML = why(q);
+    const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
+    $('hint').innerHTML = (nudge ? '<div class="slip">' + nudge + '</div>' : '') + why(q);
     S.parts = S.parts.map(() => ''); S.at = 0; paintSlot();
   } else {
     S.revealed = true; S.settled = true;
@@ -338,10 +342,12 @@ function finish(){
   }
 
   const missed = S.qs.filter((_, k) => !S.results[k]);
+  const wrote = S.qs.map((_, k) => S.results[k] || S.typed[k] === undefined ? '' :
+    '<span class="wrote">' + t('youWrote', S.typed[k]) + (S.slip[k] ? ' · ' + t('slip')[S.slip[k]][0] : '') + '</span>').filter((_, k) => !S.results[k]);
   $('missWrap').hidden = missed.length === 0;
   $('redo').hidden = missed.length === 0;
-  $('misslist').innerHTML = missed.map(q =>
-    '<div class="miss"><span class="eq">' + eqText(q) + '</span><span class="why">' + why(q, true) + '</span></div>'
+  $('misslist').innerHTML = missed.map((q, k) =>
+    '<div class="miss"><span class="eq">' + eqText(q) + '</span>' + wrote[k] + '<span class="why">' + why(q, true) + '</span></div>'
   ).join('');
   $('redo').onclick = () => {
     const set = missed.slice();
@@ -357,7 +363,8 @@ function finish(){
     ts: now, day: dayKey(now),
     level: S.level, n: S.qs.length, firstTry: got,
     seen: S.qs.map(factKey),
-    missed: S.qs.filter((_, k) => !S.results[k]).map(factKey)
+    missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
+    slips: S.slip.filter(Boolean)
   });
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
@@ -423,7 +430,8 @@ function renderStats(){
 
   $('byLevel').innerHTML = Object.keys(st.lvl).sort((x,y) => x-y).map(L => {
     const d = st.lvl[L], p = Math.round(100*d.f/d.n);
-    return '<div class="lvlrow"><span class="nm">' + (LEVEL_NAME[L] || L) + '</span>' +
+    const lv = LEVELS.find(l => l.id === +L);
+    return '<div class="lvlrow"><span class="nm">' + (lv ? levelName(lv) : L) + '</span>' +
            '<span class="track"><i style="width:' + p + '%"></i></span>' +
            '<span class="pc">' + p + '% · ' + d.n + '</span></div>';
   }).join('');
@@ -473,7 +481,7 @@ $('reset').onclick = async () => {
 };
 
 /* ---------- level picker ---------- */
-function paintPill(){ $('levelPill').textContent = LEVEL_NAME[S.level]; }
+function paintPill(){ $('levelPill').textContent = levelName(LEVELS.find(l => l.id === S.level) || { eq:'' }); }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
 function ago(ts){
@@ -552,7 +560,7 @@ function buildPicker(){
   // number size and how easy the trap is to miss — five dots
   const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' + [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="eq">' + l.eq + hard(l) + '</span>' +
+    '<span class="eq">' + levelName(l) + hard(l) + '</span>' +
     '<span class="desc">' + levelDesc(l) + '</span>' +
     (M[l.id] && M[l.id].done ? '<span class="tick">✓</span>' : '') + stat(l) + '</button>';
   const m = mastery(LOCAL.rounds);
@@ -563,7 +571,7 @@ function buildPicker(){
   const met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = '<div class="nextwrap"><div class="lab">' +
     t(!met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</div>' +
-    (nx ? '<button class="pick now" data-lvl="' + nx.id + '"><span class="eq">' + nx.eq +
+    (nx ? '<button class="pick now" data-lvl="' + nx.id + '"><span class="eq">' + levelName(nx) +
           hard(nx) + '</span><span class="desc">' + levelDesc(nx) + '</span>' +
           stat(nx) + '</button>'
         : '<div class="advice">' + t('allLearned') + '</div>') +

@@ -17,20 +17,25 @@ function candyWays(n, kids){
   return out;
 }
 
+const candyFew = n => new Intl.PluralRules('uk').select(n) === 'few';
 function drawCandy(q){
   if(q.kind === 'candy'){
-    return '<div class="ask">По колко начина можем да подарим <span class="num">' + q.n +
+    return '<div class="ask">' + tr('По колко начина можем да подарим <span class="num">' + q.n +
       '</span> еднакви бонбона на <b>' + (q.kids === 2 ? 'две' : 'три') +
-      '</b> деца, така че всяко да получи <b>поне един</b> бонбон?</div>' +
+      '</b> деца, така че всяко да получи <b>поне един</b> бонбон?',
+      'Скількома способами можна подарувати <span class="num">' + q.n + '</span> ' +
+      (candyFew(q.n) ? 'однакові цукерки' : 'однакових цукерок') + ' <b>' + (q.kids === 2 ? 'двом' : 'трьом') +
+      '</b> дітям так, щоб кожна дитина отримала <b>щонайменше одну</b> цукерку?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
 function eqCandy(q){
-  if(q.kind === 'candy') return q.n + ' бонбона на ' + q.kids + ' деца → ' + q.ans;
+  if(q.kind === 'candy') return tr(q.n + ' бонбона на ' + q.kids + ' деца → ' + q.ans,
+    q.n + (candyFew(q.n) ? ' цукерки ' : ' цукерок ') + q.kids + ' дітям → ' + q.ans);
 }
 function whyCandy(q, full){
   if(q.kind === 'candy'){
-    if(!full) return 'Изреди ги подред, за да не пропуснеш нито един начин.';
+    if(!full) return tr('Изреди ги подред, за да не пропуснеш нито един начин.', 'Перелічи їх по порядку, щоб не пропустити жодного способу.');
     return candyWays(q.n, q.kids).join(', &nbsp;') + ' &nbsp;→&nbsp; ' + q.ans;
   }
 }

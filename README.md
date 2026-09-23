@@ -35,15 +35,27 @@ artifact copy, which cannot load files beside it.
 ## Players, languages and mascots
 
 Tap the mascot to see who is playing. Each player has a name, one of four mascots and
-an interface language (Bulgarian by default); task text stays Bulgarian whatever the
-language, since that is the language of the worksheets. With two or more players, each
-launch starts by asking who is playing.
+an interface language (Bulgarian by default). Task text comes in Bulgarian or Ukrainian;
+an English player gets the Bulgarian, the language of the worksheets. With two or more
+players, each launch starts by asking who is playing.
 
 Every player's rounds live under her own storage key. The first player keeps the key
 the app always used, so everything played before there were players is hers without
 moving anything. The mascots share one face, so the moods (idle, happy, sad, nod,
 tilt, wiggle, dance, party) move any of them; a new animal is only its fur in
 `js/mascots.js` and a name in each language.
+
+## Explanations
+
+After a first miss she gets the method, never the answer. For a sum that crosses a ten,
+the hint comes with two ten-frames showing the crossing step: adding fills the first ten
+and spills into the second; taking away borrows a ten and crosses the ones out of it.
+
+What she typed is read for the classic slips — a borrowed ten never taken off the tens,
+the small ones digit taken from the big one, a carried ten dropped, the wrong sign, one
+off. A real misconception is named in the hint straight away ("did you take the ten off
+the tens?"); the end-of-round sheet shows what she wrote and what it most likely was, and
+each round records its slips for the grown-ups.
 
 ## How difficulty is assigned
 

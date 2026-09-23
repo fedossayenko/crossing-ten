@@ -15,13 +15,18 @@ function genSnail(){
   }
 }
 
+const snailM = n => ({one:'метр', few:'метри', many:'метрів'})[new Intl.PluralRules('uk').select(n)] || 'метра';
 function drawSnail(q){
   if(q.kind === 'snail'){
-    return '<div class="ask">Един охлюв се катери по дървена греда, висока <span class="num">' + q.H +
+    return tr('<div class="ask">Един охлюв се катери по дървена греда, висока <span class="num">' + q.H +
       '</span> метра. През деня се изкачва <span class="num">' + q.up +
       '</span> метра нагоре, а през нощта се смъква <span class="num">' + q.down +
-      '</span> метра надолу. След колко <b>дни</b> охлювът ще стигне върха, ако тръгва от земята?</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + ' <span class="unit">дни</span></div>';
+      '</span> метра надолу. След колко <b>дни</b> охлювът ще стигне върха, ако тръгва от земята?</div>',
+      '<div class="ask">Равлик повзе по дерев’яній жердині заввишки <span class="num">' + q.H +
+      '</span> ' + snailM(q.H) + '. Удень він піднімається на <span class="num">' + q.up +
+      '</span> ' + snailM(q.up) + ' вгору, а вночі сповзає на <span class="num">' + q.down +
+      '</span> ' + snailM(q.down) + ' вниз. Через скільки <b>днів</b> равлик доповзе до верху, якщо починає від землі?</div>') +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + ' <span class="unit">' + tr('дни', 'днів') + '</span></div>';
   }
 }
 function eqSnail(q){
@@ -29,11 +34,14 @@ function eqSnail(q){
 }
 function whySnail(q, full){
   if(q.kind === 'snail'){
-    if(!full) return 'Всяко денонощие го качва с малко, но последното изкачване няма връщане назад.';
+    if(!full) return tr('Всяко денонощие го качва с малко, но последното изкачване няма връщане назад.',
+      'Кожна доба піднімає його трохи вище, але після останнього підйому він уже не сповзає.');
     const before = q.gain * (q.k - 1);
-    return 'за всяко денонощие печели ' + q.up + ' − ' + q.down + ' = <b>' + q.gain +
-      '</b> м &nbsp;→&nbsp; трябва преди последното изкачване да е на ' + q.H + ' − ' + q.up + ' = <b>' +
-      (q.H - q.up) + '</b> м или повече &nbsp;→&nbsp; това става след ' + q.k + ' денонощия (' +
+    return tr('за всяко денонощие печели ', 'за кожну добу він просувається на ') + q.up + ' − ' + q.down + ' = <b>' + q.gain +
+      tr('</b> м &nbsp;→&nbsp; трябва преди последното изкачване да е на ', '</b> м &nbsp;→&nbsp; перед останнім підйомом він має бути на висоті ') +
+      q.H + ' − ' + q.up + ' = <b>' + (q.H - q.up) +
+      tr('</b> м или повече &nbsp;→&nbsp; това става след ' + q.k + ' денонощия (',
+         '</b> м або вище &nbsp;→&nbsp; так буде після ' + q.k + ' діб (') +
       (q.gain*q.k) + ' м) &nbsp;→&nbsp; ' + q.k + ' × 2 + 1 = ' + q.ans;
   }
 }
