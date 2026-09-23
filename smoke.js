@@ -151,14 +151,23 @@ const server = http.createServer((req, res) => {
     const fresh = `localStorage.clear(); sessionStorage.clear(); localStorage.setItem('crossingten.syncurl', '${process.env.SMOKE_SYNC}'); location.reload(); 1`;
     const playOne = `(async () => { newRound([{ a:42, b:17, op:'-' }]); const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
       K('2'); K('5'); K('go'); K('go'); await syncNow(); return LOCAL.rounds[LOCAL.rounds.length - 1].id; })()`;
+    const fam = 'Smoke ' + Date.now();
+    const fill = (pass, btn) => `$('lName').value = '${fam}'; $('lPass').value = '${pass}'; $('${btn}').click(); 1`;
     await open(A); await run(fresh); await settle();
-    await run(`$('statsBtn').click(); $('syncStart').click(); 1`); await settle(1500);
-    const code = await run(`FAMILY && FAMILY.code`);
+    await run(`$('pSave').click(); $('statsBtn').click(); $('toParent').click(); $('syncLogin').click(); 1`); await settle(300);
+    await run(fill('smoke-pass', 'lSignup')); await settle(1500);
+    const a1 = await page(`{ in: IN(), shown: $('syncCode').textContent, card: !$('syncOnRow').hidden, sheet: $('login').hidden }`);
+    expect(a1.in && a1.shown === fam && a1.card && a1.sheet, 'signing up on A went wrong: ' + JSON.stringify(a1));
     const ra = await run(playOne);
+    // B is a new device: its welcome screen logs in, a wrong password first
     await open(B); await run(fresh); await settle();
-    await run(`startSync('${code}')`);
-    const b1 = await page(`{ has: LOCAL.rounds.some(r => r.id === '${ra}'), n: LOCAL.rounds.length }`);
-    expect(code && b1.has, 'device B did not get the round played on A: ' + JSON.stringify(b1));
+    await run(`$('welcomeJoin').click(); 1`); await settle(300);
+    await run(fill('not-the-pass', 'lLogin')); await settle(1200);
+    const wrong = await page(`{ msg: $('lMsg').textContent, right: $('lMsg').textContent === t('wrongPass'), in: IN() }`);
+    expect(!wrong.in && wrong.right, 'a wrong password was not refused on B: ' + JSON.stringify(wrong));
+    await run(fill('smoke-pass', 'lLogin')); await settle(2500);
+    const b1 = await page(`{ has: LOCAL.rounds.some(r => r.id === '${ra}'), n: LOCAL.rounds.length, in: IN(), welcome: !$('playerEdit').hidden }`);
+    expect(b1.in && b1.has && !b1.welcome, 'device B did not get the round played on A: ' + JSON.stringify(b1));
     // B names the player and plays; A, on its next launch, has both
     await run(`$('who').click(); document.querySelector('.pedit[data-edit="p1"]').click(); $('pName').value = 'Ани'; $('pSave').click(); 1`);
     await settle(2500);
@@ -171,7 +180,13 @@ const server = http.createServer((req, res) => {
     await open(B); await settle(2000);
     const b2 = await page(`{ n: LOCAL.rounds.length }`);
     expect(b2.n === 0, 'a reset on A did not reach B: ' + JSON.stringify(b2));
-    if(bad.length + errors.length === before) console.log('smoke: sync between two devices - rounds, a rename and a reset all crossed');
+    // logging out on B ends only B's session; A keeps syncing
+    await run(`$('syncLeave').click(); 1`); await settle(800);
+    const b3 = await page(`{ in: IN(), login: !$('syncOff').hidden }`);
+    await open(A); await settle(1500);
+    const a3 = JSON.parse(await run(`syncNow().then(ok => JSON.stringify({ in: IN(), ok }))`) || '{}');
+    expect(!b3.in && b3.login && a3.in && a3.ok, 'logging out went wrong: ' + JSON.stringify({ b3, a3 }));
+    if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, a reset and logout all work');
   }
   bad.unshift(...errors);
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }

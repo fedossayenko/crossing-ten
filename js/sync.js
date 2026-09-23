@@ -1,27 +1,22 @@
 /* ---------- sync between devices ----------
-   One family code, made on the first device and pasted on the others, names the family's
-   data on the Worker in worker/. Each sync sends what the server has not had from this
-   device and merges back what it has not had from the server: rounds are a set union by
-   id, players are last-edit-wins on `updated`, a player's resetAt drops her older rounds,
-   and a deleted player travels as a tombstone in PLAYERS.gone. The artifact copy has its
-   own database and does not use this. */
+   A family account (a family name and password, or a linked Google account) on the Worker
+   in worker/ holds the family's data; each device logs in once and keeps a session token.
+   Each sync sends what the server has not had from this device and merges back what it has
+   not had from the server: rounds are a set union by id, players are last-edit-wins on
+   `updated`, a player's resetAt drops her older rounds, and a deleted player travels as a
+   tombstone in PLAYERS.gone. The artifact copy has its own database and does not use this. */
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
   || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
+// Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
+const GOOGLE_ID = '';
 const FKEY = 'crossingten.family';
-let FAMILY = null;                              // { code, cursor, sent:{player:[ids]}, at }
+// { token, name, cursor, sent:{player:[ids]}, at, failed }; a device from before accounts holds
+// only { code }, which its first signup turns into the account's family.
+let FAMILY = null;
 try { FAMILY = JSON.parse(localStorage.getItem(FKEY)); } catch(e){}
 const saveFamily = () => { try { FAMILY ? localStorage.setItem(FKEY, JSON.stringify(FAMILY)) : localStorage.removeItem(FKEY); } catch(e){} };
 const SYNC_ON = !!SYNC_URL && !window.claude && typeof fetch === 'function';
-
-// 16 characters of Crockford base32: 80 random bits, shown as four groups of four.
-const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-const newCode = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), b => B32[b & 31]).join('');
-const showCode = c => c.match(/.{4}/g).join('-');
-function readCode(text){
-  const c = String(text || '').toUpperCase().replace(/[^0-9A-Z]/g, '').replace(/[IL]/g, '1').replace(/O/g, '0');
-  const m = c.match(/[0-9A-HJKMNP-TV-Z]{16}/);
-  return m ? m[0] : null;
-}
+const IN = () => !!(FAMILY && FAMILY.token);
 
 // Every player's rounds, from her own storage key (the current player's are in LOCAL).
 function roundsOf(p){
@@ -76,9 +71,16 @@ function mergeFromServer(r){
   return reload;
 }
 
+async function account(path, body){
+  const headers = { 'content-type':'application/json' };
+  if(IN()) headers.authorization = 'Bearer ' + FAMILY.token;
+  const res = await fetch(SYNC_URL + path, { method:'POST', headers, body: JSON.stringify(body || {}) });
+  return { status: res.status, body: await res.json().catch(() => ({})) };
+}
+
 let syncing = null;
 function syncNow(){
-  if(!SYNC_ON || !FAMILY) return Promise.resolve(false);
+  if(!SYNC_ON || !IN()) return Promise.resolve(false);
   if(syncing) return syncing;
   syncing = (async () => {
     let reload = false;
@@ -91,20 +93,22 @@ function syncNow(){
           roundsOf(p).forEach(r => { if(!sent.has(r.id)) out.push({ player:p.id, round:r }); });
         });
         const batch = out.slice(0, 1500);
-        const res = await fetch(SYNC_URL + '/sync/' + FAMILY.code, { method:'POST', headers:{ 'content-type':'application/json' },
-          body: JSON.stringify({ since: FAMILY.cursor || 0, players: PLAYERS.list.map(p => Object.assign({ updated:0 }, p)),
-                                 gone: PLAYERS.gone || [], rounds: batch }) });
-        if(!res.ok) throw new Error('sync ' + res.status);
-        const r = await res.json();
+        const res = await account('/sync', { since: FAMILY.cursor || 0, players: PLAYERS.list.map(p => Object.assign({ updated:0 }, p)),
+                                            gone: PLAYERS.gone || [], rounds: batch });
+        if(res.status === 401){ FAMILY = null; break; }          // this session was logged out
+        if(res.status !== 200) throw new Error('sync ' + res.status);
+        const r = res.body;
         batch.forEach(x => (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id));
         reload = mergeFromServer(r) || reload;
         FAMILY.cursor = r.cursor;
         if(!r.more && out.length <= batch.length) break;
       }
-      // only ids still held here need remembering
-      PLAYERS.list.forEach(p => { const here = new Set(roundsOf(p).map(x => x.id)); FAMILY.sent[p.id] = FAMILY.sent[p.id].filter(id => here.has(id)); });
-      Object.keys(FAMILY.sent).forEach(id => { if(!PLAYERS.list.some(p => p.id === id)) delete FAMILY.sent[id]; });
-      FAMILY.at = Date.now(); FAMILY.failed = false;
+      if(FAMILY){
+        // only ids still held here need remembering
+        PLAYERS.list.forEach(p => { const here = new Set(roundsOf(p).map(x => x.id)); FAMILY.sent[p.id] = (FAMILY.sent[p.id] || []).filter(id => here.has(id)); });
+        Object.keys(FAMILY.sent).forEach(id => { if(!PLAYERS.list.some(p => p.id === id)) delete FAMILY.sent[id]; });
+        FAMILY.at = Date.now(); FAMILY.failed = false;
+      }
     } catch(e){ FAMILY.failed = true; }
     saveFamily();
     paintSync();
@@ -112,47 +116,94 @@ function syncNow(){
     if(!$('parent').hidden) renderParent();
     syncing = null;
     if(reload){ chose(); location.reload(); }
-    return !FAMILY.failed;
+    return IN() && !FAMILY.failed;
   })();
   return syncing;
 }
 
 function paintSync(){
-  $('playersSync').hidden = !SYNC_ON || !FAMILY;
+  $('playersSync').hidden = !SYNC_ON || !IN();
   if(!SYNC_ON){ $('syncRow').hidden = true; return; }
-  $('syncOff').hidden = $('syncOffTitle').hidden = !!FAMILY;
-  $('syncOnRow').hidden = $('syncOnTitle').hidden = !FAMILY;
-  if(!FAMILY) return;
-  $('syncCode').textContent = showCode(FAMILY.code);
+  $('syncOff').hidden = $('syncOffTitle').hidden = IN();
+  $('syncOnRow').hidden = $('syncOnTitle').hidden = !IN();
+  if(!IN()){ $('gLink').hidden = true; return; }
+  $('syncCode').textContent = FAMILY.name || '';
   const line = FAMILY.failed ? t('syncFailed') : FAMILY.at ?
     t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing');
   $('synced').textContent = line + builtOn();
   $('playersSynced').textContent = line;
+  googleButton($('gLink'));        // logged in, it links a Google account to this family
 }
-function startSync(code){
-  FAMILY = { code, cursor:0, sent:{}, at:0 };
-  saveFamily(); paintSync();
-  return syncNow();
+
+/* ---------- logging in ---------- */
+let LOGIN_WELCOME = false;
+function openLogin(welcome){
+  LOGIN_WELCOME = !!welcome;
+  $('lMsg').textContent = '';
+  $('lPass').value = '';
+  $('login').hidden = false;
+  googleButton($('gSign'));
 }
-$('syncStart').onclick = () => { startSync(newCode()); };
-// Join a family: the code comes from the clipboard (copied on the other device), or is typed.
-function joinFamily(done){
-  const take = code => {
-    const c = readCode(code);
-    if(!c){ say(t('syncBadCode')); if(!$('playerEdit').hidden) alert(t('syncBadCode')); return; }
-    startSync(c).then(ok => { if(ok) say(t('syncJoined')); if(done) done(ok); });
-  };
-  if(navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(take, () => take(prompt(t('syncPrompt'))));
-  else take(prompt(t('syncPrompt')));
+function loggedIn(token, name){
+  // everything this device holds goes up once; the server keeps each round once
+  FAMILY = { token, name, cursor:0, sent:{}, at:0 };
+  saveFamily();
+  $('login').hidden = true;
+  paintSync();
+  return syncNow().then(ok => {
+    if(ok) say(t('syncJoined'));
+    if(LOGIN_WELCOME){ savePlayers(); chose(); location.reload(); }   // a new device comes up as the family's players
+  });
 }
-$('syncJoin').onclick = () => joinFamily();
-// On a new device's welcome screen: join, and come up as the family's players.
-$('welcomeJoin').onclick = () => joinFamily(ok => { if(ok){ savePlayers(); chose(); location.reload(); } });
-$('syncCopy').onclick = () => {
-  const c = showCode(FAMILY.code);
-  navigator.clipboard.writeText(c).then(() => say(t('syncCopiedCode')), () => prompt(t('syncPrompt'), c));
+async function logIn(signup){
+  const name = $('lName').value.trim(), password = $('lPass').value;
+  if(name.length < 2){ $('lMsg').textContent = t('nameShort'); return; }
+  if(password.length < 8){ $('lMsg').textContent = t('passShort'); return; }
+  $('lLogin').disabled = $('lSignup').disabled = true;
+  $('lMsg').textContent = t('syncing');
+  let r = null;
+  try { r = await account(signup ? '/signup' : '/login', { name, password, code: signup && FAMILY && FAMILY.code || undefined }); } catch(e){}
+  $('lLogin').disabled = $('lSignup').disabled = false;
+  if(r && r.body.token) return loggedIn(r.body.token, r.body.name);
+  $('lMsg').textContent = !r ? t('syncFailed') : r.status === 409 ? t('nameTaken') : r.status === 429 ?
+    t('locked', Math.ceil((r.body.retry || 900) / 60)) : r.status === 401 ? t('wrongPass') : t('syncFailed');
+}
+$('lForm').onsubmit = e => { e.preventDefault(); logIn(false); };
+$('lSignup').onclick = () => logIn(true);
+$('loginBack').onclick = () => { $('login').hidden = true; };
+$('syncLogin').onclick = () => openLogin(false);
+// On a new device's welcome screen: log in, and come up as the family's players.
+$('welcomeJoin').onclick = () => openLogin(true);
+$('syncLeave').onclick = () => {
+  if(IN()) account('/logout').catch(() => {});
+  FAMILY = null; saveFamily(); paintSync(); say(heldHere());
 };
-$('syncLeave').onclick = () => { FAMILY = null; saveFamily(); paintSync(); say(heldHere()); };
+
+// Google: its button hands back a signed ID token, which the Worker checks with Google.
+function googleButton(el){
+  if(!GOOGLE_ID || !SYNC_ON) return;
+  const draw = () => {
+    google.accounts.id.initialize({ client_id: GOOGLE_ID, callback: r => googleIn(r.credential) });
+    el.innerHTML = '';
+    google.accounts.id.renderButton(el, { theme:'outline', size:'large', shape:'pill', locale:LANG, text: IN() ? 'continue_with' : 'signin_with' });
+    el.hidden = false;
+  };
+  if(window.google && google.accounts) return draw();
+  if(document.getElementById('gsi')) return;
+  const s = document.createElement('script');
+  s.id = 'gsi'; s.src = 'https://accounts.google.com/gsi/client'; s.onload = draw;
+  document.head.appendChild(s);
+}
+async function googleIn(credential){
+  let r = null;
+  try { r = await account('/google', { credential }); } catch(e){}
+  if(r && r.body.linked){ say(t('googleLinked')); return; }
+  // a family made with Google alone has no family name; show whose Google it is instead
+  let who = '';
+  try { const p = JSON.parse(decodeURIComponent(escape(atob(credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))); who = p.name || p.email || ''; } catch(e){}
+  if(r && r.body.token) loggedIn(r.body.token, r.body.name || who);
+  else $('lMsg').textContent = t('syncFailed');
+}
 
 // Sync on launch, whenever the app comes back to the screen, and soon after a round.
 let syncTimer = null;

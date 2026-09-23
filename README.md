@@ -22,7 +22,7 @@ level in Chrome.
 | `js/i18n.js` | every word of the interface in Bulgarian, Ukrainian and English |
 | `js/mascots.js` | the cat, fox, owl and bunny: one shared face, each animal only its fur |
 | `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage |
-| `js/sync.js` | sync between devices through the Worker, by family code |
+| `js/sync.js` | sync between devices through the Worker, by family account |
 | `worker/` | the sync server: a Cloudflare Worker (`index.js`) and its D1 tables (`schema.sql`) |
 | `sw.js` | serves the latest build, falls back to the cache offline |
 
@@ -139,33 +139,35 @@ original worksheet instance of each task.
 ## Progress storage
 
 The GitHub copy keeps each player's rounds in that browser's local storage — per
-device, not synced until sync is turned on. The very first launch on a device asks for the
-player's name, mascot and language (or joins a family that already plays elsewhere).
-
-To move progress from one device to another, open **Progress → Copy** on the device
-that has the history, then **Paste** on the other, with the same player chosen on both. The whole log is gzipped into a
-link; pasting it (or opening it) merges it in — rounds already there are skipped,
-because every round carries an id. A full 400-round log comes to about 6 000
-characters. Nothing leaves the two devices; there is no server behind the Pages build.
-
-On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate** storage:
-play from one of them, and copy from the one she played on.
+device, not synced until a family account is logged in. The very first launch on a device
+asks for the player's name, mascot and language (or logs in to a family that already plays
+elsewhere). On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate**
+storage, so each one logs in on its own.
 
 ### Sync
 
-**Progress → Sync between devices → Turn on** makes a family code (80 random bits,
-shown as `XXXX-XXXX-XXXX-XXXX`); **Copy** it, and on the other device tap **Join** — the
-code comes across on the clipboard like Copy/Paste. From then on the devices sync on
-launch, after every round and whenever the app comes back to the screen, and it all
-still works offline and catches up later.
+**For grown-ups → Log in** (or, on a new device's welcome screen, *We already play on
+another device*): a family name and a password of 8+ characters. **Create a family account**
+the first time, **Log in** on every other device. From then on the devices sync on
+launch, after every round and whenever the app comes back to the screen; it all still
+works offline and catches up later. A device that synced by the old family code keeps its
+data: creating the account there turns that family into the account's.
 
-The server is a Cloudflare Worker with one D1 database (`worker/`), free tier. Rounds are
-events with ids, so merging is a set union and nothing can conflict; players are
-last-edit-wins; a reset or a deleted player travels to the other devices too. The code is
-the only credential and the server holds nothing but nicknames, mascots, languages and
-answer logs. `node worker/test.js` checks the server with two simulated devices (against
-`wrangler dev` or the deployed URL); `SMOKE_SYNC=<worker url> node smoke.js` runs two real
-browser "devices" through it. The artifact copy keeps using its own database.
+The server is a Cloudflare Worker with one D1 database (`worker/`), free tier. Passwords
+are PBKDF2-SHA-256 (30 000 rounds, the most the free plan's ~10 ms of CPU allows; the count
+is stored per account) and five wrong ones in a row lock the account for 15 minutes. A login
+hands the device a random session token, kept on the server only as its SHA-256; **Log out**
+ends that one session. Google sign-in is built in but off until `GOOGLE_ID` in `js/sync.js`
+and `GOOGLE_CLIENT_ID` in `worker/wrangler.toml` hold a Google OAuth web client id; the
+Worker checks Google's signature and keeps only the account's stable id, never its email.
+
+Rounds are events with ids, so merging is a set union and nothing can conflict; players are
+last-edit-wins; a reset or a deleted player travels to the other devices too. The server
+holds nothing but nicknames, mascots, languages and answer logs. `node worker/test.js`
+checks the server (against `wrangler dev`, which reads a stand-in Google key from
+`worker/.dev.vars`, or the deployed URL, where it deletes its test accounts afterwards);
+`SMOKE_SYNC=<worker url> node smoke.js` runs two real browser "devices" through it.
+The artifact copy keeps using its own database.
 
 ### For the grown-ups
 
@@ -173,4 +175,4 @@ Under Progress: first try by group over the last 30 days, the slips that keep co
 back, and **Download all rounds (CSV)**.
 
 The Claude artifact copy syncs on its own through the artifact database, so if both
-devices open the artifact link rather than the Pages one, no transfer is needed.
+devices open the artifact link rather than the Pages one, no account is needed.

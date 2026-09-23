@@ -555,3 +555,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   .reveal{min-height:38px}
 }
 .welcomesub{margin:0; font-size:15px; font-weight:700; color:var(--muted)}
+/* the family account: Google draws its own button inside .gbtn */
+.gbtn{display:flex; justify-content:center; min-height:44px}
+#lForm .btn{flex:none}
+#lMsg:empty{display:none}

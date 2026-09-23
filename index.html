@@ -143,25 +143,17 @@
             <span class="famicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9H7z"/><path d="M9 14l2 2 4-4"/></svg></span>
             <div class="famtext">
               <b id="syncOffTitle" data-t="syncTitle"></b>
-              <b id="syncOnTitle" hidden><span data-t="syncCodeLabel"></span> <span class="code" id="syncCode"></span></b>
+              <b id="syncOnTitle" hidden><span data-t="familyLabel"></span> <span class="code" id="syncCode"></span></b>
               <span class="synced" id="synced"></span>
             </div>
           </div>
-          <div class="seg" id="syncOff">
-            <button id="syncStart" data-t="syncStart"></button>
-            <button id="syncJoin" data-t="syncJoinBtn"></button>
+          <div class="stack" id="syncOff">
+            <button class="btn" id="syncLogin" data-t="logIn"></button>
           </div>
-          <div class="seg" id="syncOnRow" hidden>
-            <button id="syncCopy" data-t="copy"></button>
-            <button id="syncLeave" data-t="syncLeave"></button>
+          <div class="stack" id="syncOnRow" hidden>
+            <button class="btn ghost" id="syncLeave" data-t="logOut"></button>
           </div>
-        </div>
-        <div class="gcard">
-          <div class="gtitle"><b data-t="move"></b></div>
-          <div class="seg">
-            <button id="xfer" data-t="copy"></button>
-            <button id="xferIn" data-t="paste"></button>
-          </div>
+          <div class="gbtn" id="gLink" hidden></div>
         </div>
       </div>
       <div class="parentmain">
@@ -254,6 +246,25 @@
     <button class="btn" id="pSave" data-t="save"></button>
     <button class="btn ghost" id="welcomeJoin" hidden data-t="joinFamily"></button>
     <div class="actions"><button class="btn warn" id="pDelete" data-t="delPlayer"></button></div>
+  </div>
+</div>
+
+<!-- The family account: log in on each device, and progress follows -->
+<div class="sheet" id="login" hidden role="dialog" data-t-aria="account">
+  <div class="sheet-in">
+    <div class="bar">
+      <button class="icon back" id="loginBack" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 data-t="account"></h1>
+    </div>
+    <p class="welcomesub" data-t="accountSub"></p>
+    <form class="gcard" id="lForm">
+      <label class="field"><span class="lab" data-t="familyName"></span><input id="lName" name="username" maxlength="40" autocomplete="username" autocapitalize="words" spellcheck="false" required></label>
+      <label class="field"><span class="lab" data-t="password"></span><input id="lPass" name="password" type="password" minlength="8" maxlength="200" autocomplete="current-password" required></label>
+      <p class="synced" id="lMsg" role="alert"></p>
+      <button class="btn" id="lLogin" data-t="logIn"></button>
+      <button class="btn ghost" id="lSignup" type="button" data-t="signUp"></button>
+    </form>
+    <div class="gbtn" id="gSign" hidden></div>
   </div>
 </div>
 

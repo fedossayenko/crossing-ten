@@ -21,3 +21,30 @@ CREATE TABLE IF NOT EXISTS players (
   gone INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (family, id)
 );
+
+-- A family account: its name (lowercased, the login) and a PBKDF2 hash of its password.
+-- fails counts wrong passwords in a row; locked is when a lockout ends (ms).
+CREATE TABLE IF NOT EXISTS accounts (
+  name TEXT PRIMARY KEY,
+  display TEXT NOT NULL,
+  family TEXT NOT NULL UNIQUE,
+  salt TEXT NOT NULL,
+  hash TEXT NOT NULL,
+  iter INTEGER NOT NULL,
+  fails INTEGER NOT NULL DEFAULT 0,
+  locked INTEGER NOT NULL DEFAULT 0,
+  created INTEGER NOT NULL
+);
+
+-- A logged-in device: the SHA-256 of its token, never the token itself.
+CREATE TABLE IF NOT EXISTS sessions (
+  hash TEXT PRIMARY KEY,
+  family TEXT NOT NULL,
+  created INTEGER NOT NULL
+);
+
+-- A Google account (its stable `sub`, not its email) that opens a family.
+CREATE TABLE IF NOT EXISTS google (
+  sub TEXT PRIMARY KEY,
+  family TEXT NOT NULL
+);

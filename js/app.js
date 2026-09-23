@@ -581,7 +581,7 @@ let parentFrom = null;
 function openParent(){
   parentFrom = !$('players').hidden ? 'players' : null;
   $('players').hidden = true;
-  renderParent(); makeXfer(); $('parent').hidden = false;
+  renderParent(); $('parent').hidden = false;
 }
 $('statsBtn').onclick = openStats;
 $('toStats').onclick = openStats;
@@ -906,81 +906,7 @@ let DB = null;
   }
 })();
 
-/* ---------- move progress between devices ----------
-   Two devices, two separate copies of localStorage, and no server behind the Pages
-   build. Every round already carries an id, so merging is only "keep the ones this
-   device has not seen" - the same trick the artifact's db sync uses. The whole log
-   travels in the link's hash. */
-const b64enc = bytes => {
-  let s = '';
-  for(let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-};
-const b64dec = str => {
-  const raw = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
-  const b = new Uint8Array(raw.length);
-  for(let i = 0; i < raw.length; i++) b[i] = raw.charCodeAt(i);
-  return b;
-};
-async function pack(obj){
-  const raw = new TextEncoder().encode(JSON.stringify(obj));
-  if(typeof CompressionStream !== 'function') return 'j' + b64enc(raw);
-  const gz = await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
-  return 'z' + b64enc(new Uint8Array(gz));
-}
-async function unpack(code){
-  const bytes = b64dec(code.slice(1));
-  if(code[0] !== 'z') return JSON.parse(new TextDecoder().decode(bytes));
-  const raw = await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
-  return JSON.parse(new TextDecoder().decode(raw));
-}
-function mergeRounds(rounds){
-  const have = {};
-  LOCAL.rounds.forEach(r => have[r.id] = true);
-  const add = (rounds || []).filter(r => r && r.id && !have[r.id]);
-  if(!add.length) return 0;
-  LOCAL.rounds = LOCAL.rounds.concat(add).sort((a, b) => a.ts - b.ts).slice(-400);
-  saveLocal();
-  W = weightsFrom(LOCAL.rounds);
-  if(!$('stats').hidden) renderStats();
-  syncSoon();
-  return add.length;
-}
 const say = t => { $('synced').textContent = t + builtOn(); };
-// Safari hands out the clipboard only inside the tap itself, and zipping is async - so
-// the code is built when the panel opens, not when the button is pressed.
-let XFER = '';
-function makeXfer(){ pack(LOCAL.rounds).then(c => { XFER = location.origin + location.pathname + '#t=' + c; }, () => {}); }
-// The clipboard, not a link: a page added to the home screen keeps its own storage,
-// separate from Safari's, so a tapped link lands in the wrong jar. Copy on one device,
-// paste in the other - and between an iPad and an iPhone on one account the clipboard
-// crosses by itself.
-$('xfer').onclick = () => {
-  if(!XFER) { makeXfer(); return; }
-  navigator.clipboard.writeText(XFER).then(
-    () => say(t('copied', LOCAL.rounds.length)),
-    () => prompt(t('copyPrompt'), XFER));
-};
-$('xferIn').onclick = () => {
-  const take = async code => {
-    const m = String(code || '').trim().match(/(?:#t=)?([A-Za-z0-9_-]{16,})\s*$/);
-    if(!m) { say(t('nothingToPaste')); return; }
-    try { const n = mergeRounds(await unpack(m[1])); say(n ? t('brought', n) + ' · ' + heldHere() : t('nothingNew')); }
-    catch(e){ say(t('wontOpen')); }
-  };
-  if(navigator.clipboard && navigator.clipboard.readText)
-    navigator.clipboard.readText().then(take, () => take(prompt(t('pastePrompt'))));
-  else take(prompt(t('pastePrompt')));
-};
-(async () => {
-  const hash = location.hash.match(/^#t=(.+)$/);
-  if(!hash) return;
-  history.replaceState(null, '', location.pathname + location.search);
-  try {
-    const n = mergeRounds(await unpack(decodeURIComponent(hash[1])));
-    $('synced').textContent = (n ? t('brought', n) : t('nothingNew')) + builtOn();
-  } catch(e){ $('synced').textContent = t('linkWontOpen') + builtOn(); }
-})();
 
 // Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
 // an accidental pinch just breaks the layout, so the gesture is turned off here. It is
