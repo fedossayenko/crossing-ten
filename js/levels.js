@@ -8,7 +8,10 @@ const LEVELS = [
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:'Crossing a hundred' },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right', gen:genChain },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', gen:genPairs },
+  { id:59, op:'w', grp:'chain', needs:[9], grade:3, d:3, eq:'20 − 2 · 5', desc:'Multiplication first, then + and − left to right', gen:genMulMix },
+  { id:61, op:'w', grp:'chain', needs:[59], grade:3, d:4, eq:'… · 0 …', desc:'A long expression where every product with a 0 is 0', gen:genZeros },
   { id:50, op:'w', grp:'chain', needs:[9], d:5, eq:'Плюс или минус', desc:'Choose the signs in a run — how many can be minus', gen:genSigns },
+  { id:63, op:'w', grp:'chain', needs:[59], grade:3, d:5, eq:'Два знака', desc:'Which two different signs make the equality true', gen:genTwoSigns },
   { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one', gen:genCandy },
   { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition', gen:genCount },
   { id:25, op:'w', grp:'count', needs:[12], d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers', gen:genWeekday },
@@ -18,6 +21,7 @@ const LEVELS = [
   { id:51, op:'w', grp:'num', d:3, eq:'Десетици', desc:'A number said in tens, ones and hundreds', gen:genTens },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare', gen:genNamed },
   { id:53, op:'w', grp:'num', needs:[13], d:4, eq:'Трицифрени', desc:'The smallest or largest three-digit number that fits a condition', gen:genThreeDig },
+  { id:60, op:'w', grp:'num', needs:[53], grade:3, d:4, eq:'Цифрите', desc:'The digits of the smallest or largest three-digit number that fits', gen:genDigProd },
   { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds', gen:genOrder },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum', gen:genTwoDig },
   { id:44, op:'w', grp:'num', needs:[8], d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true', gen:genCross },
@@ -40,6 +44,7 @@ const LEVELS = [
   { id:10, op:'w', grp:'word', needs:[5], d:3, eq:'С колко?', desc:'How much bigger one sum is than the other', gen:genCmp },
   { id:30, op:'w', grp:'word', needs:[10], d:3, eq:'Умаляемо', desc:'Naming the parts of a sum and a difference', gen:genTerm },
   { id:57, op:'w', grp:'word', d:4, eq:'Класирането', desc:'Who beat whom — and how many are above someone', gen:genRank },
+  { id:62, op:'w', grp:'word', needs:[10, 59], grade:3, d:4, eq:'+ 9 и − 9', desc:'Two long expressions that differ only at the end', gen:genPmGap },
   { id:48, op:'w', grp:'word', needs:[47], d:4, eq:'Два езика', desc:'Two groups that overlap — who is counted twice', gen:genBoth },
   { id:42, op:'w', grp:'word', d:4, eq:'Котките', desc:'Two cats and one box of food between them', gen:genCats },
   { id:43, op:'w', grp:'word', d:4, eq:'Монети', desc:'The one amount a handful of coins cannot pay', gen:genCoins },
@@ -58,6 +63,9 @@ const LEVELS = [
   { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant', gen:genRects },
   { id:41, op:'w', grp:'geo', needs:[40], d:4, eq:'Три точки', desc:'Three points on a line — two answers', gen:genThree }
 ];
+// Where the levels come from: every one is modelled on a task from Математика без граници,
+// autumn round, 2nd grade unless its row says grade:3.
+LEVELS.forEach(l => { l.src = l.src || 'mbg-autumn'; l.grade = l.grade || 2; });
 // Picker sections, in the order they appear. Levels inside each are sorted easiest
 // first in the LEVELS table above.
 const PICK_GROUPS = [

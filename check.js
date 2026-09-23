@@ -1636,18 +1636,23 @@ eval(head + body + test);
         m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2 };
       }
       if(order.length !== LEVELS.length) throw new Error('the path reaches ' + order.length + ' of ' + LEVELS.length + ' levels');
-      const ds = order.map(l => l.d);
+      // Her own grade's tasks all come before the next grade's, and each grade is a ladder of its own.
+      const gs = order.map(l => l.grade);
+      if(gs.some((g, i) => i && g < gs[i-1])) throw new Error('the path goes back to an easier grade');
       // The path may pull one level forward for variety, so a single step back is allowed;
       // dropping further than that would mean the ladder is not being climbed at all.
-      if(ds.some((v, i) => i && v < ds[i-1] - 1)) throw new Error('the path steps back in difficulty');
-      if(ds[ds.length-1] < ds[0]) throw new Error('the path ends easier than it starts');
+      [...new Set(gs)].forEach(g => {
+        const ds = order.filter(l => l.grade === g).map(l => l.d);
+        if(ds.some((v, i) => i && v < ds[i-1] - 1)) throw new Error('the grade ' + g + ' path steps back in difficulty');
+        if(ds[ds.length-1] < ds[0]) throw new Error('the grade ' + g + ' path ends easier than it starts');
+      });
       let run = 1, worst = 1;
       for(let i = 1; i < order.length; i++){
         run = grp(order[i]) === grp(order[i-1]) ? run + 1 : 1;
         if(run > worst) worst = run;
       }
       if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running');
-      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, climbing, at most ' + worst + ' in a row from one group');
+      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, 2nd grade before 3rd, climbing within each, at most ' + worst + ' in a row from one group');
     `;
     eval(levelsSrc + nextSrc + walk);
   }
@@ -1764,4 +1769,51 @@ eval(head + body + test);
   });
   if(slipsOffered < asked / 2) throw new Error('the lost-or-gained ten is offered too rarely: ' + slipsOffered + ' of ' + asked);
   console.log('multiple choice: ' + asked + ' questions asked as А/Б/В/Г, each with one right option, in order, a ten-off slip among them in ' + Math.round(100 * slipsOffered / asked) + '%');
+}
+
+/* МБГ Есен, 3 клас: each of the five tasks as printed, and thousands more checked by brute force. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, why, accepts, withChoices, genTwoSigns, twoSignsVal, SIGN_PAIRS, DIG_COND, mulMixExpr, zerosExpr, pmBig, pmSmall, twoRhs, LEVELS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
+  const calc = e => Function('return ' + strip(e).replace(/·/g, '*').replace(/−/g, '-').replace(/:/g, '/'))();
+  // the paper's own five
+  const orig = [
+    [{kind:'mulmix', a:20, b:2, c:5, d:6, e:20, ans:18}, '20 − 2 · 5 + 20 − 2 · 6', 18],
+    [{kind:'digprod', c:0, big:false, prod:true, n:102, ds:[1,0,2], ans:0}, null, 0],
+    [{kind:'zeros', p:2, q:5, r:6, f1:false, f2:false, f3:false, ans:20}, '(2 · 0 + 2 · 5) · (2 + 0 · 2 · 6) − 2 · 0 · 2 · 5', 20],
+    [{kind:'pmgap', a:9, b:7, c:7, d:5, e:9, f:9, both:false, flip:false, ans:18}, '9 · 7 + 7 · 5 + 9', 18]
+  ];
+  orig.forEach(([q, text, want]) => {
+    const shown = strip(Q.drawQ(q));
+    if(text && shown.indexOf(text) < 0) throw new Error(q.kind + ': the printed task does not read ' + text + ': ' + shown);
+    if(q.ans !== want) throw new Error(q.kind + ': the printed task should give ' + want);
+  });
+  if(Q.twoSignsVal(20, 2, 5, 2, ':', '·') !== 30 || Q.SIGN_PAIRS.filter(([x, y]) => Q.twoSignsVal(20, 2, 5, 2, x, y) === 30).length !== 1)
+    throw new Error('twosigns: (20 □ 2 + 5) □ 2 = 30 should have exactly one answer, : and ·');
+  const fit = Q.DIG_COND[0][2], small = [...Array(900).keys()].map(i => i + 100).find(fit);
+  if(small !== 102) throw new Error('digprod: the smallest three-digit number with different digits is 102, not ' + small);
+
+  const byKind = {};
+  Q.LEVELS.filter(l => l.grade === 3).forEach(L => { for(let i = 0; i < 400; i++){
+    const q = Q.raw(L.id);
+    byKind[q.kind] = (byKind[q.kind] || 0) + 1;
+    if(!Q.accepts(q, [String(q.ans)])) throw new Error('level ' + L.id + ': its own answer is refused');
+    if(q.kind === 'mulmix' && calc(Q.mulMixExpr(q)) !== q.ans) throw new Error('mulmix: ' + Q.mulMixExpr(q) + ' is not ' + q.ans);
+    if(q.kind === 'zeros' && calc(Q.zerosExpr(q)) !== q.ans) throw new Error('zeros: ' + Q.zerosExpr(q) + ' is not ' + q.ans);
+    if(q.kind === 'pmgap' && calc('(' + Q.pmBig(q) + ') - (' + Q.pmSmall(q) + ')') !== q.ans) throw new Error('pmgap: the gap is not ' + q.ans);
+    if(q.kind === 'digprod'){
+      const all = [...Array(900).keys()].map(i => i + 100).filter(Q.DIG_COND[q.c][2]), n = q.big ? all[all.length - 1] : all[0];
+      const ds = String(n).split('').map(Number), want = q.prod ? ds.reduce((a, b) => a*b, 1) : ds.reduce((a, b) => a + b, 0);
+      if(n !== q.n || want !== q.ans) throw new Error('digprod: ' + q.n + ' → ' + q.ans + ', brute force says ' + n + ' → ' + want);
+    }
+    if(q.kind === 'twosigns'){
+      const hits = Q.SIGN_PAIRS.filter(([x, y]) => Q.twoSignsVal(q.a, q.b, q.c, q.d, x, y) === q.val);
+      if(hits.length !== 1 || hits[0].join() !== q.options[q.pick].signs.join() || calc(Q.twoRhs(q)) !== q.val)
+        throw new Error('twosigns: (' + q.a + ' □ ' + q.b + ' + ' + q.c + ') □ ' + q.d + ' = ' + Q.twoRhs(q) + ' has ' + hits.length + ' answers');
+      if(new Set(q.options.map(o => o.signs.join())).size !== q.options.length) throw new Error('twosigns: two options are the same pair');
+    }
+    const c = Q.withChoices(q);
+    if(q.traps && q.traps.length && c.options && !c.options.some(o => o.v === q.traps[0])) throw new Error(q.kind + ': its own trap was left out of the options');
+  }});
+  console.log('МБГ Есен 3 клас: the five printed tasks read and solve as on the paper; ' + Object.keys(byKind).map(k => byKind[k] + ' ' + k).join(', ') + ' checked by brute force');
 }

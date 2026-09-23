@@ -5,6 +5,13 @@ worksheets she is working through. Plain HTML, CSS and scripts; no build step, n
 dependencies. `node check.js` verifies every generator, `node smoke.js` plays every
 level in Chrome.
 
+Every level is modelled on a task from **Математика без граници (МБГ), autumn round**: 57
+from the 2nd-grade paper and 5 from the 3rd-grade one (multiplication first, digits of the
+smallest three-digit number, products with a 0, two expressions that differ only at the end,
+and which two signs make an equality true). A level row carries `src` and `grade`; the
+picker filters by paper, marks 3rd-grade rows, and recommends the 3rd-grade levels only once
+the 2nd-grade ones are learned. Competitions are drawn from the 2nd-grade levels.
+
 - Live: https://fedossayenko.github.io/crossing-ten/
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.
 
@@ -122,7 +129,7 @@ sorted easiest first inside each group:
 ## The training path
 
 The picker opens with one recommendation — *Start here*, then *Next up* — and a bar
-showing how many of the 57 are learned.
+showing how many of the levels are learned.
 
 - **Learned** means at least four in five right first try, over at least fifteen
   questions — so a single round is never enough evidence on its own.

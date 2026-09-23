@@ -249,7 +249,7 @@ function putCat(slot, m){
 }
 
 /* ---------- round flow ---------- */
-const plainQ = ({ options, pick, pts, lvl, ...q }) => q;
+const plainQ = q => q.own ? q : (({ options, pick, pts, lvl, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г
 // comp: a competition's own tasks, which come with their options and points already
 function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); }
@@ -679,7 +679,7 @@ $('reset').onclick = async () => {
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || { eq:'' }, k = PICK_GROUPS.findIndex(g => g.has(l));
   $('levelName').textContent = levelName(l);
-  $('sub').textContent = t('practice') + (k >= 0 ? ' · ' + t('groups')[k] : '');
+  $('sub').textContent = (l.grade ? t('src', l.grade) : t('practice')) + (k >= 0 ? ' · ' + t('groups')[k] : '');
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
@@ -720,7 +720,9 @@ function mastery(rounds){
 // groundwork is done. It recommends — nothing is ever locked away.
 function nextUp(m, lastGrp){
   const done = id => m[id] && m[id].done;
-  const open = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(done));
+  const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(done));
+  // her own grade first: the 3rd-grade tasks come once the 2nd-grade ones are learned
+  const open = all.some(l => l.grade === 2) ? all.filter(l => l.grade === 2) : all;
   if(!open.length) return null;
   const grp = l => l.grp || l.op;
   const fresh = open.filter(l => !m[l.id]);
@@ -762,16 +764,21 @@ function buildPicker(){
   };
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.grade !== 2 ? ' <span class="gtag">' + t('gradeN', l.grade) + '</span>' : '') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
-  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(g.has) })).filter(g => g.levels.length);
+  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && (!PICK_GRADE || l.grade === PICK_GRADE)) })).filter(g => g.levels.length);
   if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = -1;
   $('pickTopics').innerHTML = '<button data-k="-1" aria-pressed="' + (PICK_TOPIC === -1) + '">' + t('all') + '</button>' +
     groups.map(g => '<button data-k="' + g.k + '" aria-pressed="' + (PICK_TOPIC === g.k) + '">' + t('groups')[g.k] + '</button>').join('');
   $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = +b.dataset.k; buildPicker(); });
+  // which paper: МБГ autumn 2nd grade, 3rd grade, or both
+  const grades = [...new Set(LEVELS.map(l => l.grade))].sort();
+  $('pickGrades').innerHTML = [0].concat(grades).map(g => '<button data-g="' + g + '" aria-pressed="' + (PICK_GRADE === g) + '">' +
+    (g ? t('src', g) : t('allGrades')) + '</button>').join('');
+  $('pickGrades').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_GRADE = +b.dataset.g; buildPicker(); });
 
   // start here / try this next: the recommendation, and what it opens up after
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
@@ -799,7 +806,7 @@ function buildPicker(){
     newRound();
   });
 }
-let PICK_TOPIC = -1;
+let PICK_TOPIC = -1, PICK_GRADE = 0;
 const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
 $('levelPill').onclick = () => { buildPicker(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
 $('closePick').onclick = () => { $('picker').hidden = true; };
