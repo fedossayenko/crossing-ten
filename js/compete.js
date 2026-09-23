@@ -1,22 +1,25 @@
 /* ---------- competition ----------
-   An МБГ-style paper: 20 tasks in an hour, easiest first, each worth its difficulty in points.
+   An МБГ-style paper: 20 olympiad-style tasks in an hour, easiest first, each worth its difficulty in points.
    The first 15 are А/Б/В/Г and the last 5 are typed, as on the real paper. Nothing is marked
    until the end, or until the clock runs out; a skipped task comes back after the others.
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
 const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
+// Plain sums (the Take away and Add groups) are drill, not olympiad tasks: a paper leaves them out.
+const OLYMPIAD = LEVELS.filter(l => l.op !== '-' && l.op !== '+');
+const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 function compTasks(){
   const out = [], used = new Set();
   let lastGrp = null;
   for(let i = 0; i < COMP_N; i++){
-    const lo = 1 + Math.floor(i / 5);                      // four bands of five: difficulty 1–2, 2–3, 3–4, 4–5
-    let pool = LEVELS.filter(l => l.d >= lo && l.d <= lo + 1 && !used.has(l.id));
-    const other = pool.filter(l => (l.grp || l.op) !== lastGrp);   // no two in a row from one group
+    const [lo, hi] = BANDS[Math.floor(i / 5)];
+    let pool = OLYMPIAD.filter(l => l.d >= lo && l.d <= hi && !used.has(l.id));
+    const other = pool.filter(l => l.grp !== lastGrp);        // no two in a row from one group
     if(other.length) pool = other;
-    if(!pool.length) pool = LEVELS.filter(l => l.d >= lo);
+    if(!pool.length) pool = OLYMPIAD.filter(l => l.d >= lo);
     const l = pool[rnd(pool.length)];
-    used.add(l.id); lastGrp = l.grp || l.op;
+    used.add(l.id); lastGrp = l.grp;
     const q = Object.assign(raw(l.id), { lvl: l.id, pts: Math.min(5, Math.max(1, l.d)) });
     out.push(i < COMP_CHOICE ? withChoices(q) : q);
   }

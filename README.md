@@ -71,7 +71,8 @@ tap crosses that option out and shows the same hint as a wrong typed answer. How
 options there are comes from the data (`q.options`), not from the screen.
 
 **Choose a level → Competition** is an МБГ-style paper: 20 tasks in 60 minutes, easiest
-first (four bands of five, difficulty 1–2 up to 4–5, no two in a row from one group), each
+first (four bands of five, difficulty 2–3 up to 4–5, no two in a row from one group), none of
+them plain sums from the Take away and Add groups, which are drill rather than olympiad tasks; each
 worth its difficulty in points. Tasks 1–15 are А/Б/В/Г and 16–20 are typed, as on the real
 paper. Nothing is marked until the end or until the clock runs out, and **Skip for now**
 sends a task to the back of the queue. The tasks come from the levels' own generators,
