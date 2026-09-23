@@ -252,7 +252,7 @@ function putCat(slot, m){
 const plainQ = q => q.own ? q : (({ options, pick, pts, lvl, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г
 // comp: a competition's own tasks, which come with their options and points already
 function newRound(qs, comp){
-  if(!comp){ COMP = null; clearInterval(compTick); }
+  if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   S.i = 0; S.results = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
@@ -985,8 +985,9 @@ newRound();
 // straight to the exercise (the mascot switches player).
 if(FIRST) openEdit(PLAYER, true);
 
-// A home-screen app stays open for days. Coming back to the screen between rounds, it
-// picks up a newer build, told by the page's Last-Modified (no header: nothing happens).
+// A home-screen app, or a tab, stays open for days. At the start of a round, and coming back
+// to the screen between rounds, it picks up a newer build, told by the page's Last-Modified
+// (no header: nothing happens). Nothing is lost: it only reloads before a key is pressed.
 function newerBuild(){
   if(document.visibilityState !== 'visible' || window.claude || midRound() || COMP) return;
   fetch(location.pathname, { method:'HEAD', cache:'no-cache' }).then(r => {
