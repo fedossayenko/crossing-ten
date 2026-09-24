@@ -615,6 +615,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 /* the paper's progress track shows in the dark too */
 .dots .ctrack{background:var(--line)}
 .gtag.gb{color:var(--good); background:var(--goodbg)}
+.gtag.gw{color:var(--ink); background:rgba(120,150,200,.18)}
 /* figures that sit under a long task: a smaller drawing, and a line that is only as tall as it is */
 .fig.small svg{height:clamp(64px,13vh,120px)}
 .fig.wide svg{height:auto; width:100%; max-width:340px}

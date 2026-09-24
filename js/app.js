@@ -676,11 +676,14 @@ $('reset').onclick = async () => {
 };
 
 /* ---------- level picker ---------- */
-const paperName = l => l.src === 'basics' ? t('basics') : t('src', l.grade);
+// 'mbg-winter-2024-2' → МБГ · Зима 2024 · 2 клас
+const paperParts = p => { const [, season, ...r] = p.split('-'), grade = r.pop(); return [season, r[0], grade]; };
+const seasonName = p => { const [s, y] = paperParts(p); return t('seasons')[['autumn', 'winter'].indexOf(s)] + (y ? ' ' + y : ''); };
+const paperName = p => p === 'basics' ? t('basics') : t('src', seasonName(p), paperParts(p)[2]);
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || { eq:'' }, k = PICK_GROUPS.findIndex(g => g.has(l));
   $('levelName').textContent = levelName(l);
-  $('sub').textContent = (l.grade ? paperName(l) : t('practice')) + (k >= 0 ? ' · ' + t('groups')[k] : '');
+  $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (k >= 0 ? ' · ' + t('groups')[k] : '');
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
@@ -765,20 +768,23 @@ function buildPicker(){
   };
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? ' <span class="gtag gb">' + t('basics') + '</span>' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? ' <span class="gtag gb">' + t('basics') + '</span>' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
+      l.papers.filter(p => paperParts(p)[0] === 'winter').map(p => ' <span class="gtag gw">' + seasonName(p) + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
-  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && (!PICK_PAPER || paperOf(l) === PICK_PAPER)) })).filter(g => g.levels.length);
+  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && (!PICK_PAPER || l.papers.includes(PICK_PAPER))) })).filter(g => g.levels.length);
   if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = -1;
   $('pickTopics').innerHTML = '<button data-k="-1" aria-pressed="' + (PICK_TOPIC === -1) + '">' + t('all') + '</button>' +
     groups.map(g => '<button data-k="' + g.k + '" aria-pressed="' + (PICK_TOPIC === g.k) + '">' + t('groups')[g.k] + '</button>').join('');
   $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = +b.dataset.k; buildPicker(); });
   // which paper: the basics, МБГ autumn 2nd grade, 3rd grade — or all of them
-  const papers = [...new Set(LEVELS.map(paperOf))].map(p => LEVELS.find(l => paperOf(l) === p));
+  // basics first, then by grade, autumn before winter within a grade
+  const papers = [...new Set(LEVELS.flatMap(l => l.papers))].sort((a, b) =>
+    (a !== 'basics') - (b !== 'basics') || paperParts(a)[2] - paperParts(b)[2] || a.localeCompare(b));
   $('pickGrades').innerHTML = '<button data-p="" aria-pressed="' + (PICK_PAPER === '') + '">' + t('allGrades') + '</button>' +
-    papers.map(l => '<button data-p="' + paperOf(l) + '" aria-pressed="' + (PICK_PAPER === paperOf(l)) + '">' + paperName(l) + '</button>').join('');
+    papers.map(p => '<button data-p="' + p + '" aria-pressed="' + (PICK_PAPER === p) + '">' + paperName(p) + '</button>').join('');
   $('pickGrades').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_PAPER = b.dataset.p; buildPicker(); });
 
   // start here / try this next: the recommendation, and what it opens up after

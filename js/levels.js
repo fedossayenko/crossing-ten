@@ -8,6 +8,8 @@ const LEVELS = [
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:'Crossing a hundred' },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:'A long chain of + and −, worked left to right', gen:genChain },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, eq:'1 + 9 + 2 + 8', desc:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', gen:genPairs },
+  { id:79, op:'w', grp:'chain', needs:[9], src:'mbg-winter-2024', d:3, eq:'1 + 49 + 2 + 48', desc:'Numbers that pair up into a round fifty, then used', gen:genFifty },
+  { id:83, op:'w', grp:'chain', needs:[8], src:'mbg-winter-2024', d:2, eq:'(…) · 0', desc:'One bracket comes to 0, so the long one needs no working', gen:genZeroFac },
   { id:50, op:'w', grp:'chain', needs:[9], d:5, eq:'Плюс или минус', desc:'Choose the signs in a run — how many can be minus', gen:genSigns },
   { id:74, op:'w', grp:'chain', needs:[59], grade:3, d:2, eq:'Знакът ◎', desc:'A new sign, defined by an example, then used', gen:genCircOp },
   { id:59, op:'w', grp:'chain', needs:[9], grade:3, d:2, eq:'20 − 2 · 5', desc:'Multiplication first, then + and − left to right', gen:genMulMix },
@@ -15,11 +17,12 @@ const LEVELS = [
   { id:77, op:'w', grp:'chain', needs:[59], grade:3, d:3, eq:'Изтрих и записах', desc:'Numbers rewritten in two steps, then added', gen:genRewrite },
   { id:63, op:'w', grp:'chain', needs:[59], grade:3, d:4, eq:'Два знака', desc:'Which two different signs make the equality true', gen:genTwoSigns },
   { id:36, op:'w', grp:'count', d:3, eq:'Бонбони', desc:'Ways to share sweets so everyone gets one', gen:genCandy },
-  { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition', gen:genCount },
+  { id:12, op:'w', grp:'count', d:3, eq:'Колко? Сбор?', desc:'How many — or the sum — of a range given by a condition', also:['mbg-winter-2024-2'], gen:genCount },
   { id:25, op:'w', grp:'count', needs:[12], d:4, eq:'Колко вторника?', desc:'A weekday across a run of days — two answers', gen:genWeekday },
   { id:24, op:'w', grp:'count', needs:[12], d:4, eq:'Колко сбора?', desc:'How many different results two numbers can make', gen:genSums },
   { id:55, op:'w', grp:'count', needs:[12], d:4, eq:'Преброй цифрата', desc:'How often one digit turns up across a run of numbers', gen:genDigitRun },
-  { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false', gen:genIneq },
+  { id:16, op:'w', grp:'count', needs:[12,2], d:5, eq:'Вместо ?', desc:'How many digits make the statement false', also:['mbg-winter-2024-2'], gen:genIneq },
+  { id:80, op:'w', grp:'count', needs:[12], src:'mbg-winter-2024', d:2, eq:'Кои от числата?', desc:'Try each of a few given numbers in the box — the edge is the trap', gen:genPickFit },
   { id:65, op:'w', grp:'count', needs:[24], grade:3, d:3, eq:'Колко двуцифрени?', desc:'How many different results two two-digit numbers can make', gen:genSumsTwo },
   { id:51, op:'w', grp:'num', d:3, eq:'Десетици', desc:'A number said in tens, ones and hundreds', gen:genTens },
   { id:13, op:'w', grp:'num', d:3, eq:'Най-малкото', desc:'Smallest two-digit, largest one-digit, then compare', gen:genNamed },
@@ -27,27 +30,31 @@ const LEVELS = [
   { id:46, op:'w', grp:'num', needs:[13], d:4, eq:'Подреди', desc:'Place the numbers so a chain of inequalities holds', gen:genOrder },
   { id:35, op:'w', grp:'num', needs:[13], d:4, eq:'Две двуцифрени', desc:'Two different two-digit numbers with a given sum', gen:genTwoDig },
   { id:44, op:'w', grp:'num', needs:[8], d:4, eq:'Зачеркни', desc:'Cross out one digit to make it true', gen:genCross },
-  { id:49, op:'w', grp:'num', needs:[13], d:4, eq:'Кратни', desc:'The smallest count that splits into equal parts both ways', gen:genMultiple },
-  { id:18, op:'w', grp:'num', d:4, eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum', gen:genDigits },
+  { id:49, op:'w', grp:'num', needs:[13], d:4, eq:'Кратни', desc:'The smallest count that splits into equal parts both ways', also:['mbg-winter-2024-2'], gen:genMultiple },
+  { id:18, op:'w', grp:'num', d:4, eq:'Сбор на цифрите', desc:'How many two-digit numbers have a given digit sum', also:['mbg-winter-2024-2'], gen:genDigits },
   { id:45, op:'w', grp:'num', needs:[13], d:4, eq:'Четири карти', desc:'Arrange four digits for the smallest difference', gen:genCards },
   { id:23, op:'w', grp:'num', needs:[13], d:4, eq:'□△ − 9', desc:'Digits standing in for a two-digit number', gen:genPlace },
   { id:54, op:'w', grp:'num', d:5, eq:'Судоку', desc:'Four by four: every row, column and box holds 1 to 4 once', gen:genSudoku },
+  { id:89, op:'w', grp:'num', needs:[23], src:'mbg-winter-2024', d:4, eq:'C + 1A + B7', desc:'Letters for digits, where only one tens digit can work', gen:genLetters },
   { id:60, op:'w', grp:'num', needs:[53], grade:3, d:3, eq:'Цифрите', desc:'The digits of the smallest or largest three-digit number that fits', gen:genDigProd },
   { id:66, op:'w', grp:'num', needs:[59], grade:3, d:3, eq:'Цифрата на единиците', desc:'Two numbers a set distance apart — which digits their product can end in', gen:genOddProd },
   { id:76, op:'w', grp:'num', needs:[59], grade:3, d:3, eq:'Кое не е избрано?', desc:'Leave one number out so the rest add to a multiple — maybe two ways', gen:genDropOne },
   { id:67, op:'w', grp:'num', needs:[60], grade:3, d:4, eq:'Произведение на цифрите', desc:'The largest or smallest three-digit number by its digits\' product — 0 counts', gen:genDigSum },
   { id:64, op:'w', grp:'num', needs:[44, 59], grade:3, d:5, eq:'Изтрий цифри', desc:'Erase three digits from a product to reach a number', gen:genEraseMul },
+  { id:82, op:'w', grp:'seq', needs:[27], src:'mbg-winter-2024', d:4, eq:'0, 3, 6, …, x', desc:'The last number of a run, from how many digits it takes', gen:genStepDig },
+  { id:86, op:'w', grp:'seq', src:'mbg-winter-2024', d:3, eq:'Пирамида от кутии', desc:'Rows of boxes that grow by the same amount each time', gen:genPyramid },
   { id:27, op:'w', grp:'seq', d:4, eq:'Пропуснатите', desc:'Find the rule, fill the gaps — then read what is asked', gen:genMissing },
   { id:26, op:'w', grp:'seq', d:4, eq:'Редица', desc:'Smaller on the left, bigger on the right', gen:genSeq },
   { id:11, op:'w', grp:'find', d:3, eq:'6 − ◯', desc:'Find the hidden number — or two of them — then use it', gen:genBox },
   { id:15, op:'w', grp:'find', d:4, eq:'Кое изтрих?', desc:'Spot the number a few more — or a few less — than another', gen:genErase },
   { id:29, op:'w', grp:'find', needs:[11], d:4, eq:'Плодове', desc:'Three fruit, three totals — find one from the others', gen:genFruitEq },
   { id:37, op:'w', grp:'find', needs:[11], d:5, eq:'Фигури', desc:'Add the fewest shapes to make two counts match', gen:genShapes },
+  { id:81, op:'w', grp:'find', needs:[11], src:'mbg-winter-2024', d:3, eq:'88 − ■ = 88 − 11', desc:'The box read off an equality, then used', gen:genSameSub },
   { id:68, op:'w', grp:'find', needs:[11, 53], grade:3, d:3, eq:'Числото A', desc:'The one number from given digits that makes an inequality true', gen:genDigIneq },
   { id:75, op:'w', grp:'find', needs:[11], grade:3, d:4, eq:'Кръстът', desc:'Rows and columns multiply to the shaded numbers — find the one missing', gen:genProdGrid },
   { id:28, op:'w', grp:'word', d:2, eq:'Ябълки и круши', desc:'Count two groups, then add to reach a difference', gen:genFruit },
-  { id:38, op:'w', grp:'word', d:3, eq:'Моливи', desc:'Colours counted by what they are not', gen:genPencils },
-  { id:39, op:'w', grp:'word', d:3, eq:'Не достигат', desc:'Short by so many — so how many are there now?', gen:genShort },
+  { id:38, op:'w', grp:'word', d:3, eq:'Моливи', desc:'Colours counted by what they are not', also:['mbg-winter-2024-2'], gen:genPencils },
+  { id:39, op:'w', grp:'word', d:3, eq:'Не достигат', desc:'Short by so many — so how many are there now?', also:['mbg-winter-2024-2'], gen:genShort },
   { id:47, op:'w', grp:'word', needs:[2], d:3, eq:'Три щайги', desc:'A total, a part of it, and a gap between the rest', gen:genCrates },
   { id:14, op:'w', grp:'word', d:3, eq:'Нов сбор', desc:'Every addend changes by the same amount', gen:genGrow },
   { id:10, op:'w', grp:'word', needs:[5], d:3, eq:'С колко?', desc:'How much bigger one sum is than the other', gen:genCmp },
@@ -60,6 +67,8 @@ const LEVELS = [
   { id:58, op:'w', grp:'word', d:5, eq:'Охлювът', desc:'Up by day, back by night — when the top is reached', gen:genSnail },
   { id:56, op:'w', grp:'word', d:5, eq:'Кофата', desc:'Filling a vessel until the two possible buckets tell apart', gen:genBucket },
   { id:33, op:'w', grp:'word', d:5, eq:'Цветя', desc:'Petals of three kinds adding to a total', gen:genFlowers },
+  { id:87, op:'w', grp:'word', src:'mbg-winter-2024', d:3, eq:'Балоните', desc:'A total shared out: a few with several each, the rest with one', gen:genBalloons },
+  { id:88, op:'w', grp:'word', src:'mbg-winter-2024', d:4, eq:'След 10 години', desc:'An age from how many times older someone will be', gen:genAge },
   { id:62, op:'w', grp:'word', needs:[10, 59], grade:3, d:3, eq:'+ 9 и − 9', desc:'Two long expressions that differ only at the end', gen:genPmGap },
   { id:78, op:'w', grp:'word', needs:[39], grade:3, d:4, eq:'Портокалите', desc:'Sharing out two ways: short with one, exact with the other', gen:genTwoShare },
   { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:'Along a line, right then left — how far apart?', gen:genLine },
@@ -70,8 +79,10 @@ const LEVELS = [
   { id:21, op:'w', grp:'geo', d:4, eq:'Обиколка', desc:'Squares, sheets and triangles — sides and perimeters', gen:genSqCut },
   { id:22, op:'w', grp:'geo', needs:[21], d:4, eq:'Обща страна', desc:'Two figures share an edge — what it costs the outline', gen:genShared },
   { id:34, op:'w', grp:'geo', needs:[19], d:4, eq:'Оцветени', desc:'Paint whole rows and columns — what is left', gen:genPaint },
-  { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant', gen:genRects },
+  { id:19, op:'w', grp:'geo', d:4, eq:'Правоъгълници', desc:'How many rectangles in the grid hold the ant', also:['mbg-winter-2024-2'], gen:genRects },
   { id:41, op:'w', grp:'geo', needs:[40], d:4, eq:'Три точки', desc:'Three points on a line — two answers', gen:genThree },
+  { id:84, op:'w', grp:'geo', needs:[21], src:'mbg-winter-2024', d:4, eq:'Режем квадрати', desc:'Cut the biggest square off a sheet, again and again', gen:genSqOff },
+  { id:85, op:'w', grp:'geo', needs:[21], src:'mbg-winter-2024', d:4, eq:'Четири правоъгълника', desc:'A figure of four equal rectangles, from its perimeter', gen:genPinwheel },
   { id:71, op:'w', grp:'geo', needs:[20], grade:3, d:1, eq:'Селищата', desc:'A midpoint, and a place a few kilometres from it', gen:genMidPt },
   { id:70, op:'w', grp:'geo', needs:[31], grade:3, d:2, eq:'Точки на отсечка', desc:'Points that cut a segment into equal parts, plus a piece beyond', gen:genSegPts },
   { id:72, op:'w', grp:'geo', needs:[21], grade:3, d:3, eq:'Триъгълник и квадрат', desc:'A triangle\'s side against a square\'s perimeter, in millimetres', gen:genTriVsSq },
@@ -82,9 +93,14 @@ const LEVELS = [
 // the ordinary operation there, so their d spreads over 1–5 like the 2nd grade's does.
 // Where the levels come from: the plain sums (take away, add) are basics, the drill under
 // everything; every other level is modelled on a task from Математика без граници, autumn
-// round, 2nd grade unless its row says grade:3. A paper is one source and grade together.
-LEVELS.forEach(l => { l.src = l.src || (l.op === '-' || l.op === '+' ? 'basics' : 'mbg-autumn'); l.grade = l.grade || 2; });
-const paperOf = l => l.src === 'basics' ? 'basics' : l.src + '-' + l.grade;
+// round, 2nd grade unless its row says grade:3. A paper is one source and grade together,
+// keyed 'mbg-autumn-2' or 'mbg-winter-2024-2'. A level whose task also turns up on another
+// paper lists that paper in also:[…]; it is still one level, rated once — a task that is
+// easier or harder on the other paper is a level of its own, not a tag.
+LEVELS.forEach(l => {
+  l.src = l.src || (l.op === '-' || l.op === '+' ? 'basics' : 'mbg-autumn'); l.grade = l.grade || 2;
+  l.papers = [l.src === 'basics' ? 'basics' : l.src + '-' + l.grade].concat(l.also || []);
+});
 // Picker sections, in the order they appear. Levels inside each are sorted easiest
 // first in the LEVELS table above.
 const PICK_GROUPS = [

@@ -14,9 +14,22 @@ sums two two-digit numbers make, the digits a product can end in, a number by it
 product, and the one number from given digits that fits an inequality, a star of triangles round a
 square, points on a segment, a midpoint between villages, a triangle against a square, and a
 rectangle tiled by squares and two-square rectangles, a new sign ◎, a cross of products, the
-number left out of a sum, numbers rewritten in two steps, and sharing oranges two ways). A level row carries `src` and `grade`; the
-picker filters by paper (Основи, МБГ 2 клас, МБГ 3 клас), marks 3rd-grade rows, and recommends the 3rd-grade levels only once
-the 2nd-grade ones are learned. Competitions are drawn from the 2nd-grade levels.
+number left out of a sum, numbers rewritten in two steps, and sharing oranges two ways).
+
+The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
+official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
+inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),
+so those levels are tagged with the winter paper rather than copied. The other thirteen became eleven new levels
+(79–89: pairs making fifty, a few given numbers tried in a box, a box read off an equality, a run
+by its digits, a bracket that is 0, cutting squares off a sheet, four rectangles by their perimeter, a
+pyramid of boxes, balloons, an age, letters for digits).
+
+A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
+a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
+easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
+(Основи, МБГ Есен 2 клас, МБГ Зима 2024 2 клас, МБГ Есен 3 клас), marks grade and winter rows, and
+recommends the 3rd-grade levels only once the 2nd-grade ones are learned. Competitions are drawn from the
+2nd-grade levels.
 
 - Live: https://fedossayenko.github.io/crossing-ten/
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.

@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -1948,4 +1948,98 @@ eval(head + body + test);
     }
   }});
   console.log('МБГ Есен 3 клас, задачи 16–20: as printed (2, 3, 2 or 5, 36, 24), and ' + Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
+}
+
+/* МБГ Зима 2024, 2 клас: the whole paper. Tasks 6, 7, 10, 14, 15, 19 and 20 are levels the
+   autumn papers already had (also:['mbg-winter-2024-2']); the rest are levels 79–89. Each
+   printed task is solved as printed against the official key, and the new kinds by brute force. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, LEVELS, PINWHEEL, lettersSolve }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
+  const text = q => strip(Q.drawQ(q)).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
+  const printed = (task, q, want, shows) => {
+    const got = Q.answers(q);
+    if(got[0] !== want) throw new Error('Зима 2024 task ' + task + ': gives ' + got + ', the key says ' + want);
+    if(shows && text(q).replace(/\s+/g, '').indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('Зима 2024 task ' + task + ' is not drawn as printed: ' + text(q));
+  };
+  printed(1, {kind:'fifty', shape:0, base:50, nums:[1,49,2,48], sub:60, T:100, ans:40}, 40, '1 + 49 + 2 + 48 − 60');
+  printed(2, {kind:'fifty', shape:1, base:50, nums:[1,2,48,49], T:100, ans:10}, 10, '1 + 2 + 48 + 49');
+  printed(3, {kind:'fifty', shape:2, base:50, nums:[3,4,47,46], other:[11,22,33], S:66, T:100, ans:34}, 34, 'сборът 3 + 4 + 47 + 46 е по-голям от сбора 11 + 22 + 33');
+  printed(4, {kind:'pickfit', nums:[9,10,11], add:1, n:11, more:true, fits:[11], ans:1}, 1, '□ + 1 > 11');
+  printed(5, {kind:'samesub', M:88, s:11, X:22, plus:false, given:0, ans:11}, 11, '22 − ■, ако 88 − ■ = 88 − 11');
+  printed(8, {kind:'stepdig', k:3, start:0, first:[0,3,6,9], ones:4, twos:[12,15,18,21,24,27,30,33,36,39], digits:24, ans:39}, 39, '0, 3, 6, 9, …, x са записани с 24 цифри');
+  printed(9, {kind:'zerofac', long:'1 · 2 + 2 · 3 + 3 · 4 + 5 · 6', zero:'1 + 2 + 3 − 6', first:false, add:0, ans:0}, 0, '(1 · 2 + 2 · 3 + 3 · 4 + 5 · 6) · (1 + 2 + 3 − 6)');
+  printed(11, {kind:'sqoff', W:10, H:6, cuts:[6,4,2,2], ans:4}, 4, '10 см на 6 см');
+  printed(12, {kind:'pinwheel', L:10, P:80, dm:true, long:true, ans:10}, 10, 'обиколка 8 дм');
+  printed(13, {kind:'pyramid', w:3, shown:3, n:4, rows:[3,9,15,21], last:false, ans:48}, 48, 'в 4 реда');
+  printed(16, {kind:'balloons', k:3, m:3, rest:12, T:21, ans:15}, 15, 'общо 21 балона, като 3 деца имат по 3 балона');
+  printed(17, {kind:'age', bg:'Клеър', uk:'Клер', she:1, m:3, now:5, a:10, b:5, shape:1, ans:10}, 10, 'След 10 години Клеър ще бъде 3 пъти по-голяма');
+  printed(18, {kind:'letters', d:1, e:7, N:86, R:69, B:6, CA:9, minus:true, ans:3}, 3, 'C + 1A + B7 = 86');
+  // the new kinds' own brute-force answers for the printed ones
+  if(String(Q.lettersSolve(1, 7, 86).map(s => s.C + s.A - s.B).filter((v, i, a) => a.indexOf(v) === i)) !== '3') throw new Error('task 18: C + A − B is not only 3');
+  // the tasks on older levels, worked out here from the printed numbers
+  const key = { 6: 99 - 50 + 1, 7: [0,1,2,3].filter(v => !(93 - 79 < v + 11)).reduce((a, b) => a + b, 0),
+    10: [13,14,15,16,17,18,19].filter(n => n % 2 === 0 && n % 3 === 0)[0],
+    14: 2*(4 + 2)*2 + 2*(6 + 2), 15: [...Array(90).keys()].map(v => v + 10).filter(v => { const t = Math.floor(v/10), o = v % 10; return (t === 6 && o < 6) || (o === 6 && t < 6); }).length,
+    19: 20 - (20 - 12) - 2, 20: 22 - (31 - 13) };
+  const want = {6:50, 7:6, 10:18, 14:40, 15:11, 19:10, 20:4};
+  Object.keys(want).forEach(k => { if(key[k] !== want[k]) throw new Error('Зима 2024 task ' + k + ': ' + key[k] + ', the key says ' + want[k]); });
+  // …and those levels really ask that kind of question
+  const asks = {12: /по-малки от \d+ и са по-големи от \d+/, 16: /сбора на всички .*НЕ е вярно/, 49: /две равни събираеми и като сбор на три|три равни събираеми и като сбор на две/,
+    19: /правоъгълници, които не са квадрати/, 18: /една от цифрите на които е \d+ , а другата е по-малка/, 38: /не са зелени/, 39: /не ми достигат, за да имам/i};
+  Object.keys(asks).forEach(id => {
+    const L = Q.LEVELS.find(l => l.id === +id);
+    if(!L.papers.includes('mbg-winter-2024-2')) throw new Error('level ' + id + ' is not tagged Зима 2024');
+    let hit = false;
+    for(let i = 0; i < 4000 && !hit; i++) hit = asks[id].test(text(Q.raw(+id)).replace(/\s+/g, ' '));
+    if(!hit) throw new Error('level ' + id + ' never asks the Зима 2024 question ' + asks[id]);
+  });
+
+  const n = {};
+  [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89].forEach(id => { for(let i = 0; i < 400; i++){
+    const q = Q.raw(id), a = q.ans;
+    n[q.kind] = (n[q.kind] || 0) + 1;
+    if(Q.LEVELS.find(l => l.id === id).papers.join() !== 'mbg-winter-2024-2') throw new Error('level ' + id + ' should be on the Зима 2024 paper');
+    const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
+    if(q.kind === 'fifty'){
+      const T = q.nums.reduce((x, y) => x + y, 0);
+      if(T % 10 || (q.shape === 0 ? T - q.sub : q.shape === 1 ? T / 10 : T - q.other.reduce((x, y) => x + y, 0)) !== a || a < 0) fail('the sum');
+    }
+    if(q.kind === 'pickfit' && q.nums.filter(v => q.more ? v + q.add > q.n : v + q.add < q.n).length !== a) fail('the count');
+    if(q.kind === 'pickfit' && !q.nums.some(v => v + q.add === q.n)) fail('no try lands on the edge');
+    if(q.kind === 'samesub'){
+      const box = [...Array(200).keys()].filter(b => q.given === 0 ? q.M - b === q.M - q.s : b + q.M === q.M + q.s);
+      if(box.length !== 1 || (q.plus ? q.X + box[0] : q.X - box[0]) !== a) fail('the box');
+    }
+    if(q.kind === 'stepdig'){
+      let digits = 0; for(let v = q.start; v <= a; v += q.k) digits += String(v).length;
+      if(digits !== q.digits || (a - q.start) % q.k) fail('the digits');
+    }
+    if(q.kind === 'zerofac' && eval(text(q).replace(/·/g, '*').replace(/−/g, '-').replace(/[^0-9+\-*() ]/g, '')) !== a) fail('the value');
+    if(q.kind === 'sqoff' && (q.cuts.reduce((x, s) => x + s*s, 0) !== q.W*q.H || q.cuts.length !== a)) fail('the squares');
+    if(q.kind === 'pinwheel'){
+      const s = q.L / 2, P = Q.PINWHEEL.reduce((t, p, j) => { const r = Q.PINWHEEL[(j + 1) % 12]; return t + (Math.abs(p[0] - r[0]) + Math.abs(p[1] - r[1]))*s; }, 0);
+      if(P !== q.P || (q.long ? q.L : s) !== a || (q.dm && q.P % 10)) fail('the perimeter');
+    }
+    if(q.kind === 'pyramid'){
+      const count = q.w*q.n*q.n, cubes = (text(q), (Q.drawQ(q).match(/<polygon/g) || []).length / 3);
+      if(cubes !== q.w*q.shown*q.shown || (q.last ? q.w*(2*q.n - 1) : count) !== a) fail('the boxes');
+    }
+    if(q.kind === 'balloons'){
+      const kids = [...Array(60).keys()].filter(c => c >= q.k && q.k*q.m + (c - q.k) === q.T);
+      if(kids.length !== 1 || kids[0] !== a) fail('the children');
+    }
+    if(q.kind === 'age'){
+      const now = [...Array(40).keys()].filter(x => x && x + q.a === q.m*x);
+      if(now.length !== 1 || (q.shape ? now[0] + q.b : now[0]) !== a) fail('the age');
+    }
+    if(q.kind === 'letters'){
+      const vals = new Set();
+      for(let A = 0; A <= 9; A++) for(let B = 1; B <= 9; B++) for(let C = 0; C <= 9; C++)
+        if(new Set([A, B, C]).size === 3 && C + (10*q.d + A) + (10*B + q.e) === q.N) vals.add(q.minus ? C + A - B : A + B + C);
+      if(vals.size !== 1 || !vals.has(a)) fail('the letters');
+    }
+  }});
+  console.log('МБГ Зима 2024 2 клас: all 20 printed tasks match the official key (40, 10, 34, 1, 11, 50, 6, 39, 0, 18, 4, 10, 48, 40, 11, 15, 10, 3, 10, 4); 7 older levels tagged and asking the same question; ' +
+    Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
 }
