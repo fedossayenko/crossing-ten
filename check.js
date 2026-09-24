@@ -2152,3 +2152,56 @@ eval(head + body + test);
   console.log('КМС 2025 2 клас: all 10 printed tasks match the official key (4, 7, 8, 4, 4, Л, 95, 69, 49; 29, 81, 3 ways); level 18 tagged; ' +
     Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
 }
+
+/* МБГ Есен 2025, 2 клас: every task is a level the app already had (levels 8–26, tagged
+   also:['mbg-autumn-2025-2']). Each printed task is built as that level's question, answered
+   against the official key, drawn as printed — and the level's own generator is sampled until it
+   asks exactly that question, so the printed task is one she can really meet. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
+  const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
+  const metExact = [], metLike = [];
+  const paper = [
+    [1,  8,  {kind:'chain', terms: chain(2, 0, 2, 6, -2, 0, -2, -5), paired:0, ans:1}, [1], '2 + 0 + 2 + 6 − 2 + 0 − 2 − 5'],
+    [2,  9,  {kind:'pairs', shape:'tens', base:10, terms: chain(1, 9, 2, 8, 3, 7, 5, -33), paired:3, extra:5, subs:[33], ans:2}, [2], '1 + 9 + 2 + 8 + 3 + 7 + 5 − 33'],
+    [3,  10, {kind:'cmp', shape:0, a:20, b:26, big:46, small:10, flip:false, ans:36}, [36], 'сборът 20 + 26 е по-голям от сбора 2 + 0 + 2 + 6'],
+    [4,  11, {kind:'box', a:10, b:6, x:12, y:9, box:3, r:3, ans:7}, [7], '6 − ◯ = 12 − 9'],
+    [5,  12, {kind:'count', sum:false, shape:0, natural:false, two:false, n:5, lo:0, hi:5, ans:6}, [6], 'не са по-големи от 5'],
+    [6,  13, {kind:'named', shape:1, R:20, ans:1}, [1], 'С колко полученият сбор е по-малък от 20'],
+    [7,  14, {kind:'grow', k:3, d:5, up:true, base:4, ans:19}, [19], 'Сборът на три числа е 4'],
+    [8,  15, {kind:'erase', set:[3,4,7,9,11], d:3, bigger:true, gone:7, ans:27}, [27], '3, 4, 7, 9 и 11'],
+    [9,  9,  {kind:'pairs', shape:'sub', terms: chain(11, -1, 12, -2, 13, -3, 14, -5), paired:4, ans:39}, [39], '11 − 1 + 12 − 2 + 13 − 3 + 14 − 5'],
+    [10, 16, {kind:'ineq', shape:0, A:20, B:17, L:3, C:2, ans:2}, [2], '20 − 17 < ? + 2'],
+    [11, 17, {kind:'sumdiff', a:8, d:2, slots:2, ans:18, alt:[14]}, [14, 18], 'едно от които е 8, ако разликата им е 2'],
+    [12, 18, {kind:'digits', shape:1, ans:19}, [19], 'сборовете, които се срещат само веднъж'],
+    [13, 19, {kind:'rects', shape:0, W:3, H:2, c:1, r:1, wide:3, tall:2, ans:6}, [6], 'в които има мравка'],
+    [14, 20, {kind:'line', d1:3, d2:11, right:true, back:true, ans:8}, [8], 'На 3 см вдясно'],
+    [15, 21, {kind:'sqcut', parts:2, side:4, small:2, shape:0, ans:8}, [8], 'Квадрат със страна 4 см е разрязан на четири еднакви квадрата'],
+    [16, 22, {kind:'shared', shape:0, P:24, p1:16, p2:18, ans:5}, [5], 'обиколка 24 см разрязали на два триъгълника с обиколки 16 см и 18 см'],
+    [17, 23, {kind:'place', t:9, u:7, N:97, k:9, R:88, a:2, shape:0, ans:22}, [22], '□△ − 9 = 88'],
+    [18, 24, {kind:'sums', shape:0, k:2, top:18, ans:19}, [19], 'сбор на две едноцифрени числа'],
+    [19, 25, {kind:'weekday', n:22, q:3, r:1, day:Q.DAYS[1], slots:2, ans:3, alt:[4]}, [3, 4], 'Колко вторника може да има сред 22 последователни дни'],
+    [20, 26, {kind:'seq', a:[2,1,3,4,6,5,7,9,10,8], hits:[3,4,7], ans:3}, [3], '2, 1, 3, 4, 6, 5, 7, 9, 10, 8']
+  ];
+  paper.forEach(([task, id, q, key, shows]) => {
+    const got = Q.answers(q).slice().sort((x, y) => x - y);
+    if(got.join() !== key.join()) throw new Error('Есен 2025 task ' + task + ': gives ' + got + ', the key says ' + key);
+    if(!Q.accepts(q, key.map(String)) || (key.length > 1 && !Q.accepts(q, key.slice().reverse().map(String)))) throw new Error('Есен 2025 task ' + task + ': the key is not accepted');
+    if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('Есен 2025 task ' + task + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
+    if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2025-2')) throw new Error('level ' + id + ' is not tagged Есен 2025');
+    // exactly this question, or — where the numbers are too many to meet by chance (a long chain) —
+    // the same question with its numbers masked: the same wording, the same signs in the same places
+    const sig = g => Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
+    const want = sig(q);
+    let exact = false, like = false;
+    for(let n = 0; n < 100000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind) continue; const s = sig(g); exact = s === want; like = like || mask(s) === mask(want); }
+    if(!exact && !like) throw new Error('Есен 2025 task ' + task + ': level ' + id + ' never asks a question of that form');
+    (exact ? metExact : metLike).push(task);
+  });
+  // 20: worked out here as well, not only by the level
+  const a20 = [2,1,3,4,6,5,7,9,10,8], hits = a20.filter((v, i) => a20.every((w, j) => j === i || (j < i ? w < v : w > v)));
+  if(hits.join() !== '3,4,7') throw new Error('task 20: ' + hits);
+  console.log('МБГ Есен 2025 2 клас: all 20 printed tasks match the official key (1, 2, 36, 7, 6, 1, 19, 27, 39, 2, 14 и 18, 19, 6, 8, 8, 5, 22, 19, 3 и 4, 3); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
+    (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
+}

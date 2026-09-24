@@ -16,6 +16,11 @@ square, points on a segment, a midpoint between villages, a triangle against a s
 rectangle tiled by squares and two-square rectangles, a new sign ◎, a cross of products, the
 number left out of a sum, numbers rewritten in two steps, and sharing oranges two ways).
 
+The **autumn round, 2nd grade, 2025** (МБГ Есен 2025) is covered whole by levels 8–26: each of its 20
+tasks is pinned in check.js against the official key, and each is a question its level's own generator
+asks (19 of them word for word, the long ± chain of task 1 with other numbers). Those levels carry the tag
+`mbg-autumn-2025-2`, so the picker can show that paper on its own.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),
@@ -34,7 +39,7 @@ that level brings its own А/Б/В/Г.
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
-(Основи, МБГ Есен 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 3 клас), tags
+(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 3 клас), tags
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, and competitions are drawn from her grade's levels.
