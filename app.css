@@ -646,3 +646,27 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   /* the answer line's size is set on the element by each kind; beside a hint it may be a little smaller */
   .card:has(.fb) .card-in:has(> .choices[hidden]) .stage > .line:last-child{font-size:clamp(26px,7vh,46px) !important}
 }
+/* iPad and laptop: the picker's side column holds two filter rows, the recommendation and the
+   competition — smaller chips keep it short enough to stay in view beside the list */
+@media (min-width:900px){
+  .pickside .chips{gap:6px}
+  .pickside .chips.filt button{min-height:32px; padding:0 11px; font-size:13px}
+}
+@media (min-width:900px) and (max-height:600px){ .pickside{position:static} }   /* taller than the window: scroll with the list */
+/* the first-miss feedback, compact: the wrong answer on one slim line, the solution button inside the hint */
+.hint .fb.no{padding:5px 12px}
+.hint .fb.no .mark{width:22px; height:22px}
+.hint .fb.no .typed{font-size:18px}
+.fb.tip .tiptext{flex:1 1 180px}
+.fb.tip .reveal{min-height:36px; padding:0 14px; font-size:13px; flex:0 0 auto}
+/* A phone or narrow window, upright: while a hint is showing, the keys and the drawing give up some
+   height to it. If it still does not fit, the card scrolls to the hint — without a scrollbar track. */
+@media (orientation:portrait){
+  .app:has(.card .fb) .key{height:clamp(40px,5.4vh,54px)}
+  .app:has(.card .fb) .pad{gap:7px}
+  .card:has(.fb) .fig svg{height:clamp(48px,11vh,110px)}
+  .card:has(.fb) .fig.wide svg{height:auto; max-height:clamp(48px,13vh,130px)}
+  .card:has(.fb) .fig.tall svg{height:clamp(90px,20vh,190px)}
+  .card:has(.fb) .stage > .line:last-child{font-size:clamp(24px,6vw,38px) !important}
+}
+.card-in{scrollbar-width:none} .card-in::-webkit-scrollbar{display:none}

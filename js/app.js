@@ -380,9 +380,10 @@ function check(){
     $('verdict').className = 'verdict no';
     $('verdict').textContent = t('notYet');
     const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
+    // one slim line for what she wrote, then the hint with "show the solution" inside it: two boxes, not three
     $('hint').innerHTML = box('no', '<span class="typed">' + esc(S.typed[S.i]) + '</span>', nudge, t('notThis')) +
-      '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div>' + why(q) + '</div></div>' +
-      '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button>';
+      '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div><span class="tiptext">' + why(q) + '</span>' +
+      '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>';
     $('reveal').onclick = e => { e.stopPropagation(); reveal(); };
     $('hint').scrollIntoView({ block:'nearest' });      // a phone in portrait: the hint lands under the question, maybe out of sight
     S.timers.push(setTimeout(() => { if(!S.settled) mood('thinking'); }, 1100));
@@ -682,6 +683,8 @@ $('reset').onclick = async () => {
 // 'mbg-winter-2024-2' is the paper 'mbg-winter-2024' for the 2nd grade; its names are papers/paperTag in js/i18n.js
 const paperSrc = p => p.replace(/-\d+$/, ''), paperGrade = p => +p.slice(p.lastIndexOf('-') + 1);
 const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paperSrc(p)], paperGrade(p));
+// the picker's filter chip: the short tag and the grade, "Зима 2024 · 2 клас"; the full name is its tooltip
+const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || { eq:'' }, k = PICK_GROUPS.findIndex(g => g.has(l));
   $('levelName').textContent = levelName(l);
@@ -776,7 +779,7 @@ function buildPicker(){
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
     '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? ' <span class="gtag gb">' + t('basics') + '</span>' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
-      l.papers.filter(p => p !== 'basics' && paperSrc(p) !== 'mbg-autumn').map(p => ' <span class="gtag gw">' + t('paperTag')[paperSrc(p)] + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+      l.papers.filter(p => !PICK_PAPER && p !== 'basics' && paperSrc(p) !== 'mbg-autumn').map(p => ' <span class="gtag gw">' + t('paperTag')[paperSrc(p)] + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
@@ -792,7 +795,7 @@ function buildPicker(){
   const papers = [...new Set(LEVELS.flatMap(l => l.papers))].sort((a, b) =>
     (a !== 'basics') - (b !== 'basics') || paperGrade(a) - paperGrade(b) || ORDER.indexOf(paperSrc(a)) - ORDER.indexOf(paperSrc(b)));
   $('pickGrades').innerHTML = '<button data-p="" aria-pressed="' + (PICK_PAPER === '') + '">' + t('allGrades') + '</button>' +
-    papers.map(p => '<button data-p="' + p + '" aria-pressed="' + (PICK_PAPER === p) + '">' + paperName(p) + '</button>').join('');
+    papers.map(p => '<button data-p="' + p + '" aria-pressed="' + (PICK_PAPER === p) + '" title="' + paperName(p) + '">' + paperChip(p) + '</button>').join('');
   $('pickGrades').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_PAPER = b.dataset.p; buildPicker(); });
 
   // start here / try this next: the recommendation, and what it opens up after
