@@ -29,6 +29,12 @@ The **autumn round, 2nd grade, 2023** (МБГ Есен 2023) is covered whole to
 27 and 38–45: all 20 tasks pinned against the official key, 17 word for word and three (a sum against a
 difference, a range summed, the sum of what makes an inequality false) with other numbers; tag `mbg-autumn-2023-2`.
 
+The **autumn rounds of 2022 and 2020** are covered whole as well, and **2021** all but one task (task 18,
+the lanterns: 33 lit, 11 put out, how many are left — a trick question no level asks). Each task is pinned in
+check.js against the official key; tags `mbg-autumn-2022-2`, `mbg-autumn-2021-2`, `mbg-autumn-2020-2`.
+The 2020 paper's task 15 takes two answers (a square cut into four equal rectangles: strips, or four
+squares), so level 21 now asks for both whenever it cuts a square into four.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),

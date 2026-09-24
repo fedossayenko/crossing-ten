@@ -998,7 +998,9 @@ for(let i = 0; i < 6000; i++){
   if(shown.indexOf(q.mm ? 'милиметра' : 'сантиметра') < 0) throw new Error('the unit asked for is not the one drawn');
   if(/две еднакви правоъгълника/.test(shown)) throw new Error('правоъгълник is masculine — Bulgarian wants два');
   const lines = (drawQ(q).match(/<line /g) || []).length;
-  if(lines !== q.k - 1) throw new Error('the figure should show ' + (q.k - 1) + ' cuts, not ' + lines);
+  // four pieces may be strips or squares (Есен 2020 takes both), so that square is drawn uncut
+  if(lines !== (q.slots ? 0 : q.k - 1)) throw new Error('the figure should show ' + (q.slots ? 0 : q.k - 1) + ' cuts, not ' + lines);
+  if((q.k === 4) !== (q.slots === 2) || (q.slots && q.alt[0] !== (q.mm ? 10 : 1)*2*q.side)) throw new Error('four equal pieces: both the strips and the squares must be asked for');
 }
 if(!cuts) throw new Error('the strip shape should turn up');
 { // задача 15 as printed: a 4 см square in four strips, answered in мм
@@ -2300,4 +2302,97 @@ eval(head + body + test);
   });
   console.log('МБГ Есен 2023 2 клас: all 20 printed tasks match the official key (0, 4, 20, 10, 19, 7, 10, 9, 38, 20, 10, 3 или 5, 2, 60, 9, 9, 20, 9, 2, 7); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
     (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
+}
+
+/* МБГ Есен 2022, 2021 and 2020, 2 клас, checked the same way as the later autumn papers: each printed
+   task against the official key, drawn as printed, and met by its level's own generator. Where the
+   level picks a name, a colour or a thing to count, the listed fields alone are matched. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
+  const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
+  const D = nm => Q.DAYS.find(d => d.nm === nm), run = (a, b, s) => { const r = []; for(let v = a; s > 0 ? v <= b : v >= b; v += s) r.push(v); return r; };
+  const paperCheck = (name, tag, keyText, paper, missing) => {
+    const metExact = [], metLike = [];
+    paper.forEach(([task, id, q, key, shows, fields]) => {
+      const got = Q.answers(q).slice().sort((x, y) => x - y);
+      if(got.join() !== key.join()) throw new Error(name + ' task ' + task + ': gives ' + got + ', the key says ' + key);
+      if(!Q.accepts(q, key.map(String)) || (key.length > 1 && !Q.accepts(q, key.slice().reverse().map(String)))) throw new Error(name + ' task ' + task + ': the key is not accepted');
+      if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' task ' + task + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
+      if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + name);
+      const sig = g => fields ? fields.map(f => JSON.stringify(g[f])).join() : Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
+      const want = sig(q);
+      let exact = false, like = false;
+      for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind || g.shape !== q.shape || g.runs !== q.runs) continue; const s = sig(g); exact = s === want; like = like || fields || mask(s) === mask(want); }
+      if(!exact && !like) throw new Error(name + ' task ' + task + ': level ' + id + ' never asks a question of that form');
+      (exact ? metExact : metLike).push(task);
+    });
+    console.log('МБГ ' + name + ' 2 клас: ' + paper.length + ' printed tasks match the official key (' + keyText + '); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
+      (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : '') + (missing ? '; not in the app: ' + missing : ''));
+  };
+  paperCheck('Есен 2022', 'mbg-autumn-2022-2', '4, 8, 10, 10, 2, 20, 2, 11, 16, 5, 30, 28, 16, 16, 10, 4, 36, 5, 29, 2', [
+    [1,  9,  {kind:'pairs', shape:'cancel', terms: chain(9, -8, 8, -7, 7, -6, 6, -5), start:9, last:5, ans:4}, [4], '9 − 8 + 8 − 7 + 7 − 6 + 6 − 5'],
+    [2,  11, {kind:'box', shape:'two', p:5, r:4, sq:5, tri:3, ans:8}, [8], '5 + □ = 8 и 4 + ■ = 9'],
+    [3,  10, {kind:'cmp', shape:3, L:[1,8,21], R:[2,7,11], ans:10, flip:false}, [10], 'сборът 1 + 8 + 21 е по-голям от сбора 2 + 7 + 11'],
+    [4,  10, {kind:'cmp', shape:2, x:15, y:25, p:60, q:10, S:40, D:50, less:true, ans:10}, [10], 'сборът 15 + 25 е по-малък от разликата 60 − 10'],
+    [5,  12, {kind:'count', sum:false, shape:4, natural:true, two:false, a:7, b:10, lo:8, hi:9, ans:2}, [2], 'естествени числа, които са по-малки от 10 и са по-големи от 7'],
+    [6,  11, {kind:'box', shape:'plus', g:20, p:20, box:40, S:60, ans:20}, [20], 'ако 20 + ■ = 60'],
+    [7,  16, {kind:'ineq', shape:0, A:22, B:14, L:8, C:7, ans:2}, [2], 'да НЕ е вярно: 22 − 14 < ? + 7'],
+    [8,  38, {kind:'pencils', who:'Ния', col:[['зелени','зелен'],['жълти','жълт'],['сини','син']], a:3, b:7, c:11, T:21, notA:18, ans:11}, [11], 'От тях 18 не са зелени, а 7 са жълти', ['a','b','c']],
+    [9,  46, {kind:'order', nums:[6,8,10], p:2, g:1, fit:[10,8,6], asksMid:false, ans:16}, [16], '■ + 2 > □ > ■ + 1'],
+    [10, 17, {kind:'sumdiff', shape:'gap', c:18, d1:2, d2:3, ans:5}, [5], 'Разликата на числото A и 18 е 2. Разликата на числото B и 18 е 3'],
+    [11, 31, {kind:'trees', who:'Хари', did:'посадил', n:16, d:2, dm:20, shape:3, len:30, ans:30}, [30], '16 дръвчета в една редица на разстояние 20 дм', ['n','dm']],
+    [12, 21, {kind:'sqcut', shape:4, inCm:false, dm:1, P:40, sides:[3,4,5], p:12, ans:28}, [28], 'страни 3 см, 4 см, 5 см. Квадрат има страна 1 дм'],
+    [13, 21, {kind:'sqcut', shape:5, t:{w:5, h:3, sq:[[0,0,2],[0,2,1],[1,2,1],[2,0,3]]}, s:1, n:4, few:2, side:1, ans:16}, [16], 'съставен от 4 квадрата, ако два от квадратите имат страна 1 см'],
+    [14, 22, {kind:'shared', shape:2, a:4, h:4, d:8, ans:16}, [16], 'по-голяма от обиколката на правоъгълника DCEF с 8 см', ['a','d']],
+    [15, 47, {kind:'crates', box:['щайги','щайга'], asks:0, T:30, ab:19, a:10, b:9, c:11, d:2, ans:10}, [10], 'В три щайги има 30 кг плодове. В първите две има общо 19 кг'],
+    [16, 48, {kind:'both', T:22, A:18, B:5, both:1, lang:['английски','френски'], asksBoth:false, ans:4}, [4], 'От тях 18 учат английски език', ['T','A','B','asksBoth']],
+    [17, 49, {kind:'multiple', g:['рози','розите','градината'], p:3, r:2, L:6, N:32, ans:36}, [36], 'повече от 32 рози', ['p','r','N']],
+    [18, 13, {kind:'named', shape:4, k:5, S:11, floor:6, ans:5}, [5], 'Сборът на пет различни числа е 11'],
+    [19, 25, {kind:'weekday', shape:'last', mon:['януари',31], d1:D('неделя'), day:D('неделя'), first:1, ans:29}, [29], 'последната неделя през януари'],
+    [20, 50, {kind:'signs', a:1, b:5, nums:[1,2,3,4,5], T:5, wit:[2,3], ans:2}, [2], 'от 1 до 5 включително']
+  ]);
+  paperCheck('Есен 2021', 'mbg-autumn-2021-2', '3, 35, 26, 40, 2, 40, 23, 20, 13 и 14, 1, 23, 20, 50, 10, 2, 11, четвъртък, 33, 108, 5', [
+    [1,  51, {kind:'tens', shape:0, c:20, N:50, ans:3}, [3], '50 = □ десетици + 20 единици'],
+    [2,  11, {kind:'box', shape:'bal', form:0, x:31, y:29, N:95, L:60, plus:true, ans:35}, [35], '31 + 29 = 95 − □'],
+    [3,  10, {kind:'cmp', shape:2, same:1, x:31, y:13, p:31, q:13, S:44, D:18, less:false, ans:26}, [26], 'сборът 31 + 13 е по-голям от разликата 31 − 13'],
+    [4,  11, {kind:'box', shape:'bal', form:1, x:100, y:40, N:20, L:60, plus:false, ans:40}, [40], '100 − 40 = □ + 20'],
+    [5,  51, {kind:'tens', shape:1, a:7, b:8, m:5, ans:2}, [2], '7 десетици + 8 десетици + 50 единици = □ стотици'],
+    [6,  27, {kind:'missing', one:1, next:false, seq:[0,5,5,10,15,25,40,65], at:6, rule:0, ans:40}, [40], '0, 5, 5, 10, 15, 25, …, 65'],
+    [7,  12, {kind:'count', sum:false, shape:1, natural:false, two:true, n:33, lo:10, hi:32, ans:23}, [23], 'двуцифрени числа, които са по-малки от 33'],
+    [8,  10, {kind:'cmp', shape:3, tens:1, L:[20,40,80], R:[30,40,50], ans:20, flip:false}, [20], 'сборът 20 + 40 + 80 е по-голям от сбора 30 + 40 + 50'],
+    [9,  12, {kind:'count', shape:4, name:1, sum:false, natural:false, two:false, a:12, b:15, lo:13, hi:14, slots:2, ans:13, alt:[14]}, [13, 14], 'числата, които са по-малки от 15 и са по-големи от 12'],
+    [10, 38, {kind:'pencils', shape:'gave', who:'Ния', f:true, col:[['червени','червен'],['жълти','жълт']], T:20, a:9, rest:11, g1:7, g2:3, other:0, ans:1}, [1], 'имала 20 молива, от които 9 червени', ['T','a','g1','g2','other']],
+    [11, 31, {kind:'trees', who:'Хари', did:'посадил', n:24, d:1, shape:0, len:23, ans:23}, [23], '24 дръвчета в една редица на разстояние 1 метър', ['n','d','shape']],
+    [12, 21, {kind:'sqcut', shape:4, inCm:false, dm:1, P:40, sides:[7,7,6], p:20, ans:20}, [20], 'страни 7 см, 7 см, 6 см. Квадрат има страна 1 дм'],
+    [13, 32, {kind:'ribbon', shape:3, inDm:false, a:15, aCm:15, b:5, k:3, m:1, ans:50}, [50], 'Пръчката от 15 см използвах 3 пъти, а пръчката от 5 см — 1 път'],
+    [14, 40, {kind:'seg', shape:'ruler', a:3, b:7, c:5, d:11, AB:4, CD:6, ans:10}, [10], 'сборът от дължините на отсечките AB и CD'],
+    [15, 52, {kind:'step', shape:0, W:7, H:6, w:2, h:5, sides:[7,5,2,5,1,6], equal:2, ans:2}, [2], 'отсечките на тази фигура, които са с равни дължини', ['W','H','w','h']],
+    [16, 10, {kind:'cmp', shape:1, written:1, terms:[7,9,11,13,15,17], kept:[17,15,13,9,7], gone:[11], ans:11}, [11], '(7 + 9 + 11 + 13 + 15 + 17) − (17 + 15 + 13 + 9 + 7)'],
+    [17, 25, {kind:'weekday', shape:'which', mon:['декември',31], d1:D('сряда'), n:16, ans:4}, [4], 'е сряда. Кой ден от седмицата ще бъде 16-ият ден', ['d1','n']],
+    [19, 53, {kind:'thr', small:true, pos:1, dig:1, a:210, base:102, shape:1, ans:108}, [108], 'цифра на десетиците 1'],
+    [20, 29, {kind:'fruiteq', grid:1, f:['l','g','p','a'], A:7, B:5, C:9, D:6, signs:[1,-1,1,-1], R1:12, R2:3, C1:16, C2:11, ans:5}, [5], '= 16', ['grid','R1','R2','C1','C2','signs']]
+  ], 'task 18, the lanterns: 33 lit, 11 put out — all 33 are still there');
+  paperCheck('Есен 2020', 'mbg-autumn-2020-2', '5, 60, 7, 40, 8, 5, 19, 12, 31, 3, 34, 4, 4, 879, 100 или 80, 22, 4, 2, Мария с 10, 11', [
+    [1,  51, {kind:'tens', shape:4, t:2, u:37, b:7, tot:57, ans:5}, [5], '2 десетици + 37 единици = □7'],
+    [2,  11, {kind:'box', shape:'bal', form:2, x:55, y:25, N:20, L:80, plus:true, ans:60}, [60], '55 + 25 = □ + 20'],
+    [3,  12, {kind:'count', shape:5, set:1, list:[3,1,4,1,5,9,2,6,5,3,5], pool:[1,2,3,4,5,6,9], asksSum:false, sum:false, natural:false, two:false, ans:7}, [7], 'Колко са различните цифри? 3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5'],
+    [4,  11, {kind:'box', shape:'bal', form:5, x:60, y:40, N:20, L:20, plus:false, ans:40}, [40], '60 − 40 = □ − 20'],
+    [5,  54, {kind:'sudoku', g:[0,0,0,3, 3,2,4,0, 0,4,3,2, 2,0,0,0], sol:[4,1,2,3, 3,2,4,1, 1,4,3,2, 2,3,1,4], X:0, Y:15, ans:8}, [8], 'X и Y'],
+    [6,  38, {kind:'pencils', shape:'gave', who:'Борис', f:false, col:[['червени','червен'],['жълти','жълт']], T:23, a:8, rest:15, g1:3, g2:7, other:2, ans:5}, [5], 'имал 23 молива, от които 8 червени', ['T','a','g1','g2','other']],
+    [7,  31, {kind:'trees', who:'Хари', did:'посадил', n:20, d:1, shape:0, len:19, ans:19}, [19], '20 дръвчета в една редица на разстояние 1 метър', ['n','d','shape']],
+    [8,  18, {kind:'digits', shape:3, pool:[0,1,3], made:[10,13,30,31], asks:0, ans:12}, [12], 'сбора на цифрите на всички двуцифрени числа, записани с различни цифри измежду цифрите 0, 1, 3'],
+    [9,  55, {kind:'dcount', shape:1, d:2, from:2, k:13, ans:31}, [31], 'използвах 13 цифри 2'],
+    [10, 56, {kind:'bucket', p:3, q:5, V:14, ans:3}, [3], 'събира точно 14 литра'],
+    [11, 27, {kind:'missing', one:1, next:true, seq:[1,1,2,3,5,8,13,21], at:8, rule:0, ans:34}, [34], '1, 1, 2, 3, 5, 8, 13, 21, …'],
+    [12, 21, {kind:'sqcut', shape:4, inCm:true, dm:4, P:16, sides:[3,4,5], p:12, ans:4}, [4], 'страни 3 см, 4 см, 5 см. Квадрат има страна 4 см'],
+    [13, 32, {kind:'ribbon', shape:4, a:11, k:3, left:7, cm:40, ans:4}, [4], 'пръчка с дължина 11 см'],
+    [14, 53, {kind:'thr', small:false, pos:2, dig:9, a:879, base:987, shape:0, ans:879}, [879], 'цифра на единиците 9'],
+    [15, 21, {kind:'sqcut', shape:6, k:4, w:1, side:4, mm:true, slots:2, ans:100, alt:[80]}, [80, 100], 'Квадрат със страна 4 см е разрязан на четири еднакви правоъгълника. Колко милиметра'],
+    [16, 52, {kind:'step', shape:1, W:6, H:5, w:4, h:1, sides:[6,4,4,1,2,5], equal:2, ans:22}, [22], 'обиколката на получената фигура', ['W','H','w','h']],
+    [17, 25, {kind:'weekday', shape:'bound', n:22, most:true, day:D('събота'), ans:4}, [4], 'Колко най-много съботи може да има сред 22 последователни дни'],
+    [18, 57, {kind:'rank', who:['Георги','Емил','Борис','Даниел'], n:4, k:2, asksAbove:true, ans:2}, [2], 'а Борис е с повече точки само от Даниел', ['n','k','asksAbove']],
+    [19, 10, {kind:'cmp', runs:1, A:run(2, 18, 2), B:run(3, 17, 2), sa:90, sb:80, nm:['Мария','Деми'], back:false, big:0, ans:10}, [10], 'Мария пресметнала вярно 2 + 4 + 6'],
+    [20, 58, {kind:'snail', H:23, up:8, down:5, gain:3, k:5, ans:11}, [11], 'висока 23 метра']
+  ]);
 }

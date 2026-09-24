@@ -88,8 +88,11 @@ function genSqCut(){
     const k = 2 + rnd(3);                      // 2, 3 or 4 strips
     const w = 1 + rnd(3), side = k*w;
     const mm = Math.random() < 0.6;
-    const P = 2*(w + side);
-    return {kind:'sqcut', shape:6, k, w, side, mm, ans: mm ? 10*P : P};
+    const P = 2*(w + side), u = mm ? 10 : 1;
+    // Есен 2020: four equal pieces can also be four squares, and a square is a rectangle —
+    // the key takes both (100 или 80), so here both are asked for, and no picture picks one
+    if(k === 4) return {kind:'sqcut', shape:6, k, w, side, mm, slots:2, ans: u*P, alt:[u*2*side]};
+    return {kind:'sqcut', shape:6, k, w, side, mm, ans: u*P};
   }
   if(Math.random() < 0.26) return genTiles();
   if(Math.random() < 0.28) return genTriSq();
@@ -117,7 +120,7 @@ function stripSvg(k, side){
   for(let i = 1; i < k; i++)
     g += '<line x1="0" y1="' + (i*u).toFixed(1) + '" x2="' + S + '" y2="' + (i*u).toFixed(1) + '"/>';
   return '<div class="fig"><svg viewBox="-8 -24 ' + (S+16) + ' ' + (S+32) +
-    '" role="img" aria-label="' + tr('квадрат, разрязан на еднакви ивици', 'квадрат, розрізаний на однакові смужки') + '">' +
+    '" role="img" aria-label="' + (k === 1 ? tr('квадрат', 'квадрат') : tr('квадрат, разрязан на еднакви ивици', 'квадрат, розрізаний на однакові смужки')) + '">' +
     '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
     '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
     'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
@@ -144,8 +147,9 @@ function drawSqcut(q){
       '</span> см розрізали на <span class="num">' + UKNUM[q.k] +
       '</span> однакові прямокутники. Скільки <b>' + (q.mm ? 'міліметрів' : 'сантиметрів') +
       '</b> становить периметр кожного з цих прямокутників?') + '</div>' +
-      stripSvg(q.k, q.side) +
+      stripSvg(q.slots ? 1 : q.k, q.side) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
+      (q.slots ? ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span>' : '') +
       ' <span class="unit">' + (q.mm ? 'мм' : 'см') + '</span></div>';
   }
   if(q.kind === 'sqcut' && q.shape === 5){
@@ -198,7 +202,7 @@ function drawSqcut(q){
 }
 function eqSqcut(q){
   if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
-    q.w + '×' + q.side + ' → ' + q.ans;
+    q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
   if(q.kind === 'sqcut' && q.shape === 5) return tr(q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ',
     q.n + ' квадрати, сторона ' + q.side + ' → прямокутник ') + (q.t.w*q.s) + '×' + (q.t.h*q.s) + ' → ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + tr(', триъгълник ', ', трикутник ') +
@@ -209,12 +213,16 @@ function eqSqcut(q){
 }
 function whySqcut(q, full){
   if(q.kind === 'sqcut' && q.shape === 6){
+    if(!full && q.slots) return tr('Четири еднакви части: четири ивици — или четири квадрата, а и квадратът е правоъгълник.',
+      'Чотири однакові частини: чотири смужки — або чотири квадрати, адже квадрат теж прямокутник.');
     if(!full) return tr('Едната страна на ивицата е цялата страна на квадрата, другата е част от нея.',
       'Одна сторона смужки — це вся сторона квадрата, а друга — її частина.');
     const P = 2*(q.w + q.side);
     return tr('всяка ивица е', 'кожна смужка —') + ' <b>' + q.w + '</b> на <b>' + q.side + '</b> см &nbsp;→&nbsp; ' + q.w + ' + ' +
       q.side + ' = ' + (q.w + q.side) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; <b>' + P + ' см</b>' +
-      (q.mm ? ' &nbsp;→&nbsp; 1 см = 10 мм, ' + tr('значи', 'отже,') + ' ' + q.ans + ' мм' : '');
+      (q.mm ? ' &nbsp;→&nbsp; 1 см = 10 мм, ' + tr('значи', 'отже,') + ' ' + q.ans + ' мм' : '') +
+      (q.slots ? '; ' + tr('или четири квадрата със страна ', 'або чотири квадрати зі стороною ') + q.side/2 + ' см &nbsp;→&nbsp; ' + q.side/2 + ' · 4 = <b>' + 2*q.side + ' см</b>' +
+        (q.mm ? ' = ' + q.alt[0] + ' мм' : '') : '');
   }
   if(q.kind === 'sqcut' && q.shape === 5){
     if(!full) return tr('Най-малкото квадратче дава мярката — с нея измери целия правоъгълник.',
