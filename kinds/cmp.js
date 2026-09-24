@@ -101,10 +101,12 @@ function genCmp(){
     }
   }
   for(;;){
-    const a = 10 + rnd(40), b = 10 + rnd(40);
-    const big = a + b, small = (a%10) + Math.floor(a/10) + (b%10) + Math.floor(b/10);
-    if(big > 89 || big - small < 10) continue;
-    return {kind:'cmp', shape:0, a, b, big, small, flip: Math.random() < 0.3, ans: big - small};
+    // Есен 2024 spread a different number from the one it added (20 + 25 against 2 + 0 + 2 + 4),
+    // so the digits cannot be copied off the first sum: s is the one spread, usually b itself
+    const a = 10 + rnd(40), b = 10 + rnd(40), s = Math.random() < 0.3 ? b + (rnd(2) ? 1 : -1) : b;
+    const big = a + b, small = (a%10) + Math.floor(a/10) + (s%10) + Math.floor(s/10);
+    if(big > 89 || big - small < 10 || s < 10) continue;
+    return {kind:'cmp', shape:0, a, b, s, big, small, flip: Math.random() < 0.3, ans: big - small};
   }
 }
 
@@ -156,7 +158,7 @@ function drawCmp(q){
   }
   if(q.kind === 'cmp'){
     const A = '<span class="num">' + q.a + ' + ' + q.b + '</span>';
-    const B = '<span class="num">' + spread(q.a) + ' + ' + spread(q.b) + '</span>';
+    const B = '<span class="num">' + spread(q.a) + ' + ' + spread(q.s || q.b) + '</span>';
     return '<div class="ask">' + (q.flip
         ? tr('С колко сборът ' + B + ' е по-малък от сбора ' + A + '?', 'На скільки сума ' + B + ' менша за суму ' + A + '?')
         : tr('С колко сборът ' + A + ' е по-голям от сбора ' + B + '?', 'На скільки сума ' + A + ' більша за суму ' + B + '?')) +
@@ -170,7 +172,7 @@ function eqCmp(q){
   if(q.kind === 'cmp' && q.runs) return q.sa + vs + q.sb + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.same) return q.x + '±' + q.y + ' → ' + q.S + tr(' и ', ' і ') + q.D + ' → ' + q.ans;
   if(q.kind === 'cmp' && q.shape === 2) return '(' + q.x + '+' + q.y + ')' + vs + '(' + q.p + '−' + q.q + ') → ' + q.ans;
-  if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.b) + ') = ' + q.ans;
+  if(q.kind === 'cmp') return '(' + q.a + ' + ' + q.b + ') − (' + spread(q.a) + ' + ' + spread(q.s || q.b) + ') = ' + q.ans;
 }
 function whyCmp(q, full){
   if(q.kind === 'cmp' && q.shape === 3){
@@ -213,7 +215,7 @@ function whyCmp(q, full){
   }
   if(q.kind === 'cmp'){
     if(!full) return tr('Пресметни двата сбора, после извади по-малкия.', 'Обчисли обидві суми, потім відніми меншу.');
-    return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.b) +
+    return q.a + ' + ' + q.b + ' = <b>' + q.big + '</b>, &nbsp;' + spread(q.a) + ' + ' + spread(q.s || q.b) +
            ' = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.ans;
   }
 }

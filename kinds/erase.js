@@ -6,7 +6,7 @@
 // rejection so there is never a second candidate to argue about.
 function genErase(){
   for(;;){
-    const d = 2 + rnd(4);
+    const d = 2 + rnd(5);                                // up to 6: Есен 2024 asked «по-малко с 6»
     const set = [];
     while(set.length < 5){ const v = 2 + rnd(18); if(set.indexOf(v) < 0) set.push(v); }
     set.sort((x,y) => x - y);

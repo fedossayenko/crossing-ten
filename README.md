@@ -21,6 +21,10 @@ tasks is pinned in check.js against the official key, and each is a question its
 asks (19 of them word for word, the long ± chain of task 1 with other numbers). Those levels carry the tag
 `mbg-autumn-2025-2`, so the picker can show that paper on its own.
 
+The **autumn round, 2nd grade, 2024** (МБГ Есен 2024) is covered whole by levels 8–13, 15, 22 and 27–37
+— the paper most of the autumn levels were first built from. All 20 tasks are pinned in check.js against
+the official key, 19 word for word, the ± chain of task 1 with other numbers; the tag is `mbg-autumn-2024-2`.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),

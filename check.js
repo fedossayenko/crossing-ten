@@ -2205,3 +2205,52 @@ eval(head + body + test);
   console.log('МБГ Есен 2025 2 клас: all 20 printed tasks match the official key (1, 2, 36, 7, 6, 1, 19, 27, 39, 2, 14 и 18, 19, 6, 8, 8, 5, 22, 19, 3 и 4, 3); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
     (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
 }
+
+/* МБГ Есен 2024, 2 клас: the paper most autumn levels were first built from (levels 8–13, 15, 22, 27–37,
+   tagged also:['mbg-autumn-2024-2']). As for Есен 2025: each printed task against the official key, drawn
+   as printed, and met by its level's own generator. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
+  const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
+  const metExact = [], metLike = [];
+  const paper = [
+    [1,  8,  {kind:'chain', terms: chain(2, 0, 2, 4, -2, 0, -2, 4), paired:0, ans:8}, [8], '2 + 0 + 2 + 4 − 2 + 0 − 2 + 4'],
+    [2,  9,  {kind:'pairs', shape:'tens', base:10, terms: chain(2, 8, 3, 7, 4, 6, -11, -9), paired:3, extra:0, subs:[11, 9], ans:10}, [10], '2 + 8 + 3 + 7 + 4 + 6 − 11 − 9'],
+    [3,  10, {kind:'cmp', shape:0, a:20, b:25, s:24, big:45, small:8, flip:false, ans:37}, [37], 'сборът 20 + 25 е по-голям от сбора 2 + 0 + 2 + 4'],
+    [4,  12, {kind:'count', sum:true, shape:0, natural:false, two:false, n:5, lo:0, hi:5, ans:15}, [15], 'сбора на всички числа, които не са по-големи от 5'],
+    [5,  27, {kind:'missing', seq:[1,1,2,3,5,8,13,21,34], at:5, hidden:[8,13], asksDigits:true, rule:0, ans:3}, [3], 'цифрите на пропуснатите числа? 1, 1, 2, 3, 5, …, …, 21, 34'],
+    [6,  28, {kind:'fruit', pears:6, apples:4, k:4, row:['p','p','p','p','p','a','a','a','p','a'], ans:6}, [6], 'броят им да е с 4 по-голям от броя на крушите'],
+    [7,  11, {kind:'box', a:9, b:8, x:4, y:2, box:6, r:2, ans:3}, [3], '8 − ◯ = 4 − 2'],
+    [8,  15, {kind:'erase', set:[3,4,7,9,11], d:6, bigger:false, gone:3, ans:31}, [31], 'Едното от тях, което е по-малко с 6 от друго от тях, изтрих'],
+    [9,  29, {kind:'fruiteq', f:['g','a','l'], a:5, b:4, c:9, s1:9, s2:14, s3:18, askd:[0,1,1], ans:1}, [1], '= 9 + = 14 + + = 18'],
+    [10, 30, {kind:'term', t:{sub:'умаляемото', obj:'умаляемото', of:'разликата', at:0, op:'−'}, x:60, y:25, shape:1, chain:[1,3,5,7,9], total:25, less:true, ans:35}, [35], 'сборът 1 + 3 + 5 + 7 + 9 е по-малък от умаляемото в разликата 60 − 25'],
+    [11, 31, {kind:'trees', who:'Хари', did:'посадил', n:9, d:2, shape:0, len:16, ans:16}, [16], '9 дръвчета в една редица на разстояние 2 метра'],
+    [12, 32, {kind:'ribbon', shape:1, u:{nm:'дм', cm:10}, t:5, target:50, L:55, ans:5}, [5], 'Лента е дълга 55 см'],
+    [13, 33, {kind:'flowers', p:[5,6,7], T:34, ans:6}, [6], 'цветя с по 5, 6 и 7 листенца'],
+    [14, 34, {kind:'paint', R:4, C:7, r:2, c:2, left:10, asksLeft:true, ans:10}, [10], '28 квадратчета в 4 реда и 7 стълба'],
+    [15, 35, {kind:'twodig', three:false, S:22, lo:10, hi:12, ask:0, ans:2}, [2], 'От по-голямото извадете по-малкото'],
+    [16, 36, {kind:'candy', kids:3, n:5, ans:6}, [6], '5 еднакви бонбона на три деца'],
+    [17, 13, {kind:'named', shape:2, k:5, small:true, two:false, list:[0,1,2,3,4], ans:10}, [10], 'най-малкият сбор на пет различни едноцифрени числа'],
+    [18, 22, {kind:'shared', shape:1, c:5, P:20, p:12, ans:22}, [22], 'От квадрат с обиколка 20 см е изрязан триъгълник с обиколка 12 см'],
+    [19, 9,  {kind:'pairs', shape:'run', terms: chain(20, -15, 20, -16, 20, -17, 20, -18, 20, -19, 20, -20), M:20, k:5, paired:6, ans:15}, [15], '20 − 15 + 20 − 16 + 20 − 17 + 20 − 18 + 20 − 19 + 20 − 20'],
+    [20, 37, {kind:'shapes', wo:2, ws:1, bs:3, bc:1, row:['wo','bs','bc','wo','bs','ws','bs'], W:3, D:1, ans:4}, [4], 'всичките бели фигури? ○■●○■□■']
+  ];
+  paper.forEach(([task, id, q, key, shows]) => {
+    const got = Q.answers(q).slice().sort((x, y) => x - y);
+    if(got.join() !== key.join()) throw new Error('Есен 2024 task ' + task + ': gives ' + got + ', the key says ' + key);
+    if(!Q.accepts(q, key.map(String))) throw new Error('Есен 2024 task ' + task + ': the key is not accepted');
+    if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('Есен 2024 task ' + task + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
+    if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2024-2')) throw new Error('level ' + id + ' is not tagged Есен 2024');
+    // who planted the trees and the fruit's order in the row are the level's to choose; the rest must be met exactly
+    const sig = g => (Q.eqText(g) + '|' + strip(Q.drawQ(g))).replace(/^[^|]*\|[А-Яа-я]+посадила?/, 'X').replace(/<svg[\s\S]*?<\/svg>/g, ''), mask = t => t.replace(/\d+/g, '#');
+    const want = sig(q), fields = g => q.kind === 'fruit' ? [g.pears, g.apples, g.k].join() : null;
+    let exact = false, like = false;
+    for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind) continue; const s = sig(g);
+      exact = fields(q) ? fields(g) === fields(q) : s === want; like = like || mask(s) === mask(want); }
+    if(!exact && !like) throw new Error('Есен 2024 task ' + task + ': level ' + id + ' never asks a question of that form');
+    (exact ? metExact : metLike).push(task);
+  });
+  console.log('МБГ Есен 2024 2 клас: all 20 printed tasks match the official key (8, 10, 37, 15, 3, 6, 3, 31, 1, 35, 16, 5, 6, 10, 2, 6, 10, 22, 15, 4); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
+    (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
+}
