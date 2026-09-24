@@ -167,7 +167,8 @@ const server = http.createServer((req, res) => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
-      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden };
+      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
+        header: $('levelName').textContent + ' ' + $('sub').textContent };
       $('skipBtn').click(); await wait(50); out.afterSkip = S.i;
       const order = [];
       for(let step = 0; step < 25 && COMP; step++){
@@ -189,7 +190,7 @@ const server = http.createServer((req, res) => {
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
-      cp.badge && cp.comp === null, 'the competition went wrong: ' + JSON.stringify(cp));
+      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header), 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):

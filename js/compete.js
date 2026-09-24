@@ -42,7 +42,7 @@ function startComp(){
   }, 1000);
   newRound(qs, true);
   $('levelName').textContent = t('compName');
-  $('sub').textContent = t('src', 2) + ' · ' + t('compSubtitle');
+  $('sub').textContent = t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle');   // a paper mixes levels from every paper of her grade
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.
 function compAnswer(){
