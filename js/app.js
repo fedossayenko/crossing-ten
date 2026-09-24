@@ -384,6 +384,7 @@ function check(){
       '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div>' + why(q) + '</div></div>' +
       '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button>';
     $('reveal').onclick = e => { e.stopPropagation(); reveal(); };
+    $('hint').scrollIntoView({ block:'nearest' });      // a phone in portrait: the hint lands under the question, maybe out of sight
     S.timers.push(setTimeout(() => { if(!S.settled) mood('thinking'); }, 1100));
     S.parts = S.parts.map(() => ''); S.at = 0; paintSlot();
   } else reveal();
@@ -397,6 +398,7 @@ function reveal(){
   $('verdict').className = 'verdict no';
   $('verdict').textContent = eqText(q);
   $('hint').innerHTML = box('no', eqText(q), why(q, true));
+  $('hint').scrollIntoView({ block:'nearest' });
   $('go').textContent = '→';
   mood('nod');
   paintSlot(); paintDots();

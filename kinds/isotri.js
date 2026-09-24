@@ -48,8 +48,8 @@ function isoTriSvg(q){
   });
   for(let k = 0; k <= 5; k++) grid += '<line x1="' + k*u + '" y1="0" x2="' + k*u + '" y2="' + y*u + '"/>';
   for(let k = 0; k <= y; k++) grid += '<line x1="0" y1="' + k*u + '" x2="' + W + '" y2="' + k*u + '"/>';
-  return '<div class="fig"><svg viewBox="-20 -3 ' + (W + 24) + ' ' + (y*u + 6) + '" role="img" aria-label="' +
-    tr('триъгълници върху квадратна мрежа', 'трикутники на квадратній сітці') + '" style="height:clamp(150px,32vh,280px)">' +
+  return '<div class="fig tall"><svg viewBox="-20 -3 ' + (W + 24) + ' ' + (y*u + 6) + '" role="img" aria-label="' +
+    tr('триъгълници върху квадратна мрежа', 'трикутники на квадратній сітці') + '">' +
     '<g stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3">' + grid + '</g>' + shapes + nums + '</svg></div>';
 }
 function drawIsoTri(q){
