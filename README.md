@@ -190,6 +190,11 @@ showing how many of the levels are learned.
 - **It suggests breadth first, then repair.** While levels remain that she has never
   tried, it offers the easiest of those. Once she has met them all, it switches to
   whichever is going worst — by its record, and then by how the last round went.
+- **What the papers ask most comes first.** Each level knows how many dated papers ask it (`freq`:
+  «Колко? Сбор?» is on 8, most levels on 1). Among new levels of one difficulty the most-asked goes
+  first; in repair a weak level counts 0.02 of first-try rate worse per paper, so an every-year task
+  is fixed before a one-off; and a competition draws its tasks with weight 1 + `freq`. Difficulty
+  still leads — frequency never pulls a harder level ahead of an easier one.
 - **Prerequisites** are declared only where a level genuinely builds on another
   (`42 − 17` after `42 − 7`, `Оцветени` after `Правоъгълници`, `Плодове` after `6 − ◯`).
   Difficulty handles the rest of the ordering.

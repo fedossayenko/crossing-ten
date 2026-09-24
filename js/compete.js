@@ -19,7 +19,9 @@ function compTasks(){
     const other = pool.filter(l => l.grp !== lastGrp);        // no two in a row from one group
     if(other.length) pool = other;
     if(!pool.length) pool = OLYMPIAD.filter(l => l.d >= lo);
-    const l = pool[rnd(pool.length)];
+    // drawn by how often real papers ask it: an every-year task turns up more than a one-off
+    let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0));
+    const l = pool.find(l => (w -= 1 + l.freq) < 0);
     used.add(l.id); lastGrp = l.grp;
     const q = Object.assign(raw(l.id), { lvl: l.id, pts: Math.min(5, Math.max(1, l.d)) });
     out.push(i < COMP_CHOICE ? withChoices(q) : q);

@@ -741,7 +741,8 @@ function nextUp(m, lastGrp){
     // Still meeting the levels: the easiest one she has not seen. Same difficulty,
     // different corner of the app — six geometry levels running is duller and sticks
     // less well than mixing them up.
-    const ranked = fresh.slice().sort((a, b) => a.d - b.d);
+    // at one difficulty, the task the papers ask most often comes first
+    const ranked = fresh.slice().sort((a, b) => a.d - b.d || b.freq - a.freq);
     const best = ranked[0];
     if(grp(best) !== lastGrp) return best;
     // Nothing else at this difficulty from another corner? One step harder is still a
@@ -751,9 +752,11 @@ function nextUp(m, lastGrp){
         || best;
   }
   // She has met them all: go back to whichever is going worst, by its record and then
-  // by how the last round went.
+  // by how the last round went — a task many papers ask counts a little worse, so it is repaired first.
+  // ponytail: 0.02 a paper is a nudge (8 papers ≈ 16 points of first-try rate), tune if repair feels off
+  const need = l => m[l.id].rate - 0.02*l.freq;
   return open.slice().sort((a, b) =>
-    m[a.id].rate - m[b.id].rate || m[a.id].lastRate - m[b.id].lastRate)[0];
+    need(a) - need(b) || m[a.id].lastRate - m[b.id].lastRate)[0];
 }
 
 // The grades there are levels for, and the one on her profile (2nd until someone sets it).

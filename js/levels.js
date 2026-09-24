@@ -112,6 +112,8 @@ const LEVELS = [
 LEVELS.forEach(l => {
   l.src = l.src || (l.op === '-' || l.op === '+' ? 'basics' : 'mbg-autumn'); l.grade = l.grade || 2;
   l.papers = [l.src === 'basics' ? 'basics' : l.src + '-' + l.grade].concat(l.also || []);
+  // how many real, dated papers ask it — the ones she is likeliest to meet again
+  l.freq = l.papers.filter(p => /-\d{4}-\d+$/.test(p)).length;
 });
 // Picker sections, in the order they appear. Levels inside each are sorted easiest
 // first in the LEVELS table above.
