@@ -7,11 +7,11 @@
    ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
 const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
 // Plain sums (the Take away and Add groups) are drill, not olympiad tasks: a paper leaves them out.
-// ponytail: a paper is the 2nd-grade one; a 3rd-grade paper needs more than five 3rd-grade kinds.
-const OLYMPIAD = LEVELS.filter(l => l.op !== '-' && l.op !== '+' && l.grade === 2);
+// A paper is for the player's own grade (her profile's, 2nd by default).
+const olympiad = () => LEVELS.filter(l => l.op !== '-' && l.op !== '+' && l.grade === (PLAYER.grade || 2));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 function compTasks(){
-  const out = [], used = new Set();
+  const out = [], used = new Set(), OLYMPIAD = olympiad();
   let lastGrp = null;
   for(let i = 0; i < COMP_N; i++){
     const [lo, hi] = BANDS[Math.floor(i / 5)];

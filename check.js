@@ -1654,7 +1654,11 @@ eval(head + body + test);
       if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running');
       console.log('training path: reaches all ' + order.length + ' levels, groundwork first, 2nd grade before 3rd, climbing within each, at most ' + worst + ' in a row from one group');
     `;
-    eval(levelsSrc + nextSrc + walk);
+    eval('const PLAYER = { grade:2 };' + levelsSrc + nextSrc + walk);   // the default 2nd-grade player
+    // a 3rd-grader's profile starts her on the 3rd-grade levels
+    const first3 = eval('(function(){ const PLAYER = { grade:3 };' + levelsSrc + nextSrc + '; return nextUp({}, null); })()');
+    if(!first3 || first3.grade !== 3) throw new Error('a 3rd-grade profile is not recommended a 3rd-grade level');
+    console.log('profile grade: a 3rd-grader starts on level ' + first3.id + ', a 3rd-grade one');
   }
 }
 

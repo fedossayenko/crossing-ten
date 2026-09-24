@@ -724,9 +724,11 @@ function mastery(rounds){
 // groundwork is done. It recommends — nothing is ever locked away.
 function nextUp(m, lastGrp){
   const done = id => m[id] && m[id].done;
-  const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(done));
-  // her own grade first: the 3rd-grade tasks come once the 2nd-grade ones are learned
-  const open = all.some(l => l.grade === 2) ? all.filter(l => l.grade === 2) : all;
+  // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
+  const met = id => done(id) || LEVELS.find(l => l.id === id).grade < myGrade();
+  const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(met));
+  // her own grade first (the profile's, 2nd by default); the rest once those are learned
+  const open = all.some(l => l.grade === myGrade()) ? all.filter(l => l.grade === myGrade()) : all;
   if(!open.length) return null;
   const grp = l => l.grp || l.op;
   const fresh = open.filter(l => !m[l.id]);
@@ -749,6 +751,9 @@ function nextUp(m, lastGrp){
     m[a.id].rate - m[b.id].rate || m[a.id].lastRate - m[b.id].lastRate)[0];
 }
 
+// The grades there are levels for, and the one on her profile (2nd until someone sets it).
+const GRADES = [...new Set(LEVELS.map(l => l.grade))].sort();
+const myGrade = () => PLAYER.grade || 2;
 function buildPicker(){
   const hist = levelHistory(LOCAL.rounds);
   const m = mastery(LOCAL.rounds);
@@ -864,7 +869,7 @@ function openEdit(p, welcome){
   WELCOME = !!welcome;
   const taken = PLAYERS.list.map(x => x.mascot);
   EDIT = p ? Object.assign({}, p)
-           : { id:'p' + Date.now().toString(36), name:'', lang:LANG,
+           : { id:'p' + Date.now().toString(36), name:'', lang:LANG, grade:2,
                mascot: Object.keys(MASCOTS).find(k => taken.indexOf(k) < 0) || 'cat' };
   const kept = p ? storeOf(p) : { muted:false, speak:true, calm:false };
   $('editTitle').textContent = p ? t('profile') : t('newPlayer');
@@ -884,6 +889,9 @@ function paintEdit(){
     (k === EDIT.mascot) + '" aria-label="' + t('mascots')[k] + '">' + mascotSvg(k) + '</button>').join('');
   $('pLang').innerHTML = Object.keys(LANGS).map(k => '<label lang="' + k + '"><input type="radio" name="plang" value="' + k + '"' +
     (k === EDIT.lang ? ' checked' : '') + '>' + LANGS[k] + '</label>').join('');
+  $('pGrade').innerHTML = GRADES.map(g => '<label><input type="radio" name="pgrade" value="' + g + '"' +
+    (g === (EDIT.grade || 2) ? ' checked' : '') + '>' + t('gradeN', g) + '</label>').join('');
+  document.querySelectorAll('#pGrade input').forEach(r => r.onchange = () => { EDIT.grade = +r.value; });
   document.querySelectorAll('.mchoice').forEach(b => b.onclick = () => { EDIT.mascot = b.dataset.m; paintEdit(); });
   document.querySelectorAll('#pLang input').forEach(r => r.onchange = () => {
     EDIT.lang = r.value;

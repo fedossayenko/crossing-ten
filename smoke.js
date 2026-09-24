@@ -137,10 +137,13 @@ const server = http.createServer((req, res) => {
     // Adding a player through the form: name, mascot, language, save.
     await run(`$('who').click(); $('pAdd').click(); $('pName').value = 'Мая';
       document.querySelector('.mchoice[data-m="bun"]').click(); document.querySelector('#pLang input[value="bg"]').click();
-      $('pSave').click(); 1`);
+      document.querySelector('#pGrade input[value="3"]').click(); $('pSave').click(); 1`);
     await settle();
     const p3 = await page('{ n: PLAYERS.list.length, name: PLAYER.name, mascot: PLAYER.mascot, lang: document.documentElement.lang, ears: $("cat").querySelectorAll(".ear ellipse").length }');
     expect(p3.n === 3 && p3.name === 'Мая' && p3.mascot === 'bun' && p3.lang === 'bg' && p3.ears === 4, 'adding a player went wrong: ' + JSON.stringify(p3));
+    // She is a 3rd-grader: her recommendation and her competitions are the 3rd grade's (the one below plays one).
+    const g3 = await page('(buildPicker(), { grade: PLAYER.grade, next: LEVELS.find(l => l.id === +document.querySelector("#nextUp [data-lvl]").dataset.lvl).grade, comp: [...new Set(compTasks().map(q => LEVELS.find(l => l.id === q.lvl).grade))] })');
+    expect(g3.grade === 3 && g3.next === 3 && g3.comp.join() === '3', 'a 3rd-grade profile went wrong: ' + JSON.stringify(g3));
   }
   // Multiple choice in training: a wrong option is crossed out, the right one ends the task.
   if(!process.argv[2]){

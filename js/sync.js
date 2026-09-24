@@ -50,7 +50,7 @@ function mergeFromServer(r){
     const mine = PLAYERS.list.find(x => x.id === p.id);
     if(!mine) PLAYERS.list.push(p);
     else if((p.updated || 0) > (mine.updated || 0)){
-      if(p.id === PLAYER.id && (p.lang !== mine.lang || p.mascot !== mine.mascot)) reload = true;
+      if(p.id === PLAYER.id && (p.lang !== mine.lang || p.mascot !== mine.mascot || p.grade !== mine.grade)) reload = true;
       Object.assign(mine, p);
     }
   });

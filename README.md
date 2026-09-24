@@ -28,8 +28,8 @@ A level row carries `src` and `grade`, and `also:[…]` for other papers its tas
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
 (Основи, МБГ Есен 2 клас, МБГ Зима 2024 2 клас, МБГ Есен 3 клас), marks grade and winter rows, and
-recommends the 3rd-grade levels only once the 2nd-grade ones are learned. Competitions are drawn from the
-2nd-grade levels.
+recommends her own grade's levels first. The grade is on the player's profile (2nd until set); a 3rd-grader's
+2nd-grade groundwork counts as done, and competitions are drawn from her grade's levels.
 
 - Live: https://fedossayenko.github.io/crossing-ten/
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.
