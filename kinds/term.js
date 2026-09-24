@@ -10,6 +10,15 @@ const TERMS = [
   { sub:'второто събираемо', obj:'второто събираемо', of:'сбора',     at:1, op:'+' }
 ];
 function genTerm(){
+  if(Math.random() < 0.3){
+    // Зима 2021–2023: two of the three parts of a difference given, the third asked. The name
+    // decides the sum: the subtrahend is minuend − difference, the minuend is subtrahend + difference.
+    // And once (Зима 2022) the minuend equals the difference, so the subtrahend is 0.
+    if(Math.random() < 0.12) return {kind:'term', shape:2, same:1, t:TERMS[1], ans:0};
+    const D = 5 + rnd(50), S = 5 + rnd(45), M = D + S;
+    if(M > 99) return genTerm();
+    return Math.random() < 0.6 ? {kind:'term', shape:2, t:TERMS[1], M, D, S, ans:S} : {kind:'term', shape:2, t:TERMS[0], M, D, S, ans:M};
+  }
   for(;;){
     const t = TERMS[rnd(4)];
     const x = 20 + rnd(60);
@@ -30,6 +39,13 @@ function genTerm(){
 const termUk = {'умаляемото':['зменшуване','різниці',' в '], 'умалителят':['від’ємник','різниці',' у '],
                 'първото събираемо':['перший доданок','сумі',' у '], 'второто събираемо':['другий доданок','сумі',' у ']};
 function drawTerm(q){
+  if(q.kind === 'term' && q.shape === 2){
+    const n = v => '<span class="num">' + v + '</span>';
+    const ask = q.same ? tr('<b>Умаляемото</b> е равно на <b>разликата</b>. Колко е <b>умалителят</b>?', '<b>Зменшуване</b> дорівнює <b>різниці</b>. Чому дорівнює <b>від’ємник</b>?')
+      : q.t.at === 1 ? tr('Умаляемото е ' + n(q.M) + ', а разликата е ' + n(q.D) + '. Кой е <b>умалителят</b>?', 'Зменшуване дорівнює ' + n(q.M) + ', а різниця — ' + n(q.D) + '. Чому дорівнює <b>від’ємник</b>?')
+      : tr('Умалителят е ' + n(q.S) + ', а разликата е ' + n(q.D) + '. Кое е <b>умаляемото</b>?', 'Від’ємник дорівнює ' + n(q.S) + ', а різниця — ' + n(q.D) + '. Чому дорівнює <b>зменшуване</b>?');
+    return '<div class="ask">' + ask + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'term'){
     const expr = '<span class="num">' + q.x + ' ' + q.t.op + ' ' + q.y + '</span>';
     const uk = termUk[q.t.sub];
@@ -45,10 +61,18 @@ function drawTerm(q){
   }
 }
 function eqTerm(q){
+  if(q.kind === 'term' && q.shape === 2) return q.same ? tr('умаляемо = разлика → умалител ', 'зменшуване = різниця → від’ємник ') + q.ans
+    : q.t.at === 1 ? q.M + ' − ' + q.D + ' = ' + q.ans : q.S + ' + ' + q.D + ' = ' + q.ans;
   if(q.kind === 'term') return (q.shape === 0 ? tr(q.t.sub + ' в ', termUk[q.t.sub][0] + termUk[q.t.sub][2]) + q.x + ' ' + q.t.op + ' ' + q.y
     : tr('сборът ', 'сума ') + q.total + tr(' срещу ', ' проти ') + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
 }
 function whyTerm(q, full){
+  if(q.kind === 'term' && q.shape === 2){
+    if(!full) return tr('Умаляемо − умалител = разлика. Кое от трите липсва?', 'Зменшуване − від’ємник = різниця. Якого з трьох бракує?');
+    if(q.same) return tr('умаляемото − умалителя = разликата, а те са равни &nbsp;→&nbsp; от него не е извадено нищо &nbsp;→&nbsp; умалителят е ', 'зменшуване − від’ємник = різниця, а вони рівні &nbsp;→&nbsp; нічого не віднято &nbsp;→&nbsp; від’ємник ') + q.ans;
+    return q.t.at === 1 ? q.M + ' − ? = ' + q.D + ' &nbsp;→&nbsp; ' + q.M + ' − ' + q.D + ' = ' + q.ans
+                        : '? − ' + q.S + ' = ' + q.D + ' &nbsp;→&nbsp; ' + q.S + ' + ' + q.D + ' = ' + q.ans;
+  }
   if(q.kind === 'term'){
     if(!full) return q.t.op === '−' ? tr('Умаляемото е първото число, умалителят — второто.', 'Зменшуване — це перше число, від’ємник — друге.')
                                     : tr('Събираемите са числата, които събираме.', 'Доданки — це числа, які ми додаємо.');

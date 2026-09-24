@@ -9,13 +9,18 @@ function genPairsTens(){
   if(Math.random() < 0.35){
     // Pairs making twenty — a single digit with a teen — and the whole chain may come
     // out at nothing, which is a perfectly good answer.
-    const k = 2 + rnd(2);
-    const pairs = shuffle([[5,15],[6,14],[7,13],[8,12],[9,11]]).slice(0, k);
+    // Зима 2023 and 2021 wrote the pairs in order (1 + 19 + 2 + 18 + 3 + 17), up to four of them,
+    // with no take-away at all or a round one: the sum of the pairs is the whole point
+    const k = 2 + rnd(3);
+    const inOrder = Math.random() < 0.4;
+    const pool = inOrder ? [[1,19],[2,18],[3,17],[4,16]].slice(0, k) : shuffle([[1,19],[2,18],[3,17],[4,16],[5,15],[6,14],[7,13],[8,12],[9,11]]).slice(0, k);
     const terms = [];
-    pairs.forEach(pr => shuffle(pr.slice()).forEach(n => terms.push({op:'+', n})));
-    const ans = rnd(10);
-    terms.push({op:'−', n: k*20 - ans});
+    pool.forEach(pr => (inOrder ? pr.slice() : shuffle(pr.slice())).forEach(n => terms.push({op:'+', n})));
     terms[0].op = '';
+    const end = rnd(3);                                        // nothing taken away, a round ten, or down to a one-digit answer
+    if(end === 0) return {kind:'pairs', shape:'tens', base:20, terms, paired:k, extra:0, subs:[], ans: k*20};
+    const ans = end === 1 ? 10*rnd(2*k) : rnd(10);
+    terms.push({op:'−', n: k*20 - ans});
     return {kind:'pairs', shape:'tens', base:20, terms, paired:k, extra:0, subs:[k*20 - ans], ans};
   }
   const two = Math.random() < 0.5;               // two subtrahends need room for a two-digit one

@@ -24,6 +24,11 @@ function genBalance(){
 // Задача 6: the unknown sits in an addition of round tens, and is then used in a
 // subtraction — two steps, with arithmetic easy enough that the two steps stay the point.
 function genPlusBox(){
+  if(Math.random() < 0.35){
+    // Зима 2023: the same two steps with numbers that are not round (33 + ■ = 99, then ■ − 39)
+    const g = 11 + rnd(40), box = 32 + rnd(50), p = 11 + rnd(box - 21);    // the second step still leaves ten or more
+    if(g + box <= 99) return {kind:'box', shape:'plus', odd:1, g, p, box, S: g + box, ans: box - p};
+  }
   const g = 10 * (1 + rnd(5));                          // what stands beside the unknown
   const box = 10 * (2 + rnd(4));
   const p = 10 * (1 + rnd(box / 10 - 1));               // always short of the unknown, so the second step is worth taking

@@ -26,7 +26,26 @@ function widestGap(k, S){
   })(0, k, [], 0);
   return {best, wit};
 }
+// every way to pick k different numbers 0, 1, 2, … adding to S, by the largest one: {largest: one such set}
+function namedTops(k, S){
+  const tops = {};
+  (function walk(start, left, cur, sum){
+    if(sum > S) return;
+    if(left === 0){ if(sum === S) tops[cur[cur.length - 1]] = tops[cur[cur.length - 1]] || cur.slice(); return; }
+    for(let v = start; v <= S; v++) walk(v + 1, left - 1, cur.concat(v), sum + v);
+  })(0, k, [], 0);
+  return tops;
+}
 function genNamed(){
+  if(Math.random() < 0.08){
+    // Зима 2023: not «at most» but «what can it be» — five different numbers adding to 12 leave
+    // the largest only 6 (0 1 2 3 6) or 5 (0 1 2 4 5), so both are the answer
+    for(;;){
+      const k = 3 + rnd(3), floor = (k - 1)*k/2, S = floor + 1 + rnd(3), tops = namedTops(k, S), vals = Object.keys(tops).map(Number).sort((a, b) => b - a);
+      if(vals.length !== 2) continue;
+      return {kind:'named', shape:4, may:1, k, S, tops: vals.map(v => tops[v]), slots:2, ans: vals[0], alt:[vals[1]]};
+    }
+  }
   if(Math.random() < 0.22){
     // Задача 18: with the sum fixed, the biggest is as large as the others are small —
     // and the smallest the others can be is 0, 1, 2, …
@@ -81,6 +100,12 @@ const namedNum = n => n + ' ' + (new Intl.PluralRules('uk').select(n) === 'few' 
 
 function drawNamed(q){
   if(q.kind === 'named'){
+    if(q.shape === 4 && q.may){
+      return tr('<div class="ask">Сборът на <b>' + BGNUM[q.k] + ' различни</b> числа е <span class="num">' + q.S + '</span>. Колко <b>може да бъде</b> най-голямото сред тях?</div>',
+        '<div class="ask">Сума <b>' + namedGen[q.k] + ' різних</b> чисел дорівнює <span class="num">' + q.S + '</span>. Яким <b>може бути</b> найбільше з них?</div>') +
+        '<div class="note">' + tr('Числата са 0, 1, 2, 3, …', 'Числа: 0, 1, 2, 3, …') + '</div>' +
+        '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
+    }
     if(q.shape === 4){
       return tr('<div class="ask">Сборът на <b>' + BGNUM[q.k] + ' различни</b> числа е <span class="num">' +
         q.S + '</span>. Колко <b>най-много</b> може да бъде <b>най-голямото</b> сред тях?</div>' +
@@ -113,6 +138,7 @@ function drawNamed(q){
   }
 }
 function eqNamed(q){
+  if(q.kind === 'named' && q.shape === 4 && q.may) return q.tops.map(t => t.join('+')).join(tr(' или ', ' або ')) + ' → ' + q.ans + tr(' или ', ' або ') + q.alt[0];
   if(q.kind === 'named' && q.shape === 4) return tr(q.k + ' различни, сбор ' + q.S + ' → най-голямо ' + q.ans,
     q.k + ' різних, сума ' + q.S + ' → найбільше ' + q.ans);
   if(q.kind === 'named' && q.shape === 3) return tr('сбор ' + q.S +
@@ -125,6 +151,10 @@ function eqNamed(q){
 }
 function whyNamed(q, full){
   if(q.kind === 'named'){
+    if(q.shape === 4 && q.may){
+      if(!full) return tr('Започни от най-малките: 0, 1, 2, … — после виж как може да се раздели остатъкът.', 'Почни з найменших: 0, 1, 2, … — потім подивися, як можна розподілити решту.');
+      return q.tops.map(t => t.join(' + ') + ' = ' + q.S + ' &nbsp;→&nbsp; <b>' + t[t.length - 1] + '</b>').join('; &nbsp;') + tr(' &nbsp;→&nbsp; други няма: ', ' &nbsp;→&nbsp; інших немає: ') + q.ans + tr(' или ', ' або ') + q.alt[0];
+    }
     if(q.shape === 4){
       if(!full) return tr('За да е най-голямо едното, останалите трябва да са възможно най-малки.',
         'Щоб одне було найбільшим, решта мають бути якомога меншими.');

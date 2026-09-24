@@ -34,12 +34,26 @@ function genTiles(){
   const t = TILINGS[rnd(TILINGS.length)];
   const s = 1 + rnd(3);
   const least = Math.min.apply(null, t.sq.map(r => r[2]));
+  if(Math.min(t.w, t.h) > 1 && Math.random() < 0.3){
+    // Зима 2023: the other way round — the rectangle's shorter side is given, the small squares' side asked
+    const s2 = 1 + rnd(5), short = Math.min(t.w, t.h)*s2;
+    return {kind:'sqcut', shape:5, rev:1, t, s: s2, n: t.sq.length, few: t.sq.filter(r => r[2] === least).length, short, ans: least*s2};
+  }
   return {kind:'sqcut', shape:5, t, s, n: t.sq.length,
           few: t.sq.filter(r => r[2] === least).length, side: least * s, ans: 2*(t.w + t.h)*s};
 }
 // Задача 12: two perimeters told in different units, so the square has to be brought
 // to centimetres before the comparison means anything.
 function genTriSq(){
+  if(Math.random() < 0.3){
+    // Зима 2023: a square with its side in милиметри against an equilateral triangle in сантиметри,
+    // and the difference of the perimeters in сантиметри — which can well be 0 (15 мм and 2 см)
+    for(;;){
+      const mm = 5*(2 + rnd(7)), t = 1 + rnd(4), P = 4*mm/10, p = 3*t;
+      if(P % 1 || (P !== p && Math.random() < 0.3)) continue;
+      return {kind:'sqcut', shape:4, mm, t, P, p, ans: Math.abs(P - p)};
+    }
+  }
   for(;;){
     const inCm = Math.random() < 0.45;         // told in сантиметри, so there is nothing to convert
     const dm = inCm ? 3 + rnd(8) : 1 + rnd(2);
@@ -80,7 +94,7 @@ function triSqSvg(q){
     t(L*u/2, H + 15, L + ' см') +
     t(ax*u/2 - 9, H - ay*u/2, r + ' см') +
     t((ax + L)*u/2 + 9, H - ay*u/2, p + ' см') +
-    t(sx + S*u/2, H + 15, q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
+    t(sx + S*u/2, H + 15, q.sqLabel || q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
 }
 function genSqCut(){
   if(Math.random() < 0.2){
@@ -152,6 +166,16 @@ function drawSqcut(q){
       (q.slots ? ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span>' : '') +
       ' <span class="unit">' + (q.mm ? 'мм' : 'см') + '</span></div>';
   }
+  if(q.kind === 'sqcut' && q.shape === 5 && q.rev){
+    const sizes = [...new Set(q.t.sq.map(r => r[2]))], twoAndTwo = q.n === 4 && q.few === 2 && sizes.length === 3;   // the paper's own figure
+    return '<div class="ask">' + (twoAndTwo
+      ? tr('Правоъгълникът на чертежа е съставен от <b>два еднакви и два различни</b> квадрата. По-малката страна на този правоъгълник е <span class="num">' + q.short + '</span> см. Колко сантиметра е страната на <b>еднаквите</b> квадрати?',
+           'Прямокутник на рисунку складено з <b>двох однакових і двох різних</b> квадратів. Менша сторона цього прямокутника — <span class="num">' + q.short + '</span> см. Скільки сантиметрів становить сторона <b>однакових</b> квадратів?')
+      : tr('Правоъгълникът на чертежа е съставен от <span class="num">' + q.n + '</span> квадрата. По-малката му страна е <span class="num">' + q.short + '</span> см. Колко сантиметра е страната на <b>най-малките</b> квадрати?',
+           'Прямокутник на рисунку складено з <span class="num">' + q.n + '</span> квадратів. Його менша сторона — <span class="num">' + q.short + '</span> см. Скільки сантиметрів становить сторона <b>найменших</b> квадратів?')) + '</div>' +
+      tilesSvg(q.t) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+  }
   if(q.kind === 'sqcut' && q.shape === 5){
     const many = {2:'два', 3:'три', 4:'четири'}[q.few];
     const which = q.few === q.n ? 'всички квадрати имат' : many + ' от квадратите имат';
@@ -162,6 +186,12 @@ function drawSqcut(q){
       ' сторону <span class="num">' + q.side + '</span> см?') + '</div>' +
       tilesSvg(q.t) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+  }
+  if(q.kind === 'sqcut' && q.shape === 4 && q.mm){
+    return '<div class="ask">' + tr('Квадрат има дължина на страната <span class="num">' + q.mm + '</span> милиметра, а страната на равностранен триъгълник е <span class="num">' + q.t + '</span> см. Колко сантиметра е <b>разликата</b> на обиколките им?',
+      'Сторона квадрата — <span class="num">' + q.mm + '</span> міліметрів, а сторона рівностороннього трикутника — <span class="num">' + q.t + '</span> см. Скільки сантиметрів становить <b>різниця</b> їхніх периметрів?') + '</div>' +
+      triSqSvg({ sides:[q.t, q.t, q.t], inCm:true, dm: q.mm/10, sqLabel: q.mm + ' мм' }) +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
   }
   if(q.kind === 'sqcut' && q.shape === 4){
     return '<div class="ask">' + tr('Триъгълник има страни', 'Трикутник має сторони') + ' <span class="num">' +
@@ -203,8 +233,10 @@ function drawSqcut(q){
 function eqSqcut(q){
   if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
     q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
+  if(q.kind === 'sqcut' && q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 5) return tr(q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ',
     q.n + ' квадрати, сторона ' + q.side + ' → прямокутник ') + (q.t.w*q.s) + '×' + (q.t.h*q.s) + ' → ' + q.ans;
+  if(q.kind === 'sqcut' && q.shape === 4 && q.mm) return 'квадрат ' + q.mm + ' мм → ' + q.P + tr(' см, триъгълник ', ' см, трикутник ') + '3 · ' + q.t + ' = ' + q.p + ' → ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + tr(', триъгълник ', ', трикутник ') +
     q.sides.join('+') + ' = ' + q.p + ' → ' + q.ans;
   if(q.kind === 'sqcut') return q.shape === 3
@@ -224,6 +256,11 @@ function whySqcut(q, full){
       (q.slots ? '; ' + tr('или четири квадрата със страна ', 'або чотири квадрати зі стороною ') + q.side/2 + ' см &nbsp;→&nbsp; ' + q.side/2 + ' · 4 = <b>' + 2*q.side + ' см</b>' +
         (q.mm ? ' = ' + q.alt[0] + ' мм' : '') : '');
   }
+  if(q.kind === 'sqcut' && q.shape === 5 && q.rev){
+    if(!full) return tr('Колко от най-малките страни се нареждат по късата страна на правоъгълника?', 'Скільки найменших сторін уміщається вздовж короткої сторони прямокутника?');
+    const m = Math.min(q.t.w, q.t.h);
+    return tr('по късата страна се нареждат ', 'уздовж короткої сторони вміщається ') + m + tr(' от най-малките страни &nbsp;→&nbsp; ', ' найменших сторін &nbsp;→&nbsp; ') + q.short + ' : ' + m + ' = ' + q.ans;
+  }
   if(q.kind === 'sqcut' && q.shape === 5){
     if(!full) return tr('Най-малкото квадратче дава мярката — с нея измери целия правоъгълник.',
       'Найменший квадратик дає мірку — нею виміряй увесь прямокутник.');
@@ -231,6 +268,10 @@ function whySqcut(q, full){
       'сторона найменшого — ' + q.side + ' &nbsp;→&nbsp; прямокутник — <b>') + (q.t.w*q.s) +
       '</b> на <b>' + (q.t.h*q.s) + '</b> &nbsp;→&nbsp; ' + (q.t.w*q.s) + ' + ' + (q.t.h*q.s) + ' = ' +
       ((q.t.w + q.t.h)*q.s) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.kind === 'sqcut' && q.shape === 4 && q.mm){
+    if(!full) return tr('Равностранният има три равни страни. И двете обиколки — в сантиметри.', 'У рівностороннього три рівні сторони. І обидва периметри — у сантиметрах.');
+    return '4 · ' + q.mm + ' = ' + 4*q.mm + ' мм = <b>' + q.P + ' см</b>, 3 · ' + q.t + ' = <b>' + q.p + ' см</b> &nbsp;→&nbsp; ' + Math.max(q.P, q.p) + ' − ' + Math.min(q.P, q.p) + ' = ' + q.ans;
   }
   if(q.kind === 'sqcut' && q.shape === 4){
     if(!full) return q.inCm ? tr('Пресметни поотделно двете обиколки.', 'Обчисли окремо обидва периметри.')

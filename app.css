@@ -103,6 +103,7 @@ h1{margin:0; font-size:24px; font-weight:900; line-height:1.15}
 /* a competition's own papers: one step in, under the competition that holds them */
 .chips.filt.sub{padding-left:10px; border-left:3px solid color-mix(in srgb, var(--accent) 45%, transparent)}
 .chips.filt.sub button{min-height:32px; padding:0 11px; font-size:13px}
+.chips.filt.sub2{margin-left:12px}
 .seg{display:inline-flex; gap:3px; padding:3px; border-radius:999px; flex-wrap:wrap}
 .seg button{border:0; background:transparent; color:var(--muted); border-radius:999px; padding:0 15px; min-height:40px; min-width:48px; font-weight:800; font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--tint); color:#fff}
@@ -674,3 +675,5 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   .card:has(.fb) .stage > .line:last-child{font-size:clamp(24px,6vw,38px) !important}
 }
 .card-in{scrollbar-width:none} .card-in::-webkit-scrollbar{display:none}
+.tix.magic{margin:6px auto}
+.tix.magic td{min-width:2.6em; text-align:center; font-size:clamp(18px,5vw,24px); font-weight:800}

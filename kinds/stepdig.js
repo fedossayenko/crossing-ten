@@ -10,6 +10,12 @@ function genStepDig(){
     const run = [];
     for(let v = start; v < 100; v += k) run.push(v);
     const ones = run.filter(v => v < 10), twos = run.filter(v => v >= 10);
+    if(k === 5 && Math.random() < 0.3){
+      // Зима 2023: 0, 5, 10, 15, …, x in 41 digits — every two-digit one is used up, and the
+      // last three digits are one three-digit number, 100
+      const x = run[run.length - 1] + k;
+      return {kind:'stepdig', k, start, first: run.slice(0, 4), ones: ones.length, twos, three: x, digits: ones.length + 2*twos.length + 3, ans: x};
+    }
     const m = 3 + rnd(Math.min(12, twos.length - 2));          // how many two-digit numbers are written
     if(m > twos.length) continue;
     const x = twos[m - 1];
@@ -32,8 +38,10 @@ function whyStepDig(q, full){
                         'Скільки цифр ідуть на одноцифрові числа? А на кожне двоцифрове?');
     const m = q.twos.length, t = q.twos;
     return tr('едноцифрени: ', 'одноцифрові: ') + q.ones + tr(' числа — ', ' — ') + q.ones + tr(' цифри', ' цифр') +
-      ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число', ' цифр, по дві на число') +
-      ' &nbsp;→&nbsp; ' + m + tr(' двуцифрени: ', ' двоцифрових: ') + t[0] + ', ' + t[1] + ', …, <b>' + q.ans + '</b>' + ' &nbsp;→&nbsp; x = ' + q.ans;
+      (q.three ? '' : ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число', ' цифр, по дві на число')) +
+      (q.three ? ' &nbsp;→&nbsp; ' + tr('всички двуцифрени ', 'усі двоцифрові ') + t[0] + ', …, ' + t[m - 1] + ': ' + m + ' · 2 = ' + 2*m + tr(' цифри, остават ', ' цифр, лишається ') +
+        (q.digits - q.ones - 2*m) + tr(' — едно трицифрено: <b>', ' — одне трицифрове: <b>') + q.ans + '</b> &nbsp;→&nbsp; x = ' + q.ans
+      : ' &nbsp;→&nbsp; ' + m + tr(' двуцифрени: ', ' двоцифрових: ') + t[0] + ', ' + t[1] + ', …, <b>' + q.ans + '</b>' + ' &nbsp;→&nbsp; x = ' + q.ans);
   }
 }
 KIND.stepdig = { draw:drawStepDig, eq:eqStepDig, why:whyStepDig };

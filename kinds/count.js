@@ -36,11 +36,13 @@ function genCount(){
   // but never a sum.
   const natural = !two && Math.random() < 0.4;
   const q = {kind:'count', sum, shape, natural, two};
-  const lowA = two ? 8 + rnd(28) : 1 + rnd(sum ? 6 : 8);
+  // Зима 2023: a range between two two-digit bounds (by 37 and 52) — the count, not a sum
+  const big = !sum && !two && (shape === 2 || shape === 4) && Math.random() < 0.3;
+  const lowA = two ? 8 + rnd(28) : big ? 10 + rnd(50) : 1 + rnd(sum ? 6 : 8);
   if(shape === 0){ q.n = (two ? 14 : 3) + rnd(top - 2); q.lo = 0; q.hi = q.n; }
   else if(shape === 1){ q.n = (two ? 14 : 3) + rnd(top - 2); q.lo = 0; q.hi = q.n - 1; }
-  else if(shape === 2){ q.a = lowA; q.b = q.a + 2 + rnd(sum ? 6 : two ? 30 : 9); q.lo = q.a; q.hi = q.b; }
-  else { q.a = lowA; q.b = q.a + 3 + rnd(sum ? 6 : two ? 30 : 8); q.lo = q.a + 1; q.hi = q.b - 1; }
+  else if(shape === 2){ q.a = lowA; q.b = q.a + 2 + rnd(sum ? 6 : two ? 30 : big ? 20 : 9); q.lo = q.a; q.hi = q.b; }
+  else { q.a = lowA; q.b = q.a + 3 + rnd(sum ? 6 : two ? 30 : big ? 20 : 8); q.lo = q.a + 1; q.hi = q.b - 1; }
   if(natural) q.lo = Math.max(q.lo, 1);
   if(two) q.lo = Math.max(q.lo, 10);                 // a two-digit number starts at ten
   if(q.hi < q.lo + 1) return genCount();             // a range with nothing, or only one thing, in it

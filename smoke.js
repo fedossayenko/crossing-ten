@@ -91,12 +91,15 @@ const server = http.createServer((req, res) => {
   const filt = await page(`(() => { PICK_FOR = null; buildPicker(); const ids = () => [...document.querySelectorAll('#pickAll .pick')].map(b => +b.dataset.lvl);
     const r = { grade: document.querySelector('#pickGrades [aria-pressed="true"]').dataset.v, papersHidden: $('pickPapers').hidden, g2: ids().every(id => LEVELS.find(l => l.id === id).grade === 2) };
     document.querySelector('#pickComps [data-v="mbg"]').click(); r.papersShown = !$('pickPapers').hidden;
+    r.rounds = !$('pickRounds').hidden; document.querySelector('#pickRounds [data-v="winter"]').click();
+    r.winter = ids().length > 0 && ids().every(id => LEVELS.find(l => l.id === id).papers.some(p => p.startsWith('mbg-winter')));
+    document.querySelector('#pickRounds [data-v=""]').click();
     document.querySelector('#pickPapers [data-v="mbg-autumn-2024-2"]').click(); r.y24 = ids().every(id => LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2024-2')) && ids().length;
     const other = document.querySelector('#pickPapers [data-v="mbg-autumn-2"]');   // shown only while some autumn level has no year
     r.other = other ? (other.click(), ids().every(id => !LEVELS.find(l => l.id === id).papers.some(p => /^mbg-autumn-\\d{4}/.test(p))) && ids().length) :
       LEVELS.filter(l => l.papers[0] === 'mbg-autumn-2' && !l.papers.some(p => /^mbg-autumn-\\d{4}/.test(p))).length === 0;
     document.querySelector('#pickComps [data-v=""]').click(); r.back = $('pickPapers').hidden; return r; })()`);
-  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back, 'the picker filters are wrong: ' + JSON.stringify(filt));
+  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   if(!process.argv[2]){
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };

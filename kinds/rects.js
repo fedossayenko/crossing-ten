@@ -4,7 +4,18 @@
 
 // Задача 13: a rectangle holds the ant when its left edge is at or left of the ant's
 // column and its right edge at or right of it — so the count is the choices each way.
+// МБГ Зима 2021, 2023: a small grid, its squares against its other rectangles. A square is a
+// rectangle too, so «all rectangles» holds the squares, and «not squares» leaves them out.
+function genRectsVsSq(){
+  const [W, H] = [[2, 2], [2, 2], [3, 2], [3, 3]][rnd(4)];
+  const all = W*(W + 1)/2 * H*(H + 1)/2, sizes = [];
+  for(let k = 1; k <= Math.min(W, H); k++) sizes.push((W - k + 1)*(H - k + 1));
+  const sq = sizes.reduce((a, b) => a + b, 0), other = all - sq;
+  const asksAll = Math.random() < 0.4;                 // «rectangles» with the squares in, or «not squares»
+  return {kind:'rects', shape:2, W, H, all, sizes, sq, other, asksAll, fewer: !asksAll && other < sq, ans: asksAll ? all - sq : Math.abs(other - sq)};
+}
 function genRects(){
+  if(Math.random() < 0.2) return genRectsVsSq();
   if(Math.random() < 0.32){
     // Задача 14: a strip of equal squares. Every sub-rectangle counts — the square ones
     // are the ones to leave out.
@@ -29,6 +40,13 @@ function genRects(){
 }
 
 function drawRects(q){
+  if(q.kind === 'rects' && q.shape === 2){
+    return '<div class="ask">' + (q.asksAll ? tr('С колко <b>правоъгълниците</b> на чертежа са повече от <b>квадратите</b>?', 'На скільки <b>прямокутників</b> на рисунку більше, ніж <b>квадратів</b>?')
+      : tr('С колко правоъгълниците на чертежа, които <b>не са квадрати</b>, са ' + (q.fewer ? 'по-малко' : 'повече') + ' от <b>квадратите</b>?',
+           'На скільки прямокутників на рисунку, які <b>не є квадратами</b>, ' + (q.fewer ? 'менше' : 'більше') + ', ніж <b>квадратів</b>?')) + '</div>' +
+      gridSvg(q.W, q.H, 0, 0) +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'rects' && q.shape === 1){
     return '<div class="ask">' + tr('Правоъгълникът с размери <span class="num">' + q.s +
       '</span> см и <span class="num">' + (q.n * q.s) + '</span> см е разделен на <b>' + BGNUM[q.n] +
@@ -50,11 +68,19 @@ function drawRects(q){
   }
 }
 function eqRects(q){
+  if(q.kind === 'rects' && q.shape === 2) return q.W + '×' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
   if(q.kind === 'rects') return q.shape === 1
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
     : q.W + '×' + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
 }
 function whyRects(q, full){
+  if(q.kind === 'rects' && q.shape === 2){
+    if(!full) return tr('Преброй поотделно квадратите — малки и големи — и всички правоъгълници. Квадратът също е правоъгълник.',
+      'Порахуй окремо квадрати — малі й великі — і всі прямокутники. Квадрат теж прямокутник.');
+    return tr('квадрати: ', 'квадратів: ') + q.sizes.join(' + ') + ' = <b>' + q.sq + '</b>; ' + tr('всички правоъгълници: <b>', 'усіх прямокутників: <b>') + q.all + '</b>' +
+      (q.asksAll ? ' &nbsp;→&nbsp; ' + q.all + ' − ' + q.sq + ' = ' + q.ans
+        : tr(', от тях не са квадрати ', ', з них не квадратів ') + q.all + ' − ' + q.sq + ' = <b>' + q.other + '</b> &nbsp;→&nbsp; ' + Math.max(q.sq, q.other) + ' − ' + Math.min(q.sq, q.other) + ' = ' + q.ans);
+  }
   if(q.kind === 'rects' && q.shape === 1){
     if(!full) return tr('Брой всички правоъгълници, не само квадратчетата поотделно.',
       'Рахуй усі прямокутники, а не лише окремі квадратики.');

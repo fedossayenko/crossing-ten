@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -377,7 +377,7 @@ console.log('ranges: the two-sided wording reaches into the teens, worksheet ins
     seen++;
     if(g.g + g.box !== g.S) throw new Error('the given addition does not hold');
     if(g.box - g.p !== g.ans || g.ans < 10) throw new Error('the second step leaves nothing to work out');
-    if([g.g, g.p, g.box].some(v => v % 10)) throw new Error('these should all be round tens');
+    if(!g.odd && [g.g, g.p, g.box].some(v => v % 10)) throw new Error('these should all be round tens');
   }
   if(!seen) throw new Error('the addition shape should turn up');
 }
@@ -684,6 +684,11 @@ console.log('cats: day-by-day simulation agrees, worksheet instance eats 9 boxes
 // задача 18: work out every payable amount from the actual coins
 for(let i = 0; i < 3000; i++){
   const q = raw(43);
+  if(q.shape === 'mix'){   // Зима 2023: every amount n coins of 1 and 2 make with both kinds, by brute force
+    const got = new Set(); for(let k = 1; k < q.n; k++) got.add(2*k + (q.n - k));
+    if([...got].sort((a, b) => a - b).join() !== [q.ans].concat(q.alt).join() || q.slots !== got.size) throw new Error('coins mix: ' + JSON.stringify(q));
+    continue;
+  }
   const pay = new Set();
   for(let a = 0; a <= q.n1; a++) for(let b = 0; b <= q.n2; b++) pay.add(a + 2*b);
   if(q.asksMax){
@@ -932,6 +937,10 @@ let tris = 0;
 for(let i = 0; i < 4000; i++){
   const q = raw(21);
   if(q.shape !== 4) continue;
+  if(q.mm){   // Зима 2023: мм against см, and the difference may be 0
+    if(q.P !== 4*q.mm/10 || q.p !== 3*q.t || q.ans !== Math.abs(q.P - q.p)) throw new Error('the мм square against the equilateral triangle is off');
+    continue;
+  }
   tris++;
   const [a, b, c] = q.sides.slice().sort((x, y) => x - y);
   if(a + b <= c) throw new Error('those three lengths do not close into a triangle');
@@ -973,8 +982,10 @@ for(let i = 0; i < 6000; i++){
   if(Object.keys(cell).length !== q.t.w * q.t.h) throw new Error('the squares leave a gap');
   const least = Math.min(...q.t.sq.map(r => r[2]));
   if(q.few !== q.t.sq.filter(r => r[2] === least).length) throw new Error('the clue miscounts the smallest squares');
-  if(q.side !== least * q.s) throw new Error('the stated side is not the smallest square scaled');
-  if(q.ans !== 2*(q.t.w + q.t.h)*q.s) throw new Error('the perimeter is not twice the two sides');
+  if(q.rev){   // the other way round: the short side given, the smallest squares' side asked
+    if(q.short !== Math.min(q.t.w, q.t.h) * q.s || q.ans !== least * q.s || Math.min(q.t.w, q.t.h) < 2) throw new Error('the short side does not give the small squares');
+  } else if(q.side !== least * q.s) throw new Error('the stated side is not the smallest square scaled');
+  if(!q.rev && q.ans !== 2*(q.t.w + q.t.h)*q.s) throw new Error('the perimeter is not twice the two sides');
 }
 if(!tiled) throw new Error('the tiled-rectangle shape should turn up');
 { // задача 13 as printed: four squares, two of them 1 см
@@ -1080,7 +1091,7 @@ console.log('equal parts both ways: nothing smaller past the bound works, worksh
 let tops = 0;
 for(let i = 0; i < 6000; i++){
   const q = raw(13);
-  if(q.shape !== 4) continue;
+  if(q.shape !== 4 || q.may) continue;   // «may» is checked by brute force below
   tops++;
   const rest = [];
   for(let v = 0; v <= q.k - 2; v++) rest.push(v);
@@ -2005,11 +2016,12 @@ eval(head + body + test);
   [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89].forEach(id => { for(let i = 0; i < 400; i++){
     const q = Q.raw(id), a = q.ans;
     n[q.kind] = (n[q.kind] || 0) + 1;
-    if(Q.LEVELS.find(l => l.id === id).papers.join() !== 'mbg-winter-2024-2') throw new Error('level ' + id + ' should be on the Зима 2024 paper');
+    if(Q.LEVELS.find(l => l.id === id).papers[0] !== 'mbg-winter-2024-2') throw new Error('level ' + id + ' should be on the Зима 2024 paper');
     const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
     if(q.kind === 'fifty'){
       const T = q.nums.reduce((x, y) => x + y, 0);
-      if(T % 10 || (q.shape === 0 ? T - q.sub : q.shape === 1 ? T / 10 : T - q.other.reduce((x, y) => x + y, 0)) !== a || a < 0) fail('the sum');
+      if(q.shape === 3){ if(T !== q.T || q.ans !== (q.less ? 100 - T : Math.floor(T / 10)) || q.pairs.some(([x, y]) => (x + y) % 10)) fail('the long sum'); }
+      else if(T % 10 || (q.shape === 0 ? T - q.sub : q.shape === 1 ? T / 10 : T - q.other.reduce((x, y) => x + y, 0)) !== a || a < 0) fail('the sum');
     }
     if(q.kind === 'pickfit' && q.nums.filter(v => q.more ? v + q.add > q.n : v + q.add < q.n).length !== a) fail('the count');
     if(q.kind === 'pickfit' && !q.nums.some(v => v + q.add === q.n)) fail('no try lands on the edge');
@@ -2097,7 +2109,7 @@ eval(head + body + test);
     const q = Q.raw(id), a = q.ans;
     n[q.kind] = (n[q.kind] || 0) + 1;
     const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
-    if(Q.LEVELS.find(l => l.id === id).papers.join() !== 'kms-2025-2') fail('not on the КМС 2025 paper');
+    if(Q.LEVELS.find(l => l.id === id).papers[0] !== 'kms-2025-2') fail('not on the КМС 2025 paper');
     if(q.kind === 'isotri'){
       const eq = (p, r, s) => { const d = (u, v) => Math.hypot(u[0] - v[0], u[1] - v[1]), x = d(p, r), y = d(r, s), z = d(s, p);
         return Math.abs(x - y) < 1e-9 || Math.abs(y - z) < 1e-9 || Math.abs(z - x) < 1e-9; };
@@ -2105,7 +2117,8 @@ eval(head + body + test);
       if((q.asksNot ? q.tris.length - isoN : isoN) !== a) fail('the count');
       if(q.tris.some(x => x.t.some(([u, v]) => u < 0 || u > 5 || v < 0 || v > x.h))) fail('a triangle leaves its band');
     }
-    if(q.kind === 'rectdm' && (2*(q.a + q.b) !== 10*a)) fail('the perimeter');
+    const RU = { мм:1, см:10, дм:100, м:1000 };
+    if(q.kind === 'rectdm' && (q.shape === 1 ? q.b !== q.a + q.d*RU[q.dU]/RU[q.base] || 2*(q.a + q.b)*RU[q.base] !== a*RU[q.to] : 2*(q.a + q.b) !== 10*a)) fail('the perimeter');
     if(q.kind === 'minuend'){
       const ok = v => q.which === 1 ? v >= 10 && v <= 99 : q.which === 2 ? v >= 1 : v >= 0;
       let best = Infinity;
@@ -2308,7 +2321,7 @@ eval(head + body + test);
    task against the official key, drawn as printed, and met by its level's own generator. Where the
    level picks a name, a colour or a thing to count, the listed fields alone are matched. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS }; })()');
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS, TERMS }; })()');
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const D = nm => Q.DAYS.find(d => d.nm === nm), run = (a, b, s) => { const r = []; for(let v = a; s > 0 ? v <= b : v >= b; v += s) r.push(v); return r; };
@@ -2394,5 +2407,36 @@ eval(head + body + test);
     [18, 57, {kind:'rank', who:['Георги','Емил','Борис','Даниел'], n:4, k:2, asksAbove:true, ans:2}, [2], 'а Борис е с повече точки само от Даниел', ['n','k','asksAbove']],
     [19, 10, {kind:'cmp', runs:1, A:run(2, 18, 2), B:run(3, 17, 2), sa:90, sb:80, nm:['Мария','Деми'], back:false, big:0, ans:10}, [10], 'Мария пресметнала вярно 2 + 4 + 6'],
     [20, 58, {kind:'snail', H:23, up:8, down:5, gain:3, k:5, ans:11}, [11], 'висока 23 метра']
+  ]);  paperCheck('Зима 2023', 'mbg-winter-2023-2', '40, 60, 1, 36, 10, 5, 14, 27, 100, 7, 1, 14, 1, 2, 0, 5 или 6, 34, 5, 12, 6 7 8 9', [
+    [1,  99,  {kind:'brackets', shape:0, a:86, b:51, c:5, inner:46, ans:40}, [40], '86 − (51 − 5)'],
+    [2,  9,   {kind:'pairs', shape:'tens', base:20, terms: chain(1, 19, 2, 18, 3, 17), paired:3, extra:0, subs:[], ans:60}, [60], '1 + 19 + 2 + 18 + 3 + 17'],
+    [3,  99,  {kind:'brackets', shape:1, xs:[71,81,91], gaps:[29,19,9], ans:1}, [1], '(100 − 71) − (100 − 81) − (100 − 91)'],
+    [4,  30,  {kind:'term', shape:2, t:Q.TERMS[1], M:84, D:48, S:36, ans:36}, [36], 'Умаляемото е 84, а разликата е 48. Кой е умалителят'],
+    [5,  79,  {kind:'fifty', shape:3, pairs:[[1,9],[2,18],[3,17]], extra:55, nums:[1,9,2,18,3,17,55], T:105, less:false, ans:10}, [10], 'Пресметнете 1 + 9 + 2 + 18 + 3 + 17 + 55. Колко са десетиците в полученото число'],
+    [6,  79,  {kind:'fifty', shape:3, pairs:[[1,9],[2,18],[3,17]], extra:45, nums:[1,9,2,18,3,17,45], T:95, less:true, ans:5}, [5], 'С колко сборът 1 + 9 + 2 + 18 + 3 + 17 + 45 е по-малък от 100'],
+    [7,  12,  {kind:'count', sum:false, shape:4, natural:true, two:false, a:37, b:52, lo:38, hi:51, ans:14}, [14], 'естествени числа, които са по-малки от 52 и са по-големи от 37'],
+    [8,  11,  {kind:'box', shape:'plus', odd:1, g:33, p:39, box:66, S:99, ans:27}, [27], '■ − 39, ако 33 + ■ = 99'],
+    [9,  82,  {kind:'stepdig', k:5, start:0, first:[0,5,10,15], ones:2, twos:[10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95], three:100, digits:41, ans:100}, [100], 'числата 0, 5, 10, 15, …, x са записани с 41 цифри'],
+    [10, 16,  {kind:'ineq', shape:3, A:43, B:19, L:24, C:17, ans:7}, [7], 'броя на всички различни числа, които можем да поставим вместо ?, така че да е вярно: 43 − 19 > ? + 17'],
+    [11, 91,  {kind:'rectdm', shape:1, a:15, d:2, base:'см', dU:'дм', b:35, P:100, to:'м', ans:1}, [1], 'Една от страните на правоъгълник е 15 см, а другата е с 2 дм по-дълга. Колко метра'],
+    [12, 100, {kind:'magic', g:[20,10,12,6,14,22,16,18,8], shown:[20,10,12,6,4,22,16,18,8], at:4, wrong:4, S:42, ans:14}, [14], '20 10 12 6 4 22 16 18 8', ['shown']],
+    [13, 19,  {kind:'rects', shape:2, W:2, H:2, all:9, sizes:[4,1], sq:5, other:4, asksAll:false, fewer:true, ans:1}, [1], 'С колко правоъгълниците на чертежа, които не са квадрати, са по-малко от квадратите'],
+    [14, 21,  {kind:'sqcut', shape:5, rev:1, t:{w:5, h:3, sq:[[0,0,2],[0,2,1],[1,2,1],[2,0,3]]}, s:2, n:4, few:2, short:6, ans:2}, [2], 'съставен от два еднакви и два различни квадрата. По-малката страна на този правоъгълник е 6 см'],
+    [15, 21,  {kind:'sqcut', shape:4, mm:15, t:2, P:6, p:6, ans:0}, [0], 'Квадрат има дължина на страната 15 милиметра, а страната на равностранен триъгълник е 2 см'],
+    [16, 13,  {kind:'named', shape:4, may:1, k:5, S:12, tops:[[0,1,2,3,6],[0,1,2,4,5]], slots:2, ans:6, alt:[5]}, [5, 6], 'Сборът на пет различни числа е 12. Колко може да бъде най-голямото'],
+    [17, 87,  {kind:'balloons', k:3, m:3, rest:31, T:40, ans:34}, [34], 'общо 40 балона, като 3 деца имат по 3 балона'],
+    [18, 24,  {kind:'sums', shape:4, nums:[1,2,11,21], two:true, pairs:[[1,11],[1,21],[2,11],[2,21],[11,21]], ans:5}, [5], 'от числата 1, 2, 11 и 21, като поне едното събираемо е двуцифрено'],
+    [19, 101, {kind:'paintrow', n:3, c:3, ans:12}, [12], 'трите квадратчета трябва да се оцвети в някой от цветовете бяло, зелено или червено'],
+    [20, 43,  {kind:'coins', shape:'mix', n:5, vals:[6,7,8,9], slots:4, ans:6, alt:[7,8,9]}, [6, 7, 8, 9], 'Саид има 5 монети, всяка от които е или 1, или 2 евро']
   ]);
+  // the new kinds by brute force: a magic square's wrong cell, and colourings counted one by one
+  for(let i = 0; i < 400; i++){
+    const m = Q.raw(100), sums = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].map(l => l.reduce((t, j) => t + m.g[j], 0));
+    if(sums.some(v => v !== m.S)) throw new Error('magic: not a magic square ' + JSON.stringify(m));
+    const fixes = []; for(let at = 0; at < 9; at++) for(let v = 0; v <= 60; v++){ const g = m.shown.slice(); g[at] = v; if([[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].every(l => l.reduce((t, j) => t + g[j], 0) === m.S) && v !== m.shown[at]) fixes.push(v); }
+    if(fixes.length !== 1 || fixes[0] !== m.ans) throw new Error('magic: the fix is not unique ' + JSON.stringify(m) + ' ' + fixes);
+    const p = Q.raw(101); let ways = 0;
+    (function walk(i, prev){ if(i === p.n){ ways++; return; } for(let c = 0; c < p.c; c++) if(c !== prev) walk(i + 1, c); })(0, -1);
+    if(ways !== p.ans) throw new Error('paintrow: ' + ways + ' ways, not ' + p.ans);
+  }
 }

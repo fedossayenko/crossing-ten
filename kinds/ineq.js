@@ -5,6 +5,15 @@
 // Задача 10: how many single digits make the statement false. The relation and the
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
 function genIneq(){
+  if(Math.random() < 0.2){
+    // Зима 2023: bigger numbers, «>», and every number counts, not only one-digit ones:
+    // 43 − 19 > ? + 17 is true for ? = 0 … 6, so 7 numbers
+    for(;;){
+      const B = 11 + rnd(25), L = 12 + rnd(30), A = L + B, C = 5 + rnd(L - 6);
+      if(A > 80 || L - C < 2 || L - C > 12) continue;
+      return {kind:'ineq', shape:3, A, B, L, C, ans: L - C};
+    }
+  }
   for(;;){
     const shape = rnd(3);
     const L = 1 + rnd(9), B = 1 + rnd(17), A = L + B, C = 1 + rnd(8);
@@ -25,10 +34,14 @@ function genIneq(){
 
 function drawIneq(q){
   if(q.kind === 'ineq'){
-    const rel = q.shape === 2
+    const rel = q.shape === 3 ? q.A + ' − ' + q.B + ' &gt; ? + ' + q.C
+      : q.shape === 2
       ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
       : q.A + ' − ' + q.B + ' &lt; ? + ' + q.C;
-    const head = q.asksSum
+    const head = q.shape === 3
+      ? tr('Намерете <b>броя</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да е вярно</b>:',
+           'Знайдіть <b>кількість</b> усіх різних чисел, які можна поставити замість ?, щоб <b>було правильно</b>:')
+      : q.asksSum
       ? tr('Намерете <b>сбора</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да НЕ е вярно</b>:',
            'Знайдіть <b>суму</b> всіх різних чисел, які можна поставити замість ?, щоб <b>НЕ було правильно</b>:')
       : tr('Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
@@ -41,12 +54,16 @@ function drawIneq(q){
   }
 }
 function eqIneq(q){
+  if(q.kind === 'ineq' && q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? tr(' вярно', ' правильно') : tr(' невярно', ' неправильно')) +
     (q.asksSum ? tr(', сборът', ', сума') : '') + ' → ' + q.ans;
 }
 function whyIneq(q, full){
   if(q.kind === 'ineq'){
+    if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');
+    if(q.shape === 3 && full) return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' < ' + q.L +
+      tr(', значи', ', отже') + ' ? < ' + (q.L - q.C) + ' &nbsp;→&nbsp; 0 … ' + (q.L - q.C - 1) + ' &nbsp;→&nbsp; ' + q.ans;
     if(!full) return q.asksSum ? tr('Първо намери кои числа стават, после ги събери.', 'Спочатку знайди, які числа підходять, а потім додай їх.')
             : q.shape === 1 ? tr('Първо пресметни лявата страна.', 'Спочатку обчисли ліву частину.')
             : tr('„Не е вярно" обръща знака.', '«НЕ правильно» перевертає знак.');
