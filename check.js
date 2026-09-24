@@ -394,7 +394,7 @@ for(let i = 0; i < 4000; i++){
 }
 { // задача 8 as printed: 21 pencils, 18 not green, 7 yellow
   const col = [['зелени','зелен'], ['жълти','жълт'], ['сини','син']];
-  const q = {kind:'pencils', who:'Алекс', col, a:3, b:7, c:11, T:21, notA:18, ans:11};
+  const q = {kind:'pencils', who:'Ния', col, a:3, b:7, c:11, T:21, notA:18, ans:11};
   if(lastNum(why(q, true)) !== 11) throw new Error('21 pencils, 18 not green, 7 yellow should leave 11 blue');
   let widest = 0;
   for(let i = 0; i < 4000; i++) widest = Math.max(widest, raw(38).ans);
@@ -2252,5 +2252,52 @@ eval(head + body + test);
     (exact ? metExact : metLike).push(task);
   });
   console.log('МБГ Есен 2024 2 клас: all 20 printed tasks match the official key (8, 10, 37, 15, 3, 6, 3, 31, 1, 35, 16, 5, 6, 10, 2, 6, 10, 22, 15, 4); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
+    (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
+}
+
+/* МБГ Есен 2023, 2 клас: the paper levels 38–45 were first built from; with them levels 9–13, 16, 18, 19,
+   21 and 27, all tagged also:['mbg-autumn-2023-2']. As for Есен 2025 and 2024. Where the level picks
+   a name, a colour or a thing to count, the numbers alone are matched (the listed fields). */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
+  const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
+  const metExact = [], metLike = [];
+  const paper = [
+    [1,  9,  {kind:'pairs', shape:'tens', base:20, terms: chain(9, 11, 8, 12, -40), paired:2, extra:0, subs:[40], ans:0}, [0], '9 + 11 + 8 + 12 − 40'],
+    [2,  11, {kind:'box', a:11, b:9, x:7, y:5, box:7, r:2, ans:4}, [4], '9 − ◯ = 7 − 5'],
+    [3,  10, {kind:'cmp', shape:1, terms:[10,20,30], kept:[10,30], gone:[20], ans:20}, [20], 'сборът 10 + 20 + 30 е по-голям от сбора 10 + 30'],
+    [4,  10, {kind:'cmp', shape:2, x:9, y:11, p:40, q:10, S:20, D:30, less:true, ans:10}, [10], 'сборът 9 + 11 е по-малък от разликата 40 − 10'],
+    [5,  12, {kind:'count', sum:true, shape:4, natural:true, two:false, a:8, b:11, lo:9, hi:10, ans:19}, [19], 'естествени числа, които са по-малки от 11 и са по-големи от 8'],
+    [6,  12, {kind:'count', sum:false, shape:1, natural:false, two:false, n:7, lo:0, hi:6, ans:7}, [7], 'Колко са всички числа, които са по-малки от 7'],
+    [7,  16, {kind:'ineq', shape:0, asksSum:true, A:20, B:10, L:10, C:6, lim:4, ans:10}, [10], 'да НЕ е вярно: 20 − 10 < ? + 6'],
+    [8,  38, {kind:'pencils', who:'Ния', col:[['зелени','зелен'],['жълти','жълт'],['сини','син']], a:7, b:6, c:9, T:22, notA:15, ans:9}, [9], 'От тях 15 не са зелени, а 6 са жълти', ['a','b','c']],
+    [9,  27, {kind:'missing', woven:[12,3,23,5,34,7,45,9,56,11], hideAt:[5,6], runA:[12,23,34,45,56], runB:[3,5,7,9,11], dA:11, dB:2, star:45, dot:7, ans:38}, [38], '12, 3, 23, 5, 34, ●, ★, 9, 56, 11'],
+    [10, 39, {kind:'short', item:'бонбона', have:10, T1:20, T2:30, d1:10, shape:0, ans:20}, [20], 'Не ми достигат 10 бонбона, за да имам 20 бонбона', ['have','T1','T2','shape']],
+    [11, 40, {kind:'seg', p:4, q:1, r:5, AB:5, CD:6, ans:10}, [10], 'AB = 5 см CD = 6 см CB = 1 см'],
+    [12, 41, {kind:'three', who:'Хари', a:1, b:4, slots:2, ans:3, alt:[5]}, [3, 5], 'записал две от тях: 1 см и 4 см', ['a','b']],
+    [13, 21, {kind:'sqcut', shape:3, a:4, extra:2, P:20, ans:2, asksSide:true}, [2], 'лист с обиколка 20 см на квадрат A със страна 4 см'],
+    [14, 19, {kind:'rects', shape:1, n:3, s:3, squares:false, parts:[[2,2,18],[3,1,24]], ans:60}, [60], 'размери 3 см и 9 см е разделен на три квадрата'],
+    [15, 18, {kind:'digits', shape:2, d:5, smaller:true, list:[15,25,35,45,50,51,52,53,54], ans:9}, [9], 'една от цифрите на които е 5, а другата е по-малка от 5'],
+    [16, 13, {kind:'named', shape:3, k:5, S:26, wit:[0,2,7,8,9], ans:9}, [9], 'различни едноцифрени числа е 26'],
+    [17, 42, {kind:'cats', nm:['Мими','Рижко'], p:4, q:5, k:1, boxes:9, ans:20}, [20], 'кутия храна за 4 дни', ['p','q','k','boxes']],
+    [18, 43, {kind:'coins', n1:2, n2:3, T:8, limit:10, asksMax:false, ans:9}, [9], 'ако имаме 2 монети от 1 евро и 3 монети от 2 евро'],
+    [19, 44, {kind:'cross', A:10, B:20, C:30, D:40, hit:{t:1, i:0, digit:2, left:0}, ans:2}, [2], '10 + 20 + 30 = 40'],
+    [20, 45, {kind:'cards', digits:[1,2,4,7], smallest:true, wit:[24,17], ans:7}, [7], 'цифрите 1, 2, 4 и 7, по една на карта']
+  ];
+  paper.forEach(([task, id, q, key, shows, fields]) => {
+    const got = Q.answers(q).slice().sort((x, y) => x - y);
+    if(got.join() !== key.join()) throw new Error('Есен 2023 task ' + task + ': gives ' + got + ', the key says ' + key);
+    if(!Q.accepts(q, key.map(String)) || (key.length > 1 && !Q.accepts(q, key.slice().reverse().map(String)))) throw new Error('Есен 2023 task ' + task + ': the key is not accepted');
+    if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('Есен 2023 task ' + task + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
+    if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2023-2')) throw new Error('level ' + id + ' is not tagged Есен 2023');
+    const sig = g => fields ? fields.map(f => g[f]).join() : Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
+    const want = sig(q);
+    let exact = false, like = false;
+    for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind || g.shape !== q.shape) continue; const s = sig(g); exact = s === want; like = like || fields || mask(s) === mask(want); }
+    if(!exact && !like) throw new Error('Есен 2023 task ' + task + ': level ' + id + ' never asks a question of that form');
+    (exact ? metExact : metLike).push(task);
+  });
+  console.log('МБГ Есен 2023 2 клас: all 20 printed tasks match the official key (0, 4, 20, 10, 19, 7, 10, 9, 38, 20, 10, 3 или 5, 2, 60, 9, 9, 20, 9, 2, 7); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
     (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : ''));
 }
