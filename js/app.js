@@ -777,26 +777,48 @@ function buildPicker(){
     return '<span class="stat"><b style="color:' + col + '">' + h.last.firstTry + ' / ' + h.last.n + '</b><i>' + ago(h.last.ts) + '</i></span>';
   };
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
+  // which papers ask this level: one tag per round, "Есен ×6" when several years share it (the years in its title)
+  const paperTags = l => {
+    const ps = l.papers.filter(p => !PICK_PAPER && p !== 'basics' && paperSrc(p) !== 'mbg-autumn' && (!PICK_COMP || compOf(p) === PICK_COMP));
+    const byRound = {};
+    ps.forEach(p => { const r = paperSrc(p).replace(/-\d{4}$/, ''); (byRound[r] = byRound[r] || []).push(p); });
+    return Object.values(byRound).map(g => ' <span class="gtag gw"' + (g.length > 1 ? ' title="' + g.map(p => t('paperTag')[paperSrc(p)]).join(', ') + '"' : '') + '>' +
+      (g.length > 1 ? t('paperTag')[paperSrc(g[0])].replace(/\s*\d{4}$/, '') + ' ×' + g.length : t('paperTag')[paperSrc(g[0])]) + '</span>').join('');
+  };
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? ' <span class="gtag gb">' + t('basics') + '</span>' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
-      l.papers.filter(p => !PICK_PAPER && p !== 'basics' && paperSrc(p) !== 'mbg-autumn').map(p => ' <span class="gtag gw">' + t('paperTag')[paperSrc(p)] + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? (PICK_COMP ? '' : ' <span class="gtag gb">' + t('basics') + '</span>') : PICK_GRADE ? '' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
+      paperTags(l) + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
-  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && (!PICK_PAPER || l.papers.includes(PICK_PAPER))) })).filter(g => g.levels.length);
+  // three filters: the grade, the competition (МБГ, Коледно, the basics), and within it one paper
+  if(PICK_FOR !== PLAYER.id){ PICK_FOR = PLAYER.id; PICK_GRADE = myGrade(); PICK_COMP = PICK_PAPER = ''; }   // each child starts on her own grade
+  const gradeOk = l => !PICK_GRADE || l.grade === PICK_GRADE;
+  const compOk = l => !PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP);
+  const shown = l => gradeOk(l) && compOk(l) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
+  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && shown(l)) })).filter(g => g.levels.length);
   if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = -1;
   $('pickTopics').innerHTML = '<button data-k="-1" aria-pressed="' + (PICK_TOPIC === -1) + '">' + t('all') + '</button>' +
     groups.map(g => '<button data-k="' + g.k + '" aria-pressed="' + (PICK_TOPIC === g.k) + '">' + t('groups')[g.k] + '</button>').join('');
   $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = +b.dataset.k; buildPicker(); });
-  // which paper: the basics, МБГ autumn 2nd grade, 3rd grade — or all of them
-  // basics first, then by grade, and within a grade in the order js/i18n.js lists the papers
-  const ORDER = Object.keys(t('papers'));
-  const papers = [...new Set(LEVELS.flatMap(l => l.papers))].sort((a, b) =>
-    (a !== 'basics') - (b !== 'basics') || paperGrade(a) - paperGrade(b) || ORDER.indexOf(paperSrc(a)) - ORDER.indexOf(paperSrc(b)));
-  $('pickGrades').innerHTML = '<button data-p="" aria-pressed="' + (PICK_PAPER === '') + '">' + t('allGrades') + '</button>' +
-    papers.map(p => '<button data-p="' + p + '" aria-pressed="' + (PICK_PAPER === p) + '" title="' + paperName(p) + '">' + paperChip(p) + '</button>').join('');
-  $('pickGrades').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_PAPER = b.dataset.p; buildPicker(); });
+  // the rows of chips: grade, then competition, then — when it has more than one — its papers,
+  // newest year first, autumn before winter, and the autumn levels with no year last
+  const chips = (id, items, cur, pick) => {
+    $(id).hidden = items.length < 2;
+    $(id).innerHTML = items.map(([v, label, title]) => '<button data-v="' + v + '" aria-pressed="' + (cur === v) + '"' + (title ? ' title="' + title + '"' : '') + '>' + label + '</button>').join('');
+    $(id).querySelectorAll('button').forEach(b => b.onclick = () => { pick(b.dataset.v); buildPicker(); });
+  };
+  const grades = [...new Set(LEVELS.map(l => l.grade))].sort();
+  chips('pickGrades', [['0', t('allGrades')]].concat(grades.map(g => [String(g), t('gradeN', g)])), String(PICK_GRADE), v => { PICK_GRADE = +v; PICK_PAPER = ''; });
+  const inGrade = LEVELS.filter(gradeOk), comps = [...new Set(inGrade.flatMap(l => l.papers.map(compOf)))].sort((a, b) => (a !== 'basics') - (b !== 'basics') || (a !== 'mbg') - (b !== 'mbg'));
+  if(PICK_COMP && !comps.includes(PICK_COMP)) PICK_COMP = PICK_PAPER = '';
+  chips('pickComps', [['', t('all')]].concat(comps.map(c => [c, c === 'basics' ? t('basics') : t('comps')[c]])), PICK_COMP, v => { PICK_COMP = v; PICK_PAPER = ''; });
+  const yearOf = p => +(paperSrc(p).match(/\d{4}$/) || [0])[0], ROUNDS = ['autumn', 'winter', 'spring', 'final'];
+  const papers = PICK_COMP ? [...new Set(inGrade.flatMap(l => l.papers.filter(p => compOf(p) === PICK_COMP && (!PICK_GRADE || paperGrade(p) === PICK_GRADE) && inGrade.some(m => inPaper(m, p)))))]
+    .sort((a, b) => !yearOf(a) - !yearOf(b) || yearOf(b) - yearOf(a) || ROUNDS.findIndex(r => a.includes(r)) - ROUNDS.findIndex(r => b.includes(r)) || paperGrade(a) - paperGrade(b)) : [];
+  if(PICK_PAPER && !papers.includes(PICK_PAPER)) PICK_PAPER = '';
+  chips('pickPapers', papers.length > 1 ? [['', t('all')]].concat(papers.map(p => [p, t('paperTag')[paperSrc(p)] + (PICK_GRADE ? '' : ' · ' + t('gradeN', paperGrade(p))), paperName(p)])) : [], PICK_PAPER, v => { PICK_PAPER = v; });
 
   // start here / try this next: the recommendation, and what it opens up after
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
@@ -824,7 +846,10 @@ function buildPicker(){
     newRound();
   });
 }
-let PICK_TOPIC = -1, PICK_PAPER = '';
+let PICK_TOPIC = -1, PICK_FOR = null, PICK_GRADE = 0, PICK_COMP = '', PICK_PAPER = '';
+const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
+// the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year
+const inPaper = (l, p) => paperSrc(p) === 'mbg-autumn' ? l.papers[0] === p && !l.papers.some(q => /^mbg-autumn-\d{4}-/.test(q)) : l.papers.includes(p);
 const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
 $('levelPill').onclick = () => { buildPicker(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
 $('closePick').onclick = () => { $('picker').hidden = true; };

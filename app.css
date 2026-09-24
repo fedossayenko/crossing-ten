@@ -99,6 +99,10 @@ h1{margin:0; font-size:24px; font-weight:900; line-height:1.15}
 .chips{display:flex; gap:8px; flex-wrap:wrap}
 .chips.filt button{min-height:38px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:800; color:var(--ink)}
 .chips.filt button[aria-pressed="true"]{background:color-mix(in srgb, var(--accent) 16%, transparent); border-color:var(--accent); color:var(--accent-ink)}
+.chips[hidden]{display:none}
+/* a competition's own papers: one step in, under the competition that holds them */
+.chips.filt.sub{padding-left:10px; border-left:3px solid color-mix(in srgb, var(--accent) 45%, transparent)}
+.chips.filt.sub button{min-height:32px; padding:0 11px; font-size:13px}
 .seg{display:inline-flex; gap:3px; padding:3px; border-radius:999px; flex-wrap:wrap}
 .seg button{border:0; background:transparent; color:var(--muted); border-radius:999px; padding:0 15px; min-height:40px; min-width:48px; font-weight:800; font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--tint); color:#fff}
