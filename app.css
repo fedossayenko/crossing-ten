@@ -620,3 +620,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .fig.small svg{height:clamp(64px,13vh,120px)}
 .fig.wide svg{height:auto; width:100%; max-width:340px}
 @media (orientation:portrait) and (max-height:700px){ .fig.small svg{height:clamp(56px,11vh,96px)} }
+.tix{border-collapse:collapse; margin:0 auto; font-size:clamp(12px,3.4vw,15px); font-weight:700}
+.tix th,.tix td{border:1px solid var(--line); padding:3px 8px; text-align:center}
+.tix th{color:var(--muted); font-size:.85em}

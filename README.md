@@ -24,11 +24,19 @@ so those levels are tagged with the winter paper rather than copied. The other t
 by its digits, a bracket that is 0, cutting squares off a sheet, four rectangles by their perimeter, a
 pyramid of boxes, balloons, an age, letters for digits).
 
+The **Коледно математическо състезание 2025** (СМБ, секция „Изток“), 2nd grade, is in whole too, tasks 1–10,
+checked against its key. Only task 2 (a digit sum) was already a level; the rest are levels 90–98 (isosceles
+triangles on a grid, a perimeter in дм, the smallest minuend, two consecutive numbers, a letter in a repeated
+word, a run whose steps grow, a ride that grows by the day, a triangle from a square's side, and the
+three-part task 10: a route, a ticket table and the change). The paper's task 6 answers with a letter, so
+that level brings its own А/Б/В/Г.
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
-(Основи, МБГ Есен 2 клас, МБГ Зима 2024 2 клас, МБГ Есен 3 клас), marks grade and winter rows, and
-recommends her own grade's levels first. The grade is on the player's profile (2nd until set); a 3rd-grader's
+(Основи, МБГ Есен 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 3 клас), tags
+each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
+first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, and competitions are drawn from her grade's levels.
 
 - Live: https://fedossayenko.github.io/crossing-ten/

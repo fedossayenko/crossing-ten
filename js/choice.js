@@ -28,6 +28,6 @@ function choiceHtml(q, crossed, right, picked){
     const cls = right && o.id === q.pick ? ' ok' : crossed && crossed.indexOf(o.id) >= 0 ? ' no' : '';
     return '<button class="ch' + cls + '" data-o="' + o.id + '"' + (cls === ' no' ? ' disabled' : '') +
       (picked !== undefined ? ' aria-pressed="' + (picked === o.id) + '"' : '') + '><span class="lt">' +
-      (LETTERS[LANG] || LETTERS.en)[o.id] + '</span><span class="v">' + (o.signs ? o.signs.join(' ' + tr('и', 'і') + ' ') : o.v) + '</span></button>';
+      (LETTERS[LANG] || LETTERS.en)[o.id] + '</span><span class="v">' + (o.text ? tr(o.text[0], o.text[1]) : o.signs ? o.signs.join(' ' + tr('и', 'і') + ' ') : o.v) + '</span></button>';
   }).join('');
 }

@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -2045,5 +2045,110 @@ eval(head + body + test);
     }
   }});
   console.log('МБГ Зима 2024 2 клас: all 20 printed tasks match the official key (40, 10, 34, 1, 11, 50, 6, 39, 0, 18, 4, 10, 48, 40, 11, 15, 10, 3, 10, 4); 7 older levels tagged and asking the same question; ' +
+    Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
+}
+
+/* Коледно математическо състезание 2025 (СМБ, секция „Изток“), 2 клас: the whole paper. Task 2
+   is level 18 (also:['kms-2025-2']); tasks 1 and 3–10 are levels 90–98. Each printed task is
+   solved as printed against the official key, and every new kind is checked by brute force. */
+{
+  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, TEXT, isoTriIs, santaWays, WORDPOS }; })()');
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
+  const text = q => strip(Q.drawQ(q)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/\s+/g, '');
+  const printed = (task, q, want, shows) => {
+    const got = Q.answers(q)[0];
+    if(got !== want) throw new Error('КМС 2025 task ' + task + ': gives ' + got + ', the key says ' + want);
+    if(shows && text(q).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('КМС 2025 task ' + task + ' is not drawn as printed: ' + text(q));
+  };
+  // 1: the six triangles as drawn, each [points in its band, band height] — 4 are not isosceles
+  const t1 = [[[[0.5,0],[0,1],[2,1]],1], [[[1,0],[3,2],[5,2]],2], [[[0,1],[4,0],[4,1]],1], [[[3,0],[1,2],[5,2]],2], [[[0,1],[3,0],[4,1]],1], [[[2,0],[0,1],[4,1]],1]]
+    .map(([t, h]) => ({ t, h }));
+  const iso1 = t1.map(x => Q.isoTriIs(x.t));
+  printed(1, {kind:'isotri', tris:t1, iso:iso1, asksNot:true, ans: iso1.filter(v => !v).length}, 4);
+  printed(3, {kind:'rectdm', a:16, b:24, P:80, ans:8}, 8, '16 см и 24 см');
+  printed(4, {kind:'minuend', d:4, which:0, asks:0, sub:0, ans:4}, 4, 'Разликата на две числа е 4');
+  printed(5, {kind:'consec', t:5, s:5, X:9, small:true, ans:4}, 4, 'цифра на десетиците 5');
+  printed(7, {kind:'diffseq', seq:[25,24,21,16,9,0], down:true, d0:1, g:2, asksSum:true, ans:95}, 95, '25, 24, 21, 16, 9, ?');
+  printed(8, {kind:'daily', bg:'Иво', uk:'Іво', she:0, a:3, d:9, k:4, days:[3,12,21,30,39], shape:0, ans:69}, 69, 'Иво изминал с колелото си 3 км');
+  printed(9, {kind:'isoperim', s:9, P:36, up:12, leg:21, down:14, base:7, ans:49}, 49, 'Обиколката на квадрат е 36 см');
+  printed('10А', {kind:'santa', shape:0, a:1, b:7, c:4, e:10, f:5, back:11, on:15, ans:29}, 29);
+  const rows10 = [[10,5,5],[5,2,0],[12,0,6]];
+  printed('10Б', {kind:'santa', shape:1, rows:rows10, per: rows10.map(([F, s, p]) => 2*(s || F) + (p || F) + F), ans:81}, 81);
+  printed('10В', {kind:'santa', shape:2, T:81, R:19, k:6, ways:Q.santaWays(19, 6), ans:Q.santaWays(19, 6).length}, 3);
+  // 6: КОЛЕДА ten times, the 46th letter from the right is Л
+  { const w = Q.WORDPOS[0][0], long = w.repeat(10);
+    if(long[long.length - 46] !== 'Л') throw new Error('task 6: the 46th letter from the right is ' + long[long.length - 46]); }
+  // 2: level 18 asks exactly this, and 7 two-digit numbers have digit sum 7
+  if([...Array(90).keys()].map(v => v + 10).filter(v => Math.floor(v/10) + v % 10 === 7).length !== 7) throw new Error('task 2 should be 7');
+  { const L = Q.LEVELS.find(l => l.id === 18); let hit = false;
+    if(!L.papers.includes('kms-2025-2')) throw new Error('level 18 is not tagged КМС 2025');
+    for(let i = 0; i < 4000 && !hit; i++) hit = /Колкодвуцифреничислаиматсборнацифрите/.test(text(Q.raw(18)));
+    if(!hit) throw new Error('level 18 never asks the КМС 2025 question'); }
+  // every paper a level names has its full name and its tag, in every language
+  const srcs = [...new Set(Q.LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => p.replace(/-\d+$/, '')))];
+  ['bg', 'uk', 'en'].forEach(lang => srcs.forEach(s => {
+    if(!Q.TEXT[lang].papers[s] || !Q.TEXT[lang].paperTag[s]) throw new Error(lang + ' has no name for the paper ' + s);
+  }));
+
+  const n = {};
+  [90, 91, 92, 93, 94, 95, 96, 97, 98].forEach(id => { for(let i = 0; i < 400; i++){
+    const q = Q.raw(id), a = q.ans;
+    n[q.kind] = (n[q.kind] || 0) + 1;
+    const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
+    if(Q.LEVELS.find(l => l.id === id).papers.join() !== 'kms-2025-2') fail('not on the КМС 2025 paper');
+    if(q.kind === 'isotri'){
+      const eq = (p, r, s) => { const d = (u, v) => Math.hypot(u[0] - v[0], u[1] - v[1]), x = d(p, r), y = d(r, s), z = d(s, p);
+        return Math.abs(x - y) < 1e-9 || Math.abs(y - z) < 1e-9 || Math.abs(z - x) < 1e-9; };
+      const isoN = q.tris.filter(x => eq(...x.t)).length;
+      if((q.asksNot ? q.tris.length - isoN : isoN) !== a) fail('the count');
+      if(q.tris.some(x => x.t.some(([u, v]) => u < 0 || u > 5 || v < 0 || v > x.h))) fail('a triangle leaves its band');
+    }
+    if(q.kind === 'rectdm' && (2*(q.a + q.b) !== 10*a)) fail('the perimeter');
+    if(q.kind === 'minuend'){
+      const ok = v => q.which === 1 ? v >= 10 && v <= 99 : q.which === 2 ? v >= 1 : v >= 0;
+      let best = Infinity;
+      for(let y = 0; y < 200; y++) if(ok(y) && ok(y + q.d)) best = Math.min(best, q.asks ? 2*y + q.d : y + q.d);
+      if(best !== a) fail('the smallest');
+    }
+    if(q.kind === 'consec'){
+      const X = (10*q.t + 9) - 10*q.s, m = [...Array(100).keys()].filter(v => v + v + 1 === X);
+      if(m.length !== 1 || (q.small ? m[0] : m[0] + 1) !== a) fail('the pair');
+    }
+    if(q.kind === 'wordpos'){
+      [0, 1].forEach(lang => {
+        const w = Q.WORDPOS[q.w][lang], long = w.repeat(q.n), at = q.right ? long.length - q.p : q.p - 1;
+        if(q.options[q.pick].text[lang] !== long[at]) fail('the letter');
+        if(new Set(q.options.map(o => o.text[lang])).size !== 4) fail('two options are the same letter');
+      });
+      if(!Q.accepts(q, [String(q.pick)]) || Q.accepts(q, [String((q.pick + 1) % 4)])) fail('the right option');
+    }
+    if(q.kind === 'diffseq'){
+      const st = q.seq.slice(1).map((v, j) => v - q.seq[j]), dd = st.slice(1).map((v, j) => v - st[j]);
+      if(new Set(dd).size !== 1 || (q.asksSum ? q.seq.reduce((x, y) => x + y, 0) : q.seq[5]) !== a || q.seq.some(v => v < 0)) fail('the run');
+    }
+    if(q.kind === 'daily'){
+      const d = [q.a]; for(let j = 0; j < q.k; j++) d.push(d[j] + q.d);
+      if((q.shape === 0 ? d[q.k] + d[q.k - 1] : q.shape === 1 ? d[q.k] : d.reduce((x, y) => x + y, 0)) !== a) fail('the days');
+    }
+    if(q.kind === 'isoperim'){
+      const s = q.P / 4, leg = s + q.up, base = leg - q.down;
+      if(!(base > 0 && base < 2*leg) || 2*leg + base !== a) fail('the triangle');
+    }
+    if(q.kind === 'santa' && q.shape === 0){
+      // shortest paths between the houses over the five roads, then 1 → 2 → 3 → 4 → 5
+      const D = [...Array(6)].map((_, i) => [...Array(6)].map((_, j) => i === j ? 0 : Infinity));
+      [[1,2,q.a],[2,3,q.b],[2,4,q.c],[4,5,q.e],[3,5,q.f]].forEach(([x, y, w]) => { D[x][y] = D[y][x] = w; });
+      for(let k = 1; k <= 5; k++) for(let x = 1; x <= 5; x++) for(let y = 1; y <= 5; y++) D[x][y] = Math.min(D[x][y], D[x][k] + D[k][y]);
+      if(D[1][2] + D[2][3] + D[3][4] + D[4][5] !== a) fail('the route');
+    }
+    if(q.kind === 'santa' && q.shape === 1 && q.rows.reduce((t, [F, s, p]) => t + (s || F)*2 + (p || F) + F, 0) !== a) fail('the tickets');
+    if(q.kind === 'santa' && q.shape === 2){
+      let ways = 0; const M = [1, 2, 5, 10, 20, 50];
+      (function walk(j, left, cnt){ if(j === M.length){ if(left === 0 && cnt === q.k) ways++; return; }
+        for(let c = 0; c*M[j] <= left && cnt + c <= q.k; c++) walk(j + 1, left - c*M[j], cnt + c); })(0, 100 - q.T, 0);
+      if(ways !== a) fail('the change');
+    }
+  }});
+  console.log('КМС 2025 2 клас: all 10 printed tasks match the official key (4, 7, 8, 4, 4, Л, 95, 69, 49; 29, 81, 3 ways); level 18 tagged; ' +
     Object.keys(n).map(k => n[k] + ' ' + k).join(', ') + ' by brute force');
 }

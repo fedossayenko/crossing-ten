@@ -677,9 +677,9 @@ $('reset').onclick = async () => {
 
 /* ---------- level picker ---------- */
 // 'mbg-winter-2024-2' → МБГ · Зима 2024 · 2 клас
-const paperParts = p => { const [, season, ...r] = p.split('-'), grade = r.pop(); return [season, r[0], grade]; };
-const seasonName = p => { const [s, y] = paperParts(p); return t('seasons')[['autumn', 'winter'].indexOf(s)] + (y ? ' ' + y : ''); };
-const paperName = p => p === 'basics' ? t('basics') : t('src', seasonName(p), paperParts(p)[2]);
+// 'mbg-winter-2024-2' is the paper 'mbg-winter-2024' for the 2nd grade; its names are papers/paperTag in js/i18n.js
+const paperSrc = p => p.replace(/-\d+$/, ''), paperGrade = p => +p.slice(p.lastIndexOf('-') + 1);
+const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paperSrc(p)], paperGrade(p));
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || { eq:'' }, k = PICK_GROUPS.findIndex(g => g.has(l));
   $('levelName').textContent = levelName(l);
@@ -774,7 +774,7 @@ function buildPicker(){
   const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
     '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? ' <span class="gtag gb">' + t('basics') + '</span>' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
-      l.papers.filter(p => paperParts(p)[0] === 'winter').map(p => ' <span class="gtag gw">' + seasonName(p) + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+      l.papers.filter(p => p !== 'basics' && paperSrc(p) !== 'mbg-autumn').map(p => ' <span class="gtag gw">' + t('paperTag')[paperSrc(p)] + '</span>').join('') + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
     hard(l) + status(l) + '</button>';
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
@@ -785,9 +785,10 @@ function buildPicker(){
     groups.map(g => '<button data-k="' + g.k + '" aria-pressed="' + (PICK_TOPIC === g.k) + '">' + t('groups')[g.k] + '</button>').join('');
   $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = +b.dataset.k; buildPicker(); });
   // which paper: the basics, МБГ autumn 2nd grade, 3rd grade — or all of them
-  // basics first, then by grade, autumn before winter within a grade
+  // basics first, then by grade, and within a grade in the order js/i18n.js lists the papers
+  const ORDER = Object.keys(t('papers'));
   const papers = [...new Set(LEVELS.flatMap(l => l.papers))].sort((a, b) =>
-    (a !== 'basics') - (b !== 'basics') || paperParts(a)[2] - paperParts(b)[2] || a.localeCompare(b));
+    (a !== 'basics') - (b !== 'basics') || paperGrade(a) - paperGrade(b) || ORDER.indexOf(paperSrc(a)) - ORDER.indexOf(paperSrc(b)));
   $('pickGrades').innerHTML = '<button data-p="" aria-pressed="' + (PICK_PAPER === '') + '">' + t('allGrades') + '</button>' +
     papers.map(p => '<button data-p="' + p + '" aria-pressed="' + (PICK_PAPER === p) + '">' + paperName(p) + '</button>').join('');
   $('pickGrades').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_PAPER = b.dataset.p; buildPicker(); });

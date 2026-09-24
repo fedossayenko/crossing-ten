@@ -20,7 +20,8 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - Pin the worksheet's original instance and add a brute-force check in `check.js`.
 - A level from another paper says so on its row (`grade:3`, `src:'mbg-winter-2024'`; `src` defaults to `'mbg-autumn'`).
   A task that another paper also asks, at the same difficulty, tags the existing level with `also:['mbg-winter-2024-2']`
-  instead of a copy; easier or harder is a new level with its own `d`.
+  instead of a copy; easier or harder is a new level with its own `d`. A new paper needs its name in
+  `papers` and `paperTag` in `js/i18n.js`, in all three languages (check.js fails otherwise).
   A kind whose answer cannot be typed brings its own `options`, `pick` and `own: true` (see `kinds/twosigns.js`).
 - Task text is written in both languages with `tr('Bulgarian', 'Ukrainian')` from `js/core.js`;
   interface text is `t('key')` from `js/i18n.js`, in bg, uk and en. check.js fails on a missing
