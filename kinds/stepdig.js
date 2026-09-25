@@ -6,7 +6,7 @@
 // take one digit each, every two-digit one takes two — count the first lot, halve the rest.
 function genStepDig(){
   for(;;){
-    const k = 2 + rnd(4), start = rnd(2) ? 0 : k;
+    const one = Math.random() < 0.2, k = one ? 1 : 2 + rnd(4), start = one ? 1 + rnd(3) : rnd(2) ? 0 : k;
     const run = [];
     for(let v = start; v < 100; v += k) run.push(v);
     const ones = run.filter(v => v < 10), twos = run.filter(v => v >= 10);
@@ -16,7 +16,7 @@ function genStepDig(){
       const x = run[run.length - 1] + k;
       return {kind:'stepdig', k, start, first: run.slice(0, 4), ones: ones.length, twos, three: x, digits: ones.length + 2*twos.length + 3, ans: x};
     }
-    const m = 3 + rnd(Math.min(12, twos.length - 2));          // how many two-digit numbers are written
+    const m = one ? 5 + rnd(30) : 3 + rnd(Math.min(12, twos.length - 2));          // how many two-digit numbers are written
     if(m > twos.length) continue;
     const x = twos[m - 1];
     return {kind:'stepdig', k, start, first: run.slice(0, 4), ones: ones.length, twos: twos.slice(0, m), digits: ones.length + 2*m, ans: x};

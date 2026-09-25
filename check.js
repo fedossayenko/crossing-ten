@@ -38,12 +38,14 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
     if(!Number.isInteger(ans) || ans < 0) throw new Error('level ' + L + ' bad answer ' + JSON.stringify(q));
+    // plainQ in app.js strips these from every question that is not own: a kind may not keep its data in them
+    if(!q.own && ['options', 'pick', 'pts', 'lvl'].some(k => k in q)) throw new Error('level ' + L + ': a question field the app strips (options, pick, pts, lvl) ' + JSON.stringify(q));
     for(const full of [false, true]) if(/undefined|NaN/.test(why(q, full) + eqText(q) + drawQ(q))) throw new Error('level ' + L + ': the hint says undefined or NaN ' + JSON.stringify(q));
     if(!q.kind && (q.op === '-' ? q.a-q.b : q.a+q.b) !== ans) throw new Error('level ' + L + ' arithmetic mismatch');
     if(q.kind){
@@ -205,8 +207,9 @@ for(let i = 0; i < 6000; i++){
       // задача 8: whole tens, and exactly one term shared — that one cancels on sight
       if(flat !== 1) throw new Error('the round-tens comparison wants exactly one shared term, got ' + flat);
       if(q.L.concat(q.R).some(v => v % 10)) throw new Error('these should all be round tens');
-    } else if(flat) throw new Error('a pair with nothing to say between it');
-    if(q.shift){   // Зима 2021/2022: a run against the same run one higher, and maybe one odd pair
+    } else if(flat && !q.most) throw new Error('a pair with nothing to say between it');
+    if(q.most){ if(q.L.filter((v, k) => v !== q.R[k]).length !== 2) throw new Error('six terms, exactly two differing'); }
+    else if(q.shift){   // Зима 2021/2022: a run against the same run one higher, and maybe one odd pair
       if(q.L.filter((v, k) => v - q.R[k] === 1).length < q.L.length - 1) throw new Error('the shifted run should differ by one each');
     } else if(!q.L.some((v, k) => Math.abs(v - q.R[k]) >= 10)) throw new Error('no pair carries a ten, so nothing is worth spotting');
   }
@@ -810,6 +813,10 @@ for(let i = 0; i < 4000; i++){
     if(fits !== 1) throw new Error(fits + ' sets of values fit the square, so it has no single answer');
     continue;
   }
+  if(q.tri){   // Зима 2020: three pair totals, and the three together is half their sum
+    if(q.x + q.y !== q.s1 || q.y + q.z !== q.s2 || q.z + q.x !== q.s3 || q.ans !== q.x + q.y + q.z) throw new Error('pair totals: ' + JSON.stringify(q));
+    continue;
+  }
   if(q.a + q.b !== q.s1 || q.a + q.c !== q.s2 || q.a + q.b + q.c !== q.s3)
     throw new Error('fruit totals disagree with the values: ' + JSON.stringify(q));
   if(new Set(q.f).size !== 3) throw new Error('the three fruit must be different');
@@ -1009,6 +1016,7 @@ for(let i = 0; i < 6000; i++){
   const q = raw(21);
   if(q.shape !== 6) continue;
   cuts++;
+  if(q.both){ if(q.P !== 4*q.side || q.ans !== q.P + 2*q.side) throw new Error('two perimeters of a cut square: ' + JSON.stringify(q)); continue; }
   if(q.side !== q.k * q.w) throw new Error('the strips do not add up to the square');
   if(q.w >= q.side) throw new Error('a strip as wide as the square is not a cut');
   const P = 2*(q.w + q.side);
@@ -1682,7 +1690,7 @@ eval(head + body + test);
         run = grp(order[i]) === grp(order[i-1]) ? run + 1 : 1;
         if(run > worst) worst = run;
       }
-      if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running');
+      if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running: ' + order.map(l => l.id + (l.grp || l.op)).join(' '));
       console.log('training path: reaches all ' + order.length + ' levels, groundwork first, 2nd grade before 3rd, climbing within each, at most ' + worst + ' in a row from one group');
     `;
     eval('const PLAYER = { grade:2 };' + levelsSrc + nextSrc + walk);   // the default 2nd-grade player
@@ -2144,7 +2152,10 @@ eval(head + body + test);
       for(let y = 0; y < 200; y++) if(ok(y) && ok(y + q.d)) best = Math.min(best, q.asks ? 2*y + q.d : y + q.d);
       if(best !== a) fail('the smallest');
     }
-    if(q.kind === 'consec'){
+    if(q.kind === 'consec' && q.shape === 'count'){   // Зима 2020: each one tried against every pair n + (n + 1)
+      let n = 0; for(let v = q.a; v <= q.b; v++) if([...Array(v).keys()].some(k => k + k + 1 === v)) n++;
+      if(n !== a) fail('the count');
+    } else if(q.kind === 'consec'){
       const X = (10*q.t + 9) - 10*q.s, m = [...Array(100).keys()].filter(v => v + v + 1 === X);
       if(m.length !== 1 || (q.small ? m[0] : m[0] + 1) !== a) fail('the pair');
     }
@@ -2512,6 +2523,41 @@ eval(head + body + test);
     if(leaves !== g.ans) throw new Error('pages: ' + JSON.stringify(g) + ' ' + leaves);
     const p = Q.raw(109), left = p.nums.filter(x => { const f = p.nums.filter(v => v !== x); return f[0] + f[1] === f[2] + f[3] || f[0] + f[2] === f[1] + f[3] || f[0] + f[3] === f[1] + f[2]; });
     if(left.length !== 1 || left[0] !== p.ans) throw new Error('pairsum: ' + JSON.stringify(p));
+  }
+  paperCheck('Зима 2020', 'mbg-winter-2020-2', '11, 4, 0, 1, 31, 11, 8, 16, 16, 19, 7, 7, 12, 17, 6, 12, 8, 9, 12, 305', [
+    [1,  79,  {kind:'fifty', shape:3, pairs:[[3,37],[5,25],[9,31]], extra:0, nums:[3,5,9,31,25,37], T:110, less:false, ans:11}, [11], '3 + 5 + 9 + 31 + 25 + 37. Колко са десетиците'],
+    [2,  10,  {kind:'cmp', shape:3, most:1, L:[13,22,33,67,78,91], R:[11,22,33,67,78,89], ans:4, flip:true}, [4], 'С колко сборът 11 + 22 + 33 + 67 + 78 + 89 е по-малък от сбора 13 + 22 + 33 + 67 + 78 + 91'],
+    [3,  110, {kind:'erasedig', X:10, y:5, S:15, shown:1, first:false, ans:0}, [0], 'получила 15. След това изтрила една цифра в записаното и се получило: 5 + 1 = 15'],
+    [4,  80,  {kind:'pickfit', nums:[15,16,17,18], add:16, n:33, more:true, fits:[18], ans:1}, [1], 'Колко от числата 15, 16, 17 и 18 могат да се запишат в □'],
+    [5,  119, {kind:'andmore', a:12, d:7, fewer:false, b:19, ans:31}, [31], 'играят 12 момичета и със 7 повече момчета'],
+    [6,  111, {kind:'replaced', N:20, M:10, ans:11}, [11], 'Записах 20 числа. Няколко от тях изтрих и записах сбора им. Числата са вече 10'],
+    [7,  112, {kind:'blocks', n:4, pairs:[[1,2],[3,4]], ans:8}, [8], 'числата 1, 2, 3 и 4 едно до друго, така че 1 и 2, както и 3 и 4 да са винаги съседни'],
+    [8,  14,  {kind:'grow', shape:'diff', M:43, S:16, a:4, b:7, mUp:false, sUp:true, M2:39, S2:23, ans:16}, [16], 'В разликата 43 − 16 умаляемото е намалено с 4, а умалителят е увеличен с 7'],
+    [9,  29,  {kind:'fruiteq', tri:1, x:1, y:8, z:7, s1:9, s2:15, s3:8, ans:16}, [16], '● + ○ = 9 ○ + ■ = 15 ■ + ● = 8'],
+    [10, 82,  {kind:'stepdig', k:1, start:2, first:[2,3,4,5], ones:8, twos:[10,11,12,13,14,15,16,17,18,19], digits:28, ans:19}, [19], 'числата 2, 3, 4, 5, …, x са записани с 28 цифри'],
+    [11, 118, {kind:'nuts', k:4, m:2, T:16, ans:7}, [7], 'Четири катерички си разделили общо 16 ореха, като всяка е получила повече от 2 ореха'],
+    [12, 93,  {kind:'consec', shape:'count', a:4, b:18, list:[5,7,9,11,13,15,17], ans:7}, [7], 'Колко от числата от 4 до 18 можем да представим като сбор на две последователни числа'],
+    [13, 116, {kind:'cuckoo', k:3, s:4, m:4, t:16, ans:12}, [12], 'кука по 3 пъти за 4 секунди. Колко пъти ще изкука кукувичката за 16 секунди'],
+    [14, 17,  {kind:'sumdiff', shape:'sd', S:25, d:9, small:8, big:17, asksBig:true, ans:17}, [17], 'Сборът на две числа, едно от които е с 9 по-голямо от другото, е 25'],
+    [15, 102, {kind:'segcount', n:4, S:6, rev:false, ans:6}, [6], 'отбелязани 4 точки. Колко отсечки'],
+    [16, 21,  {kind:'sqcut', shape:6, both:1, k:2, side:2, P:8, ans:12}, [12], 'Квадрат с обиколка 8 см е разрязан на два правоъгълника'],
+    [17, 113, {kind:'tripts', dots:[[1,0],[0,1],[1,1],[2,1],[1,2]], all:10, flat:2, ans:8}, [8], 'Колко са триъгълниците с върхове 3 от точките на чертежа'],
+    [18, 114, {kind:'bouquets', a:3, b:7, n:10, x:9, T:34, asksSmall:true, ans:9}, [9], 'В 10 букета от рози има общо 34 рози. Някои от букетите са от по 3 рози, а останалите — по 7'],
+    [19, 115, {kind:'ring', l:4, r:6, ans:12}, [12], 'Отляво на Петър, между Петър и Иван, има 4 деца. Отдясно на Петър, между Петър и Иван, има 6 деца'],
+    [20, 117, {kind:'least3', s:'6003067586', cross:7, ans:305}, [305], 'Записани са цифрите 6003067586. Зачеркнете 7 от тях']
+  ]);
+  for(let i = 0; i < 300; i++){   // the Зима 2020 kinds, counted out
+    const e = Q.raw(110), sum = e.first ? e.X + e.y : e.y + e.X, from = String(e.X).replace(String(e.ans), '');
+    if(sum !== e.S || !(String(e.shown) === from || String(e.X).split('').some((_, k) => String(e.X).slice(0, k) + String(e.X).slice(k + 1) === String(e.shown)))) throw new Error('erasedig: ' + JSON.stringify(e));
+    const r = Q.raw(111); if(r.N - r.ans + 1 !== r.M) throw new Error('replaced: ' + JSON.stringify(r));
+    const t = Q.raw(113); let tri = 0; const P = t.dots; for(let a = 0; a < P.length; a++) for(let b = a + 1; b < P.length; b++) for(let c = b + 1; c < P.length; c++) if((P[b][0] - P[a][0])*(P[c][1] - P[a][1]) !== (P[b][1] - P[a][1])*(P[c][0] - P[a][0])) tri++;
+    if(tri !== t.ans) throw new Error('tripts: ' + JSON.stringify(t));
+    const b = Q.raw(114); let ways = 0, x3 = -1; for(let x = 0; x <= b.n; x++) if(x*b.a + (b.n - x)*b.b === b.T){ ways++; x3 = x; }
+    if(ways !== 1 || (b.asksSmall ? x3 : b.n - x3) !== b.ans) throw new Error('bouquets: ' + JSON.stringify(b));
+    const l = Q.raw(117); let best = 999; for(let i = 0; i < l.s.length; i++) for(let j = i + 1; j < l.s.length; j++) for(let k = j + 1; k < l.s.length; k++) if(l.s[i] !== '0') best = Math.min(best, +(l.s[i] + l.s[j] + l.s[k]));
+    if(best !== l.ans) throw new Error('least3: ' + JSON.stringify(l));
+    const n = Q.raw(118); let most = 0; (function walk(i, left, top){ if(i === n.k){ if(left === 0) most = Math.max(most, top); return; } for(let v = n.m + 1; v <= left; v++) walk(i + 1, left - v, Math.max(top, v)); })(0, n.T, 0);
+    if(most !== n.ans) throw new Error('nuts: ' + JSON.stringify(n));
   }
   // the new kinds by brute force: a magic square's wrong cell, and colourings counted one by one
   for(let i = 0; i < 400; i++){

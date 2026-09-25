@@ -48,6 +48,12 @@ The **winter round, 2nd grade, 2021** (МБГ Зима 2021) is in whole: three 
 turns, 108 pages and leaves, 109 which of five numbers is left out of □ + □ = □ + □ — and 16 existing levels
 widened or tagged `mbg-winter-2021-2`.
 
+The **winter round, 2nd grade, 2020** (МБГ Зима 2020) is in whole: ten new levels (110 the rubbed-out digit,
+111 numbers replaced by their sum, 112 numbers kept side by side, 113 triangles from points, 114 bouquets,
+115 children in a circle, 116 the cuckoo, 117 crossing out to the smallest three-digit number, 118 the most
+one squirrel can get, 119 «and so many more») and 10 existing levels widened or tagged `mbg-winter-2020-2`.
+So all autumn papers 2020–2025 and all winter papers 2020–2024 of the 2nd grade are in, each task pinned in check.js.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),

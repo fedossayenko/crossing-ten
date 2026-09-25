@@ -102,6 +102,12 @@ function genSqCut(){
     const k = 2 + rnd(3);                      // 2, 3 or 4 strips
     const w = 1 + rnd(3), side = k*w;
     const mm = Math.random() < 0.6;
+    if(k === 2 && Math.random() < 0.4){
+      // Зима 2020: a square of perimeter 8 cut in two — the two perimeters add to the square's
+      // plus the cut counted twice: 8 + 2 + 2 = 12, wherever the cut goes
+      const s2 = 2 + rnd(8);
+      return {kind:'sqcut', shape:6, both:1, k:2, side: s2, P: 4*s2, ans: 4*s2 + 2*s2};
+    }
     const P = 2*(w + side), u = mm ? 10 : 1;
     // Есен 2020: four equal pieces can also be four squares, and a square is a rectangle —
     // the key takes both (100 или 80), so here both are asked for, and no picture picks one
@@ -152,6 +158,11 @@ function sqSvg(parts, side){
 }
 
 function drawSqcut(q){
+  if(q.kind === 'sqcut' && q.shape === 6 && q.both){
+    return '<div class="ask">' + tr('Квадрат с обиколка <span class="num">' + q.P + '</span> см е разрязан на два правоъгълника. Колко сантиметра е <b>сборът от обиколките</b> на двата правоъгълника?',
+      'Квадрат із периметром <span class="num">' + q.P + '</span> см розрізали на два прямокутники. Скільки сантиметрів становить <b>сума периметрів</b> обох прямокутників?') + '</div>' +
+      stripSvg(1, q.side) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+  }
   if(q.kind === 'sqcut' && q.shape === 6){
     return '<div class="ask">' + tr('Квадрат със страна <span class="num">' + q.side +
       '</span> см е разрязан на <span class="num">' + BGNUM_M[q.k] +
@@ -231,6 +242,7 @@ function drawSqcut(q){
   }
 }
 function eqSqcut(q){
+  if(q.kind === 'sqcut' && q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
     q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
   if(q.kind === 'sqcut' && q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
@@ -244,6 +256,10 @@ function eqSqcut(q){
     : tr('страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ', 'сторона ' + q.side + ', на ' + sqcutQuads(q.parts*q.parts) + ' → ') + q.ans;
 }
 function whySqcut(q, full){
+  if(q.kind === 'sqcut' && q.shape === 6 && q.both){
+    if(!full) return tr('Двете парчета имат всичко от обиколката на квадрата — и още нещо. Какво?', 'Дві частини мають увесь периметр квадрата — і ще дещо. Що?');
+    return tr('страната е ', 'сторона ') + q.P + ' : 4 = <b>' + q.side + '</b> &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
+  }
   if(q.kind === 'sqcut' && q.shape === 6){
     if(!full && q.slots) return tr('Четири еднакви части: четири ивици — или четири квадрата, а и квадратът е правоъгълник.',
       'Чотири однакові частини: чотири смужки — або чотири квадрати, адже квадрат теж прямокутник.');

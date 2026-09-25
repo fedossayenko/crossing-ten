@@ -21,7 +21,17 @@ function genGrid(){
             R1: A + B, R2: C - D, C1: A + C, C2: B + D, ans: ask};
   }
 }
+// Зима 2020: ● + ○ = 9, ○ + ■ = 15, ■ + ● = 8 — each figure is counted twice across the three
+// lines, so ● + ○ + ■ is half of 9 + 15 + 8 = 16
+function genPairTotals(){
+  for(;;){
+    const x = 1 + rnd(9), y = 1 + rnd(9), z = 1 + rnd(9);
+    if(x === y || y === z || x === z) continue;
+    return {kind:'fruiteq', tri:1, x, y, z, s1: x + y, s2: y + z, s3: z + x, ans: x + y + z};
+  }
+}
 function genFruitEq(){
+  if(Math.random() < 0.2) return genPairTotals();
   if(Math.random() < 0.35) return genGrid();
   for(;;){
     const f = shuffle(['a','p','l','g']).slice(0, 3);
@@ -37,6 +47,12 @@ function genFruitEq(){
 }
 
 function drawFruiteq(q){
+  if(q.kind === 'fruiteq' && q.tri){
+    const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
+    return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="fig"><svg viewBox="0 0 160 100" style="max-width:220px" role="img" aria-label="' + tr('три равенства с фигури', 'три рівності з фігурами') + '">' +
+      row(26, '● + ○ = ' + q.s1) + row(58, '○ + ■ = ' + q.s2) + row(90, '■ + ● = ' + q.s3) + '</svg></div>' +
+      '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'fruiteq' && q.grid){
     const F = q.f.map(ic);
     const head = F.map((g, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : (q.signs[i] > 0 ? '' : '− ')) + g).join('');
@@ -64,10 +80,15 @@ function drawFruiteq(q){
   }
 }
 function eqFruiteq(q){
+  if(q.kind === 'fruiteq' && q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
   if(q.kind === 'fruiteq' && q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
   if(q.kind === 'fruiteq') return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
 }
 function whyFruiteq(q, full){
+  if(q.kind === 'fruiteq' && q.tri){
+    if(!full) return tr('Събери трите реда. Колко пъти е вътре всяка фигура?', 'Додай три рядки. Скільки разів у них кожна фігура?');
+    return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + (q.s1 + q.s2 + q.s3) + tr(' — всяка фигура по два пъти', ' — кожна фігура двічі') + ' &nbsp;→&nbsp; ' + (q.s1 + q.s2 + q.s3) + ' : 2 = ' + q.ans;
+  }
   if(q.kind === 'fruiteq' && q.grid){
     if(!full) return tr('Двата стълба заедно съдържат всичките четири плода.', 'Два стовпці разом містять усі чотири фрукти.');
     const F = q.f.map(ic), v = [q.A, q.B, q.C, q.D];

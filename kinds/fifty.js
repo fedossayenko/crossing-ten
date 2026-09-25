@@ -9,7 +9,7 @@
 function genFiftyLong(){
   for(;;){
     const k = 3 + rnd(2), smalls = shuffle([1,2,3,4,5,6,7,8,9,11,12,13]).slice(0, k), pairs = [];
-    smalls.forEach(a => { const bases = [10, 20, 30, 100].filter(b => b > a + 1); const b = bases[rnd(bases.length)]; pairs.push([a, b - a]); });
+    smalls.forEach(a => { const bases = [10, 20, 30, 40, 50, 100].filter(b => b > a + 1); const b = bases[rnd(bases.length)]; pairs.push([a, b - a]); });
     const extra = Math.random() < 0.3 ? 0 : 5 + 10*(1 + rnd(6));
     const inOrder = Math.random() < 0.6;
     const nums = inOrder ? pairs.flat() : shuffle(pairs.flat());

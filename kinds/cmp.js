@@ -23,6 +23,17 @@ function genRuns(){
   }
 }
 function genNear(){
+  if(Math.random() < 0.15){
+    // Зима 2020: six terms, four the same on both sides — 11 + 22 + 33 + 67 + 78 + 89 against
+    // 13 + 22 + 33 + 67 + 78 + 91: only 11/13 and 89/91 differ, by 2 each, so 4
+    for(;;){
+      const m = 5 + rnd(2), R = shuffle([...Array(88).keys()].map(v => v + 11)).slice(0, m).sort((a, b) => a - b), L = R.slice();
+      const at = shuffle([...Array(m).keys()]).slice(0, 2);
+      at.forEach(i => { L[i] += 1 + rnd(3); });
+      if(new Set(L).size < m) continue;
+      return {kind:'cmp', shape:3, most:1, L, R, ans: L.reduce((a, b) => a + b, 0) - R.reduce((a, b) => a + b, 0), flip: Math.random() < 0.6};
+    }
+  }
   if(Math.random() < 0.25){
     // Зима 2021, 2022: a run of numbers against the same run one higher, and maybe an odd pair at the
     // end: 20 + 21 + 22 + 23 + 6 against 19 + 20 + 21 + 22 + 8 — each is 1 more, 4 in all, less 2
