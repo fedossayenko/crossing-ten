@@ -17,7 +17,20 @@ function genFromDigits(){
   return {kind:'digits', shape:3, pool: pool.slice().sort((a, b) => a - b), made, asks,
           ans: asks === 0 ? digitSum : asks === 1 ? made.length : made.reduce((s, v) => s + v, 0)};
 }
+// Коледно 2024, задача 5: of 22, 45, 76, 81, 57, 92, 84, 49, 37, 41, 69, 62, 51, how many have a
+// ones digit at least 2 bigger than the tens digit: 57, 49, 37, 69. 45 is only 1 bigger.
+function genDigitGap(){
+  for(;;){
+    const k = 1 + rnd(3), ones = Math.random() < 0.7, list = [];
+    while(list.length < 13){ const v = 10 + rnd(90); if(!list.includes(v)) list.push(v); }
+    const ok = v => (ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= k;
+    const ans = list.filter(ok).length, near = list.filter(v => (ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) === k - 1).length;
+    if(ans < 2 || ans > 7 || !near) continue;
+    return {kind:'digits', shape:4, k, ones, list, traps:[ans + near], ans};
+  }
+}
 function genDigits(){
+  if(Math.random() < 0.18) return genDigitGap();
   if(Math.random() < 0.28) return genFromDigits();
   if(Math.random() < 0.3){
     // Задача 15: one digit fixed, the other either side of it. The tens digit cannot
@@ -36,6 +49,12 @@ function genDigits(){
 const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
 
 function drawDigits(q){
+  if(q.kind === 'digits' && q.shape === 4){
+    const [bgA, bgB] = q.ones ? ['единиците', 'десетиците'] : ['десетиците', 'единиците'], [ukA, ukB] = q.ones ? ['одиниць', 'десятків'] : ['десятків', 'одиниць'];
+    return '<div class="ask">' + tr('Колко от числата <span class="num">' + q.list.join(', ') + '</span> имат цифра на ' + bgA + ', <b>поне с ' + q.k + ' по-голяма</b> от цифрата на ' + bgB + '?',
+      'Скільки з чисел <span class="num">' + q.list.join(', ') + '</span> мають цифру ' + ukA + ' <b>щонайменше на ' + q.k + ' більшу</b> за цифру ' + ukB + '?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'digits' && q.shape === 3){
     const what = q.asks === 0 ? tr('Пресметнете <b>сбора на цифрите</b> на всички', 'Обчисліть <b>суму цифр</b> усіх')
                : q.asks === 1 ? tr('<b>Колко са</b> всички', '<b>Скільки всього</b> є')
@@ -60,7 +79,9 @@ function drawDigits(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
+const digitGapOk = q => q.list.filter(v => (q.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= q.k);
 function eqDigits(q){
+  if(q.kind === 'digits' && q.shape === 4) return digitGapOk(q).join(', ') + ' → ' + q.ans;
   if(q.kind === 'digits' && q.shape === 3) return tr('от ', 'з ') + q.pool.join(',') + ' → ' + q.made.join(', ') + ' → ' + q.ans;
   if(q.kind === 'digits' && q.shape === 2) return tr('едната цифра ' + q.d + ', другата ' +
     (q.smaller ? 'по-малка' : 'по-голяма'), 'одна цифра ' + q.d + ', друга ' + (q.smaller ? 'менша' : 'більша')) + ' → ' + q.ans;
@@ -69,6 +90,10 @@ function eqDigits(q){
     : tr('срещат се веднъж: 1 и 18 → ', 'трапляються один раз: 1 і 18 → ') + q.ans;
 }
 function whyDigits(q, full){
+  if(q.kind === 'digits' && q.shape === 4){
+    if(!full) return tr('За всяко число: с колко се различават двете цифри — и коя е по-голямата?', 'Для кожного числа: на скільки відрізняються дві цифри — і яка з них більша?');
+    return tr('стават: ', 'підходять: ') + digitGapOk(q).map(v => '<b>' + v + '</b>').join(', ') + tr(' — «поне с ', ' — «щонайменше на ') + q.k + tr('» значи ', '» означає ') + q.k + tr(' или повече', ' або більше') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'digits' && q.shape === 2){
     if(!full) return tr('Цифрата на десетиците не може да е нула.', 'Цифра десятків не може бути нулем.');
     return q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;

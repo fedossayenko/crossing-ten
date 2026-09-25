@@ -11,7 +11,7 @@ function genRuns(){
   for(;;){
     const a0 = 2 + 2*rnd(3), b0 = a0 + (Math.random() < 0.5 ? 1 : -1);
     if(b0 < 1) continue;
-    const na = 6 + rnd(4), nb = na + rnd(3) - 1;   // both about as long as the printed ones
+    const na = 6 + rnd(5), nb = na + rnd(3) - 1;   // both about as long as the printed ones (Есен 2019: ten each)
     const A = [], B = [];
     for(let i = 0; i < na; i++) A.push(a0 + 2*i);
     for(let i = 0; i < nb; i++) B.push(b0 + 2*i);

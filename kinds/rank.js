@@ -14,7 +14,8 @@ function genRank(){
   const who = shuffle(BOYS.slice()).slice(0, n);      // who[0] is best, who[n-1] worst
   const k = 2 + rnd(n - 3);                           // the boy the second fact is about
   const asksAbove = Math.random() < 0.6;
-  return {kind:'rank', who, n, k, asksAbove, ans: asksAbove ? k : n - 1 - k};
+  const tall = Math.random() < 0.4;   // Есен 2019, задача 18: the same order, told by height
+  return {kind:'rank', who, n, k, asksAbove, tall, ans: asksAbove ? k : n - 1 - k};
 }
 
 const rankUk = {'Алекс':'Алекс', 'Борис':'Борис', 'Виктор':'Віктор', 'Георги':'Георгі', 'Даниел':'Даніел', 'Емил':'Еміл'};
@@ -22,6 +23,13 @@ const rankAcc = {'Алекс':'Алекса', 'Борис':'Бориса', 'Ви
 const rankNm = x => tr(x, rankUk[x]);
 
 function drawRank(q){
+  if(q.kind === 'rank' && q.tall){
+    return '<div class="ask">' + tr('<b>' + q.who[0] + '</b> е по-висок ' + q.who.slice(1).map(x => 'и от <b>' + x + '</b>').join(', ') + ', а <b>' + q.who[q.k] + '</b> е по-висок <b>само</b> от ' + bgList(q.who.slice(q.k + 1).map(x => '<b>' + x + '</b>')) +
+      '. Колко момчета са <b>' + (q.asksAbove ? 'по-високи' : 'по-ниски') + '</b> от <b>' + q.who[q.k] + '</b>?',
+      '<b>' + rankNm(q.who[0]) + '</b> вищий ' + q.who.slice(1).map(x => 'і за <b>' + rankAcc[x] + '</b>').join(', ') + ', а <b>' + rankNm(q.who[q.k]) + '</b> вищий <b>лише</b> за ' + bgList(q.who.slice(q.k + 1).map(x => '<b>' + rankAcc[x] + '</b>')) +
+      '. Скільки хлопців <b>' + (q.asksAbove ? 'вищі' : 'нижчі') + '</b> за <b>' + rankAcc[q.who[q.k]] + '</b>?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'rank'){
     if(LANG === 'uk') return '<div class="ask">На змаганні з математики <b>' + rankNm(q.who[0]) + '</b> набрав більше балів, ніж ' +
       bgList(q.who.slice(1).map(x => '<b>' + rankNm(x) + '</b>')) + ', а <b>' + rankNm(q.who[q.k]) +
@@ -48,7 +56,7 @@ function whyRank(q, full){
     return tr(q.who[q.k] + ' е над ' + below + ' от тях, значи останалите ' + q.k + ' са над него' +
       ' &nbsp;→&nbsp; ' + (q.asksAbove ? 'над него са ' + q.ans : 'под него са ' + q.ans),
       rankNm(q.who[q.k]) + ' випередив ' + below + ' з них, отже інші ' + q.k + ' випередили його' +
-      ' &nbsp;→&nbsp; ' + (q.asksAbove ? 'більше балів мають ' : 'менше балів мають ') + q.ans);
+      ' &nbsp;→&nbsp; ' + (q.tall ? (q.asksAbove ? 'вищі за нього: ' : 'нижчі за нього: ') : q.asksAbove ? 'більше балів мають ' : 'менше балів мають ') + q.ans);
   }
 }
 KIND.rank = { draw:drawRank, eq:eqRank, why:whyRank };

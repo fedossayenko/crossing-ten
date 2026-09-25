@@ -41,8 +41,19 @@ function genTwoBox(){
   const p = 1 + rnd(9), r = 1 + rnd(9);
   return {kind:'box', shape:'two', p, r, sq, tri, ans: sq + tri};
 }
+// Коледно 2024, задача 4: 12 + 16 = ●, ● − 20 = ■, ■ + ☺ < 9. ■ is 8, and 8 + ☺ < 9 leaves
+// only ☺ = 0 — zero is a number too. Or the bound is further off and the most ☺ can be is asked.
+function genSymBox(){
+  for(;;){
+    const a = 10 + rnd(30), b = 5 + rnd(30), X = a + b, c = 10*(1 + rnd(Math.floor(X / 10))), Y = X - c;
+    if(Y < 1 || Y > 30) continue;
+    const most = Math.random() < 0.4, T = most ? Y + 2 + rnd(6) : Y + 1;
+    return {kind:'box', shape:'sym', a, b, X, c, Y, T, most, traps:[T - Y], ans: T - Y - 1};
+  }
+}
 // Задача 4: an unknown inside a subtraction, where the other side is itself a sum.
 function genBox(){
+  if(Math.random() < 0.15) return genSymBox();
   const pick = Math.random();
   if(pick < 0.26) return genTwoBox();
   if(pick < 0.48) return genPlusBox();
@@ -58,6 +69,12 @@ function genBox(){
 }
 
 function drawBox(q){
+  if(q.kind === 'box' && q.shape === 'sym'){
+    const c = x => '<span class="circle">' + x + '</span>';
+    return '<div class="ask">' + (q.most ? tr('Колко <b>най-много</b> може да е ', 'Яким <b>найбільшим</b> може бути ') : tr('На колко е равно ', 'Чому дорівнює ')) + c('☺') + tr(', ако', ', якщо') + '</div>' +
+      '<div class="given">' + q.a + ' + ' + q.b + ' = ' + c('●') + ', &nbsp;' + c('●') + ' − ' + q.c + ' = ' + c('■') + ', &nbsp;' + c('■') + ' + ' + c('☺') + ' &lt; ' + q.T + '</div>' +
+      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + c('☺') + ' = ' + SLOT + '</div>';
+  }
   if(q.kind === 'box' && q.shape === 'bal'){
     const B = '<span class="circle">□</span>';
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
@@ -90,6 +107,7 @@ function drawBox(q){
     ' − <span class="circle">◯</span> = ' + SLOT + '</div>';
 }
 function eqBox(q){
+  if(q.kind === 'box' && q.shape === 'sym') return '● = ' + q.X + ', ■ = ' + q.Y + ', ' + q.Y + ' + ☺ < ' + q.T + ' → ' + q.ans;
   if(q.kind === 'box' && q.shape === 'bal') return q.x + (q.plus ? '+' : '−') + q.y + ' = ' + q.L +
     ' → □ = ' + q.ans;
   if(q.kind === 'box' && q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
@@ -97,6 +115,11 @@ function eqBox(q){
   if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
 }
 function whyBox(q, full){
+  if(q.shape === 'sym'){
+    if(!full) return tr('Намери подред ● и ■. После: кое число, добавено към ■, още държи неравенството вярно?', 'Знайди по черзі ● і ■. Потім: яке число, додане до ■, ще залишає нерівність правильною?');
+    return '● = ' + q.a + ' + ' + q.b + ' = <b>' + q.X + '</b> &nbsp;→&nbsp; ■ = ' + q.X + ' − ' + q.c + ' = <b>' + q.Y + '</b> &nbsp;→&nbsp; ' + q.Y + ' + ☺ &lt; ' + q.T +
+      (q.most ? ' &nbsp;→&nbsp; ' + q.Y + ' + ' + q.ans + ' = ' + (q.T - 1) + ' &lt; ' + q.T + ' &nbsp;→&nbsp; ☺ = ' + q.ans : tr(' &nbsp;→&nbsp; нищо не може да се добави: ☺ = 0', ' &nbsp;→&nbsp; нічого додати не можна: ☺ = 0'));
+  }
   if(q.shape === 'bal'){
     if(!full) return tr('Едната страна може да се пресметне докрай — започни оттам.', 'Одну зі сторін можна обчислити до кінця — почни звідти.');
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;

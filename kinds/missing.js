@@ -5,6 +5,14 @@
 // Задача 5: find the rule, fill the two gaps — then read whether the question wants
 // the digits of the missing numbers or the numbers themselves.
 function genMissing(){
+  if(Math.random() < 0.2){
+    // Коледно 2024, задача 2: 2, 3, 5, 8, 12, …, 23, …, 38, 47 — the step grows by one each time,
+    // and both gaps are wanted, one on each side of a number that is shown
+    const a0 = 1 + rnd(6), s0 = 1 + rnd(3), seq = [a0];
+    for(let i = 0; i < 9; i++) seq.push(seq[i] + s0 + i);
+    const g1 = 4 + rnd(2), g2 = g1 + 2;
+    return {kind:'missing', grows:1, seq, gaps:[g1, g2], slots:2, ans: seq[g1], alt:[seq[g2]]};
+  }
   if(Math.random() < 0.3){
     // Задача 6: a single gap, and the missing number itself is the answer. The rule has
     // to be worked out first — a constant step, doubling, or adding the two before.
@@ -66,6 +74,11 @@ function genMissing(){
 }
 
 function drawMissing(q){
+  if(q.kind === 'missing' && q.grows){
+    return '<div class="ask">' + tr('<b>Кои са</b> пропуснатите числа в редицата?', '<b>Які</b> числа пропущено в ряду?') + '</div>' +
+      '<div class="seq">' + q.seq.map((v, i) => q.gaps.includes(i) ? '…' : v).join(', ') + '</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
+  }
   if(q.kind === 'missing' && q.woven){
     const shown = q.woven.map((v, i) =>
       i === q.hideAt[0] ? '<span class="circle">●</span>'
@@ -91,12 +104,19 @@ function drawMissing(q){
   }
 }
 function eqMissing(q){
+  if(q.kind === 'missing' && q.grows) return tr('стъпките ', 'кроки ') + q.seq.slice(1).map((v, i) => v - q.seq[i]).join(', ') + ' → ' + q.ans + tr(' и ', ' і ') + q.alt[0];
   if(q.kind === 'missing' && q.one) return tr('правило ' + q.rule + ', липсва на място ', 'правило ' + q.rule + ', пропуск на місці ') + (q.at + 1) + ' → ' + q.ans;
   if(q.kind === 'missing' && q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
   if(q.kind === 'missing') return tr('липсват ', 'пропущено ') + q.hidden[0] + tr(' и ', ' і ') + q.hidden[1] +
     (q.asksDigits ? tr(' → цифри: ', ' → цифр: ') : tr(' → сбор: ', ' → сума: ')) + q.ans;
 }
 function whyMissing(q, full){
+  if(q.kind === 'missing' && q.grows){
+    if(!full) return tr('С колко расте всяко число? Виж как се мени и самата стъпка.', 'На скільки зростає кожне число? Подивись, як змінюється сам крок.');
+    const st = q.seq.slice(1).map((v, i) => v - q.seq[i]);
+    return tr('стъпките растат с по 1: ', 'кроки зростають на 1: ') + st.join(', ') + ' &nbsp;→&nbsp; ' +
+      q.gaps.map(g => q.seq[g - 1] + ' + ' + st[g - 1] + ' = <b>' + q.seq[g] + '</b>').join(', ');
+  }
   if(q.kind === 'missing' && q.woven){
     if(!full) return tr('Погледни числата през едно — това са две редици.', 'Подивись на числа через одне — це два ряди.');
     const grow = tr(', … растат с <b>', ', … зростають на <b>');

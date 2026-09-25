@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,120,121,122,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,120,121,122,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,123,124,125,126,127,128];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -102,7 +102,9 @@ console.log('rectangle counting: closed form matches a brute-force count in all 
 // the drawings must be well-formed and theme-aware
 for(const L of [19, 21, 28, 29, 34, 40]){
   for(let i = 0; i < 300; i++){
-    const svg = drawQ(raw(L));
+    const q = raw(L);
+    if(q.shape === 'rest') continue;   // Есен 2019's apples: told in words, as printed
+    const svg = drawQ(q);
     const open = (svg.match(/<g[ >]/g) || []).length, close = (svg.match(/<\\/g>/g) || []).length;
     if(open !== close) throw new Error('level ' + L + ': ' + open + ' <g> open, ' + close + ' closed');
     if(!/<svg[^>]*viewBox=/.test(svg)) throw new Error('level ' + L + ': figure has no viewBox');
@@ -483,6 +485,11 @@ for(let i = 0; i < 4000; i++){
     continue;
   }
   if(q.one) continue;                          // задача 6 hides one term, and is checked below
+  if(q.grows){                                 // Коледно 2024: the step grows by one, both gaps asked
+    for(let k = 2; k < q.seq.length; k++) if(q.seq[k] - q.seq[k-1] !== q.seq[k-1] - q.seq[k-2] + 1) throw new Error('growing run breaks at ' + k + ': ' + q.seq);
+    if(q.ans !== q.seq[q.gaps[0]] || q.alt[0] !== q.seq[q.gaps[1]] || q.gaps[1] - q.gaps[0] !== 2) throw new Error('growing run: the gaps ' + JSON.stringify(q));
+    continue;
+  }
   for(let k = 2; k < q.seq.length; k++){
     const want = q.rule === 0 ? q.seq[k-1] + q.seq[k-2]
                : q.rule === 1 ? q.seq[k-1] + (q.seq[1] - q.seq[0])
@@ -770,6 +777,7 @@ console.log('four cards: matches all twenty-four arrangements, worksheet instanc
 // задача 6: the picture IS the data — it must hold exactly the fruit the answer assumes
 for(let i = 0; i < 4000; i++){
   const q = raw(28);
+  if(q.shape === 'rest'){ if(q.y !== q.T - q.r || q.ans !== q.y - q.e || q.e < 1 || q.e >= q.y) throw new Error('the yellow apples: ' + JSON.stringify(q)); continue; }
   const drawn = { p:0, a:0 };
   q.row.forEach(t => drawn[t]++);
   if(drawn.p !== q.pears || drawn.a !== q.apples)
@@ -1017,6 +1025,7 @@ for(let i = 0; i < 6000; i++){
   if(q.shape !== 6) continue;
   cuts++;
   if(q.both){ if(q.P !== 4*q.side || q.ans !== q.P + 2*q.side) throw new Error('two perimeters of a cut square: ' + JSON.stringify(q)); continue; }
+  if(q.half){ if(q.side % 2 !== 1 || q.ans !== 2*(10*q.side + 10*q.side/2)) throw new Error('an odd square halved, in мм: ' + JSON.stringify(q)); continue; }
   if(q.side !== q.k * q.w) throw new Error('the strips do not add up to the square');
   if(q.w >= q.side) throw new Error('a strip as wide as the square is not a cut');
   const P = 2*(q.w + q.side);
@@ -1074,6 +1083,7 @@ console.log('three crates: the parts add up and each step leaves one fewer unkno
 // задача 16: two groups that overlap
 for(let i = 0; i < 4000; i++){
   const q = raw(48);
+  if(q.shape === 'venn'){ if(q.ans !== (q.L - q.m) + (q.R - q.m) || q.L <= q.m || q.R <= q.m) throw new Error('venn: ' + JSON.stringify(q)); continue; }
   if(q.A + q.B - q.T !== q.both) throw new Error('the overlap is not the excess');
   if(q.both < 1) throw new Error('with no overlap there is nothing to notice');
   if(q.both >= q.B) throw new Error('nobody would be left studying only the second language');
@@ -1383,6 +1393,7 @@ const runShapes = {};
 for(let i = 0; i < 4000; i++){
   const q = raw(55);
   runShapes[q.shape] = 1;
+  if(q.shape === 2){ if(q.ans !== q.list.reduce((t, v) => t + String(v).length, 0)) throw new Error('digits of a list: ' + JSON.stringify(q)); continue; }
   const hits = (to) => { let n = 0; for(let v = q.from; v <= to; v++) n += String(v).split(String(q.d)).length - 1; return n; };
   if(q.shape === 0){
     if(hits(q.to) !== q.ans) throw new Error('the count of the digit is wrong');
@@ -1392,7 +1403,7 @@ for(let i = 0; i < 4000; i++){
     if(hits(q.ans + 1) <= q.k) throw new Error('one further along still fits, so it is not the largest');
   }
 }
-if(Object.keys(runShapes).length !== 2) throw new Error('both directions should turn up');
+if(Object.keys(runShapes).length !== 3) throw new Error('both directions, and the digits of a list, should turn up');
 { // задача 9 as printed: thirteen twos from 2 onwards
   let n = 0, last = 0;
   for(let v = 2; v <= 60; v++){ n += String(v).split('2').length - 1; if(n === 13) last = v; }
@@ -2159,7 +2170,10 @@ eval(head + body + test);
       const X = (10*q.t + 9) - 10*q.s, m = [...Array(100).keys()].filter(v => v + v + 1 === X);
       if(m.length !== 1 || (q.small ? m[0] : m[0] + 1) !== a) fail('the pair');
     }
-    if(q.kind === 'wordpos'){
+    if(q.kind === 'wordpos' && q.shape === 'count'){   // Есен 2019: the pattern written out and counted
+      const long = []; while(long.length < q.n) long.push(...q.pat);
+      if(long.slice(0, q.n).filter(x => x === q.sym).length !== a) fail('the pattern count');
+    } else if(q.kind === 'wordpos'){
       [0, 1].forEach(lang => {
         const w = Q.WORDPOS[q.w][lang], long = w.repeat(q.n), at = q.right ? long.length - q.p : q.p - 1;
         if(q.options[q.pick].text[lang] !== long[at]) fail('the letter');
@@ -2370,7 +2384,7 @@ eval(head + body + test);
       if(!exact && !like) throw new Error(name + ' task ' + task + ': level ' + id + ' never asks a question of that form');
       (exact ? metExact : metLike).push(task);
     });
-    console.log('МБГ ' + name + ' 2 клас: ' + paper.length + ' printed tasks match the official key (' + keyText + '); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
+    console.log((tag.startsWith('kms') ? '' : 'МБГ ') + name + ' 2 клас: ' + paper.length + ' printed tasks match the official key (' + keyText + '); its level asks exactly the printed question for tasks ' + metExact.join(', ') +
       (metLike.length ? ', and the same question with other numbers for tasks ' + metLike.join(', ') : '') + (missing ? '; not in the app: ' + missing : ''));
   };
   paperCheck('Есен 2022', 'mbg-autumn-2022-2', '4, 8, 10, 10, 2, 20, 2, 11, 16, 5, 30, 28, 16, 16, 10, 4, 36, 5, 29, 2', [
@@ -2484,8 +2498,15 @@ eval(head + body + test);
   ]);
   // the Зима 2022 kinds by brute force: segments, shared numbers, the weights, squares in the figure, the cut
   for(let i = 0; i < 300; i++){
-    const g = Q.raw(102); let segs = 0; for(let x = 0; x < g.n; x++) for(let y = x + 1; y < g.n; y++) segs++;
-    if(segs !== g.S || g.ans !== (g.rev ? g.n : g.S)) throw new Error('segcount: ' + JSON.stringify(g));
+    const g = Q.raw(102);
+    if(g.shape === 'dots'){   // Есен 2019: every point placed at its own half-centimetre, then counted by colour
+      const at = {}; at[0] = at[2*g.L] = 'y';
+      for(let k = 1; k < g.n; k++) at[2*k*g.d] = 'r';
+      for(let k = 0; k < g.n; k++) at[(2*k + 1)*g.d] = 'b';
+      const c = Object.values(at), n = t => c.filter(v => v === t).length;
+      if(g.ans !== [c.length, n('r'), n('b')][g.asks]) throw new Error('coloured points: ' + JSON.stringify(g));
+    } else { let segs = 0; for(let x = 0; x < g.n; x++) for(let y = x + 1; y < g.n; y++) segs++;
+    if(segs !== g.S || g.ans !== (g.rev ? g.n : g.S)) throw new Error('segcount: ' + JSON.stringify(g)); }
     const c = Q.raw(103); if(c.A.filter(v => c.B.includes(v)).length !== c.ans) throw new Error('common: ' + JSON.stringify(c));
     const w = Q.raw(104), fits = [];
     for(let x = 1; x <= 30; x++){ if(x === w.a || x === w.b) continue; const got = new Set(); for(const p of [-1,0,1]) for(const q of [-1,0,1]) for(const r of [-1,0,1]){ const v = p*w.a + q*w.b + r*x; if(v > 0) got.add(v); } if([...Array(w.N).keys()].every(v => got.has(v + 1))) fits.push(x); }
@@ -2547,6 +2568,83 @@ eval(head + body + test);
     [19, 115, {kind:'ring', l:4, r:6, ans:12}, [12], 'Отляво на Петър, между Петър и Иван, има 4 деца. Отдясно на Петър, между Петър и Иван, има 6 деца'],
     [20, 117, {kind:'least3', s:'6003067586', cross:7, ans:305}, [305], 'Записани са цифрите 6003067586. Зачеркнете 7 от тях']
   ]);
+  paperCheck('Коледно 2024', 'kms-2024-2', '8, 17 и 30, 2, 0, 4, 57, 1, 4, 14; задача 10: 21, 15, 6, 3', [
+    [1,  123, {kind:'vtri', f:0, V:'o', ans:8}, [8], 'На колко триъгълника е връх точка A', ['f', 'V']],
+    [2,  27,  {kind:'missing', grows:1, seq:[2,3,5,8,12,17,23,30,38,47], gaps:[5,7], slots:2, ans:17, alt:[30]}, [17, 30], '2, 3, 5, 8, 12, …, 23, …, 38, 47'],
+    [3,  30,  {kind:'term', shape:3, mins:false, k:6, list:[[12,'−',9],[8,'−',4],[11,'+',34],[31,'−',7],[27,'−',0]], traps:[3], ans:2}, [2], 'Колко от умалителите в задачите 12 − 9, 8 − 4, 11 + 34, 31 − 7, 27 − 0 са по-големи от 6'],
+    [4,  11,  {kind:'box', shape:'sym', a:12, b:16, X:28, c:20, Y:8, T:9, most:false, traps:[1], ans:0}, [0], 'На колко е равно ☺, ако 12 + 16 = ●, ● − 20 = ■, ■ + ☺ < 9'],
+    [5,  18,  {kind:'digits', shape:4, k:2, ones:true, list:[22,45,76,81,57,92,84,49,37,41,69,62,51], traps:[5], ans:4}, [4], 'Колко от числата 22, 45, 76, 81, 57, 92, 84, 49, 37, 41, 69, 62, 51 имат цифра на единиците, поне с 2 по-голяма от цифрата на десетиците'],
+    [6,  99,  {kind:'brackets', shape:4, a:31, b:19, c:78, d:40, e:28, f:22, g:19, ans:57}, [57], '(31 + 19) + (78 − 40) − (28 + 22 − 19)'],
+    [7,  124, {kind:'numpyr', b:[0,1,1,2,1], z:14, r1:[1,2,3,3], r2:[3,5,6], top:19, bot:18, asks:2, ans:1}, [1], 'разликата от числата, които трябва да се запишат на мястото на звездичките'],
+    [8,  125, {kind:'ages', F:31, m:3, older:true, M:28, g:20, A:8, b:4, B:4, asksAni:false, ans:4}, [4], 'Ани е с 4 години по-голяма от брат си и с 20 години по-малка от майка си. Бащата на Ани е на 31 години и е с 3 години по-стар от майка ѝ. На колко години е брат ѝ'],
+    [9,  128, {kind:'isoperim', shape:1, leg:15, d:2, b:14, T:90, short:true, traps:[16], ans:14}, [14], 'са по 15 см. Основата на единия е с 2 см по-къса от основата на другия. Сборът от обиколките им е 9 дм. Колко сантиметра е по-късата основа'],
+    ...[[0, 21, 'Колко метра гирлянди са купили общо'], [1, 15, 'страната на квадрата, „нарисуван“ от всички зелени гирлянди'],
+        [2, 6, 'По колко метра са бедрата на равнобедрения триъгълник, „нарисувани“ от всички червени гирлянди'], [3, 3, 'Страната на долния е 4 м. Колко метра е страната на горния триъгълник']]
+      .map(([shape, ans, shows]) => ['10' + 'АБВГ'[shape], 126, Object.assign({kind:'garland', shape, len:[12,15,30], price:[20,50,25], who:[[3,0,0],[1,0,2],[1,2,2]], n:[5,2,4], dm:[60,30,120], all:210, ans}, shape === 3 ? {L:4} : {}),
+        [ans], shape ? shows : 'Яна купила 3 зелени гирлянди, майка ѝ — 1 зелена и 2 червени, а брат ѝ — 1 зелена, 2 сини и 2 червени. ' + shows, ['shape', 'len']])
+  ]);
+  paperCheck('Есен 2019', 'mbg-autumn-2019-2', '2, 40, 8, 60, 14, 4, 16, 63, 30, 3, 21, 1, 5, 21, 90, 3, 3, 2, Лили с 10, 4', [
+    [1,  51,  {kind:'tens', shape:4, t:1, u:14, b:4, tot:24, ans:2}, [2], '1 десетица + 14 единици = □4'],
+    [2,  11,  {kind:'box', shape:'bal', form:2, x:30, y:40, N:30, L:70, plus:true, ans:40}, [40], '30 + 40 = □ + 30'],
+    [3,  55,  {kind:'dcount', shape:2, list:[12,34,60,79], traps:[4], ans:8}, [8], 'С колко цифри са записани числата 12, 34, 60 и 79'],
+    [4,  11,  {kind:'box', shape:'bal', form:5, x:70, y:20, N:10, L:50, plus:false, ans:60}, [60], '70 − 20 = □ − 10'],
+    [5,  48,  {kind:'both', shape:'venn', ex:[4,3,2], m:3, L:8, R:12, traps:[20], ans:14}, [14], 'Пресметнете сбора □ + △'],
+    [6,  28,  {kind:'fruit', shape:'rest', T:11, r:5, y:6, e:2, traps:[9], ans:4}, [4], 'Петьо имал 11 ябълки, от които 5 червени, а останалите — жълти. Изял 2 жълти ябълки. Колко жълти ябълки са му останали'],
+    [7,  95,  {kind:'diffseq', seq:[1,2,4,7,11,16], down:false, d0:1, g:1, asksSum:false, ans:16}, [16], '1, 2, 4, 7, 11'],
+    [8,  18,  {kind:'digits', shape:3, pool:[0,1,2], made:[10,12,20,21], asks:2, ans:63}, [63], 'сбора на всички двуцифрени числа, записани с различни цифри измежду цифрите 0, 1, 2'],
+    [9,  55,  {kind:'dcount', shape:1, d:1, from:1, k:13, ans:30}, [30], 'използвах 13 цифри 1'],
+    [10, 56,  {kind:'bucket', p:3, q:4, V:10, ans:3}, [3], 'събира точно 10 литра'],
+    [11, 94,  {kind:'wordpos', shape:'count', pat:['○','○','○','○','△','□'], n:31, sym:'○', traps:[20], ans:21}, [21], 'колко кръгчета има от 1-вия до 31-ия символ включително'],
+    [12, 21,  {kind:'sqcut', shape:4, inCm:true, dm:2, P:8, sides:[2,2,3], p:7, ans:1}, [1], 'страни 2 см, 2 см, 3 см. Квадрат има страна 2 см'],
+    [13, 32,  {kind:'ribbon', shape:4, a:12, k:4, left:2, cm:50, ans:5}, [5], 'пръчка с дължина 12 см'],
+    [14, 102, {kind:'segcount', shape:'dots', n:10, d:3, L:30, asks:0, traps:[22, 20], ans:21}, [21], 'Краищата на отсечка с дължина 30 см са оцветени в жълто'],
+    [15, 21,  {kind:'sqcut', shape:6, half:1, k:2, side:3, mm:true, ans:90}, [90], 'Квадрат със страна 3 см е разрязан на два еднакви правоъгълника. Колко милиметра'],
+    [16, 127, {kind:'dice', S:5, x:3, y:2, more:true, n:4, traps:[1], ans:3}, [3], 'Петър хвърлил два различни зара'],
+    [17, 25,  {kind:'weekday', shape:'bound', n:15, most:true, day:D('вторник'), ans:3}, [3], 'Колко най-много вторника може да има сред 15 последователни дни'],
+    [18, 57,  {kind:'rank', who:['Георги','Емил','Борис','Даниел'], n:4, k:2, asksAbove:true, tall:true, ans:2}, [2], 'е по-висок и от', ['n', 'k', 'asksAbove', 'tall']],
+    [19, 10,  {kind:'cmp', runs:1, A:run(2, 20, 2), B:run(1, 19, 2), sa:110, sb:100, nm:['Мария','Деми'], back:true, big:0, ans:10}, [10], '2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20', ['A', 'B', 'back']],
+    [20, 112, {kind:'blocks', n:3, pairs:[[1,2]], ans:4}, [4], 'числата 1, 2 и 3 едно до друго, така че 1 и 2 да са винаги съседни']
+  ]);
+  { // the Коледно 2024 and Есен 2019 kinds, each worked out another way
+    const Q2 = eval('(function(){' + head + body + '; return { raw, VTRI }; })()');
+    for(let i = 0; i < 400; i++){
+      const v = Q2.raw(123), F = Q2.VTRI[v.f], P = F.pts, segs = F.lines.map(l => [P[l[0]], P[l[l.length - 1]]]);
+      const onSeg = (p, [a, b]) => (b[0] - a[0])*(p[1] - a[1]) === (b[1] - a[1])*(p[0] - a[0]) && Math.min(a[0], b[0]) <= p[0] && p[0] <= Math.max(a[0], b[0]) && Math.min(a[1], b[1]) <= p[1] && p[1] <= Math.max(a[1], b[1]);
+      const drawn = (p, r) => segs.some(sg => onSeg(p, sg) && onSeg(r, sg)), names = Object.keys(P).filter(n => n !== v.V);
+      let tri = 0;
+      for(let x = 0; x < names.length; x++) for(let y = x + 1; y < names.length; y++){
+        const A = P[v.V], B = P[names[x]], C = P[names[y]];
+        if((B[0] - A[0])*(C[1] - A[1]) !== (B[1] - A[1])*(C[0] - A[0]) && drawn(A, B) && drawn(A, C) && drawn(B, C)) tri++;
+      }
+      if(tri !== v.ans) throw new Error('vtri: ' + tri + ' by the drawn segments, ' + v.ans + ' said ' + JSON.stringify(v));
+      const n = Q2.raw(124);   // the whole base found again from what is shown, by trying every value
+      let found = 0;
+      for(let b3 = 0; b3 <= 30; b3++) for(let b4 = 0; b4 <= 30; b4++){
+        const b = [n.b[0], n.b[1], n.b[2], b3, b4], r1 = b.slice(1).map((x, k) => b[k] + x), r2 = r1.slice(1).map((x, k) => r1[k] + x);
+        if(r1[0] !== n.r1[0] || r1[2] !== n.r1[2] || r2[2] !== n.r2[2]) continue;
+        found++;
+        const top = r2[0] + 2*r2[1] + r2[2], bot = b3 + 2*b4 + n.z;
+        if([top, bot, top - bot][n.asks] !== n.ans) throw new Error('numpyr: ' + JSON.stringify(n));
+      }
+      if(found !== 1) throw new Error('numpyr: the shown boxes allow ' + found + ' bases ' + JSON.stringify(n));
+      const g = Q2.raw(125); let ages = 0;   // every brother's age tried against the three facts
+      for(let B = 0; B < 60; B++){ const A = B + g.b, M = A + g.g; if((g.older ? g.F - M : M - g.F) === g.m && (g.asksAni ? A : B) === g.ans) ages++; }
+      if(ages !== 1) throw new Error('ages: ' + JSON.stringify(g));
+      const G = Q2.raw(126), len = G.who.flat().reduce((t, k, j) => t + k*G.len[j % 3], 0), green = G.who.reduce((t, w) => t + w[0], 0)*G.len[0], red = G.who.reduce((t, w) => t + w[2], 0)*G.len[2];
+      if([len / 10, green / 4, red / 2 / 10, (len / 10 - 3*G.L) / 3][G.shape] !== G.ans || !Number.isInteger(G.ans) || G.ans < 1) throw new Error('garland: ' + JSON.stringify(G));
+      const d = Q2.raw(127); let ways = 0; for(let x = 1; x <= 6; x++) for(let y = 1; y <= 6; y++) if(x + y === d.S) ways++;
+      if(d.ans !== ways - (d.more ? 1 : 0) || d.x + d.y !== d.S) throw new Error('dice: ' + JSON.stringify(d));
+      const t = Q2.raw(128); let base = -1; for(let b = 1; b < 60; b++) if(2*t.leg + b + 2*t.leg + b + t.d === t.T) base = b;
+      if(t.T % 10 || (t.short ? base : base + t.d) !== t.ans) throw new Error('two triangles: ' + JSON.stringify(t));
+    }
+    for(let i = 0; i < 3000; i++){   // the new shapes of older levels
+      const m = Q2.raw(11); if(m.shape === 'sym'){ const fit = []; for(let v = 0; v < 100; v++) if(m.Y + v < m.T && m.a + m.b - m.c === m.Y) fit.push(v); if((m.most ? Math.max(...fit) : fit.length === 1 && fit[0]) !== m.ans || (!m.most && fit.length !== 1)) throw new Error('box sym: ' + JSON.stringify(m)); }
+      const tm = Q2.raw(30); if(tm.shape === 3 && tm.list.filter(([a, op, b]) => op === '−' && (tm.mins ? a : b) > tm.k).length !== tm.ans) throw new Error('term: ' + JSON.stringify(tm));
+      const br = Q2.raw(99); if(br.shape === 4 && eval('(' + br.a + '+' + br.b + ')+(' + br.c + '-' + br.d + ')-(' + br.e + '+' + br.f + '-' + br.g + ')') !== br.ans) throw new Error('brackets: ' + JSON.stringify(br));
+      const dg = Q2.raw(18); if(dg.shape === 4 && dg.list.filter(v => (dg.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= dg.k).length !== dg.ans) throw new Error('digit gap: ' + JSON.stringify(dg));
+    }
+    console.log('Коледно 2024 and Есен 2019 kinds: triangles at a corner against the drawn segments, pyramids and ages found again by search, garlands, dice and two triangles recounted');
+  }
   for(let i = 0; i < 300; i++){   // the Зима 2020 kinds, counted out
     const e = Q.raw(110), sum = e.first ? e.X + e.y : e.y + e.X, from = String(e.X).replace(String(e.ans), '');
     if(sum !== e.S || !(String(e.shown) === from || String(e.X).split('').some((_, k) => String(e.X).slice(0, k) + String(e.X).slice(k + 1) === String(e.shown)))) throw new Error('erasedig: ' + JSON.stringify(e));

@@ -6,6 +6,17 @@
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
 function genBrackets(){
+  if(Math.random() < 0.2){
+    // Коледно 2024, задача 6: (31 + 19) + (78 − 40) − (28 + 22 − 19) — two of the brackets make
+    // a round ten on sight, so 50 + 38 − 31 = 57
+    for(;;){
+      const a = 11 + rnd(40), b = 10*(3 + rnd(4)) - a, c = 40 + rnd(55), d = 10*(1 + rnd(Math.floor(c / 10) - 1));
+      const e = 11 + rnd(30), f = 10*(3 + rnd(3)) - e, g = 5 + rnd(25);
+      const ans = (a + b) + (c - d) - (e + f - g);
+      if(b < 5 || f < 5 || ans < 0 || ans > 99) continue;
+      return {kind:'brackets', shape:4, a, b, c, d, e, f, g, ans};
+    }
+  }
   if(Math.random() < 0.25){
     // Зима 2021: (100 − 94) − (99 − 98) − (98 − 96) − (96 − 94) — each bracket a small gap
     for(;;){
@@ -40,7 +51,7 @@ function genBrackets(){
     return {kind:'brackets', shape:1, xs: pick, gaps, ans};
   }
 }
-const bracketsExpr = q => q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
+const bracketsExpr = q => q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
   if(q.kind === 'brackets'){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
@@ -52,6 +63,11 @@ function eqBrackets(q){
 }
 function whyBrackets(q, full){
   if(q.kind === 'brackets'){
+    if(q.shape === 4){
+      if(!full) return tr('Всяка скоба поотделно — в две от тях числата се допълват до кръгли десетици.', 'Кожну дужку окремо — у двох із них числа доповнюють одне одного до круглих десятків.');
+      const x = q.a + q.b, y = q.c - q.d, z = q.e + q.f - q.g;
+      return q.a + ' + ' + q.b + ' = <b>' + x + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + y + '</b>, ' + q.e + ' + ' + q.f + ' − ' + q.g + ' = <b>' + z + '</b> &nbsp;→&nbsp; ' + x + ' + ' + y + ' − ' + z + ' = ' + q.ans;
+    }
     if(q.shape === 3){
       if(!full) return tr('Всяка скоба е малко число — пресметни ги поотделно.', 'Кожна дужка — маленьке число, обчисли їх окремо.');
       const v = [q.first].concat(q.gs).map(([a, b]) => a - b);

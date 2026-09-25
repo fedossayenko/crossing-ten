@@ -35,6 +35,11 @@ check.js against the official key; tags `mbg-autumn-2022-2`, `mbg-autumn-2021-2`
 The 2020 paper's task 15 takes two answers (a square cut into four equal rectangles: strips, or four
 squares), so level 21 now asks for both whenever it cuts a square into four.
 
+The **autumn round of 2019** is covered whole too, almost all of it by levels already there: 16 of its
+tasks are tagged `mbg-autumn-2019-2` on older levels, some widened for it (the digits of a list, a Venn
+picture, apples told in words, a pattern counted to the nth place, coloured points on a segment, a 3 см
+square halved in мм, the ranking told by height, runs of ten). Task 16, two different dice, is level 127.
+
 The **winter round, 2nd grade, 2023** (МБГ Зима 2023) is in whole: tasks 1 and 3 are level 99 (brackets), 12
 level 100 (a magic square with one wrong number), 19 level 101 (colouring a row, neighbours different); the
 other 17 widened existing levels (9, 11, 12, 13, 16, 19, 21, 24, 30, 43, 79, 82, 87, 91) and carry the tag
@@ -74,6 +79,13 @@ triangles on a grid, a perimeter in дм, the smallest minuend, two consecutive 
 word, a run whose steps grow, a ride that grows by the day, a triangle from a square's side, and the
 three-part task 10: a route, a ticket table and the change). The paper's task 6 answers with a letter, so
 that level brings its own А/Б/В/Г.
+
+The **Коледно 2024** paper, 2nd grade, is in whole as well, tag `kms-2024-2`. Tasks 2–6 widened
+levels 27, 30, 11, 18 and 99 (a run whose step grows by one with both gaps asked, the subtrahends of a list
+with an addition as the trap, a chain of symbols ending in an inequality, the ones digit at least k bigger,
+three brackets that pair into tens). New: 123 triangles with a given corner, 124 two number pyramids sharing
+a row, 125 ages read from the father, 126 the four-part garland task (the price column is never needed),
+and 128 two isosceles triangles by their perimeters in дм, a harder cousin of 97.
 
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is

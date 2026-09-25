@@ -10,6 +10,21 @@ const TERMS = [
   { sub:'второто събираемо', obj:'второто събираемо', of:'сбора',     at:1, op:'+' }
 ];
 function genTerm(){
+  if(Math.random() < 0.2){
+    // Коледно 2024, задача 3: how many of the subtrahends in 12 − 9, 8 − 4, 11 + 34, 31 − 7, 27 − 0
+    // are bigger than 6. 11 + 34 has no subtrahend at all, so its 34 is the trap: 9 and 7, so 2.
+    for(;;){
+      const k = 4 + rnd(5), mins = Math.random() < 0.3, list = [];
+      const nAdd = 1 + rnd(2);
+      for(let i = 0; i < 5 - nAdd; i++){ const b = rnd(16), a = b + rnd(30); list.push([a, '−', b]); }
+      for(let i = 0; i < nAdd; i++){ const a = 5 + rnd(30), b = k + 1 + rnd(40); list.push(mins ? [b, '+', a] : [a, '+', b]); }
+      shuffle(list);
+      const ans = list.filter(([a, op, b]) => op === '−' && (mins ? a : b) > k).length;
+      const trap = list.filter(([a, op, b]) => (mins ? a : b) > k).length;
+      if(ans < 1 || ans === 5 - nAdd) continue;
+      return {kind:'term', shape:3, mins, k, list, traps:[trap], ans};
+    }
+  }
   if(Math.random() < 0.3){
     // Зима 2021–2023: two of the three parts of a difference given, the third asked. The name
     // decides the sum: the subtrahend is minuend − difference, the minuend is subtrahend + difference.
@@ -39,6 +54,12 @@ function genTerm(){
 const termUk = {'умаляемото':['зменшуване','різниці',' в '], 'умалителят':['від’ємник','різниці',' у '],
                 'първото събираемо':['перший доданок','сумі',' у '], 'второто събираемо':['другий доданок','сумі',' у ']};
 function drawTerm(q){
+  if(q.kind === 'term' && q.shape === 3){
+    const ex = '<span class="num">' + q.list.map(e => e.join(' ')).join(', ') + '</span>';
+    return '<div class="ask">' + tr('Колко от <b>' + (q.mins ? 'умаляемите' : 'умалителите') + '</b> в задачите ' + ex + ' са по-големи от <span class="num">' + q.k + '</span>?',
+      'Скільки <b>' + (q.mins ? 'зменшуваних' : 'від’ємників') + '</b> у прикладах ' + ex + ' більші за <span class="num">' + q.k + '</span>?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'term' && q.shape === 2){
     const n = v => '<span class="num">' + v + '</span>';
     const ask = q.same ? tr('<b>Умаляемото</b> е равно на <b>разликата</b>. Колко е <b>умалителят</b>?', '<b>Зменшуване</b> дорівнює <b>різниці</b>. Чому дорівнює <b>від’ємник</b>?')
@@ -61,12 +82,19 @@ function drawTerm(q){
   }
 }
 function eqTerm(q){
+  if(q.kind === 'term' && q.shape === 3) return q.list.filter(e => e[1] === '−').map(e => q.mins ? e[0] : e[2]).join(', ') + ' > ' + q.k + ' → ' + q.ans;
   if(q.kind === 'term' && q.shape === 2) return q.same ? tr('умаляемо = разлика → умалител ', 'зменшуване = різниця → від’ємник ') + q.ans
     : q.t.at === 1 ? q.M + ' − ' + q.D + ' = ' + q.ans : q.S + ' + ' + q.D + ' = ' + q.ans;
   if(q.kind === 'term') return (q.shape === 0 ? tr(q.t.sub + ' в ', termUk[q.t.sub][0] + termUk[q.t.sub][2]) + q.x + ' ' + q.t.op + ' ' + q.y
     : tr('сборът ', 'сума ') + q.total + tr(' срещу ', ' проти ') + (q.t.at === 0 ? q.x : q.y)) + ' → ' + q.ans;
 }
 function whyTerm(q, full){
+  if(q.kind === 'term' && q.shape === 3){
+    if(!full) return tr('Кои от задачите изобщо имат ' + (q.mins ? 'умаляемо' : 'умалител') + '?', 'Які з прикладів узагалі мають ' + (q.mins ? 'зменшуване' : 'від’ємник') + '?');
+    const subs = q.list.filter(e => e[1] === '−'), v = e => q.mins ? e[0] : e[2];
+    return tr('събирането няма ' + (q.mins ? 'умаляемо' : 'умалител') + '; ', 'у додаванні немає ' + (q.mins ? 'зменшуваного' : 'від’ємника') + '; ') +
+      subs.map(e => e.join(' ') + ' → ' + (v(e) > q.k ? '<b>' + v(e) + '</b>' : v(e))).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'term' && q.shape === 2){
     if(!full) return tr('Умаляемо − умалител = разлика. Кое от трите липсва?', 'Зменшуване − від’ємник = різниця. Якого з трьох бракує?');
     if(q.same) return tr('умаляемото − умалителя = разликата, а те са равни &nbsp;→&nbsp; от него не е извадено нищо &nbsp;→&nbsp; умалителят е ', 'зменшуване − від’ємник = різниця, а вони рівні &nbsp;→&nbsp; нічого не віднято &nbsp;→&nbsp; від’ємник ') + q.ans;

@@ -108,6 +108,8 @@ function genSqCut(){
       const s2 = 2 + rnd(8);
       return {kind:'sqcut', shape:6, both:1, k:2, side: s2, P: 4*s2, ans: 4*s2 + 2*s2};
     }
+    // Есен 2019: a 3 см square halved — the halves are 30 by 15 мм, so the millimetres are needed
+    if(k === 2 && mm && Math.random() < 0.35){ const s3 = 3 + 2*rnd(4); return {kind:'sqcut', shape:6, half:1, k:2, side: s3, mm:true, ans: 30*s3}; }
     const P = 2*(w + side), u = mm ? 10 : 1;
     // Есен 2020: four equal pieces can also be four squares, and a square is a rectangle —
     // the key takes both (100 или 80), so here both are asked for, and no picture picks one
@@ -243,6 +245,7 @@ function drawSqcut(q){
 }
 function eqSqcut(q){
   if(q.kind === 'sqcut' && q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
+  if(q.kind === 'sqcut' && q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + '×' + 5*q.side + ' мм → ' + q.ans;
   if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
     q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
   if(q.kind === 'sqcut' && q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
@@ -263,6 +266,8 @@ function whySqcut(q, full){
   if(q.kind === 'sqcut' && q.shape === 6){
     if(!full && q.slots) return tr('Четири еднакви части: четири ивици — или четири квадрата, а и квадратът е правоъгълник.',
       'Чотири однакові частини: чотири смужки — або чотири квадрати, адже квадрат теж прямокутник.');
+    if(q.half && full) return tr('страната е ', 'сторона ') + q.side + ' см = <b>' + 10*q.side + '</b> мм, ' + tr('половината ѝ е <b>', 'її половина — <b>') + 5*q.side + '</b> мм &nbsp;→&nbsp; ' +
+      10*q.side + ' + ' + 5*q.side + ' = ' + 15*q.side + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans + ' мм';
     if(!full) return tr('Едната страна на ивицата е цялата страна на квадрата, другата е част от нея.',
       'Одна сторона смужки — це вся сторона квадрата, а друга — її частина.');
     const P = 2*(q.w + q.side);
