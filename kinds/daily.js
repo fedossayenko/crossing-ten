@@ -36,7 +36,7 @@ function whyDaily(q, full){
   if(q.kind === 'daily'){
     if(!full) return tr('Запиши всеки ден поотделно. Колко дни са общо — първият и още колко?', 'Випиши кожен день окремо. Скільки всього днів — перший і ще скільки?');
     const k = q.k, tail = q.shape === 0 ? q.days[k - 1] + ' + ' + q.days[k] + ' = ' + q.ans : q.shape === 1 ? tr('последният е ', 'останній — ') + q.ans : q.days.join(' + ') + ' = ' + q.ans;
-    return (k + 1) + tr(' дена: ', ' днів: ') + q.days.join(', ') + ' &nbsp;→&nbsp; ' + tail;
+    return tr((k + 1) + ' дена: ', ukN(k + 1, 'день', 'дні', 'днів') + ': ') + q.days.join(', ') + ' &nbsp;→&nbsp; ' + tail;
   }
 }
 KIND.daily = { draw:drawDaily, eq:eqDaily, why:whyDaily };

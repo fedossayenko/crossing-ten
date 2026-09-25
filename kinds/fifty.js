@@ -87,13 +87,13 @@ function whyFifty(q, full){
     if(q.shape === 4){
       const up = q.tens.reduce((a, b) => a + b, 0), down = q.ones.reduce((a, b) => a + b, 0);
       return tr('десетиците: ', 'десятки: ') + q.tens.join(' + ') + ' = <b>' + up + '</b>, ' + tr('извадените: ', 'відняті: ') + q.ones.join(' + ') + ' = <b>' + down + '</b> &nbsp;→&nbsp; ' + up + ' − ' + down + ' = ' + q.T +
-        ' &nbsp;→&nbsp; ' + q.ans + tr(' десетици', ' десятків') + (q.T % 10 ? ' + ' + q.T % 10 : '') + ' &nbsp;→&nbsp; ' + q.ans;
+        ' &nbsp;→&nbsp; ' + tr(q.ans + ' десетици', ukN(q.ans, 'десяток', 'десятки', 'десятків')) + (q.T % 10 ? ' + ' + q.T % 10 : '') + ' &nbsp;→&nbsp; ' + q.ans;
     }
     if(q.shape === 3){
       const grouped = q.pairs.map(([a, b]) => '(' + a + ' + ' + b + ')').join(' + ') + (q.extra ? ' + ' + q.extra : '');
       const rounds = q.pairs.map(([a, b]) => a + b).join(' + ') + (q.extra ? ' + ' + q.extra : '');
       return grouped + ' = ' + rounds + ' = <b>' + q.T + '</b> &nbsp;→&nbsp; ' + (q.less ? '100 − ' + q.T + ' = ' + q.ans
-        : q.T + ' = ' + q.ans + tr(' десетици', ' десятків') + (q.T % 10 ? ' + ' + q.T % 10 : '') + ' &nbsp;→&nbsp; ' + q.ans);
+        : q.T + ' = ' + tr(q.ans + ' десетици', ukN(q.ans, 'десяток', 'десятки', 'десятків')) + (q.T % 10 ? ' + ' + q.T % 10 : '') + ' &nbsp;→&nbsp; ' + q.ans);
     }
     const [a, b] = q.nums.slice().sort((x, y) => x - y);
     const pairs = '(' + a + ' + ' + (q.base - a) + ') + (' + b + ' + ' + (q.base - b) + ') = ' + q.base + ' + ' + q.base + ' = <b>' + q.T + '</b>';

@@ -17,7 +17,6 @@ function genRectLonger(){
   }
 }
 function genRectDm(){
-  if(Math.random() < 0.4) return genRectLonger();
   for(;;){
     const a = 3 + rnd(28), b = a + 1 + rnd(25), P = 2*(a + b);
     if(P % 10 || P > 150) continue;

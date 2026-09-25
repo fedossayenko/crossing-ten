@@ -66,7 +66,7 @@ function drawSanta(q){
       santaTable(q) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="unit">лв.</span></div>';
     return '<div class="ask">' + who + tr('Платили <span class="num">' + q.T + '</span> лв. за билети със <span class="num">100</span> лв. Рестото получили в точно <span class="num">' + q.k +
       '</span> банкноти и монети (без стотинки). <b>По колко начина</b> може да е било рестото?',
-      'За квитки на <span class="num">' + q.T + '</span> левів вони дали <span class="num">100</span> левів. Решту отримали рівно <span class="num">' + q.k +
+      'За квитки на <span class="num">' + ukN(q.T, 'лев', 'леви', 'левів').replace(' ', '</span> ') + ' вони дали <span class="num">100</span> левів. Решту отримали рівно <span class="num">' + q.k +
       '</span> купюрами й монетами (без стотинок). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
       '<div class="note">' + tr('Монети: 1 и 2 лв. Банкноти: 5, 10, 20 и 50 лв.', 'Монети: 1 і 2 леви. Купюри: 5, 10, 20 і 50 левів.') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';

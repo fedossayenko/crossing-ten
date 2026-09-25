@@ -32,7 +32,7 @@ function genPlace(){
 function drawPlace(q){
   if(q.kind === 'place' && q.shape === 2){
     const sq = '<span class="circle">□</span>', tri = '<span class="circle">△</span>';
-    return '<div class="ask">' + tr('Вместо ' + sq + ' и ' + tri + ' стоят цифри и', 'Замість ' + sq + ' і ' + tri + ' стоять цифри, і') + '</div>' +
+    return '<div class="ask">' + tr('Вместо ' + sq + ' и ' + tri + ' стоят цифри, така че:', 'Замість ' + sq + ' і ' + tri + ' стоять цифри так, що:') + '</div>' +
       '<div class="given">' + q.A + sq + ' − ' + q.B + tri + ' = ' + q.D + '</div>' +
       '<div class="ask">' + tr('Колко може да е ' + sq + ' + ' + tri + '? Запишете всички възможни отговори.', 'Скільки може бути ' + sq + ' + ' + tri + '? Запишіть усі можливі відповіді.') + '</div>' +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + Array.from({length: q.slots}).map((_, i) => i ? ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot' + i + '"></span>' : SLOT).join('') + '</div>';

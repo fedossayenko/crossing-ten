@@ -49,7 +49,7 @@ function drawDcount(q){
 function eqDcount(q){
   if(q.kind === 'dcount') return q.shape === 0
     ? tr('цифрата ' + q.d + ' от ' + q.from + ' до ' + q.to, 'цифра ' + q.d + ' від ' + q.from + ' до ' + q.to) + ' → ' + q.ans
-    : tr(q.k + ' пъти цифрата ' + q.d + ', от ', 'цифра ' + q.d + ' — ' + q.k + ' разів, від ') + q.from + ' → ' + q.ans;
+    : tr(q.k + ' пъти цифрата ' + q.d + ', от ', 'цифра ' + q.d + ' — ' + ukN(q.k, 'раз', 'рази', 'разів') + ', від ') + q.from + ' → ' + q.ans;
 }
 function whyDcount(q, full){
   if(q.kind === 'dcount'){
@@ -61,7 +61,7 @@ function whyDcount(q, full){
     if(q.shape === 0) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans;
     return tr('до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
       ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ',
-      'до <b>' + q.ans + '</b> цифра з’явилася ' + q.k + ' разів (' + list +
+      'до <b>' + q.ans + '</b> цифра з’явилася ' + ukN(q.k, 'раз', 'рази', 'разів') + ' (' + list +
       ') &nbsp;→&nbsp; наступне число з нею буде далі, отже, ') + q.ans;
   }
 }

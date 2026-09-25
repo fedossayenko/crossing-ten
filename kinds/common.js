@@ -17,9 +17,9 @@ function genCommon(){
 const commonRun = r => r.slice(0, 3).join(', ') + ', …, ' + r.slice(-2).join(', ');
 function drawCommon(q){
   if(q.kind === 'common'){
-    return '<div class="ask">' + tr('Иво и Ели записали по <span class="num">' + q.n + '</span> числа.', 'Іво та Елі записали по <span class="num">' + q.n + '</span> чисел.') + '</div>' +
+    return '<div class="ask">' + tr('Иво и Ели записали по <span class="num">' + q.n + '</span> числа.', 'Іво та Елі записали по <span class="num">' + ukN(q.n, 'числу', 'числа', 'чисел').replace(' ', '</span> ') + '.') + '</div>' +
       '<div class="seq">' + tr('Иво: ', 'Іво: ') + commonRun(q.A) + '</div><div class="seq">' + tr('Ели: ', 'Елі: ') + commonRun(q.B) + '</div>' +
-      '<div class="ask">' + tr('Колко от числата на Иво са записани и от Ели?', 'Скільки чисел Іво записала й Елі?') + '</div>' +
+      '<div class="ask">' + tr('Колко от числата на Иво са записани и от Ели?', 'Скільки з чисел Іво записала також і Елі?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }

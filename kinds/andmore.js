@@ -11,8 +11,8 @@ function genAndMore(){
 }
 function drawAndMore(q){
   if(q.kind === 'andmore'){
-    return '<div class="ask">' + tr('На спортната площадка играят <span class="num">' + q.a + '</span> момичета и със <span class="num">' + q.d + '</span> ' + (q.fewer ? 'по-малко' : 'повече') + ' момчета. Колко общо са децата, които играят на площадката?',
-      'На спортивному майданчику грають <span class="num">' + q.a + '</span> дівчаток і на <span class="num">' + q.d + '</span> ' + (q.fewer ? 'менше' : 'більше') + ' хлопчиків. Скільки всього дітей грає на майданчику?') + '</div>' +
+    return '<div class="ask">' + tr('На спортната площадка играят <span class="num">' + q.a + '</span> момичета и ' + bgWith(q.d) + ' <span class="num">' + q.d + '</span> ' + (q.fewer ? 'по-малко' : 'повече') + ' момчета. Колко общо са децата, които играят на площадката?',
+      'На спортивному майданчику грають <span class="num">' + ukN(q.a, 'дівчинка', 'дівчинки', 'дівчаток').replace(' ', '</span> ') + ' і на <span class="num">' + q.d + '</span> ' + (q.fewer ? 'менше' : 'більше') + ' хлопчиків. Скільки всього дітей грає на майданчику?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }

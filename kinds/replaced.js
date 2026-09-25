@@ -11,7 +11,7 @@ function genReplaced(){
 function drawReplaced(q){
   if(q.kind === 'replaced'){
     return '<div class="ask">' + tr('Записах <span class="num">' + q.N + '</span> числа. Няколко от тях изтрих и записах <b>сбора им</b>. Числата са вече <span class="num">' + q.M + '</span>. Колко са изтритите числа?',
-      'Я записала <span class="num">' + q.N + '</span> чисел. Кілька з них стерла й записала <b>їхню суму</b>. Тепер чисел <span class="num">' + q.M + '</span>. Скільки чисел стерто?') + '</div>' +
+      'Я записала <span class="num">' + ukN(q.N, 'число', 'числа', 'чисел').replace(' ', '</span> ') + '. Кілька з них стерла й записала <b>їхню суму</b>. Тепер їх <span class="num">' + q.M + '</span>. Скільки чисел стерто?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }

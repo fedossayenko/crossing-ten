@@ -4,8 +4,11 @@
 
 // Задача 10: how many single digits make the statement false. The relation and the
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
-function genIneq(){
-  if(Math.random() < 0.12){
+// Level 120: the same inequalities with the traps moved — any number counts, only two-digit ones
+// do, or the unknown is a tens digit (Зима 2021–2023). Rated a dot easier than level 16.
+function genIneqWide(){
+  const pick = rnd(3);
+  if(pick === 0){
     // Зима 2022, задача 7: only two-digit numbers fit the box — □ + 10 < 30 leaves 10 … 19
     for(;;){
       const C = 5 + rnd(26), T = C + 12 + rnd(29);
@@ -13,7 +16,7 @@ function genIneq(){
       return {kind:'ineq', shape:4, C, T, ans: T - C - 10};
     }
   }
-  if(Math.random() < 0.12){
+  if(pick === 1){
     // Зима 2022, задача 9: the unknown is a tens digit — 22 is not less than ❄2 for ❄ = 1 or 2
     for(;;){
       // Зима 2021 the same with three digits: 299 is not less than ❄99 for ❄ = 1 or 2
@@ -23,7 +26,7 @@ function genIneq(){
       return {kind:'ineq', shape:5, three, d, N, fits, slots: fits.length, ans: fits[0], alt: fits.slice(1)};
     }
   }
-  if(Math.random() < 0.2){
+  {
     // Зима 2023: bigger numbers, «>», and every number counts, not only one-digit ones:
     // 43 − 19 > ? + 17 is true for ? = 0 … 6, so 7 numbers
     for(;;){
@@ -32,6 +35,8 @@ function genIneq(){
       return {kind:'ineq', shape:3, A, B, L, C, ans: L - C};
     }
   }
+}
+function genIneq(){
   for(;;){
     const shape = rnd(3);
     const L = 1 + rnd(9), B = 1 + rnd(17), A = L + B, C = 1 + rnd(8);

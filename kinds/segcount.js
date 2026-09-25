@@ -22,7 +22,7 @@ function segCountSvg(n){
 function drawSegCount(q){
   if(q.kind === 'segcount'){
     if(q.rev) return '<div class="ask">' + tr('Колко точки трябва да отбележим на една права, за да се получат <b>точно <span class="num">' + q.S + '</span> отсечки</b>?',
-      'Скільки точок треба позначити на прямій, щоб утворилося <b>рівно <span class="num">' + q.S + '</span> відрізків</b>?') + '</div>' +
+      'Скільки точок треба позначити на прямій, щоб утворилося <b>рівно <span class="num">' + ukN(q.S, 'відрізок', 'відрізки', 'відрізків').replace(' ', '</span> ') + '</b>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
     return '<div class="ask">' + tr('На една права са отбелязани <span class="num">' + q.n + '</span> точки. Колко <b>отсечки</b> се получават с краища тези точки?',
       'На прямій позначено <span class="num">' + q.n + '</span> ' + (q.n < 5 ? 'точки' : 'точок') + '. Скільки <b>відрізків</b> з кінцями в цих точках утворилося?') + '</div>' +

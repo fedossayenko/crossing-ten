@@ -11,7 +11,7 @@ function genAlternate(){
 function drawAlternate(q){
   if(q.kind === 'alternate'){
     return '<div class="ask">' + tr('Фигурите △ и □ се <b>редуват</b> в редица — общо <span class="num">' + q.n + '</span> фигури. Колко <b>най-' + (q.most ? 'много' : 'малко') + '</b> може да са квадратчетата □?',
-      'Фігури △ і □ <b>чергуються</b> в ряду — усього <span class="num">' + q.n + '</span> фігур. Скільки <b>' + (q.most ? 'найбільше' : 'найменше') + '</b> може бути квадратиків □?') + '</div>' +
+      'Фігури △ і □ <b>чергуються</b> в ряду — усього <span class="num">' + ukN(q.n, 'фігура', 'фігури', 'фігур').replace(' ', '</span> ') + '. Скільки <b>' + (q.most ? 'найбільше' : 'найменше') + '</b> може бути квадратиків □?') + '</div>' +
       '<div class="seq">△ □ △ □ △ …</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }

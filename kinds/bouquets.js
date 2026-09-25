@@ -15,7 +15,7 @@ function genBouquets(){
 function drawBouquets(q){
   if(q.kind === 'bouquets'){
     return '<div class="ask">' + tr('В <span class="num">' + q.n + '</span> букета от рози има общо <span class="num">' + q.T + '</span> рози. Някои от букетите са от по <span class="num">' + q.a + '</span> рози, а останалите — по <span class="num">' + q.b + '</span>. Колко са букетите от <b>' + (q.asksSmall ? q.a : q.b) + '</b> рози?',
-      'У <span class="num">' + q.n + '</span> букетах троянд усього <span class="num">' + q.T + '</span> троянд. Деякі букети — по <span class="num">' + q.a + '</span> троянди, а решта — по <span class="num">' + q.b + '</span>. Скільки букетів по <b>' + (q.asksSmall ? q.a : q.b) + '</b> троянд?') + '</div>' +
+      'У <span class="num">' + q.n + '</span> букетах усього <span class="num">' + ukN(q.T, 'троянда', 'троянди', 'троянд').replace(' ', '</span> ') + '. Деякі букети — по <span class="num">' + ukN(q.a, 'троянді', 'троянди', 'троянд').replace(' ', '</span> ') + ', а решта — по <span class="num">' + q.b + '</span>. Скільки букетів по <b>' + ukN(q.asksSmall ? q.a : q.b, 'троянді', 'троянди', 'троянд') + '</b>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }

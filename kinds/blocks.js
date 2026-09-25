@@ -36,7 +36,7 @@ function whyBlocks(q, full){
     if(!full) return tr('Слепи съседите в едно парче. Колко парчета се нареждат — и колко начина има всяко парче да се обърне?', 'Склей сусідів в один шматок. Скільки шматків ставиш у ряд — і скількома способами можна перевернути кожен?');
     const chain = q.pairs.length === 2 && q.pairs[0][1] === q.pairs[1][0];
     const units = chain ? q.n - 2 : q.n - q.pairs.length, fact = [...Array(units).keys()].map(v => v + 1).reduce((a, b) => a*b, 1), turns = chain ? 2 : Math.pow(2, q.pairs.length);
-    return tr('парчета за нареждане: ', 'шматків у ряду: ') + units + ' &nbsp;→&nbsp; ' + fact + tr(' подредби', ' розстановок') + ' · ' + turns + tr(' обръщания', ' поворотів') + ' = ' + q.ans;
+    return tr('парчета за нареждане: ', 'шматків у ряду: ') + units + ' &nbsp;→&nbsp; ' + tr(fact + ' подредби', ukN(fact, 'розстановка', 'розстановки', 'розстановок')) + ' · ' + tr(turns + ' обръщания', ukN(turns, 'поворот', 'повороти', 'поворотів')) + ' = ' + q.ans;
   }
 }
 KIND.blocks = { draw:drawBlocks, eq:eqBlocks, why:whyBlocks };

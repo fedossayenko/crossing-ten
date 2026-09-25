@@ -11,7 +11,7 @@ function genCuckoo(){
 function drawCuckoo(q){
   if(q.kind === 'cuckoo'){
     return '<div class="ask">' + tr('Кукувичката от часовника кука по <span class="num">' + q.k + '</span> пъти за <span class="num">' + q.s + '</span> секунди. Колко пъти ще изкука кукувичката за <span class="num">' + q.t + '</span> секунди?',
-      'Зозуля з годинника кукає по <span class="num">' + q.k + '</span> рази за <span class="num">' + q.s + '</span> секунди. Скільки разів вона кукне за <span class="num">' + q.t + '</span> секунд?') + '</div>' +
+      'Зозуля з годинника кукає по <span class="num">' + ukN(q.k, 'разу', 'рази', 'разів').replace(' ', '</span> ') + ' за <span class="num">' + ukN(q.s, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '. Скільки разів вона кукне за <span class="num">' + ukN(q.t, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
@@ -21,7 +21,7 @@ function eqCuckoo(q){
 function whyCuckoo(q, full){
   if(q.kind === 'cuckoo'){
     if(!full) return tr('Колко пъти по толкова секунди се събират в цялото време?', 'Скільки разів по стільки секунд уміщається в увесь час?');
-    return q.t + tr(' секунди са ', ' секунд — це ') + q.m + tr(' пъти по ', ' рази по ') + q.s + ' &nbsp;→&nbsp; ' + q.m + ' · ' + q.k + ' = ' + q.ans;
+    return tr(q.t + ' секунди са ' + q.m + ' пъти по ', ukN(q.t, 'секунда', 'секунди', 'секунд') + ' — це ' + ukN(q.m, 'раз', 'рази', 'разів') + ' по ') + q.s + ' &nbsp;→&nbsp; ' + q.m + ' · ' + q.k + ' = ' + q.ans;
   }
 }
 KIND.cuckoo = { draw:drawCuckoo, eq:eqCuckoo, why:whyCuckoo };

@@ -15,7 +15,7 @@ function drawBalloons(q){
     return '<div class="ask">' + tr('Няколко деца имат общо <span class="num">' + q.T + '</span> балона, като <span class="num">' + q.k +
       '</span> деца имат по <span class="num">' + q.m + '</span> балона, а всяко от останалите — по един. <b>Колко са децата?</b>',
       'Кілька дітей мають разом <span class="num">' + q.T + '</span> ' + balloonsUk(q.T) + ', причому <span class="num">' + q.k +
-      '</span> дітей мають по <span class="num">' + q.m + '</span> ' + balloonsUk(q.m) + ', а кожна з решти — по одній. <b>Скільки всього дітей?</b>') + '</div>' +
+      '</span> ' + ukN(q.k, 'дитина', 'дитини', 'дітей').replace(/^\d+ /, '') + ' мають по <span class="num">' + q.m + '</span> ' + balloonsUk(q.m) + ', а кожна з решти — по одній. <b>Скільки всього дітей?</b>') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
@@ -27,7 +27,7 @@ function whyBalloons(q, full){
     if(!full) return tr('Първо намери колко балона имат децата с повече балони. Не забравяй и тях да ги преброиш!',
                         'Спочатку знайди, скільки кульок у дітей, які мають більше. І не забудь їх теж порахувати!');
     return q.k + ' · ' + q.m + ' = ' + q.k*q.m + tr(' балона', ' ' + balloonsUk(q.k*q.m)) + ' &nbsp;→&nbsp; ' +
-      q.T + ' − ' + q.k*q.m + ' = <b>' + q.rest + '</b>' + tr(' деца с по един', ' дітей по одній') +
+      q.T + ' − ' + q.k*q.m + ' = <b>' + q.rest + '</b>' + tr(' деца с по един', ' ' + ukN(q.rest, 'дитина', 'дитини', 'дітей').replace(/^\d+ /, '') + ' по одній') +
       ' &nbsp;→&nbsp; ' + q.k + ' + ' + q.rest + ' = ' + q.ans;
   }
 }

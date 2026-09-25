@@ -22,8 +22,8 @@ function genMultiple(){
 }
 
 // Ukrainian [where, noun in the genitive plural], keyed by the Bulgarian noun
-const multipleUk = {'рози':['У саду','троянд'], 'ябълки':['У кошику','яблук'],
-                    'картички':['У коробці','листівок'], 'мидички':['У торбинці','черепашок']};
+const multipleUk = {'рози':['У саду','троянд','троянда','троянди'], 'ябълки':['У кошику','яблук','яблуко','яблука'],
+                    'картички':['У коробці','листівок','листівка','листівки'], 'мидички':['У торбинці','черепашок','черепашка','черепашки']};
 const multipleUkGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’яти', 6:'шести', 7:'семи'};
 function drawMultiple(q){
   if(q.kind === 'multiple' && q.shape === 'count'){
@@ -36,7 +36,7 @@ function drawMultiple(q){
     return '<div class="ask">' + tr('В ' + q.g[2] + ' има <b>повече от</b> <span class="num">' + q.N + '</span> ' + q.g[0] +
       '. Техният брой можем да запишем като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми и като сбор на <b>' +
       BGNUM[q.r] + ' равни</b> събираеми. Колко <b>най-малко</b> може да са ' + q.g[1] + '?',
-      uk[0] + ' <b>більше ніж</b> <span class="num">' + q.N + '</span> ' + uk[1] +
+      uk[0] + ' <b>більше ніж</b> <span class="num">' + ukN(q.N, uk[2], uk[3], uk[1]).replace(' ', '</span> ') +
       '. Їхню кількість можна записати як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків і як суму <b>' +
       multipleUkGen[q.r] + ' однакових</b> доданків. Яка <b>найменша</b> кількість ' + uk[1] + ' може бути?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';

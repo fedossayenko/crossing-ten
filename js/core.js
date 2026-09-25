@@ -8,6 +8,10 @@ const KIND = {};                     // kinds/*.js register { draw, eq, why } he
 // original and the fallback; anything not yet translated simply stays Bulgarian. Both
 // sides are plain strings, so a translation may regroup a whole phrase, not just a word.
 const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
+// a Ukrainian noun after a number, whatever the page's language: 1 фігура, 2 фігури, 5 фігур, 21 фігура
+const ukN = (n, one, few, many) => n + ' ' + ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+// Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
+const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 const SLOT = '<span class="slot" id="slot0"></span>';
 const CM = ' <span class="unit">см</span>';
 

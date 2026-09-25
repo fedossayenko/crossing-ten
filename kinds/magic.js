@@ -39,7 +39,7 @@ function whyMagic(q, full){
     const r = Math.floor(q.at / 3), c = q.at % 3, row = [0, 1, 2].map(i => q.shown[3*r + i]), col = [0, 1, 2].map(i => q.shown[3*i + c]);
     const other = MAGIC_LINES.find(l => !l.includes(q.at)).map(i => q.shown[i]);
     return tr('сборът е ', 'сума ') + other.join(' + ') + ' = <b>' + q.S + '</b>, ' + tr('а ', 'а ') + row.join(' + ') + ' = ' + (row.reduce((x, y) => x + y) ) + tr(' и ', ' і ') + col.join(' + ') + ' = ' + col.reduce((x, y) => x + y) +
-      ' &nbsp;→&nbsp; ' + tr('сгрешено е ', 'помилкове ') + q.wrong + ' &nbsp;→&nbsp; ' + q.S + ' − ' + (q.S - q.g[q.at]) + ' = ' + q.ans;
+      ' &nbsp;→&nbsp; ' + tr('сгрешено е ', 'помилкове ') + q.wrong + tr(', другите две в реда му дават ', ', два інші в його рядку дають ') + (q.S - q.g[q.at]) + ' &nbsp;→&nbsp; ' + q.S + ' − ' + (q.S - q.g[q.at]) + ' = ' + q.ans;
   }
 }
 KIND.magic = { draw:drawMagic, eq:eqMagic, why:whyMagic };
