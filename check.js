@@ -38,12 +38,13 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,102,103,104,105,106];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
     if(!Number.isInteger(ans) || ans < 0) throw new Error('level ' + L + ' bad answer ' + JSON.stringify(q));
+    for(const full of [false, true]) if(/undefined|NaN/.test(why(q, full) + eqText(q) + drawQ(q))) throw new Error('level ' + L + ': the hint says undefined or NaN ' + JSON.stringify(q));
     if(!q.kind && (q.op === '-' ? q.a-q.b : q.a+q.b) !== ans) throw new Error('level ' + L + ' arithmetic mismatch');
     if(q.kind){
       kinds[q.kind] = (kinds[q.kind]||0) + 1;
@@ -205,7 +206,9 @@ for(let i = 0; i < 6000; i++){
       if(flat !== 1) throw new Error('the round-tens comparison wants exactly one shared term, got ' + flat);
       if(q.L.concat(q.R).some(v => v % 10)) throw new Error('these should all be round tens');
     } else if(flat) throw new Error('a pair with nothing to say between it');
-    if(!q.L.some((v, k) => Math.abs(v - q.R[k]) >= 10)) throw new Error('no pair carries a ten, so nothing is worth spotting');
+    if(q.shift){   // Зима 2021/2022: a run against the same run one higher, and maybe one odd pair
+      if(q.L.filter((v, k) => v - q.R[k] === 1).length < q.L.length - 1) throw new Error('the shifted run should differ by one each');
+    } else if(!q.L.some((v, k) => Math.abs(v - q.R[k]) >= 10)) throw new Error('no pair carries a ten, so nothing is worth spotting');
   }
   if(q.shape === 1){
     sh1++;
@@ -1499,6 +1502,11 @@ for(let i = 0; i < 4000; i++){
     if(q.m === 1 && shown.indexOf('1 път') < 0) throw new Error('„1 пъти" — Bulgarian wants the singular');
     continue;
   }
+  if(q.shape === 5){   // Зима 2021/2022: two units in, the difference in a third
+    const U = { мм:1, см:10, дм:100 };
+    if(q.A !== q.a*U[q.u1] || q.B !== q.b*U[q.u2] || q.ans*U[q.to] !== q.A - q.B || q.ans < 1) throw new Error('ribbon difference wrong ' + JSON.stringify(q));
+    continue;
+  }
   if(q.shape === 0){
     if(q.toCm && q.ans !== q.n * q.u.cm) throw new Error('to-cm conversion wrong');
     if(!q.toCm && q.cm !== q.ans * q.u.cm) throw new Error('from-cm conversion wrong');
@@ -2019,8 +2027,9 @@ eval(head + body + test);
     if(Q.LEVELS.find(l => l.id === id).papers[0] !== 'mbg-winter-2024-2') throw new Error('level ' + id + ' should be on the Зима 2024 paper');
     const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
     if(q.kind === 'fifty'){
-      const T = q.nums.reduce((x, y) => x + y, 0);
-      if(q.shape === 3){ if(T !== q.T || q.ans !== (q.less ? 100 - T : Math.floor(T / 10)) || q.pairs.some(([x, y]) => (x + y) % 10)) fail('the long sum'); }
+      const T = q.nums ? q.nums.reduce((x, y) => x + y, 0) : 0;
+      if(q.shape === 4){ const V = q.tens.reduce((x, y) => x + y, 0) - q.ones.reduce((x, y) => x + y, 0); if(V !== q.T || q.ans !== Math.floor(V / 10)) fail('the tens'); }
+      else if(q.shape === 3){ if(T !== q.T || q.ans !== (q.less ? 100 - T : Math.floor(T / 10)) || q.pairs.some(([x, y]) => (x + y) % 10)) fail('the long sum'); }
       else if(T % 10 || (q.shape === 0 ? T - q.sub : q.shape === 1 ? T / 10 : T - q.other.reduce((x, y) => x + y, 0)) !== a || a < 0) fail('the sum');
     }
     if(q.kind === 'pickfit' && q.nums.filter(v => q.more ? v + q.add > q.n : v + q.add < q.n).length !== a) fail('the count');
@@ -2429,6 +2438,41 @@ eval(head + body + test);
     [19, 101, {kind:'paintrow', n:3, c:3, ans:12}, [12], 'трите квадратчета трябва да се оцвети в някой от цветовете бяло, зелено или червено'],
     [20, 43,  {kind:'coins', shape:'mix', n:5, vals:[6,7,8,9], slots:4, ans:6, alt:[7,8,9]}, [6, 7, 8, 9], 'Саид има 5 монети, всяка от които е или 1, или 2 евро']
   ]);
+  paperCheck('Зима 2022', 'mbg-winter-2022-2', '30, 0, 15, 0, 10, 2, 10, 10, 1 и 2, 40, 10, 1, 3, 14, 4 и 6, 4, 7, 8, 10, 88', [
+    [1,  9,   {kind:'pairs', shape:'cancel', terms: chain(90, -80, 80, -70, 70, -60), start:90, last:60, ans:30}, [30], '90 − 80 + 80 − 70 + 70 − 60'],
+    [2,  9,   {kind:'pairs', shape:'tens', base:'mixed', sums:[10,30], terms: chain(2, 8, 12, 18, -20, -20), paired:2, extra:0, subs:[20,20], ans:0}, [0], '2 + 8 + 12 + 18 − 20 − 20'],
+    [3,  99,  {kind:'brackets', shape:2, N:15, down:[5,4,3,2,1], up:[1,2,3,4,5], ans:15}, [15], '(15 − 5 − 4 − 3 − 2 − 1) + (1 + 2 + 3 + 4 + 5)'],
+    [4,  30,  {kind:'term', shape:2, same:1, t:Q.TERMS[1], ans:0}, [0], 'Умаляемото е равно на разликата. Колко е умалителят'],
+    [5,  79,  {kind:'fifty', shape:4, tens:[40,20,30,20], ones:[1,2,3,4], T:100, ans:10}, [10], 'Пресметнете 40 − 1 + 20 − 2 + 30 − 3 + 20 − 4. Колко са десетиците'],
+    [6,  10,  {kind:'cmp', shape:3, shift:1, L:[20,21,22,23,6], R:[19,20,21,22,8], ans:2, flip:true}, [2], 'С колко сборът 19 + 20 + 21 + 22 + 8 е по-малък от сбора 20 + 21 + 22 + 23 + 6'],
+    [7,  16,  {kind:'ineq', shape:4, C:10, T:30, ans:10}, [10], 'Колко са всички двуцифрени числа, които могат да се запишат в □, така че да е вярно □ + 10 < 30'],
+    [8,  14,  {kind:'grow', shape:'diff', M:40, S:10, a:10, b:10, mUp:false, sUp:true, M2:30, S2:20, ans:10}, [10], 'В разликата 40 − 10 умаляемото е намалено с 10, а умалителят е увеличен с 10'],
+    [9,  16,  {kind:'ineq', shape:5, d:2, N:22, fits:[1,2], slots:2, ans:1, alt:[2]}, [1, 2], 'числото 22 да не е по-малко от двуцифреното число ❄2'],
+    [10, 82,  {kind:'stepdig', k:4, start:4, first:[4,8,12,16], ones:2, twos:[12,16,20,24,28,32,36,40], digits:18, ans:40}, [40], '4, 8, 12, 16, …, x са записани с 18 цифри'],
+    [11, 32,  {kind:'ribbon', shape:5, a:1, u1:'дм', b:9, u2:'см', to:'мм', A:100, B:90, ans:10}, [10], 'Лента е дълга 1 дм. С колко милиметра тя е по-дълга от лента с дължина 9 см'],
+    [12, 91,  {kind:'rectdm', shape:1, a:15, d:20, base:'мм', dU:'мм', b:35, P:100, to:'дм', ans:1}, [1], 'Една от страните на правоъгълник е 15 мм, а другата е с 20 мм по-дълга. Колко дециметра'],
+    [13, 106, {kind:'cutrect', W:4, H:5, pieces:[[1,2],[2,3],[3,4]], at:2, side:0, other:4, ans:3}, [3], 'Правоъгълник със страни 4 см, 4 см, 5 см и 5 см разрязах на три правоъгълника: първият със страни 1 см, 1 см, 2 см и 2 см; вторият — 2 см, 2 см, 3 см и 3 см; третият — X см, X см, 4 см и 4 см'],
+    [14, 105, {kind:'countsq', cells:[[0,0],[1,0],[2,0],[3,0],[4,0],[0,1],[1,1],[2,1],[4,1],[1,2],[2,2]], sizes:[11,3], ans:14}, [14], 'образувана от 11 квадратни плочки. Колко общо са квадратите'],
+    [15, 41,  {kind:'three', who:'Хари', a:1, b:5, slots:2, ans:4, alt:[6]}, [4, 6], 'записал две от тях: 1 см и 5 см', ['a','b']],
+    [16, 102, {kind:'segcount', n:4, S:6, rev:true, ans:4}, [4], 'Колко точки трябва да отбележим на една права, за да се получат точно 6 отсечки'],
+    [17, 104, {kind:'weights', a:1, b:2, N:10, ans:7}, [7], 'С три различни тежести от 1 кг, 2 кг и x кг можем да претеглим на везна всеки пакет с тегло от 1 кг до 10 кг'],
+    [18, 103, {kind:'common', k:3, n:11, A:[2,5,8,11,14,17,20,23,26,29,32], B:[11,14,17,20,23,26,29,32,35,38,41], both:[11,14,17,20,23,26,29,32], ans:8}, [8], 'Иво: 2, 5, 8, …, 29, 32 Ели: 11, 14, 17, …, 38, 41'],
+    [19, 87,  {kind:'balloons', k:5, m:3, rest:5, T:20, ans:10}, [10], 'общо 20 балона, като 5 деца имат по 3 балона'],
+    [20, 13,  {kind:'named', shape:5, v:0, wit:[98,10], ans:88}, [88], 'Кое е най-голямата разлика на две двуцифрени числа, записани с 4 различни цифри']
+  ]);
+  // the Зима 2022 kinds by brute force: segments, shared numbers, the weights, squares in the figure, the cut
+  for(let i = 0; i < 300; i++){
+    const g = Q.raw(102); let segs = 0; for(let x = 0; x < g.n; x++) for(let y = x + 1; y < g.n; y++) segs++;
+    if(segs !== g.S || g.ans !== (g.rev ? g.n : g.S)) throw new Error('segcount: ' + JSON.stringify(g));
+    const c = Q.raw(103); if(c.A.filter(v => c.B.includes(v)).length !== c.ans) throw new Error('common: ' + JSON.stringify(c));
+    const w = Q.raw(104), fits = [];
+    for(let x = 1; x <= 30; x++){ if(x === w.a || x === w.b) continue; const got = new Set(); for(const p of [-1,0,1]) for(const q of [-1,0,1]) for(const r of [-1,0,1]){ const v = p*w.a + q*w.b + r*x; if(v > 0) got.add(v); } if([...Array(w.N).keys()].every(v => got.has(v + 1))) fits.push(x); }
+    if(fits.length !== 1 || fits[0] !== w.ans) throw new Error('weights: ' + JSON.stringify(w) + ' ' + fits);
+    const s = Q.raw(105), set = new Set(s.cells.map(([x, y]) => x + ',' + y)); let n = 0;
+    for(let k = 1; k <= 5; k++) s.cells.forEach(([x, y]) => { let ok = true; for(let a = 0; a < k; a++) for(let b = 0; b < k; b++) ok = ok && set.has((x + a) + ',' + (y + b)); if(ok) n++; });
+    if(n !== s.ans) throw new Error('countsq: ' + JSON.stringify(s));
+    const r = Q.raw(106); if(r.pieces.reduce((t, p) => t + p[0]*p[1], 0) !== r.W*r.H || r.pieces[r.at][r.side] !== r.ans) throw new Error('cutrect: ' + JSON.stringify(r));
+  }
   // the new kinds by brute force: a magic square's wrong cell, and colourings counted one by one
   for(let i = 0; i < 400; i++){
     const m = Q.raw(100), sums = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].map(l => l.reduce((t, j) => t + m.g[j], 0));

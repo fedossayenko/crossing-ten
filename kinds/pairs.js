@@ -6,6 +6,21 @@
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
 function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
 function genPairsTens(){
+  if(Math.random() < 0.15){
+    // Зима 2022: pairs that make different round numbers (2 + 8 = 10, 12 + 18 = 30), then two
+    // equal round numbers taken away: 2 + 8 + 12 + 18 − 20 − 20 = 0
+    const k = 2 + rnd(2), terms = [], sums = [];
+    for(let i = 0; i < k; i++){
+      const base = [10, 20, 30][rnd(3)], x = base === 30 ? 11 + rnd(4) : 1 + rnd(base === 10 ? 4 : 9);
+      const pr = [x, base - x];
+      if(terms.some(t => pr.includes(t.n))) { i--; continue; }
+      pr.forEach(n => terms.push({op:'+', n})); sums.push(base);
+    }
+    const T = sums.reduce((a, b) => a + b, 0), sub = 10*(1 + rnd(Math.floor(T/20)));
+    terms.push({op:'−', n:sub}, {op:'−', n:sub});
+    terms[0].op = '';
+    return {kind:'pairs', shape:'tens', base:'mixed', sums, terms, paired:k, extra:0, subs:[sub, sub], ans: T - 2*sub};
+  }
   if(Math.random() < 0.35){
     // Pairs making twenty — a single digit with a teen — and the whole chain may come
     // out at nothing, which is a perfectly good answer.
@@ -46,7 +61,8 @@ function genPairsTens(){
 // chain collapses to the first number minus the last. Walking it left to right works
 // too — spotting that it need not be walked is the point.
 function genCancel(){
-  const start = 8 + rnd(13);
+  const tens = Math.random() < 0.3;             // Зима 2022: the same in round tens, 90 − 80 + 80 − 70 + 70 − 60
+  const start = tens ? 5 + rnd(5) : 8 + rnd(13);
   const k = 3 + rnd(2);
   let mids;
   if(Math.random() < 0.5){                       // the worksheet shape: a step down each time
@@ -55,9 +71,9 @@ function genCancel(){
   } else {
     mids = shuffle(Array.from({length: start - 1}, (_, i) => i + 1)).slice(0, k);
   }
-  const terms = [{op:'', n:start}];
-  mids.forEach((n, i) => { terms.push({op:'−', n}); if(i < k - 1) terms.push({op:'+', n}); });
-  return {kind:'pairs', shape:'cancel', terms, start, last: mids[k-1], ans: start - mids[k-1]};
+  const f = tens ? 10 : 1, terms = [{op:'', n:start*f}];
+  mids.forEach((n, i) => { terms.push({op:'−', n:n*f}); if(i < k - 1) terms.push({op:'+', n:n*f}); });
+  return {kind:'pairs', shape:'cancel', terms, start: start*f, last: mids[k-1]*f, ans: (start - mids[k-1])*f};
 }
 // Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
 // pair usually breaking the pattern, so the structure is checked and not assumed.
@@ -129,8 +145,9 @@ function whyPairs(q, full){
     const ts = q.terms;
     let g = '';
     for(let k = 0; k < q.paired*2; k += 2) g += (g ? ' + ' : '') + '<b>(' + ts[k].n + ' + ' + ts[k+1].n + ')</b>';
-    const total = q.paired*(q.base || 10) + q.extra;
+    const total = (q.sums ? q.sums.reduce((a, b) => a + b, 0) : q.paired*(q.base || 10)) + q.extra;
     const head = g + (q.extra ? ' + ' + q.extra : '') + ' = <b>' + total + '</b>';
+    if(!q.subs.length) return head.replace(/<b>(\d+)<\/b>$/, '$1');      // nothing taken away: the pairs are the answer
     if(q.subs.length === 1) return head + ' &nbsp;→&nbsp; ' + total + ' − ' + q.subs[0] + ' = ' + q.ans;
     return head + ', &nbsp;а ' + q.subs[0] + ' + ' + q.subs[1] + ' = <b>' + (q.subs[0] + q.subs[1]) +
       '</b> &nbsp;→&nbsp; ' + total + ' − ' + (q.subs[0] + q.subs[1]) + ' = ' + q.ans;

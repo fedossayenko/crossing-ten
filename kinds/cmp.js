@@ -23,6 +23,18 @@ function genRuns(){
   }
 }
 function genNear(){
+  if(Math.random() < 0.25){
+    // Зима 2021, 2022: a run of numbers against the same run one higher, and maybe an odd pair at the
+    // end: 20 + 21 + 22 + 23 + 6 against 19 + 20 + 21 + 22 + 8 — each is 1 more, 4 in all, less 2
+    for(;;){
+      const m = 3 + rnd(3), st = 10 + rnd(30), R = [], L = [];
+      for(let i = 0; i < m; i++){ R.push(st + i); L.push(st + i + 1); }
+      if(Math.random() < 0.6){ const e1 = 1 + rnd(9), e2 = 1 + rnd(9); if(e1 === e2) continue; L.push(e1); R.push(e2); }
+      const tot = L.reduce((a, b) => a + b, 0) - R.reduce((a, b) => a + b, 0);
+      if(tot <= 0) continue;
+      return {kind:'cmp', shape:3, shift:1, L, R, ans: tot, flip: Math.random() < 0.6};
+    }
+  }
   if(Math.random() < 0.3){
     // Задача 8: round tens, and one term the same on both sides — that pair cancels on
     // sight, and the rest are whole tens apart.

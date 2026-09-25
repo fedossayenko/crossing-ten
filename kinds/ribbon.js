@@ -4,7 +4,20 @@
 
 // Задача 12: centimetres against decimetres and metres.
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
+// МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
+// 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
+const RIB_U = { мм:1, см:10, дм:100 }, RIB_W = { мм:['милиметра','міліметрів'], см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'] };
+function genRibbonDiff(){
+  for(;;){
+    const us = shuffle(['мм', 'см', 'дм']), [u1, u2] = us, to = Math.random() < 0.5 ? us[2] : ['мм', 'см'][rnd(2)];
+    const a = 1 + rnd(u1 === 'дм' ? 9 : 99), b = 1 + rnd(u2 === 'дм' ? 9 : 99);
+    const A = a*RIB_U[u1], B = b*RIB_U[u2], D = A - B;
+    if(D <= 0 || D % RIB_U[to] || D / RIB_U[to] > 999) continue;
+    return {kind:'ribbon', shape:5, a, u1, b, u2, to, A, B, ans: D / RIB_U[to]};
+  }
+}
 function genRibbon(){
+  if(Math.random() < 0.15) return genRibbonDiff();
   if(Math.random() < 0.2){
     // Задача 13: one stick laid down a few times with a piece of board left over, and the
     // length wanted in дециметри — so the total has to come out a whole number of them.
@@ -45,6 +58,12 @@ function genRibbon(){
 
 const ribbonUkTimes = n => ({one:'раз', few:'рази'})[new Intl.PluralRules('uk').select(n)] || 'разів';
 function drawRibbon(q){
+  if(q.kind === 'ribbon' && q.shape === 5){
+    const n = (v, u) => '<span class="num">' + v + '&nbsp;' + u + '</span>';
+    return '<div class="ask">' + tr('Лента е дълга ' + n(q.a, q.u1) + '. С колко <b>' + RIB_W[q.to][0] + '</b> тя е по-дълга от лента с дължина ' + n(q.b, q.u2) + '?',
+      'Стрічка завдовжки ' + n(q.a, q.u1) + '. На скільки <b>' + RIB_W[q.to][1] + '</b> вона довша за стрічку завдовжки ' + n(q.b, q.u2) + '?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + ' <span class="unit">' + q.to + '</span></div>';
+  }
   if(q.kind === 'ribbon' && q.shape === 4){
     const pt = n => n === 1 ? 'път' : 'пъти';
     return '<div class="ask">' + tr('Използваме пръчка с дължина <span class="num">' + q.a +
@@ -89,11 +108,18 @@ function drawRibbon(q){
   }
 }
 function eqRibbon(q){
+  if(q.kind === 'ribbon' && q.shape === 5) return q.A + ' мм − ' + q.B + ' мм = ' + (q.A - q.B) + ' мм = ' + q.ans + ' ' + q.to;
   if(q.kind === 'ribbon' && q.shape === 4) return q.k + '×' + q.a + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
   if(q.kind === 'ribbon' && q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? tr('преобразуване', 'перетворення') : q.L + tr(' см към ', ' см до ') + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
 }
 function whyRibbon(q, full){
+  if(q.kind === 'ribbon' && q.shape === 5){
+    if(!full) return tr('Първо двете дължини в едни и същи мерки.', 'Спершу обидві довжини в однакових одиницях.');
+    const u = RIB_U[q.to] <= Math.min(RIB_U[q.u1], RIB_U[q.u2]) ? q.to : RIB_U[q.u1] < RIB_U[q.u2] ? q.u1 : q.u2, f = RIB_U[u];
+    return q.a + ' ' + q.u1 + ' = ' + q.A/f + ' ' + u + ', ' + q.b + ' ' + q.u2 + ' = ' + q.B/f + ' ' + u + ' &nbsp;→&nbsp; ' + q.A/f + ' − ' + q.B/f + ' = ' + (q.A - q.B)/f + ' ' + u +
+      (u === q.to ? '' : ' = ' + q.ans + ' ' + q.to);
+  }
   if(q.kind === 'ribbon' && q.shape === 4){
     if(!full) return tr('Първо цялата дъска в сантиметри, чак после я преобразувай.',
       'Спочатку знайди довжину всієї дошки в сантиметрах, а вже потім переводь.');

@@ -5,6 +5,23 @@
 // Задача 10: how many single digits make the statement false. The relation and the
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
 function genIneq(){
+  if(Math.random() < 0.12){
+    // Зима 2022, задача 7: only two-digit numbers fit the box — □ + 10 < 30 leaves 10 … 19
+    for(;;){
+      const C = 5 + rnd(26), T = C + 12 + rnd(29);
+      if(T > 70) continue;
+      return {kind:'ineq', shape:4, C, T, ans: T - C - 10};
+    }
+  }
+  if(Math.random() < 0.12){
+    // Зима 2022, задача 9: the unknown is a tens digit — 22 is not less than ❄2 for ❄ = 1 or 2
+    for(;;){
+      const d = rnd(10), N = 12 + rnd(30), fits = [];
+      for(let t = 1; t <= 9; t++) if(10*t + d <= N) fits.push(t);
+      if(fits.length < 2 || fits.length > 3) continue;
+      return {kind:'ineq', shape:5, d, N, fits, slots: fits.length, ans: fits[0], alt: fits.slice(1)};
+    }
+  }
   if(Math.random() < 0.2){
     // Зима 2023: bigger numbers, «>», and every number counts, not only one-digit ones:
     // 43 − 19 > ? + 17 is true for ? = 0 … 6, so 7 numbers
@@ -33,6 +50,16 @@ function genIneq(){
 }
 
 function drawIneq(q){
+  if(q.kind === 'ineq' && q.shape === 4){
+    return '<div class="ask">' + tr('Колко са всички <b>двуцифрени</b> числа, които могат да се запишат в □, така че да е вярно', 'Скільки всього <b>двоцифрових</b> чисел можна записати в □, щоб було правильно') + '</div>' +
+      '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
+  if(q.kind === 'ineq' && q.shape === 5){
+    const slots = q.fits.map((_, i) => i ? ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot' + i + '"></span>' : SLOT).join('');
+    return '<div class="ask">' + tr('Кои цифри можем да поставим вместо ❄, така че числото <span class="num">' + q.N + '</span> да <b>не е по-малко</b> от двуцифреното число ❄' + q.d + '?',
+      'Які цифри можна поставити замість ❄, щоб число <span class="num">' + q.N + '</span> було <b>не менше</b> за двоцифрове число ❄' + q.d + '?') + '</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slots + '</div>';
+  }
   if(q.kind === 'ineq'){
     const rel = q.shape === 3 ? q.A + ' − ' + q.B + ' &gt; ? + ' + q.C
       : q.shape === 2
@@ -54,6 +81,8 @@ function drawIneq(q){
   }
 }
 function eqIneq(q){
+  if(q.kind === 'ineq' && q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
+  if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
   if(q.kind === 'ineq' && q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? tr(' вярно', ' правильно') : tr(' невярно', ' неправильно')) +
@@ -61,6 +90,15 @@ function eqIneq(q){
 }
 function whyIneq(q, full){
   if(q.kind === 'ineq'){
+    if(q.shape === 4){
+      if(!full) return tr('Колко най-много може да е □? И само двуцифрените се броят.', 'Яким найбільшим може бути □? І рахуються лише двоцифрові.');
+      return '□ + ' + q.C + ' < ' + q.T + ' &nbsp;→&nbsp; □ < ' + (q.T - q.C) + ' &nbsp;→&nbsp; 10, 11, …, ' + (q.T - q.C - 1) + ' &nbsp;→&nbsp; ' + (q.T - q.C - 1) + ' − 10 + 1 = ' + q.ans;
+    }
+    if(q.shape === 5){
+      if(!full) return tr('„Не е по-малко" значи по-голямо или равно. Опитвай цифрите подред.', '«Не менше» означає більше або дорівнює. Пробуй цифри по черзі.');
+      const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) tries.push((10*t + q.d) + (10*t + q.d <= q.N ? ' ≤ ' : ' > ') + q.N);
+      return tries.join(', ') + ' &nbsp;→&nbsp; ❄ = ' + q.fits.join(tr(' и ', ' і '));
+    }
     if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');
     if(q.shape === 3 && full) return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' < ' + q.L +
       tr(', значи', ', отже') + ' ? < ' + (q.L - q.C) + ' &nbsp;→&nbsp; 0 … ' + (q.L - q.C - 1) + ' &nbsp;→&nbsp; ' + q.ans;

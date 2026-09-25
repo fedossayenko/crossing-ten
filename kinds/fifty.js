@@ -20,7 +20,17 @@ function genFiftyLong(){
     return {kind:'fifty', shape:3, pairs, extra, nums, T, less, ans: less ? 100 - T : Math.floor(T/10)};
   }
 }
+// МБГ Зима 2022: round tens, each with a little taken off — 40 − 1 + 20 − 2 + 30 − 3 + 20 − 4.
+// The tens make 110, the ones take 10 away: 100, so 10 tens.
+function genFiftyTens(){
+  const k = 3 + rnd(2), tens = [], ones = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, k), ordered = Math.random() < 0.5;
+  if(ordered) ones.sort((a, b) => a - b);
+  for(let i = 0; i < k; i++) tens.push(10*(1 + rnd(5)));
+  const T = tens.reduce((a, b) => a + b, 0) - ones.reduce((a, b) => a + b, 0);
+  return {kind:'fifty', shape:4, tens, ones, T, ans: Math.floor(T/10)};
+}
 function genFifty(){
+  if(Math.random() < 0.15) return genFiftyTens();
   if(Math.random() < 0.3) return genFiftyLong();
   const base = [30, 40, 50][rnd(3)];
   const small = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 2);
@@ -41,7 +51,13 @@ function genFifty(){
   }
 }
 const fiftyExpr = q => q.nums.join(' + ') + (q.shape === 0 ? ' − ' + q.sub : '');
+const fiftyTensExpr = q => q.tens.map((t, i) => (i ? ' + ' : '') + t + ' − ' + q.ones[i]).join('');
 function drawFifty(q){
+  if(q.kind === 'fifty' && q.shape === 4){
+    const E = '<span class="num">' + fiftyTensExpr(q) + '</span>';
+    return '<div class="ask">' + tr('Пресметнете ' + E + '. Колко са <b>десетиците</b> в полученото число?', 'Обчисліть ' + E + '. Скільки <b>десятків</b> в отриманому числі?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'fifty' && q.shape === 3){
     const E = '<span class="num">' + q.nums.join(' + ') + '</span>';
     return '<div class="ask">' + (q.less ? tr('С колко сборът ' + E + ' е <b>по-малък</b> от <span class="num">100</span>?', 'На скільки сума ' + E + ' <b>менша</b> за <span class="num">100</span>?')
@@ -60,6 +76,7 @@ function drawFifty(q){
   }
 }
 function eqFifty(q){
+  if(q.kind === 'fifty' && q.shape === 4) return fiftyTensExpr(q) + ' = ' + q.T + tr(', десетици: ', ', десятків: ') + q.ans;
   if(q.kind === 'fifty' && q.shape === 3) return q.nums.join(' + ') + ' = ' + q.T + (q.less ? ', 100 − ' + q.T + ' = ' : tr(', десетици: ', ', десятків: ')) + q.ans;
   if(q.kind === 'fifty') return q.shape === 2 ? q.T + ' − ' + q.S + ' = ' + q.ans
     : fiftyExpr(q) + (q.shape === 1 ? ' = ' + q.T + tr(', десетици: ', ', десятків: ') : ' = ') + q.ans;
@@ -67,6 +84,11 @@ function eqFifty(q){
 function whyFifty(q, full){
   if(q.kind === 'fifty'){
     if(!full) return tr('Потърси по две числа, които заедно правят кръгло число.', 'Пошукай по два числа, які разом дають кругле число.');
+    if(q.shape === 4){
+      const up = q.tens.reduce((a, b) => a + b, 0), down = q.ones.reduce((a, b) => a + b, 0);
+      return tr('десетиците: ', 'десятки: ') + q.tens.join(' + ') + ' = <b>' + up + '</b>, ' + tr('извадените: ', 'відняті: ') + q.ones.join(' + ') + ' = <b>' + down + '</b> &nbsp;→&nbsp; ' + up + ' − ' + down + ' = ' + q.T +
+        ' &nbsp;→&nbsp; ' + q.ans + tr(' десетици', ' десятків') + (q.T % 10 ? ' + ' + q.T % 10 : '') + ' &nbsp;→&nbsp; ' + q.ans;
+    }
     if(q.shape === 3){
       const grouped = q.pairs.map(([a, b]) => '(' + a + ' + ' + b + ')').join(' + ') + (q.extra ? ' + ' + q.extra : '');
       const rounds = q.pairs.map(([a, b]) => a + b).join(' + ') + (q.extra ? ' + ' + q.extra : '');

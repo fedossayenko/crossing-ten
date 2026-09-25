@@ -36,7 +36,25 @@ function namedTops(k, S){
   })(0, k, [], 0);
   return tops;
 }
+// МБГ Зима 2022, задача 20: two two-digit numbers written with four different digits — the largest
+// difference is 98 − 10 = 88. The same frame asks the smallest sum, the largest sum, the smallest difference.
+const NAMED_FOUR = [['най-голямата разлика', 'найбільшу різницю', (x, y) => x - y, 1], ['най-малката разлика', 'найменшу різницю', (x, y) => x - y, -1],
+                    ['най-големия сбор', 'найбільшу суму', (x, y) => x + y, 1], ['най-малкия сбор', 'найменшу суму', (x, y) => x + y, -1]];
+function namedFour(v){
+  let best = null, wit = null;
+  for(let x = 10; x <= 99; x++) for(let y = 10; y < x; y++){
+    const ds = String(x) + y;
+    if(new Set(ds).size !== 4) continue;
+    const r = NAMED_FOUR[v][2](x, y);
+    if(r > 0 && (best === null || (r - best)*NAMED_FOUR[v][3] > 0)){ best = r; wit = [x, y]; }
+  }
+  return {best, wit};
+}
 function genNamed(){
+  if(Math.random() < 0.06){
+    const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
+    return {kind:'named', shape:5, v, wit: f.wit, ans: f.best};
+  }
   if(Math.random() < 0.08){
     // Зима 2023: not «at most» but «what can it be» — five different numbers adding to 12 leave
     // the largest only 6 (0 1 2 3 6) or 5 (0 1 2 4 5), so both are the answer
@@ -100,6 +118,11 @@ const namedNum = n => n + ' ' + (new Intl.PluralRules('uk').select(n) === 'few' 
 
 function drawNamed(q){
   if(q.kind === 'named'){
+    if(q.shape === 5){
+      return '<div class="ask">' + tr('Кое е <b>' + NAMED_FOUR[q.v][0] + '</b> на две двуцифрени числа, записани с <b>4 различни</b> цифри?',
+        'Яку <b>' + NAMED_FOUR[q.v][1] + '</b> можуть мати два двоцифрові числа, записані <b>4 різними</b> цифрами?') + '</div>' +
+        '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+    }
     if(q.shape === 4 && q.may){
       return tr('<div class="ask">Сборът на <b>' + BGNUM[q.k] + ' различни</b> числа е <span class="num">' + q.S + '</span>. Колко <b>може да бъде</b> най-голямото сред тях?</div>',
         '<div class="ask">Сума <b>' + namedGen[q.k] + ' різних</b> чисел дорівнює <span class="num">' + q.S + '</span>. Яким <b>може бути</b> найбільше з них?</div>') +
@@ -138,6 +161,7 @@ function drawNamed(q){
   }
 }
 function eqNamed(q){
+  if(q.kind === 'named' && q.shape === 5) return q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + ' = ' + q.ans;
   if(q.kind === 'named' && q.shape === 4 && q.may) return q.tops.map(t => t.join('+')).join(tr(' или ', ' або ')) + ' → ' + q.ans + tr(' или ', ' або ') + q.alt[0];
   if(q.kind === 'named' && q.shape === 4) return tr(q.k + ' различни, сбор ' + q.S + ' → най-голямо ' + q.ans,
     q.k + ' різних, сума ' + q.S + ' → найбільше ' + q.ans);
@@ -151,6 +175,13 @@ function eqNamed(q){
 }
 function whyNamed(q, full){
   if(q.kind === 'named'){
+    if(q.shape === 5){
+      if(!full) return q.v === 0 ? tr('Едното възможно най-голямо, другото — най-малкото с останалите цифри.', 'Одне якомога більше, друге — найменше з решти цифр.')
+        : q.v === 1 ? tr('Двете числа трябва да са съвсем близо — едното малко над кръгло число, другото малко под него.', 'Два числа мають бути зовсім близько — одне трохи більше за кругле число, інше трохи менше.')
+        : q.v === 2 ? tr('Най-големите цифри отиват в десетиците.', 'Найбільші цифри йдуть у десятки.')
+        : tr('Най-малките цифри отиват в десетиците, но двуцифрено число не започва с 0.', 'Найменші цифри йдуть у десятки, але двоцифрове число не починається з 0.');
+      return tr('например ', 'наприклад ') + q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + tr(' (цифрите ', ' (цифри ') + (String(q.wit[0]) + q.wit[1]).split('').join(', ') + tr(' са различни)', ' різні)') + ' &nbsp;→&nbsp; ' + q.ans;
+    }
     if(q.shape === 4 && q.may){
       if(!full) return tr('Започни от най-малките: 0, 1, 2, … — после виж как може да се раздели остатъкът.', 'Почни з найменших: 0, 1, 2, … — потім подивися, як можна розподілити решту.');
       return q.tops.map(t => t.join(' + ') + ' = ' + q.S + ' &nbsp;→&nbsp; <b>' + t[t.length - 1] + '</b>').join('; &nbsp;') + tr(' &nbsp;→&nbsp; други няма: ', ' &nbsp;→&nbsp; інших немає: ') + q.ans + tr(' или ', ' або ') + q.alt[0];

@@ -40,6 +40,10 @@ level 100 (a magic square with one wrong number), 19 level 101 (colouring a row,
 other 17 widened existing levels (9, 11, 12, 13, 16, 19, 21, 24, 30, 43, 79, 82, 87, 91) and carry the tag
 `mbg-winter-2023-2`. The picker filters by grade, then competition, then — for МБГ — round and year.
 
+The **winter round, 2nd grade, 2022** (МБГ Зима 2022) is in whole: five new levels — 102 points and
+segments, 103 two runs' shared numbers, 104 weights on both pans, 105 all the squares in a figure of tiles,
+106 a rectangle cut in three — and 13 existing levels widened and tagged `mbg-winter-2022-2`.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),
