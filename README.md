@@ -219,6 +219,16 @@ reach every level, suggests something before its groundwork, drops more than one
 in difficulty, ends easier than it started, or grinds one group more than four times
 running.
 
+## Offline
+
+The Pages copy plays with no network at all — on a plane, say. `sw.js` fetches the page and every
+file it names when it installs, so a single visit online is enough, the Google fonts included. After
+that it stays network-first (the newest build whenever there is a connection) and falls back to its
+copy when the network fails or a wifi login page answers through a redirect. Rounds are kept on the
+device and sync with the family when the connection is back. On an iPad it should be opened from the
+home-screen icon: Safari can clear a website's storage after a week unused, a home-screen app it keeps.
+`node smoke.js` ends by stopping its server and playing a round from the copy.
+
 ## Checks
 
 `node smoke.js` opens the page in headless Chrome (twice, so the second load goes

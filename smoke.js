@@ -254,6 +254,16 @@ const server = http.createServer((req, res) => {
     expect(!b3.in && b3.login && a3.in && a3.ok, 'logging out went wrong: ' + JSON.stringify({ b3, a3 }));
     if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, a reset and logout all work');
   }
+  // Offline, as on a plane: the server gone altogether, a fresh navigation, and a round played from
+  // the service worker's copy (the page only, not the artifact, which has no worker)
+  if(!process.argv[2] && !process.env.SMOKE_SYNC){
+    server.close(); server.closeAllConnections();
+    await cmd('Page.navigate', { url: url.split('?')[0] + '?offline=' + Date.now() }); await settle();
+    const off = await page(`(() => { $('levelPill').click(); const b = document.querySelector('#pickAll .pick'); b.click();
+      return { keys: document.querySelectorAll('.key').length, levels: LEVELS.length, q: !!S.qs.length, font: getComputedStyle(document.body).fontFamily.includes('Nunito') }; })()`);
+    expect(off.keys >= 10 && off.levels > 100 && off.q, 'offline, the app does not start from its copy: ' + JSON.stringify(off));
+    if(bad.length + errors.length === 0) console.log('smoke: offline (server stopped) the app starts and a round begins from the service worker copy');
+  }
   bad.unshift(...errors);
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }
   console.log('smoke: played every level in Chrome' + (process.argv[2] ? '' : ' for two players') + ', ' + res.rounds +
