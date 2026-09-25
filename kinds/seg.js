@@ -3,7 +3,17 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 11: four points in a row, measured in overlapping pieces.
+// МБГ Пролет 2025, задача 11: AB = 41 мм, BC = 2 см, CD = 39 мм, and AD asked in дециметри. All in
+// millimetres first: 41 + 20 + 39 = 100 мм, which is 1 дм.
+function genSegUnits(){
+  for(;;){
+    const cm = 1 + rnd(5), ab = 11 + rnd(60), cd = 100*(1 + rnd(2)) - ab - 10*cm;
+    if(cd < 11 || cd > 89) continue;
+    return {kind:'seg', shape:'units', ab, cm, cd, traps:[ab + cm + cd], ans: (ab + 10*cm + cd) / 100};
+  }
+}
 function genSeg(){
+  if(Math.random() < 0.2) return genSegUnits();
   if(Math.random() < 0.4) return genRuler();
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
   return {kind:'seg', p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
@@ -46,6 +56,13 @@ function rulerSvg(q){
     '<g stroke="var(--ink)" stroke-width="1.1">' + ticks + '</g>' + nums +
     bracket(q.a, q.b, 12, 'A', 'B') + bracket(q.c, q.d, 30, 'C', 'D') + '</svg></div>';
 }
+function segUnitsSvg(q){
+  const W = 236, tot = q.ab + 10*q.cm + q.cd, at = v => 14 + v / tot * (W - 28);
+  const pts = [[at(0), 'A'], [at(q.ab), 'B'], [at(q.ab + 10*q.cm), 'C'], [at(tot), 'D']];
+  return '<div class="fig wide"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="' + tr('четири точки върху отсечка', 'чотири точки на відрізку') + '">' +
+    '<line x1="' + at(0) + '" y1="0" x2="' + at(tot) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
+    pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + pt[1] + '</text>').join('') + '</svg></div>';
+}
 function segSvg(q){
   const W = 236, tot = q.p + q.q + q.r;
   const at = v => 14 + v / tot * (W - 28);
@@ -59,6 +76,11 @@ function segSvg(q){
 }
 
 function drawSeg(q){
+  if(q.kind === 'seg' && q.shape === 'units'){
+    return '<div class="ask">' + tr('Намерете в <b>дециметри</b> дължината на отсечката AD, ако AB = <span class="num">' + q.ab + '</span> мм, BC = <span class="num">' + q.cm + '</span> см и CD = <span class="num">' + q.cd + '</span> мм.',
+      'Знайдіть у <b>дециметрах</b> довжину відрізка AD, якщо AB = <span class="num">' + q.ab + '</span> мм, BC = <span class="num">' + q.cm + '</span> см і CD = <span class="num">' + q.cd + '</span> мм.') + '</div>' +
+      segUnitsSvg(q) + '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + ' <span class="unit">дм</span></div>';
+  }
   if(q.kind === 'seg' && q.shape === 'ruler'){
     return tr('<div class="ask">Колко сантиметра е <b>сборът</b> от дължините на отсечките <b>AB</b> и <b>CD</b>?</div>',
       '<div class="ask">Скільки сантиметрів становить <b>сума</b> довжин відрізків <b>AB</b> і <b>CD</b>?</div>') +
@@ -73,10 +95,15 @@ function drawSeg(q){
   }
 }
 function eqSeg(q){
+  if(q.kind === 'seg' && q.shape === 'units') return q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = ' + (q.ans*100) + ' мм = ' + q.ans + ' дм';
   if(q.kind === 'seg' && q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
   if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
 }
 function whySeg(q, full){
+  if(q.kind === 'seg' && q.shape === 'units'){
+    if(!full) return tr('Първо всичко в милиметри: колко милиметра е един сантиметър, и колко — един дециметър?', 'Спершу все в міліметрах: скільки міліметрів в одному сантиметрі, а скільки — в одному дециметрі?');
+    return q.cm + ' см = <b>' + 10*q.cm + '</b> мм &nbsp;→&nbsp; ' + q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = <b>' + q.ans*100 + '</b> мм &nbsp;→&nbsp; ' + tr('100 мм = 1 дм, значи ', '100 мм = 1 дм, отже ') + q.ans;
+  }
   if(q.kind === 'seg' && q.shape === 'ruler'){
     if(!full) return tr('Дължината не е числото, до което стига отсечката — гледай и откъде тръгва.',
       'Довжина — це не число, до якого доходить відрізок: дивись і на те, звідки він починається.');

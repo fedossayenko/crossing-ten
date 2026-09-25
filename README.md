@@ -80,6 +80,16 @@ word, a run whose steps grow, a ride that grows by the day, a triangle from a sq
 three-part task 10: a route, a ticket table and the change). The paper's task 6 answers with a letter, so
 that level brings its own А/Б/В/Г.
 
+The **spring round, 2nd grade, 2025** (МБГ Пролет 2025) is in whole, tag `mbg-spring-2025-2`. It is the first
+paper built on the times table, so it brings a new basics level, 141 (the table up to 10 · 10 and division
+read back from it, group Multiply, needs 6), and every level that multiplies or divides needs it: 129 equal
+addends as a product, 130 brackets with · and :, 131 the product of all that fit, 132 a bound to work out
+first, 133 «so many times» word problems, 135 odd addends made 3 times smaller, 136 three factors, 137
+squares cut from a sheet, 138 one thread as two shapes. Three need no table: 134 odd and even runs made
+equal, 139 the diagonals of a grid (a square crossed by both is in more than two parts — 20, not 24), 140
+a > 5 > b > c. Tasks 1, 11 and 14 widened levels 99, 40 and 101. Competitions leave level 141 out, like
+the other drill.
+
 The **Коледно 2024** paper, 2nd grade, is in whole as well, tag `kms-2024-2`. Tasks 2–6 widened
 levels 27, 30, 11, 18 and 99 (a run whose step grows by one with both gaps asked, the subtrahends of a list
 with an addition as the trap, a chain of symbols ending in an inequality, the ones digit at least k bigger,

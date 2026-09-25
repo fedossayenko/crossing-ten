@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,120,121,122,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,123,124,125,126,127,128];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,120,121,122,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -529,6 +529,7 @@ for(let i = 0; i < 4000; i++){
     if(q.d > 14) throw new Error('the segment runs off the end of the ruler');
     continue;
   }
+  if(q.shape === 'units'){ if((q.ab + 10*q.cm + q.cd) !== 100*q.ans) throw new Error('AD in дм: ' + JSON.stringify(q)); continue; }   // Пролет 2025
   if(q.AB !== q.p + q.q || q.CD !== q.q + q.r) throw new Error('the given lengths do not match the points');
   if(q.ans !== q.p + q.q + q.r) throw new Error('AD wrong');
   if(q.AB - q.q !== q.p) throw new Error('AC does not come out of AB and CB');
@@ -2605,6 +2606,63 @@ eval(head + body + test);
     [19, 10,  {kind:'cmp', runs:1, A:run(2, 20, 2), B:run(1, 19, 2), sa:110, sb:100, nm:['Мария','Деми'], back:true, big:0, ans:10}, [10], '2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20', ['A', 'B', 'back']],
     [20, 112, {kind:'blocks', n:3, pairs:[[1,2]], ans:4}, [4], 'числата 1, 2 и 3 едно до друго, така че 1 и 2 да са винаги съседни']
   ]);
+  paperCheck('Пролет 2025', 'mbg-spring-2025-2', '11, 5, 0, 1, 20, 15, 24, 22, 18, 60, 1, 25, 12, 6, 20, 6, 5, 3, 1, 4', [
+    [1,  99,  {kind:'brackets', shape:5, a:111, b:89, c:22, d:100, ans:11}, [11], '111 − (111 − 89) + 22 − 100'],
+    [2,  129, {kind:'repadd', shape:0, x:3, k:4, y:5, m:5, m2:4, ans:5}, [5], '3 + 3 + 3 + 3 − 3 · 4 + 5 + 5 + 5 + 5 + 5 − 5 · 4'],
+    [3,  130, {kind:'mulbr', shape:0, n:11, v:[1,2,3], w:[1,2,3], P:6, p:6, traps:[6], ans:0}, [0], '(11 − 10) · (11 − 9) · (11 − 8) − 1 · 2 · 3'],
+    [4,  130, {kind:'mulbr', shape:1, a:2, b:5, X:10, D:5, c:20, d:5, e:1, traps:[3], ans:1}, [1], '(2 · 0 + 2 · 5) : (20 : 2 − 5) − 1'],
+    [5,  132, {kind:'countx', form:0, a:50, b:10, c:2, N:30, rel:0, traps:[70], ans:20}, [20], 'Колко са двуцифрените числа, които са по-малки от числото, равно на 50 − 10 · 2'],
+    [6,  131, {kind:'prodof', shape:0, odd:true, n:6, list:[1,3,5], traps:[9], ans:15}, [15], 'произведението на всички нечетни числа, по-малки от 6'],
+    [7,  133, {kind:'timesw', shape:0, k:2, a:16, b:8, fewer:true, traps:[18], ans:24}, [24], 'играят 16 момичета и 2 пъти по-малко момчета. Колко общо са децата'],
+    [8,  134, {kind:'asmany', evenFirst:true, n:11, s:12, E:5, traps:[21], ans:22}, [22], 'Четните числа от 1 до 11 са толкова, колкото нечетните числа от 12 до четното число X. Кое е числото X'],
+    [9,  133, {kind:'timesw', shape:1, n:7, u:9, W:63, m:2, traps:[9], ans:18}, [18], '7 еднакви кубчета тежат 63 грама. Колко грама тежат 2 от тези кубчета'],
+    [10, 135, {kind:'grow', shape:'times', odd:true, k:3, down:true, xs:[15,18,27,28], ys:[5,18,9,28], traps:[], ans:60}, [60], 'Всяко от нечетните събираеми в сбора 15 + 18 + 27 + 28 е намалено 3 пъти'],
+    [11, 40,  {kind:'seg', shape:'units', ab:41, cm:2, cd:39, traps:[82], ans:1}, [1], 'Намерете в дециметри дължината на отсечката AD, ако AB = 41 мм, BC = 2 см и CD = 39 мм'],
+    [12, 137, {kind:'cutsq', s:4, sq:true, W:20, H:20, traps:[], ans:25}, [25], 'Колко най-много квадратчета със страна 4 см можем да изрежем от квадрат със страна 20 см'],
+    [13, 138, {kind:'thread', from:0, to:1, a:9, b:5, L:36, traps:[9], ans:12}, [12], 'От конец направили квадрат със страна 9 см. След това със същия конец направили триъгълник с равни страни', ['from', 'to', 'a']],
+    [14, 101, {kind:'paintrow', fig:1, c:3, traps:[12], ans:6}, [6], 'Фигурата на чертежа е съставена от 3 правоъгълника. Трябва да ги оцветим в бяло, зелено и червено'],
+    [15, 139, {kind:'diag', w:9, h:6, one:false, ac:12, both:2, traps:[24], ans:20}, [20], 'Правоъгълник ABCD е със страни 9 см и 6 см и е разделен на квадрати със страна 1 см. Колко от тези квадрати са разделени от отсечките AC и BD на две части'],
+    [16, 133, {kind:'timesw', shape:2, k:2, x:16, p:8, d:2, c:10, traps:[8], ans:6}, [6], 'Никола има 16 молива. Пиер има два пъти по-малко моливи, отколкото има Никола, а Клод има с 2 молива повече, отколкото Пиер'],
+    [17, 129, {kind:'repadd', shape:1, a:2, n:8, r:1, b:3, T:16, traps:[8], ans:5}, [5], '2 + 2 + … + 2 (8 събираеми 2) = 1 + 3 + 3 + … + 3'],
+    [18, 133, {kind:'timesw', shape:3, k:3, x:6, T:24, m:8, traps:[9/8], ans:3}, [3], 'набрали 6 кг ябълки, а от друго — 3 пъти повече. Набраните ябълки разпределили поравно в 8 щайги'],
+    [19, 140, {kind:'ineqsum', S:12, k:5, odd:true, traps:[3], ans:1}, [1], 'a + b + c = 12 и a > 5 > b > c'],
+    [20, 136, {kind:'prodof', shape:1, N:24, sum:false, traps:[12], ans:4}, [4], 'Произведението на 3 различни естествени числа е 24. Колко най-малко може да бъде най-голямото сред тези числа']
+  ]);
+  { // the Пролет 2025 kinds, each worked out another way
+    const Q3 = eval('(function(){' + head + body + '; return { raw }; })()');
+    for(let i = 0; i < 400; i++){
+      const t = Q3.raw(141); if(t.ans !== (t.div ? t.a*t.b / t.a : t.a*t.b) || t.a < 2 || t.a > 10 || t.b < 2 || t.b > 10) throw new Error('times: ' + JSON.stringify(t));
+      const r = Q3.raw(129);
+      if(r.shape === 1){ if(r.a*r.n !== r.r + r.ans*r.b) throw new Error('repadd *: ' + JSON.stringify(r)); }
+      else if(r.x*r.k - r.x*r.k + r.y*r.m - r.y*r.m2 !== r.ans) throw new Error('repadd: ' + JSON.stringify(r));
+      const m = Q3.raw(130), E = m.shape === 0 ? m.v.map(x => '(' + m.n + '-' + (m.n - x) + ')').join('*') + '-' + m.w.join('*') : '(' + m.a + '*0+' + m.a + '*' + m.b + ')/(' + m.c + '/' + m.a + '-' + m.d + ')-' + m.e;
+      if(eval(E) !== m.ans || m.ans < 0) throw new Error('mulbr: ' + E + ' ' + JSON.stringify(m));
+      const p = Q3.raw(131); let pr = 1; for(let v = 1; v < p.n; v++) if(!p.odd || v % 2) pr *= v; if(pr !== p.ans) throw new Error('prodof: ' + JSON.stringify(p));
+      const c = Q3.raw(132), N = eval(c.form === 0 ? c.a + '-' + c.b + '*' + c.c : c.form === 1 ? c.b + '*' + c.c + '+' + c.a / 10 : c.a + '+' + c.b + '*' + c.c);
+      let cnt = 0; for(let v = 10; v <= 99; v++) if(c.rel === 0 ? v < N : c.rel === 1 ? v <= N : v > N) cnt++;
+      if(cnt !== c.ans) throw new Error('countx: ' + JSON.stringify(c));
+      const w = Q3.raw(133), wa = [w.fewer ? w.a + w.a / w.k : w.a + w.a*w.k, w.W / w.n*w.m, w.x - (w.x / w.k + w.d), (w.x + w.k*w.x) / w.m][w.shape];
+      if(wa !== w.ans || !Number.isInteger(wa)) throw new Error('timesw: ' + JSON.stringify(w));
+      const a = Q3.raw(134); let ev = 0; for(let v = 1; v <= a.n; v++) if((v % 2 === 0) === a.evenFirst) ev++;
+      const X = []; for(let x = a.s; x < a.s + 60; x++){ if((x % 2 === 0) !== a.evenFirst) continue; let od = 0; for(let v = a.s; v <= x; v++) if((v % 2 === 0) !== a.evenFirst) od++; if(od === ev) X.push(x); }
+      if(X.length !== 1 || X[0] !== a.ans) throw new Error('asmany: ' + X + ' ' + JSON.stringify(a));
+      const g = Q3.raw(135); if(g.xs.map(v => (v % 2 === 1) === g.odd ? (g.down ? v / g.k : v*g.k) : v).reduce((t, v) => t + v, 0) !== g.ans) throw new Error('grow times: ' + JSON.stringify(g));
+      const d = Q3.raw(136); let best = Infinity; for(let x = 1; x <= d.N; x++) for(let y = x + 1; y <= d.N; y++) for(let z = y + 1; z <= d.N; z++) if(x*y*z === d.N) best = Math.min(best, d.sum ? x + y + z : z);
+      if(best !== d.ans) throw new Error('prod3: ' + JSON.stringify(d));
+      const k = Q3.raw(137); let fit = 0; for(let x = 0; x + k.s <= k.W; x += k.s) for(let y = 0; y + k.s <= k.H; y += k.s) fit++; if(fit !== k.ans) throw new Error('cutsq: ' + JSON.stringify(k));
+      const th = Q3.raw(138), L = th.from === 2 ? 2*(th.a + th.b) : [4, 3][th.from]*th.a; if(L / [4, 3][th.to] !== th.ans || !Number.isInteger(th.ans)) throw new Error('thread: ' + JSON.stringify(th));
+      const q = Q3.raw(140); const cs = new Set(); for(let cc = 0; cc < 30; cc++) for(let b = 0; b < 30; b++){ const aa = q.S - b - cc; if(aa > q.k && q.k > b && b > cc && (cc % 2 === 1) === q.odd) cs.add(cc); }
+      if(cs.size !== 1 || !cs.has(q.ans)) throw new Error('ineqsum: ' + [...cs] + ' ' + JSON.stringify(q));
+    }
+    for(let i = 0; i < 60; i++){   // the diagonals walked in tiny steps, each step marking the square it is inside
+      const q = Q3.raw(139), hit = [{}, {}];
+      [0, 1].forEach(f => { for(let s = 1; s < 20000; s++){ const x = q.w*s/20000, y = f ? q.h - q.h*x/q.w : q.h*x/q.w;
+        if(Math.abs(x - Math.round(x)) < 1e-7 || Math.abs(y - Math.round(y)) < 1e-7) continue; hit[f][Math.floor(x) + ',' + Math.floor(y)] = 1; } });
+      const cells = new Set([...Object.keys(hit[0]), ...Object.keys(hit[1])]), two = [...cells].filter(c => !hit[0][c] !== !hit[1][c]).length;
+      if((q.one ? Object.keys(hit[0]).length : two) !== q.ans) throw new Error('diag: ' + JSON.stringify(q));
+    }
+    console.log('Пролет 2025 kinds: the table, products, brackets, bounds, shares, runs, threads and the diagonals worked out again by brute force');
+  }
   { // the Коледно 2024 and Есен 2019 kinds, each worked out another way
     const Q2 = eval('(function(){' + head + body + '; return { raw, VTRI }; })()');
     for(let i = 0; i < 400; i++){
@@ -2665,7 +2723,8 @@ eval(head + body + test);
     const fixes = []; for(let at = 0; at < 9; at++) for(let v = 0; v <= 60; v++){ const g = m.shown.slice(); g[at] = v; if([[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]].every(l => l.reduce((t, j) => t + g[j], 0) === m.S) && v !== m.shown[at]) fixes.push(v); }
     if(fixes.length !== 1 || fixes[0] !== m.ans) throw new Error('magic: the fix is not unique ' + JSON.stringify(m) + ' ' + fixes);
     const p = Q.raw(101); let ways = 0;
-    (function walk(i, prev){ if(i === p.n){ ways++; return; } for(let c = 0; c < p.c; c++) if(c !== prev) walk(i + 1, c); })(0, -1);
+    if(p.fig){ for(let x = 0; x < p.c; x++) for(let y = 0; y < p.c; y++) for(let z = 0; z < p.c; z++) if(x !== y && y !== z && x !== z) ways++; }   // Пролет 2025: all three touch
+    else (function walk(i, prev){ if(i === p.n){ ways++; return; } for(let c = 0; c < p.c; c++) if(c !== prev) walk(i + 1, c); })(0, -1);
     if(ways !== p.ans) throw new Error('paintrow: ' + ways + ' ways, not ' + p.ans);
   }
 }
