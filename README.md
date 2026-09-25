@@ -44,6 +44,10 @@ The **winter round, 2nd grade, 2022** (МБГ Зима 2022) is in whole: five n
 segments, 103 two runs' shared numbers, 104 weights on both pans, 105 all the squares in a figure of tiles,
 106 a rectangle cut in three — and 13 existing levels widened and tagged `mbg-winter-2022-2`.
 
+The **winter round, 2nd grade, 2021** (МБГ Зима 2021) is in whole: three new levels — 107 figures taking
+turns, 108 pages and leaves, 109 which of five numbers is left out of □ + □ = □ + □ — and 16 existing levels
+widened or tagged `mbg-winter-2021-2`.
+
 The **winter round, 2nd grade, 2024** (МБГ Зима 2024) is in whole, tasks 1–20, checked against the
 official key. Seven of its tasks are ones the autumn papers already had (a range, the sum of what makes an
 inequality false, equal addends both ways, the strip of squares, a fixed digit, pencils, being short),

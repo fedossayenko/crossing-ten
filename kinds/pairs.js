@@ -77,7 +77,18 @@ function genCancel(){
 }
 // Задача 9: ± pairs that each come to ten — 11 − 1, 12 − 2, 13 − 3 — with the last
 // pair usually breaking the pattern, so the structure is checked and not assumed.
+// Зима 2021: 100 − 99 + 99 − 98 + 97 − 96 — each neighbour pair is one apart, so each makes 1:
+// (100 − 99) + (99 − 98) + (97 − 96) = 3, however the pairs are placed
+function genOnes(){
+  const k = 3 + rnd(2), pairs = [];
+  let x = 20 + rnd(81);
+  for(let i = 0; i < k; i++){ pairs.push([x, x - 1]); x -= 1 + rnd(2); }
+  const terms = [];
+  pairs.forEach(([a, b], i) => terms.push({op: i ? '+' : '', n:a}, {op:'−', n:b}));
+  return {kind:'pairs', shape:'ones', pairs, terms, ans: k};
+}
 function genPairsSub(){
+  if(Math.random() < 0.12) return genOnes();
   if(Math.random() < 0.3) return genCancel();
   if(Math.random() < 0.4){
     // Задача 19: one minuend throughout, subtrahends climbing — so the differences
@@ -113,6 +124,10 @@ function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
+  if(q.kind === 'pairs' && q.shape === 'ones'){
+    if(!full) return tr('Събери ги по двойки — всяко число със следващото.', 'Об’єднай їх парами — кожне число з наступним.');
+    return q.pairs.map(([a, b]) => '(' + a + ' − ' + b + ')').join(' + ') + ' = ' + q.pairs.map(() => 1).join(' + ') + ' = ' + q.ans;
+  }
   if(q.kind === 'pairs' && q.shape === 'cancel'){
     if(!full) return tr('Всяко число по средата се маха и веднага се връща.', 'Кожне число посередині віднімається і відразу додається назад.');
     const gone = q.terms.filter(t => t.op === '+').map(t => t.n);

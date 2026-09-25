@@ -16,10 +16,11 @@ function genIneq(){
   if(Math.random() < 0.12){
     // Зима 2022, задача 9: the unknown is a tens digit — 22 is not less than ❄2 for ❄ = 1 or 2
     for(;;){
-      const d = rnd(10), N = 12 + rnd(30), fits = [];
-      for(let t = 1; t <= 9; t++) if(10*t + d <= N) fits.push(t);
+      // Зима 2021 the same with three digits: 299 is not less than ❄99 for ❄ = 1 or 2
+      const three = Math.random() < 0.35, d = rnd(10), N = three ? 120 + rnd(280) : 12 + rnd(30), fits = [];
+      for(let t = 1; t <= 9; t++) if((three ? 100*t + 11*d : 10*t + d) <= N) fits.push(t);
       if(fits.length < 2 || fits.length > 3) continue;
-      return {kind:'ineq', shape:5, d, N, fits, slots: fits.length, ans: fits[0], alt: fits.slice(1)};
+      return {kind:'ineq', shape:5, three, d, N, fits, slots: fits.length, ans: fits[0], alt: fits.slice(1)};
     }
   }
   if(Math.random() < 0.2){
@@ -56,8 +57,8 @@ function drawIneq(q){
   }
   if(q.kind === 'ineq' && q.shape === 5){
     const slots = q.fits.map((_, i) => i ? ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot' + i + '"></span>' : SLOT).join('');
-    return '<div class="ask">' + tr('Кои цифри можем да поставим вместо ❄, така че числото <span class="num">' + q.N + '</span> да <b>не е по-малко</b> от двуцифреното число ❄' + q.d + '?',
-      'Які цифри можна поставити замість ❄, щоб число <span class="num">' + q.N + '</span> було <b>не менше</b> за двоцифрове число ❄' + q.d + '?') + '</div>' +
+    return '<div class="ask">' + tr('Кои цифри можем да поставим вместо ❄, така че числото <span class="num">' + q.N + '</span> да <b>не е по-малко</b> от ' + (q.three ? 'трицифреното' : 'двуцифреното') + ' число ❄' + q.d + (q.three ? q.d : '') + '?',
+      'Які цифри можна поставити замість ❄, щоб число <span class="num">' + q.N + '</span> було <b>не менше</b> за ' + (q.three ? 'трицифрове' : 'двоцифрове') + ' число ❄' + q.d + (q.three ? q.d : '') + '?') + '</div>' +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slots + '</div>';
   }
   if(q.kind === 'ineq'){
@@ -82,7 +83,7 @@ function drawIneq(q){
 }
 function eqIneq(q){
   if(q.kind === 'ineq' && q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
-  if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
+  if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
   if(q.kind === 'ineq' && q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
   if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? tr(' вярно', ' правильно') : tr(' невярно', ' неправильно')) +
@@ -96,7 +97,7 @@ function whyIneq(q, full){
     }
     if(q.shape === 5){
       if(!full) return tr('„Не е по-малко" значи по-голямо или равно. Опитвай цифрите подред.', '«Не менше» означає більше або дорівнює. Пробуй цифри по черзі.');
-      const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) tries.push((10*t + q.d) + (10*t + q.d <= q.N ? ' ≤ ' : ' > ') + q.N);
+      const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) { const v = q.three ? 100*t + 11*q.d : 10*t + q.d; tries.push(v + (v <= q.N ? ' ≤ ' : ' > ') + q.N); }
       return tries.join(', ') + ' &nbsp;→&nbsp; ❄ = ' + q.fits.join(tr(' и ', ' і '));
     }
     if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');

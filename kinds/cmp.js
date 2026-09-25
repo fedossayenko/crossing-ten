@@ -27,9 +27,11 @@ function genNear(){
     // Зима 2021, 2022: a run of numbers against the same run one higher, and maybe an odd pair at the
     // end: 20 + 21 + 22 + 23 + 6 against 19 + 20 + 21 + 22 + 8 — each is 1 more, 4 in all, less 2
     for(;;){
-      const m = 3 + rnd(3), st = 10 + rnd(30), R = [], L = [];
-      for(let i = 0; i < m; i++){ R.push(st + i); L.push(st + i + 1); }
-      if(Math.random() < 0.6){ const e1 = 1 + rnd(9), e2 = 1 + rnd(9); if(e1 === e2) continue; L.push(e1); R.push(e2); }
+      const any = Math.random() < 0.4, m = any ? 4 + rnd(3) : 3 + rnd(3), st = 10 + rnd(30), R = [], L = [];
+      // Зима 2021: any numbers, every one of them one more — 12 + 13 + 14 + 88 + 9 + 10 against 11 + 12 + 13 + 87 + 8 + 9
+      const base = any ? shuffle([...Array(90).keys()].map(v => v + 2)).slice(0, m) : null;
+      for(let i = 0; i < m; i++){ const r = any ? base[i] : st + i; R.push(r); L.push(r + 1); }
+      if(!any && Math.random() < 0.6){ const e1 = 1 + rnd(9), e2 = 1 + rnd(9); if(e1 === e2) continue; L.push(e1); R.push(e2); }
       const tot = L.reduce((a, b) => a + b, 0) - R.reduce((a, b) => a + b, 0);
       if(tot <= 0) continue;
       return {kind:'cmp', shape:3, shift:1, L, R, ans: tot, flip: Math.random() < 0.6};

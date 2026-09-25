@@ -6,6 +6,18 @@
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
 function genBrackets(){
+  if(Math.random() < 0.25){
+    // Зима 2021: (100 − 94) − (99 − 98) − (98 − 96) − (96 − 94) — each bracket a small gap
+    for(;;){
+      const k = 3 + rnd(2), gs = [], hi = 60 + rnd(41);
+      const first = [hi, hi - 4 - rnd(5)];
+      let x = hi - 1 - rnd(2);
+      for(let i = 0; i < k - 1; i++){ const d = 1 + rnd(3); gs.push([x, x - d]); x -= d; }
+      const ans = (first[0] - first[1]) - gs.reduce((t, [a, b]) => t + a - b, 0);
+      if(ans < 0) continue;
+      return {kind:'brackets', shape:3, first, gs, ans};
+    }
+  }
   if(Math.random() < 0.3){
     // Зима 2022: (15 − 5 − 4 − 3 − 2 − 1) + (1 + 2 + 3 + 4 + 5) — what the first bracket takes
     // away, the second gives back, so the answer is the first number
@@ -28,7 +40,7 @@ function genBrackets(){
     return {kind:'brackets', shape:1, xs: pick, gaps, ans};
   }
 }
-const bracketsExpr = q => q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
+const bracketsExpr = q => q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
   if(q.kind === 'brackets'){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
@@ -40,6 +52,11 @@ function eqBrackets(q){
 }
 function whyBrackets(q, full){
   if(q.kind === 'brackets'){
+    if(q.shape === 3){
+      if(!full) return tr('Всяка скоба е малко число — пресметни ги поотделно.', 'Кожна дужка — маленьке число, обчисли їх окремо.');
+      const v = [q.first].concat(q.gs).map(([a, b]) => a - b);
+      return [q.first].concat(q.gs).map(([a, b], i) => a + ' − ' + b + ' = <b>' + v[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + v.join(' − ') + ' = ' + q.ans;
+    }
     if(q.shape === 2){
       if(!full) return tr('Сравни какво вади първата скоба с това, което събира втората.', 'Порівняй, що віднімає перша дужка, з тим, що додає друга.');
       return tr('първата скоба вади ', 'перша дужка віднімає ') + q.down.join(' + ') + tr(', втората ги връща обратно', ', друга їх повертає') + ' &nbsp;→&nbsp; ' + q.N + ' − ' + q.down.reduce((a, b) => a + b) + ' + ' + q.down.reduce((a, b) => a + b) + ' = ' + q.ans;

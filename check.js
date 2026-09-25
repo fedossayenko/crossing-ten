@@ -38,7 +38,7 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,102,103,104,105,106];
+const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109];
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -425,6 +425,11 @@ console.log('sequence scan: matches a plain double loop, and every run is a perm
 // задача 17: the digits must actually satisfy the equation, and stay different
 for(let i = 0; i < 4000; i++){
   const q = raw(23);
+  if(q.shape === 2){   // Зима 2021: two unknown units digits, every pair tried
+    const sums = new Set(); for(let x = 0; x <= 9; x++) for(let y = 0; y <= 9; y++) if(10*q.A + x - 10*q.B - y === q.D) sums.add(x + y);
+    if([...sums].sort((a, b) => a - b).join() !== [q.ans].concat(q.alt).join() || q.slots !== sums.size) throw new Error('place two: ' + JSON.stringify(q));
+    continue;
+  }
   if(q.N - q.k !== q.R) throw new Error('placeholder equation does not hold: ' + JSON.stringify(q));
   if(q.t === q.u) throw new Error('placeholder digits must differ: ' + JSON.stringify(q));
   if(10*q.t + q.u !== q.N) throw new Error('placeholder digits do not form the number');
@@ -1078,6 +1083,11 @@ console.log('two languages: the overlap is the excess, worksheet instance gives 
 // задача 17: the smallest count past the bound that splits equally both ways
 for(let i = 0; i < 4000; i++){
   const q = raw(49);
+  if(q.shape === 'count'){   // Зима 2021: how many up to N split both ways, counted one by one
+    let n = 0; for(let v = 1; v <= q.N; v++) if(v % q.p === 0 && v % q.r === 0) n++;
+    if(n !== q.ans) throw new Error('multiple count: ' + JSON.stringify(q));
+    continue;
+  }
   if(q.ans % q.p || q.ans % q.r) throw new Error('the count does not split both ways');
   if(q.ans <= q.N) throw new Error('the count is not past the bound');
   for(let v = q.N + 1; v < q.ans; v++)
@@ -2472,6 +2482,36 @@ eval(head + body + test);
     for(let k = 1; k <= 5; k++) s.cells.forEach(([x, y]) => { let ok = true; for(let a = 0; a < k; a++) for(let b = 0; b < k; b++) ok = ok && set.has((x + a) + ',' + (y + b)); if(ok) n++; });
     if(n !== s.ans) throw new Error('countsq: ' + JSON.stringify(s));
     const r = Q.raw(106); if(r.pieces.reduce((t, p) => t + p[0]*p[1], 0) !== r.W*r.H || r.pieces[r.at][r.side] !== r.ans) throw new Error('cutrect: ' + JSON.stringify(r));
+  }
+  paperCheck('Зима 2021', 'mbg-winter-2021-2', '3, 40, 1, 12, 14, 6, 2, 10, 1 или 2, 30, 89, 1, 4, 8, 5, 3, 10, 18, 6, 8 или 10', [
+    [1,  9,   {kind:'pairs', shape:'ones', pairs:[[100,99],[99,98],[97,96]], terms: chain(100, -99, 99, -98, 97, -96), ans:3}, [3], '100 − 99 + 99 − 98 + 97 − 96'],
+    [2,  9,   {kind:'pairs', shape:'tens', base:20, terms: chain(1, 19, 2, 18, 3, 17, 4, 16, -40), paired:4, extra:0, subs:[40], ans:40}, [40], '1 + 19 + 2 + 18 + 3 + 17 + 4 + 16 − 40'],
+    [3,  99,  {kind:'brackets', shape:3, first:[100,94], gs:[[99,98],[98,96],[96,94]], ans:1}, [1], '(100 − 94) − (99 − 98) − (98 − 96) − (96 − 94)'],
+    [4,  30,  {kind:'term', shape:2, t:Q.TERMS[1], M:21, D:9, S:12, ans:12}, [12], 'Умаляемото е 21, а разликата е 9'],
+    [5,  79,  {kind:'fifty', shape:3, pairs:[[11,9],[12,8],[13,87]], extra:0, nums:[11,12,13,87,8,9], T:140, less:false, ans:14}, [14], '11 + 12 + 13 + 87 + 8 + 9. Колко са десетиците'],
+    [6,  10,  {kind:'cmp', shape:3, shift:1, L:[12,13,14,88,9,10], R:[11,12,13,87,8,9], ans:6, flip:true}, [6], 'С колко сборът 11 + 12 + 13 + 87 + 8 + 9 е по-малък от сбора 12 + 13 + 14 + 88 + 9 + 10'],
+    [7,  80,  {kind:'pickfit', nums:[15,16,17,18], add:17, n:34, more:false, fits:[15,16], ans:2}, [2], 'Колко от числата 15, 16, 17 и 18 могат да се запишат в □'],
+    [8,  14,  {kind:'grow', shape:'diff', M:37, S:16, a:7, b:4, mUp:false, sUp:true, M2:30, S2:20, ans:10}, [10], 'В разликата 37 − 16 умаляемото е намалено с 7, а умалителят е увеличен с 4'],
+    [9,  16,  {kind:'ineq', shape:5, three:true, d:9, N:299, fits:[1,2], slots:2, ans:1, alt:[2]}, [1, 2], 'числото 299 да не е по-малко от трицифреното число ❄99'],
+    [10, 82,  {kind:'stepdig', k:3, start:0, first:[0,3,6,9], ones:4, twos:[12,15,18,21,24,27,30], digits:18, ans:30}, [30], 'числата 0, 3, 6, 9, …, x са записани с 18 цифри'],
+    [11, 32,  {kind:'ribbon', shape:5, a:9, u1:'дм', b:10, u2:'мм', to:'см', A:900, B:10, ans:89}, [89], 'Лента е дълга 9 дм. С колко сантиметра тя е по-дълга от лента с дължина 10 мм'],
+    [12, 91,  {kind:'rectdm', shape:1, a:20, d:1, base:'см', dU:'дм', b:30, P:100, to:'м', ans:1}, [1], 'Една от страните на правоъгълник е 20 см, а другата е с 1 дм по-дълга. Колко метра'],
+    [13, 19,  {kind:'rects', shape:2, W:2, H:2, all:9, sizes:[4,1], sq:5, other:4, asksAll:true, fewer:false, ans:4}, [4], 'С колко правоъгълниците на чертежа са повече от квадратите'],
+    [14, 107, {kind:'alternate', n:15, most:true, ans:8}, [8], 'общо 15 фигури. Колко най-много може да са квадратчетата'],
+    [15, 108, {kind:'pages', a:14, b:25, la:7, lb:13, ans:5}, [5], 'Колко листа има между страница 14 и страница 25'],
+    [16, 49,  {kind:'multiple', shape:'count', p:2, r:3, L:6, N:20, list:[6,12,18], ans:3}, [3], 'Колко от числата от 1 до 20 можем да запишем'],
+    [17, 109, {kind:'pairsum', nums:[7,9,10,11,13], ans:10}, [10], 'От числата 7, 9, 10, 11 и 13 изберете четири'],
+    [18, 87,  {kind:'balloons', k:2, m:3, rest:16, T:22, ans:18}, [18], 'общо 22 балона, като 2 деца имат по 3 балона'],
+    [19, 48,  {kind:'both', T:12, A:6, B:8, both:2, lang:['немски','английски'], asksBoth:false, ans:6}, [6], 'учат само английски', ['T','A','B','asksBoth']],
+    [20, 23,  {kind:'place', shape:2, A:9, B:7, D:12, sols:[[0,8],[1,9]], slots:2, ans:8, alt:[10]}, [8, 10], '9□ − 7△ = 12']
+  ]);
+  for(let i = 0; i < 300; i++){   // the Зима 2021 kinds, counted out
+    const a = Q.raw(107); let best = -1; for(let first = 0; first < 2; first++){ const sq = Array.from({length: a.n}, (_, j) => (j + first) % 2 === 0).filter(Boolean).length; best = best < 0 ? sq : a.most ? Math.max(best, sq) : Math.min(best, sq); }
+    if(best !== a.ans) throw new Error('alternate: ' + JSON.stringify(a));
+    const g = Q.raw(108); let leaves = 0; for(let l = 1; l <= 60; l++) if(2*l - 1 > g.a && 2*l < g.b && !(2*l - 1 <= g.a && g.a <= 2*l)) leaves++;
+    if(leaves !== g.ans) throw new Error('pages: ' + JSON.stringify(g) + ' ' + leaves);
+    const p = Q.raw(109), left = p.nums.filter(x => { const f = p.nums.filter(v => v !== x); return f[0] + f[1] === f[2] + f[3] || f[0] + f[2] === f[1] + f[3] || f[0] + f[3] === f[1] + f[2]; });
+    if(left.length !== 1 || left[0] !== p.ans) throw new Error('pairsum: ' + JSON.stringify(p));
   }
   // the new kinds by brute force: a magic square's wrong cell, and colourings counted one by one
   for(let i = 0; i < 400; i++){
