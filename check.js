@@ -2302,9 +2302,9 @@ eval(head + body + test);
     if(!Q.accepts(q, key.map(String))) throw new Error('Есен 2024 task ' + task + ': the key is not accepted');
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error('Есен 2024 task ' + task + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2024-2')) throw new Error('level ' + id + ' is not tagged Есен 2024');
-    // who planted the trees and the fruit's order in the row are the level's to choose; the rest must be met exactly
+    // who planted the trees and the order of the fruit or shapes in the row are the level's to choose; the rest must be met exactly
     const sig = g => (Q.eqText(g) + '|' + strip(Q.drawQ(g))).replace(/^[^|]*\|[А-Яа-я]+посадила?/, 'X').replace(/<svg[\s\S]*?<\/svg>/g, ''), mask = t => t.replace(/\d+/g, '#');
-    const want = sig(q), fields = g => q.kind === 'fruit' ? [g.pears, g.apples, g.k].join() : null;
+    const want = sig(q), fields = g => q.kind === 'fruit' ? [g.pears, g.apples, g.k].join() : q.kind === 'shapes' ? [g.wo, g.ws, g.bs, g.bc].join() : null;
     let exact = false, like = false;
     for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind) continue; const s = sig(g);
       exact = fields(q) ? fields(g) === fields(q) : s === want; like = like || mask(s) === mask(want); }

@@ -33,15 +33,27 @@ const server = http.createServer((req, res) => {
   const cmd = (method, params = {}) => new Promise(ok => { wait[++id] = ok; ws.send(JSON.stringify({ id, method, params })); });
   await cmd('Runtime.enable'); await cmd('Page.enable');
   await cmd('Page.navigate', { url });
-  await new Promise(r => setTimeout(r, 1500));
-  const settle = () => new Promise(r => setTimeout(r, 1500));
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  await sleep(1500);
+  // After a load, wait until the app has started, not a fixed time: on a busy machine (right after
+  // a rebuild) the service worker's install can hold the page up for several seconds.
+  const settle = async () => {
+    await sleep(1500);
+    for(let i = 0; i < 75; i++){
+      const r = await cmd('Runtime.evaluate', { expression: "document.readyState === 'complete' && typeof S === 'object' && !!document.getElementById('stage')?.innerHTML", returnByValue: true });
+      if(r.result?.result?.value === true) return;
+      await sleep(200);
+    }
+  };
   const run = async expr => {
     const r = await cmd('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
     if(r.result.exceptionDetails) errors.push(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
     const v = r.result.result && r.result.result.value;
     return typeof v === 'string' ? v : undefined;
   };
-  // Load it a second time so the page runs through its service worker, as a returning device does.
+  // Load it a second time so the page runs through its service worker, as a returning device does
+  // (once the worker has finished installing: it fetches every file and the fonts first).
+  await run("navigator.serviceWorker && Promise.race([navigator.serviceWorker.ready, new Promise(r => setTimeout(r, 20000))]).then(() => '')");
   await cmd('Page.reload'); await settle();
 
   // Inside the page: for every level, pick it, miss the first question twice (hint, then

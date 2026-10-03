@@ -360,6 +360,7 @@ function check(){
     $('verdict').className = 'verdict ok';
     $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
     $('hint').innerHTML = box('ok', t(quick ? 'yes' : 'gotIt'), why(q, true));
+    $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
     mood(quick && S.results.filter(Boolean).length >= 5 && S.results.slice(-5).every(Boolean) ? 'wiggle' : 'happy');
     quick ? sfx.good() : sfx.ok();
     S.settled = true;
