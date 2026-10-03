@@ -220,6 +220,14 @@ const server = http.createServer((req, res) => {
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header), 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
+  // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task
+  {
+    const want = await run(`S.level = 4; newRound(); S.results.push(true); next(); S.results.push(false); next(); JSON.stringify(S.qs[2])`);
+    await cmd('Page.reload'); await settle();
+    const back = await page(`{ level: S.level, i: S.i, results: S.results.length, q: JSON.stringify(S.qs[S.i]) }`);
+    expect(back.level === 4 && back.i === 2 && back.results === 2 && back.q === want, 'a reload mid-round did not come back to the same task: ' + JSON.stringify(back));
+    await run(`localStorage.removeItem(RS); newRound(); 1`);
+  }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC && !process.argv[2]){

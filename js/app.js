@@ -285,6 +285,18 @@ function show(){
   if(S.i === 0) S.timers.push(setTimeout(() => { if(!S.settled && $('cat').dataset.mood === 'tilt') mood('idle'); }, 1400));
   paintSlot(); paintDots(); wake();
   speak(q);
+  saveRound();
+}
+// The round so far, kept at the start of every task: an iPad drops a home-screen app it is not
+// showing and loads it afresh, and a new build reloads it too — she comes back to the same task.
+// ponytail: a competition is not kept (its clock would need restoring); it ends with a reload.
+const RS = LS + '.round';
+function saveRound(){
+  try {
+    if(COMP) localStorage.removeItem(RS);
+    else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
+      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, t0:S.t0 } }));
+  } catch(e){}
 }
 function paintSlot(){
   S.parts.forEach((p, i) => {
@@ -416,6 +428,7 @@ const STAR = on => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6
   (on ? 'var(--warm)' : 'none') + '" stroke="' + (on ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 function finish(){
   clearTimers();
+  try { localStorage.removeItem(RS); } catch(e){}
   const n = S.qs.length, got = S.results.filter(Boolean).length;
   const tier = tierFor(got, n);
   const lv = LEVELS.find(l => l.id === S.level) || { eq:'' };
@@ -1039,7 +1052,16 @@ const say = t => { $('synced').textContent = t + builtOn(); };
   const nx = nextUp(mastery(LOCAL.rounds), lastLvl && (lastLvl.grp || lastLvl.op));
   if(nx){ S.level = nx.id; paintPill(); }
 }
-newRound();
+// a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
+(() => {
+  try {
+    const kept = JSON.parse(localStorage.getItem(RS));
+    if(kept && Date.now() - kept.at < 12*3600e3 && LEVELS.some(l => l.id === kept.s.level) && kept.s.i < kept.s.qs.length){
+      Object.assign(S, kept.s); paintPill(); show(); return;
+    }
+  } catch(e){}
+  newRound();
+})();
 // Only the very first launch on a device asks who she is; every launch after that goes
 // straight to the exercise (the mascot switches player).
 if(FIRST) openEdit(PLAYER, true);
