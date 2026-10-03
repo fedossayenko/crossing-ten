@@ -77,6 +77,8 @@ export default {
   async fetch(req, env){
     if(req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });   // a browser's preflight
     const route = new URL(req.url).pathname;
+    // Who calls, for Workers Logs (observability in wrangler.toml): the device and where, never the IP.
+    console.log(JSON.stringify({ route, ua: req.headers.get('user-agent'), country: req.cf?.country, city: req.cf?.city }));
     if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync'].includes(route)) return reply(404, { error: 'not found' });
     const text = await req.text();
     if(text.length > MAX_BODY) return reply(413, { error: 'too much at once' });
