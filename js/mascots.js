@@ -83,7 +83,8 @@ const FACE =
   '<g class="eyes-open only-sad"><ellipse cx="97" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/>' +
   '<ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/></g>' +
   '<g class="only-sad"><path d="M84,70 L107,61 M156,70 L133,61" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" fill="none"/></g>' +
-  '<g class="only-happy"><path d="M85,89 q12,-15 24,0 M131,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>' +
+  '<g class="only-happy"><path class="hap-l" d="M85,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>' +
+  '<path class="hap-r" d="M131,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark" d="M186,66 l0,-16 M178,58 l16,0" stroke="var(--good)" stroke-width="4.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark b" d="M56,52 l0,-12 M50,46 l12,0" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
 // thinking: bubbles rising; sleepy: eyes shut, a small round mouth, zzz
@@ -92,10 +93,13 @@ const FACE_MORE =
   '<circle cx="218" cy="8" r="9" fill="#fff" stroke="#5F6675" stroke-width="2"/></g>' +
   '<g class="only-sleep"><path d="M83,86 q14,8 28,0 M129,86 q14,8 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
   '<path d="M120,113 v5 M115,125 a5,3.5 0 1 0 10,0 a5,3.5 0 1 0 -10,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
-  '<path class="zz" d="M188,44 h12 l-12,12 h12 M206,20 h16 l-16,16 h16" stroke="#5F6675" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>';
+  '<g class="zz"><path d="M212,2 A12,12 0 0 0 212,26 A16,16 0 0 1 212,2 Z" fill="var(--warm)"/>' +
+  '<path d="M194,40 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 Z M228,36 l1.6,4 4,1.6 -4,1.6 -1.6,4 -1.6,-4 -4,-1.6 4,-1.6 Z" fill="var(--grape)"/></g></g>';
 // star: three right in a row, the eyes turn to stars; yawn: before she nods off; talk: while the task is read aloud
 const STAR_EYE = (x, y) => '<path d="M' + x + ',' + (y - 15) + ' l4.4,9 9.9,1.4 -7.2,7 1.7,9.8 -8.8,-4.6 -8.8,4.6 1.7,-9.8 -7.2,-7 9.9,-1.4 Z" fill="var(--warm)" stroke="#15181d" stroke-width="2" stroke-linejoin="round"/>';
 const FACE_NEW =
+  // the dance winks: the right eye stays open while the left one is a happy arc
+  '<g class="only-wink"><ellipse cx="143" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/><circle cx="139" cy="79" r="3.2" fill="#fff" opacity=".9"/></g>' +
   '<g class="only-star"><g class="stareye">' + STAR_EYE(97, 86) + '</g><g class="stareye b">' + STAR_EYE(143, 86) + '</g></g>' +
   '<g class="only-yawn"><path d="M83,84 q14,-6 28,0 M129,84 q14,-6 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
   '<ellipse class="yawnmouth" cx="120" cy="131" rx="13" ry="15" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/></g>' +
@@ -115,13 +119,20 @@ const ARMS =
   '<g class="arm arm-up-l">' + LEG('M86,156 Q62,140 50,104') + PAW(48, 98) + '</g>' +
   '<g class="arm arm-up-r">' + LEG('M154,156 Q178,140 190,104') + PAW(192, 98) + '</g>' +
   '<g class="arm arm-chin">' + LEG('M82,174 Q86,162 98,154') + PAW(100, 150) + '</g>';
+// Around the animal, not on it: burst lines for a right answer, music notes and motion arcs for a dance
+const NOTE = (x, y, c) => '<g class="note"><g transform="translate(' + x + ' ' + y + ')"><ellipse cx="-4" cy="0" rx="6" ry="4.6" transform="rotate(-20 -4 0)" fill="' + c + '"/>' +
+  '<path d="M1.5,-1 v-22 q7,3 9,10" stroke="' + c + '" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>';
+const FX =
+  '<g class="fx fx-burst"><path d="M34,52 l-11,-6 M30,68 h-13 M40,36 l-6,-10 M206,52 l11,-6 M210,68 h13 M200,36 l6,-10" stroke="var(--warm)" stroke-width="4.5" stroke-linecap="round"/></g>' +
+  '<g class="fx fx-notes">' + NOTE(26, 52, 'var(--accent)') + NOTE(222, 40, 'var(--bad)') + '</g>' +
+  '<g class="fx fx-arcs"><path d="M44,150 q-8,15 0,30 M32,144 q-12,21 0,42 M196,150 q8,15 0,30 M208,144 q12,21 0,42" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
 function mascotInner(key){
   const m = MASCOTS[key] || MASCOTS.cat;
   return '<g class="whole"><g class="tail">' + m.tail + '</g>' +
     '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g>' + MEDAL + '</g>' +
     // the head a size up, round its own centre: rounder, younger proportions
     '<g class="head"><g transform="translate(120 90) scale(1.08) translate(-120 -90)"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
-    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + '</g>';
+    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + FX + '</g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
 const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;
