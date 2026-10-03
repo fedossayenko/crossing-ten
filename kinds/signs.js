@@ -53,13 +53,20 @@ function eqSigns(q){
 }
 function whySigns(q, full){
   if(q.kind === 'signs'){
-    if(!full) return tr('Всяко число, което обърнеш, сваля сбора два пъти със себе си.',
-      'Мінус перед числом зменшує суму на це число двічі.');
+    // The row is read left to right, but it is NOT computed left to right: 2 − 3 − 4 + 5 + 6 + 7
+    // would dip below zero. MBG's own tests give the rule with an example (1 − 8 + 9 = 1 + 9 − 8 = 2):
+    // add every plus first, then take the minuses off — so the hint shows the sum regrouped that way.
+    if(!full) return tr('Всяко число, което обърнеш, сваля сбора два пъти със себе си. Смятай първо плюсовете, после изваждай.',
+      'Мінус перед числом зменшує суму на це число двічі. Спочатку додай усі плюси, потім віднімай.');
     const total = q.nums.reduce((t, v) => t + v, 0), drop = (total - q.T) / 2;
     const line = q.nums.map((v, i) => i ? (q.wit.indexOf(v) >= 0 ? ' − ' : ' + ') + v : v).join('');
+    const plus = q.nums.filter(v => q.wit.indexOf(v) < 0), plusSum = total - drop;
+    const regroup = tr('първо плюсовете: ', 'спочатку плюси: ') + plus.join(' + ') + ' = ' + plusSum +
+      tr(', после минусите: ', ', потім мінуси: ') + plusSum + ' − ' + q.wit.join(' − ') + ' = ' + q.T;
     return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
       'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
       drop + ' &nbsp;→&nbsp; ' + q.wit.join(' + ') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
+      ' &nbsp;→&nbsp; ' + regroup +
       tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
   }
 }
