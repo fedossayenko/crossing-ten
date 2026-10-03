@@ -13,7 +13,7 @@ const LEVELS = [
   { id:99, op:'w', grp:'chain', needs:[8], src:'mbg-winter-2023', d:2, eq:'86 − (51 − 5)', desc:'Brackets first — or see what each bracket is short of 100', also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'kms-2024-2', 'mbg-spring-2025-2', 'kms-2023-2'], gen:genBrackets },
   { id:129, op:'w', grp:'chain', needs:[141], src:'mbg-spring-2025', d:2, eq:'3 + 3 + 3 − 3 · 3', desc:'Equal addends are a product — spot it and it cancels', gen:genRepAdd },
   { id:130, op:'w', grp:'chain', needs:[129], src:'mbg-spring-2025', d:3, eq:'(11 − 10) · (11 − 9)', desc:'Brackets first, then multiply and divide before adding', gen:genMulBr },
-  { id:83, op:'w', grp:'chain', needs:[8], src:'mbg-winter-2024', d:2, eq:'(…) · 0', desc:'One bracket comes to 0, so the long one needs no working', gen:genZeroFac },
+  { id:83, op:'w', grp:'chain', needs:[8, 141], src:'mbg-winter-2024', d:2, eq:'(…) · 0', desc:'One bracket comes to 0, so the long one needs no working', gen:genZeroFac },
   { id:50, op:'w', grp:'chain', needs:[9], d:5, eq:'Плюс или минус', desc:'Choose the signs in a run — how many can be minus', also:['mbg-autumn-2022-2'], gen:genSigns },
   { id:74, op:'w', grp:'chain', needs:[59], grade:3, d:2, eq:'Знакът ◎', desc:'A new sign, defined by an example, then used', gen:genCircOp },
   { id:59, op:'w', grp:'chain', needs:[9], grade:3, d:2, eq:'20 − 2 · 5', desc:'Multiplication first, then + and − left to right', gen:genMulMix },
