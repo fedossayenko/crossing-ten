@@ -2830,6 +2830,11 @@ eval(head + body + test);
     }
     console.log('Коледно 2023 and 2022 kinds: figures recounted from the segments, films as sets, the clock and the calendar stepped through, rectangles and pyramids found again by search');
   }
+  // Децата в кръг: the solution's ring holds one dot per child between the boys, plus the two boys
+  for(let l = 1; l <= 9; l++) for(let r = 1; r <= 9; r++){
+    const svg = ringSvg({kind:'ring', l, r, ans:l + r + 2}, true), dots = (svg.match(/<circle/g) || []).length - 1;
+    if(dots !== l + r + 2) throw new Error('the ring for ' + l + ' and ' + r + ' draws ' + dots + ' children, not ' + (l + r + 2));
+  }
   for(let i = 0; i < 300; i++){   // the Зима 2020 kinds, counted out
     const e = Q.raw(110), sum = e.first ? e.X + e.y : e.y + e.X, from = String(e.X).replace(String(e.ans), '');
     if(sum !== e.S || !(String(e.shown) === from || String(e.X).split('').some((_, k) => String(e.X).slice(0, k) + String(e.X).slice(k + 1) === String(e.shown)))) throw new Error('erasedig: ' + JSON.stringify(e));
