@@ -7,6 +7,7 @@
 // 44, not an extra; «включително» counts the last. The months run March to November, one after another:
 // February has a leap year, and a span across the New Year would need a year to count in.
 // [Bulgarian name, Ukrainian genitive, days, Ukrainian name]
+/** @type {[string, string, number, string][]} */
 const SPAN_MONTHS = [['март', 'березня', 31, 'березень'], ['април', 'квітня', 30, 'квітень'], ['май', 'травня', 31, 'травень'],
                      ['юни', 'червня', 30, 'червень'], ['юли', 'липня', 31, 'липень'], ['август', 'серпня', 31, 'серпень'], ['септември', 'вересня', 30, 'вересень'],
                      ['октомври', 'жовтня', 31, 'жовтень'], ['ноември', 'листопада', 30, 'листопад']];

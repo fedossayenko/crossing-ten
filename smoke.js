@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
 }).listen(0, '127.0.0.1', async () => {
-  const url = 'http://127.0.0.1:' + server.address().port + '/' + (process.argv[2] || '');
+  const url = 'http://127.0.0.1:' + server.address().port + '/';
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'ct-smoke-'));
   const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
     '--user-data-dir=' + dir, '--window-size=390,844', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
@@ -63,7 +63,7 @@ const server = http.createServer((req, res) => {
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     const type = v => String(v).split('').forEach(key);
     const out = [];
-    if(!window.claude && !navigator.serviceWorker.controller && !location.pathname.endsWith('artifact.html')) out.push('the service worker is not serving the page');
+    if(!navigator.serviceWorker.controller) out.push('the service worker is not serving the page');
     for(const l of LEVELS){
       $('levelPill').click();
       if(!document.querySelector('.pick[data-lvl="' + l.id + '"]')) document.querySelector('#pickGrades [data-v="0"]').click();   // it opens on her grade
@@ -113,7 +113,7 @@ const server = http.createServer((req, res) => {
     document.querySelector('#pickComps [data-v=""]').click(); r.back = $('pickPapers').hidden; return r; })()`);
   expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // the welcome speaks the language she picks at once, and once saved it does not come back
-  if(!process.argv[2]){
+  {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
       document.querySelector('#pLang input[value="bg"]').click(); $('pName').value = 'Ани'; return r; })()`);
     expect(uk.title === 'Ласкаво просимо!' && uk.save === 'Почати', 'the welcome did not switch language: ' + JSON.stringify(uk));
@@ -146,7 +146,7 @@ const server = http.createServer((req, res) => {
 
   // Two players: the launch asks who is playing; picking the other one reloads into her
   // language, mascot and (empty) log, and every level still plays.
-  if(!process.argv[2]){
+  {
     await run(`localStorage.setItem('crossingten.players', JSON.stringify({ cur:'p1', list:[
       { id:'p1', name:'Ани', mascot:'fox', lang:'en' }, { id:'p2', name:'Иво', mascot:'owl', lang:'uk' }] }));
       sessionStorage.clear(); location.reload(); 1`);
@@ -173,7 +173,7 @@ const server = http.createServer((req, res) => {
     expect(g3.grade === 3 && g3.next === 3 && g3.comp.join() === '3', 'a 3rd-grade profile went wrong: ' + JSON.stringify(g3));
   }
   // Multiple choice in training: a wrong option is crossed out, the right one ends the task.
-  if(!process.argv[2]){
+  {
     const ch = JSON.parse(await run(`(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       $('ansSeg').querySelector('[data-c="1"]').click(); await wait(100);
@@ -230,7 +230,7 @@ const server = http.createServer((req, res) => {
   }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
-  if(process.env.SMOKE_SYNC && !process.argv[2]){
+  if(process.env.SMOKE_SYNC){
     const before = bad.length + errors.length;
     const A = url.replace('localhost', '127.0.0.1'), B = A.replace('127.0.0.1', 'localhost');
     const open = async at => { await cmd('Page.navigate', { url: at }); await settle(); };
@@ -275,8 +275,8 @@ const server = http.createServer((req, res) => {
     if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, a reset and logout all work');
   }
   // Offline, as on a plane: the server gone altogether, a fresh navigation, and a round played from
-  // the service worker's copy (the page only, not the artifact, which has no worker)
-  if(!process.argv[2] && !process.env.SMOKE_SYNC){
+  // the service worker's copy
+  if(!process.env.SMOKE_SYNC){
     server.close(); server.closeAllConnections();
     await cmd('Page.navigate', { url: url.split('?')[0] + '?offline=' + Date.now() }); await settle();
     const off = await page(`(() => { $('levelPill').click(); const b = document.querySelector('#pickAll .pick'); b.click();
@@ -286,7 +286,7 @@ const server = http.createServer((req, res) => {
   }
   bad.unshift(...errors);
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }
-  console.log('smoke: played every level in Chrome' + (process.argv[2] ? '' : ' for two players') + ', ' + res.rounds +
-    ' rounds logged, no script errors' + (process.argv[2] ? '' : '; asking, switching and adding players, А/Б/В/Г and a 20-task competition all work'));
+  console.log('smoke: played every level in Chrome for two players, ' + res.rounds +
+    ' rounds logged, no script errors; asking, switching and adding players, А/Б/В/Г and a 20-task competition all work');
   done(0);
 });

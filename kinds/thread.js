@@ -4,6 +4,7 @@
 
 // МБГ Пролет 2025, задача 13: a thread made a square of side 9 см, then an equilateral triangle. The
 // thread is the square's perimeter, 36 см, shared into 3 equal sides: 12 см.
+/** @type {[number, string, string][]} */
 const THREAD = [[4, 'квадрат', 'квадрат'], [3, 'триъгълник с равни страни', 'трикутник з рівними сторонами']];
 function genThread(){
   for(;;){

@@ -58,6 +58,7 @@ function rulerSvg(q){
 }
 function segUnitsSvg(q){
   const W = 236, tot = q.ab + 10*q.cm + q.cd, at = v => 14 + v / tot * (W - 28);
+  /** @type {[number, string][]} */
   const pts = [[at(0), 'A'], [at(q.ab), 'B'], [at(q.ab + 10*q.cm), 'C'], [at(tot), 'D']];
   return '<div class="fig wide"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="' + tr('четири точки върху отсечка', 'чотири точки на відрізку') + '">' +
     '<line x1="' + at(0) + '" y1="0" x2="' + at(tot) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
@@ -66,6 +67,7 @@ function segUnitsSvg(q){
 function segSvg(q){
   const W = 236, tot = q.p + q.q + q.r;
   const at = v => 14 + v / tot * (W - 28);
+  /** @type {[number, string][]} */
   const pts = [[at(0), 'A'], [at(q.p), 'C'], [at(q.p + q.q), 'B'], [at(tot), 'D']];
   return '<div class="fig"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="' + tr('четири точки върху права', 'чотири точки на прямій') + '">' +
     '<line x1="4" y1="0" x2="' + (W - 4) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +

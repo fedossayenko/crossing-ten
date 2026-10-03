@@ -38,6 +38,7 @@ function namedTops(k, S){
 }
 // МБГ Зима 2022, задача 20: two two-digit numbers written with four different digits — the largest
 // difference is 98 − 10 = 88. The same frame asks the smallest sum, the largest sum, the smallest difference.
+/** @type {[string, string, (x: number, y: number) => number, number][]} */
 const NAMED_FOUR = [['най-голямата разлика', 'найбільшу різницю', (x, y) => x - y, 1], ['най-малката разлика', 'найменшу різницю', (x, y) => x - y, -1],
                     ['най-големия сбор', 'найбільшу суму', (x, y) => x + y, 1], ['най-малкия сбор', 'найменшу суму', (x, y) => x + y, -1]];
 function namedFour(v){
@@ -53,6 +54,7 @@ function namedFour(v){
 // Коледно 2022, задача 7: A is the smallest two-digit number with equal digits, B > A + A, B < 25, C + C = B — so
 // C? A = 11, so B is 23 or 24; C + C is even, B = 24, C = 12. Level 152, beside 13: three facts read in order.
 // [Bulgarian, Ukrainian, the number]
+/** @type {[string, string, number][]} */
 const NAMED_A = [['най-малкото двуцифрено число с еднакви цифри', 'найменше двоцифрове число з однаковими цифрами', 11],
                  ['най-голямото едноцифрено число', 'найбільше одноцифрове число', 9],
                  ['най-малкото двуцифрено число', 'найменше двоцифрове число', 10],

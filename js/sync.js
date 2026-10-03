@@ -4,7 +4,7 @@
    Each sync sends what the server has not had from this device and merges back what it has
    not had from the server: rounds are a set union by id, players are last-edit-wins on
    `updated`, a player's resetAt drops her older rounds, and a deleted player travels as a
-   tombstone in PLAYERS.gone. The artifact copy has its own database and does not use this. */
+   tombstone in PLAYERS.gone. */
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
   || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
 // Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
@@ -15,7 +15,7 @@ const FKEY = 'crossingten.family';
 let FAMILY = null;
 try { FAMILY = JSON.parse(localStorage.getItem(FKEY)); } catch(e){}
 const saveFamily = () => { try { FAMILY ? localStorage.setItem(FKEY, JSON.stringify(FAMILY)) : localStorage.removeItem(FKEY); } catch(e){} };
-const SYNC_ON = !!SYNC_URL && !window.claude && typeof fetch === 'function';
+const SYNC_ON = !!SYNC_URL && typeof fetch === 'function';
 const IN = () => !!(FAMILY && FAMILY.token);
 
 // Every player's rounds, from her own storage key (the current player's are in LOCAL).

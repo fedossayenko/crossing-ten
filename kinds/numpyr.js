@@ -12,6 +12,7 @@
 // rows[r][i]: row r from the top. Shown are the paper's five places; every other box has a letter.
 const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
+/** @type {[number, number, string][]} */
 const PYR_LET = [[1, 1, 'A'], [2, 0, 'B'], [2, 2, 'C'], [3, 1, 'D'], [3, 2, 'E'], [3, 3, 'F'], [4, 0, 'G'], [4, 1, 'H'], [4, 2, 'K'], [4, 4, 'M']];
 function pyrRows(base){ const rows = [base]; while(rows[0].length > 1) rows.unshift(rows[0].slice(1).map((v, i) => rows[0][i] + v)); return rows; }
 function genPyrOne(){
@@ -80,7 +81,7 @@ function eqNumPyr(q){
 function whyNumPyr(q, full){
   if(q.kind === 'numpyr' && q.shape === 'one'){
     if(!full) return tr('Търси две съседни кутии, на които знаеш едната и тази над тях. Горе се изважда, долу се събира.', 'Шукай дві сусідні клітинки, де відома одна з них і та, що над ними. Згори віднімаєш, знизу додаєш.');
-    const v = ([r, i]) => q.rows[r][i];
+    const v = (/** @type {[number, number, string]} */ [r, i]) => q.rows[r][i];
     return PYR_LET.map(L => L[2] + ' = ' + v(L)).join(', ') + ' &nbsp;→&nbsp; ' + (q.asks < 0 ? '(' + PYR_LET.slice(0, 3).map(v).join(' + ') + ') − (' + PYR_LET.slice(3).map(v).join(' + ') + ') = ' + q.up + ' − ' + q.low + ' = ' + q.ans : q.ans);
   }
   if(q.kind === 'numpyr'){

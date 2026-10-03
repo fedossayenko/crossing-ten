@@ -144,7 +144,7 @@ function statsFrom(rounds){
     .sort((x,y) => y.rate - x.rate || y.seen - x.seen).slice(0,6);
   const m = mastery(rounds);
   return { rounds:rounds.length, sums, first, perfect, lvl, byOp, streak, streakBest, trouble, bestRun, clean10, fixed,
-           comps, groups: Object.keys(grps).filter(k => k >= 0).length, langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
+           comps, groups: Object.keys(grps).filter(k => +k >= 0).length, langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
 }
 
 /* ---------- badges ----------
@@ -215,12 +215,13 @@ function medal(b, got){
 /* ---------- cat ---------- */
 function mood(m){ const c = $('cat'); if(c.dataset.mood !== m) c.dataset.mood = m; }
 // A small move — a glance, an ear, the tail — played once; the same one again restarts it.
+let fidgetTimer = 0;
 function fidget(kind){
   const c = $('cat');
   if(REDUCED) return;
   delete c.dataset.fidget; void c.getBoundingClientRect();
   c.dataset.fidget = kind;
-  clearTimeout(fidget.t); fidget.t = setTimeout(() => { delete c.dataset.fidget; }, 1700);
+  clearTimeout(fidgetTimer); fidgetTimer = setTimeout(() => { delete c.dataset.fidget; }, 1700);
 }
 // While she thinks over a task the mascot is not a statue: every 7–14 seconds, one small move.
 (function life(){
@@ -242,6 +243,7 @@ const TIERS = [
   { min:0,   mood:'tilt',     tune:[440,554],                              gap:.22 }
 ];
 function tierFor(score, total){ const f = total ? score/total : 0; return TIERS.find(x => f >= x.min); }
+let confettiTimer = 0;
 function confetti(n, spread){
   const box = $('confetti');
   const cols = ['var(--good)','var(--warm)','var(--accent)','var(--rose)','var(--eye)'];
@@ -256,8 +258,8 @@ function confetti(n, spread){
          Math.round(Math.random()*720 - 360) + 'deg"></i>';
   }
   box.insertAdjacentHTML('beforeend', h);
-  clearTimeout(confetti.clear);
-  confetti.clear = setTimeout(() => { box.innerHTML = ''; }, 5200);
+  clearTimeout(confettiTimer);
+  confettiTimer = setTimeout(() => { box.innerHTML = ''; }, 5200);
 }
 function putCat(slot, m){
   const big = $('cat').cloneNode(true);
@@ -278,13 +280,13 @@ function newRound(qs, comp){
   show();
 }
 // Nobody has pressed anything for a while: the mascot nods off, and wakes at the next key.
-let napTimer = null;
+let napTimer = null, yawnTimer = null;
 function wake(){
   clearTimeout(napTimer);
   if($('cat').dataset.mood === 'sleepy') mood('idle');
   napTimer = setTimeout(() => { if(!S.settled) mood('sleepy'); }, 45000);
-  clearTimeout(wake.yawn);
-  wake.yawn = setTimeout(() => {          // a yawn first, then back to waiting
+  clearTimeout(yawnTimer);
+  yawnTimer = setTimeout(() => {          // a yawn first, then back to waiting
     if(S.settled || $('cat').dataset.mood !== 'idle') return;
     mood('yawn');
     setTimeout(() => { if($('cat').dataset.mood === 'yawn') mood('idle'); }, 2400);
@@ -525,7 +527,6 @@ function finish(){
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
   syncSoon();
-  if(DB) DB.collection(DBC).doc(LOCAL.rounds[LOCAL.rounds.length-1].id).set(LOCAL.rounds[LOCAL.rounds.length-1]).catch(() => {});
 
   // a level learned this very round
   const nowM = mastery(LOCAL.rounds)[S.level];
@@ -640,14 +641,14 @@ function renderParent(){
     '<div class="chip"><span class="eq">' + factLabel(x.key) + '</span><span class="r">' + t('missed', x.miss, x.seen) + '</span></div>'
   ).join('');
   $('byLevelWrap').hidden = !st.rounds;
-  $('byLevel').innerHTML = Object.keys(st.lvl).sort((x,y) => x-y).map(L => {
+  $('byLevel').innerHTML = Object.keys(st.lvl).sort((x,y) => +x - +y).map(L => {
     const d = st.lvl[L], lv = LEVELS.find(l => l.id === +L);
     return bar(lv ? levelName(lv) : L, Math.round(100*d.f/d.n), d.n);
   }).join('');
   $('advice').textContent = advice(st);
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === LOCAL.n)));
   document.querySelectorAll('#ansSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.c === '1') === !!LOCAL.choice)));
-  $('csv').hidden = !LOCAL.rounds.length || !!window.claude;   // the artifact frame blocks plain downloads
+  $('csv').hidden = !LOCAL.rounds.length;
 }
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
 function csvOf(rounds){
@@ -702,7 +703,7 @@ document.querySelectorAll('#lenSeg button').forEach(b => b.onclick = () => {
 });
 
 let resetArmed = null;
-$('reset').onclick = async () => {
+$('reset').onclick = () => {
   if(!resetArmed){
     resetArmed = setTimeout(() => { resetArmed = null; $('reset').classList.remove('armed'); $('reset').textContent = t('reset'); }, 3500);
     $('reset').classList.add('armed'); $('reset').textContent = t('resetArm');
@@ -710,12 +711,10 @@ $('reset').onclick = async () => {
   }
   clearTimeout(resetArmed); resetArmed = null;
   $('reset').classList.remove('armed'); $('reset').textContent = t('reset');
-  const ids = LOCAL.rounds.map(r => r.id);
   LOCAL.rounds = []; saveLocal();
   PLAYER.resetAt = PLAYER.updated = Date.now(); savePlayers(); syncSoon();   // other devices drop her older rounds too
   W = weightsFrom(LOCAL.rounds);
   renderParent();
-  if(DB) for(const id of ids){ try { await DB.collection(DBC).doc(id).delete(); } catch(e){ break; } }
 };
 
 /* ---------- level picker ---------- */
@@ -726,7 +725,7 @@ const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paper
 // the picker's filter chip: the short tag and the grade, "Зима 2024 · 2 клас"; the full name is its tooltip
 const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
-  const l = LEVELS.find(x => x.id === S.level) || { eq:'' }, k = PICK_GROUPS.findIndex(g => g.has(l));
+  const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), k = PICK_GROUPS.findIndex(g => g.has(l));
   $('levelName').textContent = levelName(l);
   $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (k >= 0 ? ' · ' + t('groups')[k] : '');
 }
@@ -872,7 +871,7 @@ function buildPicker(){
   };
   const grades = [...new Set(LEVELS.map(l => l.grade))].sort();
   chips('pickGrades', [['0', t('allGrades')]].concat(grades.map(g => [String(g), t('gradeN', g)])), String(PICK_GRADE), v => { PICK_GRADE = +v; PICK_ROUND = PICK_PAPER = ''; });
-  const inGrade = LEVELS.filter(gradeOk), comps = [...new Set(inGrade.flatMap(l => l.papers.map(compOf)))].sort((a, b) => (a !== 'basics') - (b !== 'basics') || (a !== 'mbg') - (b !== 'mbg'));
+  const inGrade = LEVELS.filter(gradeOk), comps = [...new Set(inGrade.flatMap(l => l.papers.map(compOf)))].sort((a, b) => +(a !== 'basics') - +(b !== 'basics') || +(a !== 'mbg') - +(b !== 'mbg'));
   if(PICK_COMP && !comps.includes(PICK_COMP)) PICK_COMP = PICK_PAPER = '';
   chips('pickComps', [['', t('all')]].concat(comps.map(c => [c, c === 'basics' ? t('basics') : t('comps')[c]])), PICK_COMP, v => { PICK_COMP = v; PICK_ROUND = PICK_PAPER = ''; });
   // МБГ has rounds — autumn, winter, … — each with its years; a competition with one round skips this row
@@ -882,7 +881,7 @@ function buildPicker(){
   chips('pickRounds', rounds.length > 1 ? [['', t('all')]].concat(rounds.map(r => [r, t('mbgRounds')[r]])) : [], PICK_ROUND, v => { PICK_ROUND = v; PICK_PAPER = ''; });
   const yearOf = p => +(paperSrc(p).match(/\d{4}$/) || [0])[0];
   const papers = ofComp.filter(p => !PICK_ROUND || roundOf(p) === PICK_ROUND)
-    .sort((a, b) => !yearOf(a) - !yearOf(b) || yearOf(b) - yearOf(a) || ROUNDS.findIndex(r => a.includes(r)) - ROUNDS.findIndex(r => b.includes(r)) || paperGrade(a) - paperGrade(b));
+    .sort((a, b) => +!yearOf(a) - +!yearOf(b) || yearOf(b) - yearOf(a) || ROUNDS.findIndex(r => a.includes(r)) - ROUNDS.findIndex(r => b.includes(r)) || paperGrade(a) - paperGrade(b));
   if(PICK_PAPER && !papers.includes(PICK_PAPER)) PICK_PAPER = '';
   // with a round picked, its papers are just years
   const paperLabel = p => (PICK_ROUND ? String(yearOf(p) || t('otherYears')) : t('paperTag')[paperSrc(p)]) + (PICK_GRADE ? '' : ' · ' + t('gradeN', paperGrade(p)));
@@ -1056,31 +1055,7 @@ const builtOn = () => {
   catch(e){ return ''; }
 };
 const heldHere = () => t('heldHere', LOCAL.rounds.length);
-// The artifact database keeps each player's rounds apart; the first keeps the original name.
-const DBC = PLAYER.id === 'p1' ? 'rounds' : 'rounds_' + PLAYER.id;
-let DB = null;
-(async () => {
-  const db = window.claude && await claude.use('db');
-  if(!db) { $('synced').textContent = heldHere() + builtOn(); return; }   // sync.js takes this line over when sync is on
-  DB = db;
-  try {
-    const snap = await db.collection(DBC).orderBy('ts','desc').limit(300).get();
-    const remote = snap.docs.map(d => d.data()).filter(r => r && r.id);
-    const byId = {};
-    LOCAL.rounds.forEach(r => byId[r.id] = r);
-    remote.forEach(r => { if(!byId[r.id]) byId[r.id] = r; });
-    const remoteIds = {}; remote.forEach(r => remoteIds[r.id] = true);
-    LOCAL.rounds = Object.keys(byId).map(k => byId[k]).sort((x,y) => x.ts - y.ts).slice(-400);
-    saveLocal();
-    W = weightsFrom(LOCAL.rounds);
-    $('synced').textContent = t('synced', LOCAL.rounds.length) + builtOn();
-    if(!$('stats').hidden) renderStats();
-    const pending = LOCAL.rounds.filter(r => !remoteIds[r.id]).slice(-20);
-    for(const r of pending){ try { await db.collection(DBC).doc(r.id).set(r); } catch(e){ break; } }
-  } catch(e){
-    $('synced').textContent = heldHere() + builtOn();
-  }
-})();
+$('synced').textContent = heldHere() + builtOn();   // sync.js takes this line over when sync is on
 
 const say = t => { $('synced').textContent = t + builtOn(); };
 
@@ -1114,12 +1089,12 @@ if(FIRST) openEdit(PLAYER, true);
 // to the screen between rounds, it picks up a newer build, told by the page's Last-Modified
 // (no header: nothing happens). Nothing is lost: it only reloads before a key is pressed.
 function newerBuild(){
-  if(document.visibilityState !== 'visible' || window.claude || midRound() || COMP) return;
+  if(document.visibilityState !== 'visible' || midRound() || COMP) return;
   fetch(location.pathname, { method:'HEAD', cache:'no-cache' }).then(r => {
     if(Date.parse(r.headers.get('last-modified')) > Date.parse(document.lastModified) + 60000){ chose(); location.reload(); }
   }).catch(() => {});
 }
 document.addEventListener('visibilitychange', newerBuild);
-// Offline play and same-build-everywhere for the Pages copy; the artifact frame has no use for it.
-if('serviceWorker' in navigator && window.isSecureContext && !window.claude)
+// Offline play, and the same build everywhere.
+if('serviceWorker' in navigator && window.isSecureContext)
   navigator.serviceWorker.register('sw.js').catch(() => {});

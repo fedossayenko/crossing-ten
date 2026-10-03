@@ -4,6 +4,7 @@
 
 // МБГ Зима 2020, задача 17: five points in a plus. Any three make a triangle unless they lie on one
 // line — and the plus has two such lines of three: 10 threes − 2 = 8. Counted over every three.
+/** @type {[number, number][][]} */
 const TRIPTS = [
   [[1,0],[0,1],[1,1],[2,1],[1,2]],             // the paper's plus
   [[0,1],[1,1],[2,1],[1,0]],                   // a row of three and one above

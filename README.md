@@ -145,9 +145,6 @@ Everything is a classic script sharing one global scope, loaded in the order the
 write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row
 to `js/levels.js`, and add a check to `check.js`.
 
-`node build-artifact.js` folds everything back into one `artifact.html` for the Claude
-artifact copy, which cannot load files beside it.
-
 ## Players, languages and mascots
 
 Tap the mascot to see who is playing. Each player has a name, one of four mascots and
@@ -282,11 +279,14 @@ home-screen icon: Safari can clear a website's storage after a week unused, a ho
 
 ## Checks
 
+`npx -p typescript@7.0.2 tsc -p .` type-checks the plain JS — nothing is built or emitted.
+`types.d.ts` describes a question, a level and a kind; a table of mixed rows carries a JSDoc
+`@type` so its numbers stay numbers.
+
 `node smoke.js` opens the page in headless Chrome (twice, so the second load goes
 through the service worker), plays one round of every level through the real picker
 and keypad, missing the first question twice to reach the hint and the reveal, and
-fails on any script error. `node smoke.js artifact.html` does the same for the
-single-file build.
+fails on any script error.
 
 `node check.js` generates thousands of questions per level and verifies the answer,
 the worked line, the summary line and the layout agree, plus targeted checks that
@@ -325,12 +325,9 @@ holds nothing but nicknames, mascots, languages and answer logs. `node worker/te
 checks the server (against `wrangler dev`, which reads a stand-in Google key from
 `worker/.dev.vars`, or the deployed URL, where it deletes its test accounts afterwards);
 `SMOKE_SYNC=<worker url> node smoke.js` runs two real browser "devices" through it.
-The artifact copy keeps using its own database.
 
 ### For the grown-ups
 
 Under Progress: first try by group over the last 30 days, the slips that keep coming
 back, and **Download all rounds (CSV)**.
 
-The Claude artifact copy syncs on its own through the artifact database, so if both
-devices open the artifact link rather than the Pages one, no account is needed.

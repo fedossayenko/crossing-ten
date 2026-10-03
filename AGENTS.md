@@ -5,6 +5,7 @@ classic scripts sharing one global scope; no build step, no dependencies. Layout
 design rules (difficulty rubric, training path) are in `README.md`.
 
 ## Commands
+- `npx -p typescript@7.0.2 tsc -p .`: TypeScript checks the plain JS against `types.d.ts` (no build, nothing emitted).
 - `node check.js`: generator checks. `node smoke.js`: plays every level in headless Chrome.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local`, then `node worker/test.js`
@@ -30,4 +31,3 @@ design rules (difficulty rubric, training path) are in `README.md`.
   calls in a generator: both languages must ask the same question from the same seed.
 - All scripts share one global scope: a top-level name must be unique across every file
   (check.js fails otherwise; `smoke.js` catches the page failing to load).
-- After a change, `node build-artifact.js` rebuilds the single-file artifact copy.

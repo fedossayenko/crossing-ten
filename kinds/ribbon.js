@@ -21,6 +21,7 @@ function genRibbonDiff(){
 const ribLen = r => r.m ? r.m + ' м' : r.d && r.c ? r.d + ' дм ' + tr('и', 'і') + ' ' + r.c + ' см' : r.d ? r.d + ' дм' : r.c + ' см';
 const ribCm = r => (r.m || 0)*100 + (r.d || 0)*10 + (r.c || 0);
 function ribSay(cm){
+  /** @type {{c?: number, d?: number, m?: number}[]} */
   const ways = [{c:cm}];
   if(cm % 10 === 0) ways.push({d: cm/10});
   if(cm === 100) ways.push({m:1});

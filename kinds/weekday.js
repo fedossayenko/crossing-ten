@@ -11,6 +11,7 @@ const DAYS = [                                   // f marks the feminine days: "
 // Задача 19: whole weeks give one each, the leftover days may or may not add another.
 // Задача 19: the first of the month falls on a known weekday. The same weekday comes
 // round every seven days, so the last one is as far along as another seven still fits.
+/** @type {[string, number][]} */
 const MONTHS = [['януари',31], ['март',31], ['април',30], ['май',31], ['юни',30], ['юли',31],
                 ['август',31], ['септември',30], ['октомври',31], ['ноември',30], ['декември',31]];
 function genLastDay(){

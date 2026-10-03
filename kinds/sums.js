@@ -24,6 +24,7 @@ function genSums(){
 
 // МБГ Есен, 3 клас, задача 7: how many different two-digit numbers the sum of two two-digit
 // numbers can be — from 10 + 10 = 20 up to 99, so 80. Counted by brute force over every pair.
+/** @type {[string, string, (x: number, y: number) => number, (v: number) => boolean][]} */
 const SUMS_TWO = [
   ['двуцифрени числа можем да получим при събирането на две двуцифрени числа', 'двоцифрових чисел можна отримати, додаючи два двоцифрові числа', (x, y) => x + y, v => v <= 99],
   ['трицифрени числа можем да получим при събирането на две двуцифрени числа', 'трицифрових чисел можна отримати, додаючи два двоцифрові числа', (x, y) => x + y, v => v >= 100],

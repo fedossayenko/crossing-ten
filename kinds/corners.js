@@ -6,6 +6,7 @@
 // A figure has as many vertices as sides, so a rectangle gives 8, a triangle 6: 8 + 8 + 8 + 6 + 6 + 6 = 42.
 // The trap is to count the sides only (21), or one triangle as 3.
 // [Bulgarian singular, Bulgarian count form, Ukrainian genitive singular, Ukrainian genitive plural, sides]
+/** @type {[string, string, string, string, number][]} */
 const CORNER_FIGS = [['правоъгълник', 'правоъгълника', 'прямокутника', 'прямокутників', 4],
                      ['квадрат', 'квадрата', 'квадрата', 'квадратів', 4],
                      ['триъгълник', 'триъгълника', 'трикутника', 'трикутників', 3]];

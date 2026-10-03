@@ -1,4 +1,5 @@
 /* ---------- questions ---------- */
+/** @type {Level[]} */
 const LEVELS = [
   { id:1, op:'-', d:2, eq:'42 − 7', desc:'Two digits take away one, crossing a ten' },
   { id:2, op:'-', needs:[1], d:2, eq:'42 − 17', desc:'Two digits take away two, with a borrow' },
