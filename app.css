@@ -169,6 +169,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 @keyframes blink{50%{opacity:0}}
 .stage{display:flex; flex-direction:column; align-items:center; gap:9px; max-width:100%}
 .ask{font-size:clamp(15px,4.2vw,20px); font-weight:700; line-height:1.45; text-align:center; text-wrap:balance; max-width:30ch}
+/* an iPad or laptop: a long story in 30 characters a line becomes a tall thin column; 44 still reads as one paragraph */
+@media (min-width:600px){ .ask{max-width:44ch} }
 .ask .num{font-family:Fredoka,sans-serif; font-weight:500; letter-spacing:.02em; white-space:nowrap}
 .note{font-size:clamp(12px,3vw,14px); font-weight:700; font-style:italic; color:var(--muted); text-align:center}
 .given{font-family:Fredoka,sans-serif; font-size:clamp(19px,5vw,28px); color:var(--muted); letter-spacing:.03em; text-align:center}

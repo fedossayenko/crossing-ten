@@ -26,7 +26,7 @@ function genLiftDay(){
 }
 function liftSvg(q){
   const lab = (x, y, t, a) => '<text x="' + x + '" y="' + y + '" text-anchor="' + (a || 'middle') + '" font-size="12" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
-  return '<div class="fig wide"><svg viewBox="0 0 250 86" style="max-width:210px" role="img" aria-label="' + tr('стадионът и двете станции', 'стадіон і дві станції') + '">' +
+  return '<div class="fig wide"><svg viewBox="0 0 250 86" style="max-width:clamp(210px,40vw,300px)" role="img" aria-label="' + tr('стадионът и двете станции', 'стадіон і дві станції') + '">' +
     '<path d="M14 62 H170 L222 14" fill="none" stroke="var(--ink)" stroke-width="2.4"/>' +
     '<circle cx="14" cy="62" r="5" fill="var(--ink)"/><circle cx="170" cy="62" r="5" fill="var(--ink)"/><circle cx="222" cy="14" r="5" fill="var(--ink)"/>' +
     lab(92, 54, q.F + ' км') + lab(205, 46, q.L + ' км', 'start') + lab(14, 80, tr('Стадион', 'Стадіон'), 'start') + lab(170, 80, tr('Станция 1', 'Станція 1')) +
