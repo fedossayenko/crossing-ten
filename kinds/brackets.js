@@ -6,6 +6,15 @@
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
 function genBrackets(){
+  if(Math.random() < 0.12){
+    // Коледно 2023, задача 2: (100 − 57) + 0 − (96 − 78). Each bracket first, and the + 0 changes
+    // nothing: 43 + 0 − 18 = 25.
+    for(;;){
+      const a = Math.random() < 0.5 ? 100 : 60 + rnd(40), b = 21 + rnd(a - 30), c = 40 + rnd(60), d = 11 + rnd(c - 20);
+      if((a - b) - (c - d) < 1) continue;          // the hint names the 0, so the answer is never 0
+      return {kind:'brackets', shape:6, a, b, c, d, ans: (a - b) - (c - d)};
+    }
+  }
   if(Math.random() < 0.15){
     // МБГ Пролет 2025, задача 1: 111 − (111 − 89) + 22 − 100. The bracket takes away 111 and gives back
     // 89, so what is left of 111 is 89: 89 + 22 − 100 = 11.
@@ -60,7 +69,7 @@ function genBrackets(){
     return {kind:'brackets', shape:1, xs: pick, gaps, ans};
   }
 }
-const bracketsExpr = q => q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
+const bracketsExpr = q => q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
   if(q.kind === 'brackets'){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
@@ -72,6 +81,10 @@ function eqBrackets(q){
 }
 function whyBrackets(q, full){
   if(q.kind === 'brackets'){
+    if(q.shape === 6){
+      if(!full) return tr('Първо сметките в скобите. Какво прави + 0?', 'Спершу обчисли в дужках. Що змінює + 0?');
+      return q.a + ' − ' + q.b + ' = <b>' + (q.a - q.b) + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + (q.c - q.d) + '</b> &nbsp;→&nbsp; ' + (q.a - q.b) + ' + 0 − ' + (q.c - q.d) + ' = ' + q.ans;
+    }
     if(q.shape === 5){
       if(!full) return tr('От числото се вади скоба, в която стои същото число. Какво остава от него?', 'Від числа віднімають дужку, у якій стоїть те саме число. Що від нього залишається?');
       return q.a + ' − (' + q.a + ' − ' + q.b + ') = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + q.b + ' + ' + q.c + ' − ' + q.d + ' = ' + q.ans;

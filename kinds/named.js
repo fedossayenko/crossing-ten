@@ -50,6 +50,20 @@ function namedFour(v){
   }
   return {best, wit};
 }
+// Коледно 2022, задача 7: A is the smallest two-digit number with equal digits, B > A + A, B < 25, C + C = B — so
+// C? A = 11, so B is 23 or 24; C + C is even, B = 24, C = 12. Level 152, beside 13: three facts read in order.
+// [Bulgarian, Ukrainian, the number]
+const NAMED_A = [['най-малкото двуцифрено число с еднакви цифри', 'найменше двоцифрове число з однаковими цифрами', 11],
+                 ['най-голямото едноцифрено число', 'найбільше одноцифрове число', 9],
+                 ['най-малкото двуцифрено число', 'найменше двоцифрове число', 10],
+                 ['най-голямото едноцифрено четно число', 'найбільше одноцифрове парне число', 8],
+                 ['най-малкото двуцифрено нечетно число', 'найменше двоцифрове непарне число', 11],
+                 ['най-малкото двуцифрено число с различни цифри', 'найменше двоцифрове число з різними цифрами', 10]];
+function genNamedPair(){
+  const w = rnd(NAMED_A.length), A = NAMED_A[w][2], d = Math.random() < 0.6 ? 0 : 1 + rnd(3), lo = 2*A + d;
+  const B = lo % 2 ? lo + 1 : lo + 2, L = B + 1 + rnd(2);           // the only even number above lo and under L
+  return {kind:'named', shape:6, w, A, d, lo, B, L, traps:[B, A], ans: B / 2};
+}
 function genNamed(){
   if(Math.random() < 0.06){
     const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
@@ -118,6 +132,13 @@ const namedNum = n => n + ' ' + (new Intl.PluralRules('uk').select(n) === 'few' 
 
 function drawNamed(q){
   if(q.kind === 'named'){
+    if(q.shape === 6){
+      const plus = 'A + A' + (q.d ? ' + ' + q.d : '');
+      return '<div class="ask">' + tr('Числото <b>A</b> е ' + NAMED_A[q.w][0] + ', ', 'Число <b>A</b> — ' + NAMED_A[q.w][1] + ', ') +
+        '<span class="num" style="white-space:nowrap"><b>B</b> &gt; ' + plus + '</span>, <span class="num" style="white-space:nowrap"><b>B</b> &lt; ' + q.L + '</span>, <span class="num" style="white-space:nowrap"><b>C + C = B</b></span>. ' +
+        tr('На колко е равно числото C?', 'Чому дорівнює число C?') + '</div>' +
+        '<div class="line" style="font-size:clamp(34px,10vw,56px)">C = ' + SLOT + '</div>';
+    }
     if(q.shape === 5){
       return '<div class="ask">' + tr('Кое е <b>' + NAMED_FOUR[q.v][0] + '</b> на две двуцифрени числа, записани с <b>4 различни</b> цифри?',
         'Яку <b>' + NAMED_FOUR[q.v][1] + '</b> можуть мати два двоцифрові числа, записані <b>4 різними</b> цифрами?') + '</div>' +
@@ -161,6 +182,7 @@ function drawNamed(q){
   }
 }
 function eqNamed(q){
+  if(q.kind === 'named' && q.shape === 6) return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.ans;
   if(q.kind === 'named' && q.shape === 5) return q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + ' = ' + q.ans;
   if(q.kind === 'named' && q.shape === 4 && q.may) return q.tops.map(t => t.join('+')).join(tr(' или ', ' або ')) + ' → ' + q.ans + tr(' или ', ' або ') + q.alt[0];
   if(q.kind === 'named' && q.shape === 4) return tr(q.k + ' различни, сбор ' + q.S + ' → най-голямо ' + q.ans,
@@ -175,6 +197,11 @@ function eqNamed(q){
 }
 function whyNamed(q, full){
   if(q.kind === 'named'){
+    if(q.shape === 6){
+      if(!full) return tr('Първо кое число е A. После кои числа са между ' + (q.d ? 'A + A + ' + q.d : 'A + A') + ' и ' + q.L + '. Може ли C + C да е нечетно?', 'Спершу — яке число A. Потім — які числа між ' + (q.d ? 'A + A + ' + q.d : 'A + A') + ' і ' + q.L + '. Чи може C + C бути непарним?');
+      const between = []; for(let v = q.lo + 1; v < q.L; v++) between.push(v);
+      return 'A = <b>' + q.A + '</b> &nbsp;→&nbsp; A + A' + (q.d ? ' + ' + q.d : '') + ' = ' + q.lo + ' &nbsp;→&nbsp; B: ' + between.join(tr(' или ', ' або ')) + ' &nbsp;→&nbsp; ' + tr('C + C е четно', 'C + C — парне') + ', B = <b>' + q.B + '</b> &nbsp;→&nbsp; C = ' + q.ans;
+    }
     if(q.shape === 5){
       if(!full) return q.v === 0 ? tr('Едното възможно най-голямо, другото — най-малкото с останалите цифри.', 'Одне якомога більше, друге — найменше з решти цифр.')
         : q.v === 1 ? tr('Двете числа трябва да са съвсем близо — едното малко над кръгло число, другото малко под него.', 'Два числа мають бути зовсім близько — одне трохи більше за кругле число, інше трохи менше.')

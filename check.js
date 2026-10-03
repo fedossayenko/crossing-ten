@@ -1532,6 +1532,15 @@ for(let i = 0; i < 4000; i++){
     if(q.m === 1 && shown.indexOf('1 път') < 0) throw new Error('„1 пъти" — Bulgarian wants the singular');
     continue;
   }
+  if(q.shape === 6 || q.shape === 7){   // Коледно 2023 and 2022: lengths written every which way, read back to см
+    const cmOf = r => (r.m || 0)*100 + (r.d || 0)*10 + (r.c || 0);
+    if(q.shape === 6){
+      const n = q.groups.reduce((t, g) => { if(cmOf(g.r) !== g.cm) throw new Error('a garland is not as long as it says'); return t + ((q.longer ? g.cm > q.T : g.cm < q.T) ? g.n : 0); }, 0);
+      if(n !== q.ans || q.groups.some(g => g.cm === q.T)) throw new Error('garlands over the line miscounted ' + JSON.stringify(q));
+      if(!q.groups.some(g => g.r.d && g.r.c >= 10)) throw new Error('no length like «4 дм и 18 см», the paper’s trap');
+    } else if(new Set(q.list.map(cmOf)).size !== q.ans || q.list.some((r, i) => cmOf(r) !== q.cms[i])) throw new Error('ribbon boxes miscounted ' + JSON.stringify(q));
+    continue;
+  }
   if(q.shape === 5){   // Зима 2021/2022: two units in, the difference in a third
     const U = { мм:1, см:10, дм:100 };
     if(q.A !== q.a*U[q.u1] || q.B !== q.b*U[q.u2] || q.ans*U[q.to] !== q.A - q.B || q.ans < 1) throw new Error('ribbon difference wrong ' + JSON.stringify(q));
@@ -2190,7 +2199,14 @@ eval(head + body + test);
       const d = [q.a]; for(let j = 0; j < q.k; j++) d.push(d[j] + q.d);
       if((q.shape === 0 ? d[q.k] + d[q.k - 1] : q.shape === 1 ? d[q.k] : d.reduce((x, y) => x + y, 0)) !== a) fail('the days');
     }
-    if(q.kind === 'isoperim'){
+    if(q.kind === 'isoperim' && q.shape === 2){   // Коледно 2023: the tortoise's walk, side by side
+      const side = { ME:q.base, EM:q.base, EK:q.leg, KE:q.leg, KM:q.leg, MK:q.leg };
+      let t = 0; for(let j = 1; j < q.route.length; j++) t += side[q.route[j-1] + q.route[j]];
+      if(Math.abs(q.laps*3*q.a - t) !== a || !a || 2*q.leg <= q.base) fail('the walk');
+    } else if(q.kind === 'isoperim' && q.shape === 3){   // Коледно 2023: only one perimeter can be base + two legs
+      const odd = q.list.filter(v => v % 2);
+      if(odd.length !== 1 || (odd[0] - q.b) / 2 !== a || !q.list.includes(4*q.sq) || !q.list.includes(3*q.t) || new Set(q.list).size !== 6) fail('the odd one');
+    } else if(q.kind === 'isoperim'){
       const s = q.P / 4, leg = s + q.up, base = leg - q.down;
       if(!(base > 0 && base < 2*leg) || 2*leg + base !== a) fail('the triangle');
     }
@@ -2584,6 +2600,42 @@ eval(head + body + test);
       .map(([shape, ans, shows]) => ['10' + 'АБВГ'[shape], 126, Object.assign({kind:'garland', shape, len:[12,15,30], price:[20,50,25], who:[[3,0,0],[1,0,2],[1,2,2]], n:[5,2,4], dm:[60,30,120], all:210, ans}, shape === 3 ? {L:4} : {}),
         [ans], shape ? shows : 'Яна купила 3 зелени гирлянди, майка ѝ — 1 зелена и 2 червени, а брат ѝ — 1 зелена, 2 сини и 2 червени. ' + shows, ['shape', 'len']])
   ]);
+  const TOYS = {kind:'toys', a:3, n:9, day0:0, T:63, m:9, boxes:7, f:3, sold:3, p1:11, p2:14, last:1};
+  const toyStory = 'Ели направила в понеделник 3 играчки за елха. Всеки ден след това правила с по 1 играчка повече от предишния ден, докато направила общо 63 играчки. ';
+  const dayOpt = (nm, uk) => [nm, uk];
+  paperCheck('Коледно 2023', 'kms-2023-2', '6, 25, 42, 8, 9, 6, 66, 2, 44; задача 10: 9, вторник, 7, 39', [
+    [1,  142, {kind:'vtri', shape:'count', f:0, tri:12, sq:6, asks:2, traps:[18], ans:6}, [6], 'С колко броят на триъгълниците е по-голям от броя на квадратите', ['f', 'asks']],
+    [2,  99,  {kind:'brackets', shape:6, a:100, b:57, c:96, d:78, ans:25}, [25], '(100 − 57) + 0 − (96 − 78)'],
+    [3,  143, {kind:'corners', n:[2,1,3], asks:0, sides:21, traps:[21], ans:42}, [42], 'Колко общо са страните и върховете на два правоъгълника, един квадрат и три триъгълника'],
+    [4,  97,  {kind:'isoperim', shape:2, a:4, laps:2, base:3, leg:5, route:'MEKME', ant:24, tort:16, traps:[4, 5], ans:8}, [8], 'Мравка изминала два пъти пътечката ABCA (триъгълник ABC е равностранен). Костенурка се разходила по равнобедрения триъгълник MEK по следния начин: MEKME', ['a', 'laps', 'base', 'leg', 'route']],
+    [5,  32,  {kind:'ribbon', shape:6, T:53, longer:true, groups:[{n:4, r:{d:4, c:18}, cm:58}, {n:2, r:{d:4}, cm:40}, {n:1, r:{d:6}, cm:60}, {n:3, r:{c:57}, cm:57}, {n:1, r:{d:7}, cm:70}], traps:[4], ans:9}, [9],
+      'Ива купила гирлянди: четири — по 4 дм и 18 см, две — по 4 дм, една — по 6 дм, три — по 57 см и една — по 7 дм. Колко от гирляндите са по-дълги от 53 см', ['T', 'longer']],
+    [6,  144, {kind:'films', f:2, m:2, x:2, traps:[9, 7], ans:6}, [6], 'Бащата на Яна участва в 2 филма. Майка ѝ участва в един от тези филми и в още 2 други. Брат ѝ участва в един филм заедно с двамата си родители, в 2 филма сам'],
+    [7,  145, {kind:'rests', g:3, n:5, t:4, r:3, work:60, traps:[69, 60], ans:66}, [66], 'Във фитнеса Ани прави 3 групи упражнения. Във всяка група има по 5 упражнения. Всяко упражнение трае 4 минути. Между всяка група упражнения Ани почива 3 минути'],
+    [8,  128, {kind:'isoperim', shape:3, t:4, sq:2, b:1, leg:2, list:[12, 8, 18, 4, 5, 20], P:5, traps:[4, 5], ans:2}, [2], 'Числата в редицата 12, 8, 18, 4, 5, 20 са обиколки в сантиметри на фигурите равностранен триъгълник, квадрат и равнобедрен триъгълник с основа 1', ['b', 'leg']],
+    [9,  124, {kind:'numpyr', shape:'one', rows:[[99], [55, 44], [33, 22, 22], [22, 11, 11, 11], [11, 11, 0, 11, 0]], up:99, low:55, asks:-1, ans:44}, [44], '(A+B+C) − (D+E+F+G+H+K+M)', ['asks']],
+    ['10А', 146, Object.assign({shape:0, traps:[8, 63], ans:9}, TOYS), [9], toyStory + 'Колко дена е работила Ели', ['a', 'n', 'day0']],
+    ['10Б', 146, Object.assign({shape:1, options:[dayOpt('понеделник', 'понеділок'), dayOpt('вторник', 'вівторок'), dayOpt('сряда', 'середа'), dayOpt('събота', 'субота')].map((text, id) => ({id, v:id, text})), pick:1, own:true, ans:1}, TOYS), [1],
+      toyStory + 'В кой ден от седмицата е спряла да работи', ['a', 'n', 'day0']],
+    ['10В', 146, Object.assign({shape:2, traps:[9], ans:7}, TOYS), [7], 'Опаковала играчките по 9 в кутия. Колко кутии е използвала', ['a', 'n', 'day0', 'm']],
+    ['10Г', 146, Object.assign({shape:3, traps:[53, 42], ans:39}, TOYS), [39], 'Оставила една кутия за себе си, подарила по една на 3 свои приятелки и останалите продала на коледния базар. За едната кутия получила 11 лева, а за останалите — по 14 лева', ['a', 'n', 'day0', 'm']]
+  ]);
+  paperCheck('Коледно 2022', 'kms-2022-2', 'Г, 64, 23, 21 и 31, 88, 11 и 11, 12, 6, 4; задача 10: 12:01', [
+    [1,  147, {kind:'notrue', x:34, y:22, p:87, r:25, A:56, B:62, C:55, st:['A < B', 'C < A', 'B > C', 'A > B'], oks:[true, true, true, false],
+      options:['A < B', 'C < A', 'B > C', 'A > B'].map((s, id) => ({id, v:id, text:[s, s]})), pick:3, own:true, ans:3}, [3], 'A = 34 + 22, B = 87 − 25, C = 55', ['A', 'B', 'C']],
+    [2,  148, {kind:'buyleft', M:92, k:2, p:14, spent:28, traps:[28, 78], ans:64}, [64], 'Рая имала 92 ст. Купила си две играчки за украса на елхата по 14 ст. Колко стотинки са останали на Рая'],
+    [3,  149, {kind:'clockmin', ny:true, h:23, m:37, two:false, traps:[37, 63], ans:23}, [23], 'В 2337 часа на 31 декември Ани опитала от тортата. Колко минути след това е започнала новата година'],
+    [4,  150, {kind:'bothseq', u:1, N:50, s:3, A:[1, 11, 21, 31, 41], both:[21, 31], slots:2, ans:21, alt:[31]}, [21, 31], 'Редицата A е образувана от всички числа, по-малки от 50, които имат цифра на единиците 1. Редицата C е образувана от всички двуцифрени числа, на които сборът от цифрите е 3 или 4'],
+    [5,  151, {kind:'datespan', i:0, j:2, d1:23, d2:5, k:2, days:44, asksDays:false, traps:[86, 90], ans:88}, [88], 'На 23 март Дончо гледал първа и втора серия на любимия си филм. Всеки ден до 5 май включително продължил да гледа по две нови серии'],
+    // the paper asks both counts at once; they are equal (11 and 11), so here the triangles are asked
+    [6,  142, {kind:'vtri', shape:'count', f:1, tri:11, sq:11, asks:0, traps:[11], ans:11}, [11], 'Колко са триъгълниците на чертежа', ['f', 'asks']],
+    [7,  152, {kind:'named', shape:6, w:0, A:11, d:0, lo:22, B:24, L:25, traps:[24, 11], ans:12}, [12], 'Числото A е най-малкото двуцифрено число с еднакви цифри, B > A + A, B < 25, C + C = B'],
+    [8,  153, {kind:'sqrect', one:true, lo:3, hi:9, a:8, b:4, P:24, asksP:false, traps:[24, 12, 4], ans:6}, [6], 'Квадрат и правоъгълник имат равни обиколки. Дължините на страните на правоъгълника са едноцифрени числа, по-големи от 3'],
+    [9,  32,  {kind:'ribbon', shape:7, list:[{d:2, c:40}, {c:90}, {d:8, c:8}, {c:100}, {d:8, c:10}, {c:60}, {d:5, c:10}, {m:1}, {d:6}, {d:10}],
+      cms:[60, 90, 88, 100, 90, 60, 60, 100, 60, 100], traps:[10, 9], ans:4}, [4], '2 дм и 40 см', ['ans']],
+    [10, 154, {kind:'liftday', shape:3, fk:2, fm:30, F:4, sk:6, L:2, R:30, rest:32, flat:60, down:20, start:534, total:187, back:721,
+      options:['12:01', '11:29', '12:16', '11:11'].map((s, id) => ({id, v:id, text:[s, s]})), pick:0, own:true, ans:0}, [0], 'Иво тръгнал от стадиона в 854 часа, качил се до Станция 2 с лифта, починал си 32 минути и се върнал пеш до стадиона', ['fk', 'fm', 'sk', 'R']]
+  ]);
   paperCheck('Есен 2019', 'mbg-autumn-2019-2', '2, 40, 8, 60, 14, 4, 16, 63, 30, 3, 21, 1, 5, 21, 90, 3, 3, 2, Лили с 10, 4', [
     [1,  51,  {kind:'tens', shape:4, t:1, u:14, b:4, tot:24, ans:2}, [2], '1 десетица + 14 единици = □4'],
     [2,  11,  {kind:'box', shape:'bal', form:2, x:30, y:40, N:30, L:70, plus:true, ans:40}, [40], '30 + 40 = □ + 30'],
@@ -2675,7 +2727,7 @@ eval(head + body + test);
         if((B[0] - A[0])*(C[1] - A[1]) !== (B[1] - A[1])*(C[0] - A[0]) && drawn(A, B) && drawn(A, C) && drawn(B, C)) tri++;
       }
       if(tri !== v.ans) throw new Error('vtri: ' + tri + ' by the drawn segments, ' + v.ans + ' said ' + JSON.stringify(v));
-      const n = Q2.raw(124);   // the whole base found again from what is shown, by trying every value
+      let n = Q2.raw(124); while(n.shape === 'one') n = Q2.raw(124);   // the whole base found again from what is shown, by trying every value (the single pyramid has its own check)
       let found = 0;
       for(let b3 = 0; b3 <= 30; b3++) for(let b4 = 0; b4 <= 30; b4++){
         const b = [n.b[0], n.b[1], n.b[2], b3, b4], r1 = b.slice(1).map((x, k) => b[k] + x), r2 = r1.slice(1).map((x, k) => r1[k] + x);
@@ -2692,7 +2744,7 @@ eval(head + body + test);
       if([len / 10, green / 4, red / 2 / 10, (len / 10 - 3*G.L) / 3][G.shape] !== G.ans || !Number.isInteger(G.ans) || G.ans < 1) throw new Error('garland: ' + JSON.stringify(G));
       const d = Q2.raw(127); let ways = 0; for(let x = 1; x <= 6; x++) for(let y = 1; y <= 6; y++) if(x + y === d.S) ways++;
       if(d.ans !== ways - (d.more ? 1 : 0) || d.x + d.y !== d.S) throw new Error('dice: ' + JSON.stringify(d));
-      const t = Q2.raw(128); let base = -1; for(let b = 1; b < 60; b++) if(2*t.leg + b + 2*t.leg + b + t.d === t.T) base = b;
+      let t = Q2.raw(128); while(t.shape === 3) t = Q2.raw(128); let base = -1; for(let b = 1; b < 60; b++) if(2*t.leg + b + 2*t.leg + b + t.d === t.T) base = b;
       if(t.T % 10 || (t.short ? base : base + t.d) !== t.ans) throw new Error('two triangles: ' + JSON.stringify(t));
     }
     for(let i = 0; i < 3000; i++){   // the new shapes of older levels
@@ -2702,6 +2754,81 @@ eval(head + body + test);
       const dg = Q2.raw(18); if(dg.shape === 4 && dg.list.filter(v => (dg.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= dg.k).length !== dg.ans) throw new Error('digit gap: ' + JSON.stringify(dg));
     }
     console.log('Коледно 2024 and Есен 2019 kinds: triangles at a corner against the drawn segments, pyramids and ages found again by search, garlands, dice and two triangles recounted');
+  }
+  { // the Коледно 2023 and 2022 kinds, each worked out another way
+    const Q3 = eval('(function(){' + head + body + '; return { raw, FIGS, PYR_SHOWN, PYR_LET, SPAN_MONTHS, CORNER_FIGS, bracketsExpr }; })()');
+    const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
+    for(let i = 0; i < 300; i++){
+      // 142: triangles and squares found again from the drawn segments and the coordinates alone
+      const v = Q3.raw(142), F = Q3.FIGS[v.f], P = Object.values(F.pts), segs = F.lines.map(l => [F.pts[l[0]], F.pts[l[l.length - 1]]]);
+      const onSeg = (p, [a, b]) => (b[0] - a[0])*(p[1] - a[1]) === (b[1] - a[1])*(p[0] - a[0]) && Math.min(a[0], b[0]) <= p[0] && p[0] <= Math.max(a[0], b[0]) && Math.min(a[1], b[1]) <= p[1] && p[1] <= Math.max(a[1], b[1]);
+      const drawn = (p, r) => segs.some(sg => onSeg(p, sg) && onSeg(r, sg));
+      let tri = 0, sq = 0;
+      for(let a = 0; a < P.length; a++) for(let b = a + 1; b < P.length; b++) for(let c = b + 1; c < P.length; c++)
+        if((P[b][0] - P[a][0])*(P[c][1] - P[a][1]) !== (P[b][1] - P[a][1])*(P[c][0] - P[a][0]) && drawn(P[a], P[b]) && drawn(P[b], P[c]) && drawn(P[a], P[c])) tri++;
+      // a square from a corner and a side vector: the other two corners are the side turned by a right angle
+      const at = (x, y) => P.find(p => p[0] === x && p[1] === y), seen = new Set();
+      P.forEach(A => P.forEach(B => { if(A === B) return; const dx = B[0] - A[0], dy = B[1] - A[1], C = at(B[0] - dy, B[1] + dx), D = at(A[0] - dy, A[1] + dx);
+        if(C && D && drawn(A, B) && drawn(B, C) && drawn(C, D) && drawn(D, A)) seen.add([A, B, C, D].map(p => p.join()).sort().join('|')); }));
+      sq = seen.size;
+      if(tri !== v.tri || sq !== v.sq || [tri, sq, tri - sq][v.asks] !== v.ans) fail('figure count: ' + tri + '/' + sq, v);
+      const c = Q3.raw(143), each = c.n.reduce((t, k, j) => t + k*Q3.CORNER_FIGS[j][4], 0);
+      if([2*each, each, each][c.asks] !== c.ans) fail('corners', c);
+      // 144: the films as sets, the shared ones kept once
+      const f = Q3.raw(144), films = new Set(); for(let k = 0; k < f.f; k++) films.add('F' + k);
+      for(let k = 0; k < f.m; k++) films.add('M' + k); films.add('F0');                        // the mother: one of the father's and her own
+      for(let k = 0; k < f.x; k++) films.add('B' + k); films.add('F0'); films.add(f.f > 1 ? 'F1' : 'M0');   // with both, alone, with one parent
+      if(films.size !== f.ans) fail('films', f);
+      // 145: the minutes walked through one by one
+      const r = Q3.raw(145); let t = 0; for(let g = 0; g < r.g; g++){ if(g) t += r.r; t += r.n*r.t; }
+      if(t !== r.ans) fail('rests', r);
+      // 146: the toys made day by day until the total
+      const y = Q3.raw(146); let made = 0, d = 0; while(made < y.T){ made += y.a + d; d++; }
+      const boxes = y.T / y.m, sold = boxes - 1 - y.f;
+      if(made !== y.T || [d, -1, boxes, y.p1 + (sold - 1)*y.p2][y.shape] !== (y.shape === 1 ? -1 : y.ans)) fail('toys', y);
+      if(y.shape === 1 && y.options[y.pick].text[0] !== ['понеделник', 'вторник', 'сряда', 'четвъртък', 'петък', 'събота', 'неделя'][(y.day0 + d - 1) % 7]) fail('toys weekday', y);
+      // 147: every statement checked, exactly one false
+      const n = Q3.raw(147), val = {A: n.x + n.y, B: n.p - n.r, C: n.C}, ok = s => { const [l, op, rr] = s.split(' '); return op === '<' ? val[l] < val[rr] : val[l] > val[rr]; };
+      if(n.options.filter(o => !ok(o.text[0])).length !== 1 || ok(n.options[n.pick].text[0])) fail('notrue', n);
+      const b = Q3.raw(148); let left = b.M; for(let k = 0; k < b.k; k++) left -= b.p; if(left !== b.ans || left < 1) fail('buyleft', b);
+      // 149: the clock stepped minute by minute up to the full hour (or the one after)
+      const k = Q3.raw(149); let hh = k.h, mm = k.m, steps = 0, goal = (k.h + (k.two ? 2 : 1)) % 24;
+      while(!(hh === goal && mm === 0)){ mm++; steps++; if(mm === 60){ mm = 0; hh = (hh + 1) % 24; } }
+      if(steps !== k.ans) fail('clockmin', k);
+      const s = Q3.raw(150), both = []; for(let x = 10; x < s.N; x++) if(x % 10 === s.u && [s.s, s.s + 1].includes(Math.floor(x / 10) + x % 10)) both.push(x);
+      if(both.join() !== [s.ans].concat(s.alt).join()) fail('bothseq', s);
+      // 151: a real calendar, both ends counted (2023 has no 29 February)
+      const ds = Q3.raw(151), mi = ['януари','февруари','март','април','май','юни','юли','август','септември','октомври','ноември','декември'];
+      const m1 = mi.indexOf(Q3.SPAN_MONTHS[ds.i][0]), m2 = mi.indexOf(Q3.SPAN_MONTHS[ds.j][0]);
+      const days = Math.round((Date.UTC(2023, m2, ds.d2) - Date.UTC(2023, m1, ds.d1)) / 86400000) + 1;
+      if(days !== ds.days || (ds.asksDays ? days : days*ds.k) !== ds.ans) fail('datespan ' + days, ds);
+      // 152: every B tried
+      const a = Q3.raw(152), Bs = []; for(let B = 0; B < 100; B++) if(B > 2*a.A + a.d && B < a.L && B % 2 === 0) Bs.push(B);
+      if(Bs.length !== 1 || Bs[0] / 2 !== a.ans) fail('named pair', a);
+      // 153: every rectangle tried — four sides a, b, a, b, one of them the sum of two others
+      const q = Q3.raw(153), rects = [];
+      for(let x = q.lo + 1; x <= q.hi; x++) for(let z = x; z <= q.hi; z++){ const S = [x, z, x, z];
+        if(S.some((u, j) => S.some((w, l) => S.some((e, m) => j !== l && l !== m && j !== m && u === w + e)))) rects.push([x, z]); }
+      if(rects.length !== 1 || (q.asksP ? 2*(rects[0][0] + rects[0][1]) : (rects[0][0] + rects[0][1]) / 2) !== q.ans) fail('sqrect', q);
+      // 154: the legs in minutes, then the clock
+      const L = Q3.raw(154), back = L.start + 2*(L.F / L.fk)*L.fm + L.R / 2 + L.L*60 / L.sk + L.rest;
+      if(back !== L.back || (L.shape === 3 && L.options[L.pick].text[0] !== Math.floor(back / 60) + ':' + String(back % 60).padStart(2, '0'))) fail('liftday', L);
+      // 124, the single pyramid: the base found again from the five shown boxes by trying every value
+      const pq = Q3.raw(124);
+      if(pq.shape === 'one' && i < 40){
+        const sh = Q3.PYR_SHOWN.map(([rr, cc]) => pq.rows[rr][cc]); let found = 0;
+        for(let b0 = 0; b0 <= 40; b0++) for(let b1 = 0; b1 <= 40; b1++) for(let b2 = 0; b2 <= 40; b2++){
+          const b3 = sh[4], b4 = sh[0] - (b0 + 4*b1 + 6*b2 + 4*b3);
+          if(b4 < 0 || b0 + 3*b1 + 3*b2 + b3 !== sh[1] || b1 + 2*b2 + b3 !== sh[2] || b0 + b1 !== sh[3]) continue;
+          found++;
+          if([b0, b1, b2, b3, b4].join() !== pq.rows[4].join()) fail('pyramid', pq);
+        }
+        if(found !== 1) fail('pyramid: ' + found + ' bases', pq);
+      }
+      const br = Q3.raw(99);
+      if(br.shape === 6 && Function('return ' + Q3.bracketsExpr(br).replace(/−/g, '-'))() !== br.ans) fail('brackets', br);
+    }
+    console.log('Коледно 2023 and 2022 kinds: figures recounted from the segments, films as sets, the clock and the calendar stepped through, rectangles and pyramids found again by search');
   }
   for(let i = 0; i < 300; i++){   // the Зима 2020 kinds, counted out
     const e = Q.raw(110), sum = e.first ? e.X + e.y : e.y + e.X, from = String(e.X).replace(String(e.ans), '');

@@ -97,6 +97,18 @@ three brackets that pair into tens). New: 123 triangles with a given corner, 124
 a row, 125 ages read from the father, 126 the four-part garland task (the price column is never needed),
 and 128 two isosceles triangles by their perimeters in дм, a harder cousin of 97.
 
+The **Коледно 2023** and **Коледно 2022** papers, 2nd grade, are in whole too, tags `kms-2023-2` and
+`kms-2022-2`, each printed task pinned in check.js against its key. Five 2023 tasks widened levels: 99 (a
+bracket, + 0, a bracket), 97 (an ant's laps against a tortoise's walk round MEK), 32 (garlands over a length
+in mixed units; 2022 adds ribbons sorted into boxes by equal length), 128 (the only odd perimeter must be the
+isosceles one with base 1) and 124 (one pyramid of five rows). New levels: 142 triangles and squares counted
+in a figure of lines (both papers), 143 sides and vertices, 144 films counted once, 145 rests between groups,
+146 the four-part toys task (its weekday part brings А/Б/В/Г), 147 the one false statement (А/Б/В/Г),
+148 money left, 149 minutes to the full hour, 150 numbers on two lists, 151 days from date to date, 152
+A, B and C read from a named number, 153 a square and a rectangle with equal perimeters, and 154 the lift
+task (its clock time is А/Б/В/Г). The pyramid's boxes are lettered A … M, not А … К: «И» and «Е» would
+read as words to check.js's Ukrainian test.
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper

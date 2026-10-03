@@ -16,7 +16,48 @@ function genRibbonDiff(){
     return {kind:'ribbon', shape:5, a, u1, b, u2, to, A, B, ans: D / RIB_U[to]};
   }
 }
+// A length as she reads it on a paper: {d, c} is d дм and c см (c may be 10 or more, as in «4 дм и 18 см»),
+// {m} whole metres, {c} centimetres only.
+const ribLen = r => r.m ? r.m + ' м' : r.d && r.c ? r.d + ' дм ' + tr('и', 'і') + ' ' + r.c + ' см' : r.d ? r.d + ' дм' : r.c + ' см';
+const ribCm = r => (r.m || 0)*100 + (r.d || 0)*10 + (r.c || 0);
+function ribSay(cm){
+  const ways = [{c:cm}];
+  if(cm % 10 === 0) ways.push({d: cm/10});
+  if(cm === 100) ways.push({m:1});
+  if(cm > 20){ const d = 1 + rnd(Math.floor(cm/10) - 1); ways.push({d, c: cm - 10*d}); }
+  return ways[rnd(ways.length)];
+}
+// Коледно 2023, задача 5: four garlands of 4 дм и 18 см, two of 4 дм, one of 6 дм, three of 57 см and one of
+// 7 дм — how many are longer than 53 см? 58, 40, 60, 57, 70: 4 + 1 + 3 + 1 = 9, garlands, not kinds of them.
+const RIB_N = {1:['една', 'одна'], 2:['две', 'дві'], 3:['три', 'три'], 4:['четири', 'чотири']};
+function genRibbonOver(){
+  for(;;){
+    const T = 30 + rnd(50), k = 4 + rnd(2), groups = [], seen = new Set();
+    while(groups.length < k){
+      const cm = Math.max(12, T + (rnd(2) ? 1 : -1)*(1 + rnd(25)));
+      if(seen.has(cm) || cm === T) continue;
+      seen.add(cm); groups.push({n: 1 + rnd(4), r: ribSay(cm), cm});
+    }
+    const longer = Math.random() < 0.7, fit = groups.filter(g => longer ? g.cm > T : g.cm < T);
+    if(fit.length < 2 || fit.length === k || !groups.some(g => g.r.d && g.r.c >= 10)) continue;
+    const ans = fit.reduce((t, g) => t + g.n, 0);
+    return {kind:'ribbon', shape:6, T, longer, groups, traps:[fit.length], ans};
+  }
+}
+// Коледно 2022, задача 9: ten ribbons, 2 дм и 40 см, 90 см, 8 дм и 8 см, 100 см, 8 дм и 10 см, 60 см, 5 дм и 10 см,
+// 1 м, 6 дм, 10 дм. The same length always goes in one box: 60, 88, 90 and 100 см, so 4 boxes.
+function genRibbonBoxes(){
+  for(;;){
+    const vals = shuffle([40, 50, 60, 70, 80, 88, 90, 100, 45, 75]).slice(0, 3 + rnd(3)), rows = vals.slice();
+    while(rows.length < 8 + rnd(3)) rows.push(vals[rnd(vals.length)]);
+    const list = shuffle(rows).map(cm => ribSay(cm));
+    if(new Set(list.map(ribLen)).size < list.length - 2) continue;
+    return {kind:'ribbon', shape:7, list, cms: list.map(ribCm), traps:[list.length, new Set(list.map(r => r.c ? 'c' + r.c : 'd' + (r.d || r.m))).size].filter(v => v !== vals.length), ans: vals.length};
+  }
+}
 function genRibbon(){
+  if(Math.random() < 0.12) return genRibbonOver();
+  if(Math.random() < 0.12) return genRibbonBoxes();
   if(Math.random() < 0.15) return genRibbonDiff();
   if(Math.random() < 0.2){
     // Задача 13: one stick laid down a few times with a piece of board left over, and the
@@ -58,6 +99,22 @@ function genRibbon(){
 
 const ribbonUkTimes = n => ({one:'раз', few:'рази'})[new Intl.PluralRules('uk').select(n)] || 'разів';
 function drawRibbon(q){
+  if(q.kind === 'ribbon' && q.shape === 6){
+    const list = q.groups.map((g, i) => (i ? (i === q.groups.length - 1 ? tr(' и ', ' і ') : ', ') : '') + tr(RIB_N[g.n][0], RIB_N[g.n][1]) + ' — ' + tr('по ', 'по ') + ribLen(g.r)).join('');
+    return '<div class="ask">' + tr('Ива купила гирлянди: ' + list + '. Колко от гирляндите са <b>по-' + (q.longer ? 'дълги' : 'къси') + '</b> от <span class="num">' + q.T + '</span> см?',
+      'Іва купила гірлянди: ' + list + '. Скільки гірлянд <b>' + (q.longer ? 'довші' : 'коротші') + '</b> за <span class="num">' + q.T + '</span> см?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
+  if(q.kind === 'ribbon' && q.shape === 7){
+    // two lists side by side, so ten ribbons take five rows on a phone
+    const half = Math.ceil(q.list.length / 2), cell = i => i < q.list.length ? '<td>' + (i + 1) + '</td><td>' + ribLen(q.list[i]) + '</td>' : '<td></td><td></td>';
+    const head = '<th>№</th><th>' + tr('Дължина', 'Довжина') + '</th>';
+    const T = '<table class="tix"><tr>' + head + head + '</tr>' +
+      [...Array(half).keys()].map(i => '<tr>' + cell(i) + cell(i + half) + '</tr>').join('') + '</table>';
+    return '<div class="ask">' + tr('Лили подредила лентите в кутии. Всяка кутия съдържа ленти с еднаква дължина и всички ленти с еднаква дължина са в една кутия. Колко кутии е използвала?',
+      'Лілі розклала стрічки в коробки. У кожній коробці стрічки однакової довжини, і всі стрічки однакової довжини в одній коробці. Скільки коробок вона використала?') + '</div>' +
+      T + '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'ribbon' && q.shape === 5){
     const n = (v, u) => '<span class="num">' + v + '&nbsp;' + u + '</span>';
     return '<div class="ask">' + tr('Лента е дълга ' + n(q.a, q.u1) + '. С колко <b>' + RIB_W[q.to][0] + '</b> тя е по-дълга от лента с дължина ' + n(q.b, q.u2) + '?',
@@ -108,12 +165,23 @@ function drawRibbon(q){
   }
 }
 function eqRibbon(q){
+  if(q.kind === 'ribbon' && q.shape === 6) return q.groups.map(g => g.n + '×' + g.cm).join(', ') + ' → ' + q.ans;
+  if(q.kind === 'ribbon' && q.shape === 7) return [...new Set(q.cms)].sort((a, b) => a - b).join(', ') + ' см → ' + q.ans;
   if(q.kind === 'ribbon' && q.shape === 5) return q.A + ' мм − ' + q.B + ' мм = ' + (q.A - q.B) + ' мм = ' + q.ans + ' ' + q.to;
   if(q.kind === 'ribbon' && q.shape === 4) return q.k + '×' + q.a + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
   if(q.kind === 'ribbon' && q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
   if(q.kind === 'ribbon') return (q.shape === 0 ? tr('преобразуване', 'перетворення') : q.L + tr(' см към ', ' см до ') + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
 }
 function whyRibbon(q, full){
+  if(q.kind === 'ribbon' && q.shape === 6){
+    if(!full) return tr('Първо всяка дължина в сантиметри. После брой гирляндите, не видовете.', 'Спершу кожну довжину в сантиметрах. Потім рахуй гірлянди, а не їхні види.');
+    const fit = q.groups.filter(g => q.longer ? g.cm > q.T : g.cm < q.T);
+    return q.groups.map(g => ribLen(g.r) + ' = ' + (fit.includes(g) ? '<b>' + g.cm + '</b>' : g.cm)).join(', ') + ' &nbsp;→&nbsp; ' + fit.map(g => g.n).join(' + ') + ' = ' + q.ans;
+  }
+  if(q.kind === 'ribbon' && q.shape === 7){
+    if(!full) return tr('Запиши всяка лента в сантиметри, после събери еднаквите.', 'Переведи кожну стрічку в сантиметри, потім збери однакові.');
+    return q.cms.join(', ') + ' &nbsp;→&nbsp; ' + tr('различни: ', 'різні: ') + [...new Set(q.cms)].sort((a, b) => a - b).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'ribbon' && q.shape === 5){
     if(!full) return tr('Първо двете дължини в едни и същи мерки.', 'Спершу обидві довжини в однакових одиницях.');
     const u = RIB_U[q.to] <= Math.min(RIB_U[q.u1], RIB_U[q.u2]) ? q.to : RIB_U[q.u1] < RIB_U[q.u2] ? q.u1 : q.u2, f = RIB_U[u];
