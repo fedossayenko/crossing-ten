@@ -1683,7 +1683,7 @@ eval(head + body + test);
   // not grind one group for too long.
   {
     const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).replace(/, gen:\w+/g, '');
-    const nextSrc = js.slice(js.indexOf('function nextUp(m'), js.indexOf('function buildPicker'));
+    const nextSrc = js.slice(js.indexOf('const REVIEW_DAYS'), js.indexOf('function buildPicker'));
     const walk = `
       const grp = l => l.grp || l.op;
       const m = {}, order = [];
@@ -1719,6 +1719,20 @@ eval(head + body + test);
     const first3 = eval('(function(){ const PLAYER = { grade:3 };' + levelsSrc + nextSrc + '; return nextUp({}, null); })()');
     if(!first3 || first3.grade !== 3) throw new Error('a 3rd-grade profile is not recommended a 3rd-grade level');
     console.log('profile grade: a 3rd-grader starts on level ' + first3.id + ', a 3rd-grade one');
+    // A learned level comes back: a day after it is learned, then 3, 7, 14 and 30 days after good reviews,
+    // one review between new levels, and never when it was just practised.
+    const rv = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
+      const day = 864e5, now = 100 * day, learned = (at, streak) => ({ n:20, f:18, rate:.9, done:true, rounds:streak, lastRate:.9, at, streak });
+      return {
+        fresh: nextUp({ 4: learned(now - day/2, 2) }, null, false, now).id,
+        due: nextUp({ 4: learned(now - 2*day, 2) }, null, false, now).id,
+        between: nextUp({ 4: learned(now - 2*day, 2) }, null, true, now).id,
+        step: [nextUp({ 4: learned(now - 2*day, 3) }, null, false, now).id, nextUp({ 4: learned(now - 4*day, 3) }, null, false, now).id],
+        late: nextUp({ 4: learned(now - 2*day, 2), 8: learned(now - 9*day, 3) }, null, false, now).id };
+    })()`);
+    if(rv.fresh === 4 || rv.due !== 4 || rv.between === 4 || rv.step[0] === 4 || rv.step[1] !== 4 || rv.late !== 8)
+      throw new Error('the review ladder went wrong: ' + JSON.stringify(rv));
+    console.log('review: a learned level comes back on its day (1, 3, 7, 14, 30), one between new levels, the longest overdue first');
   }
 }
 

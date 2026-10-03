@@ -244,6 +244,11 @@ showing how many of the levels are learned.
 - **It suggests breadth first, then repair.** While levels remain that she has never
   tried, it offers the easiest of those. Once she has met them all, it switches to
   whichever is going worst — by its record, and then by how the last round went.
+- **Learned levels come back for review.** A learned level is due a day after it is learned, then
+  3, 7, 14 and 30 days after each good round on it (80% first try); a weaker round drops it to the
+  bottom of that ladder. A due review is suggested ahead of anything new, but only every other round
+  — review, new, review — and the longest overdue for its step goes first. The card then says
+  *Да си припомним*.
 - **What the papers ask most comes first.** Each level knows how many dated papers ask it (`freq`:
   «Колко? Сбор?» is on 8, most levels on 1). Among new levels of one difficulty the most-asked goes
   first; in repair a weak level counts 0.02 of first-try rate worse per paper, so an every-year task

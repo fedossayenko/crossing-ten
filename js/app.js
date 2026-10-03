@@ -760,15 +760,30 @@ function mastery(rounds){
     const n = recent.reduce((t, r) => t + r.n, 0);
     const f = recent.reduce((t, r) => t + r.firstTry, 0);
     const last = recent[recent.length - 1];
+    // streak: the good rounds (80% first try) in a row up to the last one — how far up the review ladder it is
+    let streak = 0;
+    for(const r of by[k].slice().sort((a, b) => b.ts - a.ts)){ if(r.n && r.firstTry / r.n >= 0.8) streak++; else break; }
     out[k] = { n, f, rate: n ? f/n : 0, done: n >= 15 && f/n >= 0.8, rounds: by[k].length,
-               lastRate: last.n ? last.firstTry / last.n : 0 };
+               lastRate: last.n ? last.firstTry / last.n : 0, at: last.ts, streak };
   });
   return out;
 }
+// A learned level comes back for a review, or it fades: a day after it is learned, then 3, 7, 14
+// and 30 days after each good review. A slip drops the streak, and the ladder starts again.
+const REVIEW_DAYS = [1, 3, 7, 14, 30];
+const dueReview = (m, id, now) => { const x = m[id];
+  return !!(x && x.done && x.at && now - x.at >= REVIEW_DAYS[Math.min(Math.max(x.streak - 2, 0), REVIEW_DAYS.length - 1)] * 864e5); };
 // The next thing to practise: the easiest level she has not learned yet whose
 // groundwork is done. It recommends — nothing is ever locked away.
-function nextUp(m, lastGrp){
+// lastDone: the round just played was on a learned level (a review), so this time something new.
+function nextUp(m, lastGrp, lastDone, now = Date.now()){
   const done = id => m[id] && m[id].done;
+  // a review first, one at a time between new levels: the longest overdue for its step
+  if(!lastDone){
+    const due = LEVELS.filter(l => l.grade === myGrade() && dueReview(m, l.id, now));
+    const late = l => (now - m[l.id].at) / REVIEW_DAYS[Math.min(Math.max(m[l.id].streak - 2, 0), REVIEW_DAYS.length - 1)];
+    if(due.length) return due.sort((a, b) => late(b) - late(a))[0];
+  }
   // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
   const met = id => done(id) || LEVELS.find(l => l.id === id).grade < myGrade();
   const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(met));
@@ -875,11 +890,12 @@ function buildPicker(){
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
   const lastLvl = lastRound && LEVELS.filter(l => l.id === lastRound.level)[0];
   const grp = l => l && (l.grp || l.op);
-  const nx = nextUp(m, grp(lastLvl));
-  const after = nx && nextUp(Object.assign({}, m, { [nx.id]: { done:true, rate:1, lastRate:1, n:15, f:15, rounds:1 } }), grp(nx));
+  const nx = nextUp(m, grp(lastLvl), !!(lastLvl && done(lastLvl)));
+  const review = nx && dueReview(m, nx.id, Date.now());
+  const after = nx && nextUp(Object.assign({}, m, { [nx.id]: { done:true, rate:1, lastRate:1, n:15, f:15, rounds:1, at:Date.now(), streak:3 } }), grp(nx), true);
   const learned = LEVELS.filter(done).length, met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = (nx ? '<button class="gcard nextcard" data-lvl="' + nx.id + '"><span class="nm">' +
-      '<span class="lab">' + t(!met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
+      '<span class="lab">' + t(review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
       '<span class="eq">' + levelName(nx) + '</span>' +
       '<span class="meta"><span>' + t('groups')[groupOf(nx)] + '</span>' + hard(nx) + '</span>' +
       (after ? '<span class="meta">' + t('nextAfter', levelName(after)) + '</span>' : '') +
@@ -1075,7 +1091,7 @@ const say = t => { $('synced').textContent = t + builtOn(); };
 // A launch starts on the level the picker would recommend, not on a fixed one.
 {
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
-  const nx = nextUp(mastery(LOCAL.rounds), lastLvl && (lastLvl.grp || lastLvl.op));
+  const m0 = mastery(LOCAL.rounds), nx = nextUp(m0, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m0[lastLvl.id] && m0[lastLvl.id].done));
   if(nx){ S.level = nx.id; paintPill(); }
 }
 // a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
