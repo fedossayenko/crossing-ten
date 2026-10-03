@@ -97,11 +97,70 @@ function eqCount(q){
     (q.sum ? 'сума, ' : 'кількість, ') +
     (q.natural ? 'натуральні, ' : q.two ? 'двоцифрові, ' : '') + 'від ' + q.lo + ' до ' + q.hi) + ' → ' + q.ans;
 }
+// The pictures. A range is a number line: the numbers that count light up one by one, numbered as she
+// would count them; an end that does not count, 0 for the natural numbers and 9 for the two-digit ones
+// stand crossed out in red. A long range shows only its two ends and how many lie from one to the other;
+// a sum joins the numbers in pairs from both ends. The hint's line has no numbers: a filled end counts,
+// a hollow one does not.
+function countLine(q, full){
+  const svg = (h, g, label) => '<svg viewBox="0 -24 240 ' + h + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
+  const label = tr('числата, които се броят', 'числа, які рахуються');
+  if(!full){
+    const inLo = q.shape <= 2, inHi = q.shape === 0 || q.shape === 2;   // whether each end itself counts
+    const end = (x, fill) => '<circle cx="' + x + '" cy="0" r="7" fill="' + (fill ? 'var(--good)' : 'none') + '" stroke="' + (fill ? 'var(--good)' : 'var(--bad)') + '" stroke-width="3"/>';
+    return svg(40, '<line x1="10" y1="0" x2="230" y2="0" stroke="var(--line)" stroke-width="2"/><line x1="40" y1="0" x2="200" y2="0" stroke="var(--good)" stroke-width="6" stroke-linecap="round"/>' +
+      end(40, inLo) + end(200, inHi), label);
+  }
+  const n = q.hi - q.lo + 1, col = 'var(--good)';
+  const cross = (x, v) => svgText(x, -10, v, 12, 'var(--bad)') + '<path d="M' + (x - 6) + ',-6 l12,12 M' + (x + 6) + ',-6 l-12,12" stroke="var(--bad)" stroke-width="2.5"/>';
+  if(!q.sum && n > 14){
+    // a long range: its first and last numbers, and the count between
+    const X = [36, 70, 104, 136, 170, 204];
+    let g = '<line x1="8" y1="0" x2="232" y2="0" stroke="var(--line)" stroke-width="2"/>' + (q.lo > 0 ? cross(14, q.lo - 1) : '');
+    [q.lo, q.lo + 1, q.lo + 2].forEach((v, i) => { g += '<g' + popAt(1 + i) + '><circle cx="' + X[i] + '" cy="0" r="6" fill="' + col + '"/>' + svgText(X[i], -10, v, 12, 'var(--ink)') + '</g>'; });
+    g += svgText(120, 4, '…', 16, 'var(--muted)');
+    [q.hi - 1, q.hi].forEach((v, i) => { g += '<g' + popAt(5 + i) + '><circle cx="' + X[4 + i] + '" cy="0" r="6" fill="' + col + '"/>' + svgText(X[4 + i], -10, v, 12, 'var(--ink)') + '</g>'; });
+    g += cross(226, q.hi + 1) + svgText(120, 30, q.hi + ' − ' + q.lo + ' + 1 = ' + n, 16, 'var(--ink)', popAt(8));
+    return svg(64, g, label);
+  }
+  const lo = Math.max(0, q.lo - 1), hi = q.hi + 1, step = 220 / (hi - lo + 1), X = v => (10 + (v - lo + 0.5) * step).toFixed(1);
+  let g = '<line x1="6" y1="0" x2="234" y2="0" stroke="var(--line)" stroke-width="2"/>';
+  for(let v = lo; v <= hi; v++){
+    if(v < q.lo || v > q.hi){ g += cross(+X(v), v); continue; }
+    const k = v - q.lo + 1;
+    g += '<g' + popAt(k) + '><circle cx="' + X(v) + '" cy="0" r="' + Math.min(7, step / 2.6).toFixed(1) + '" fill="' + col + '"/>' + svgText(X(v), -10, v, step < 16 ? 10 : 12, 'var(--ink)') +
+      (q.sum ? '' : svgText(X(v), 20, k, 10, col)) + '</g>';
+  }
+  if(q.sum){
+    // the pairs from both ends, each making the same total
+    const each = q.lo + q.hi;
+    for(let i = 0; q.lo + i < q.hi - i; i++){
+      const a = +X(q.lo + i), b = +X(q.hi - i), h = 10 + (b - a) * 0.18;
+      g += '<path' + popAt(n + 2 + i) + ' d="M' + a + ',8 Q' + ((a + b) / 2).toFixed(1) + ',' + (8 + 2*h).toFixed(1) + ' ' + b + ',8" stroke="var(--warm)" stroke-width="2.2" fill="none"/>';
+    }
+    g += svgText(120, 64, tr('всяка двойка: ', 'кожна пара: ') + each + ' → ' + q.ans, 14, 'var(--ink)', popAt(n + 3 + Math.floor(n / 2)));
+    return svg(98, g, label);
+  }
+  g += svgText(120, 44, n + tr(' числа', ' чисел'), 15, 'var(--ink)', popAt(n + 2));
+  return svg(76, g, label);
+}
+// The list with repeats: each number that has turned up before fades as it is met, the different ones stay.
+function countSet(q, full){
+  const W = 220 / q.list.length, seen = new Set();
+  let g = '', step = 1;
+  q.list.forEach((v, i) => {
+    const again = seen.has(v); seen.add(v);
+    const x = (10 + (i + 0.5) * W).toFixed(1);
+    g += svgText(x, 0, v, 16, again ? 'var(--muted)' : 'var(--good)') + (again && full ? '<path' + popAt(step++) + ' d="M' + (+x - 6) + ',-12 l12,14" stroke="var(--bad)" stroke-width="2.5"/>' : '');
+  });
+  if(full) g += svgText(120, 30, (q.asksSum ? q.pool.join(' + ') + ' = ' : q.pool.join(', ') + ' → ') + q.ans, 14, 'var(--ink)', popAt(step + 1));
+  return '<svg viewBox="0 -22 240 ' + (full ? 62 : 32) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('различните цифри', 'різні цифри') + '">' + g + '</svg>';
+}
 function whyCount(q, full){
   if(q.kind === 'count' && q.set){
     if(!full) return tr('Едно и също число, повторено, се брои само веднъж.', 'Те саме число, навіть повторене, рахується лише один раз.');
     return tr('различните са <b>', 'різні — це <b>') + q.pool.join(', ') + '</b> &nbsp;→&nbsp; ' +
-      (q.asksSum ? q.pool.join(' + ') + ' = ' + q.ans : tr('на брой ', 'усього ') + q.ans);
+      (q.asksSum ? q.pool.join(' + ') + ' = ' + q.ans : tr('на брой ', 'усього ') + q.ans) + countSet(q, true);
   }
   if(q.kind === 'count' && q.name){
     if(!full) return tr('Краищата не се броят — гледай само какво остава между тях.', 'Кінці не рахуються — дивись лише на те, що є між ними.');
@@ -109,22 +168,22 @@ function whyCount(q, full){
       ' &nbsp;→&nbsp; <b>' + q.lo + '</b> ' + tr('и', 'і') + ' <b>' + q.hi + '</b>';
   }
   if(q.kind === 'count'){
-    if(!full) return q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
+    if(!full) return (q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
             : q.natural ? tr('Естествените числа започват от едно.', 'Натуральні числа починаються з одиниці.')
             : q.sum ? tr('Събирай ги по двойки от двата края.', 'Додавай їх парами з обох кінців.')
             : q.shape >= 3 ? tr('Краищата не се броят.', 'Кінці не рахуються.')
             : q.shape === 2 ? tr('И двата края се броят.', 'Обидва кінці рахуються.')
-            : tr('Не забравяй нулата — тя също е число.', 'Не забудь про нуль — це теж число.');
+            : tr('Не забравяй нулата — тя също е число.', 'Не забудь про нуль — це теж число.')) + countLine(q, false);
     if(q.sum){
       const n = q.hi - q.lo + 1;
       if(n >= 4 && n % 2 === 0){
         const each = q.lo + q.hi;
         return tr('двойките ', 'пари ') + q.lo + ' + ' + q.hi + ', &nbsp;' + (q.lo+1) + ' + ' + (q.hi-1) +
-          tr(' … правят по <b>', ' … дають по <b>') + each + '</b> &nbsp;→&nbsp; ' + Array(n/2).fill(each).join(' + ') + ' = ' + q.ans;
+          tr(' … правят по <b>', ' … дають по <b>') + each + '</b> &nbsp;→&nbsp; ' + Array(n/2).fill(each).join(' + ') + ' = ' + q.ans + countLine(q, true);
       }
       const list = [];
       for(let v = q.lo; v <= q.hi; v++) list.push(v);
-      return list.join(' + ') + ' = ' + q.ans;
+      return list.join(' + ') + ' = ' + q.ans + countLine(q, true);
     }
     const edge = q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
                : q.shape === 1 ? q.n + tr(' не се брои', ' не рахується')
@@ -133,7 +192,7 @@ function whyCount(q, full){
     const zero = q.natural ? tr('нулата не е естествено число', 'нуль не є натуральним числом')
                : q.lo === 0 ? tr('<b>нулата също се брои</b>', '<b>нуль теж рахується</b>') : '';
     return q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi +
-      ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans;
+      ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans + countLine(q, true);
   }
 }
 KIND.count = { draw:drawCount, eq:eqCount, why:whyCount };
