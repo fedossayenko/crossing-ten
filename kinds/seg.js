@@ -115,8 +115,13 @@ function whySeg(q, full){
   }
   if(q.kind === 'seg'){
     if(!full) return tr('Отсечките се застъпват — намери първо AC.', 'Відрізки накладаються — спочатку знайди AC.');
+    // the four points, then AB and CB measured, AC what is left, then CD and the whole AD
     return 'AC = AB − CB = ' + q.AB + ' − ' + q.q + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; AD = AC + CD = ' +
-      q.p + ' + ' + q.CD + ' = ' + q.ans;
+      q.p + ' + ' + q.CD + ' = ' + q.ans +
+      lineSvg([{at:0, name:'A'}, {at:q.p, name:'C'}, {at:q.p + q.q, name:'B'}, {at:q.p + q.q + q.r, name:'D'}],
+        [{from:0, to:q.p + q.q, row:-2, label:'AB ' + q.AB, step:1}, {from:q.p, to:q.p + q.q, row:1, label:'CB ' + q.q, step:3},
+         {from:0, to:q.p, row:2, label:'AC ' + q.p, col:'var(--warm)', step:5}, {from:q.p, to:q.p + q.q + q.r, row:-3, label:'CD ' + q.CD, step:7},
+         {from:0, to:q.p + q.q + q.r, row:3, label:'AD ' + q.ans, col:'var(--good)', step:9}], 0, q.p + q.q + q.r, tr('отсечките от A до D', 'відрізки від A до D'));
   }
 }
 KIND.seg = { draw:drawSeg, eq:eqSeg, why:whySeg };

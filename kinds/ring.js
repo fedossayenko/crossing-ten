@@ -25,16 +25,15 @@ function eqRing(q){
 function ringSvg(q, full){
   const N = q.l + q.r + 2, R = 75, at = k => { const a = Math.PI/2 + k*2*Math.PI/N; return [100 + R*Math.cos(a), 100 + R*Math.sin(a)]; };
   const f = v => v.toFixed(1), col = k => k <= q.l ? 'var(--accent)' : 'var(--warm)';
-  const pop = (k, d) => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (d*0.12).toFixed(2) + 's"';
   const boy = (k, name, d) => { const [x, y] = at(k);
-    return '<g' + (full ? pop(k, d) : '') + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="16" fill="var(--good)"/><text x="' + f(x) + '" y="' + f(y + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + name + '</text></g>'; };
+    return '<g' + (full ? popAt(d) : '') + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="16" fill="var(--good)"/><text x="' + f(x) + '" y="' + f(y + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + name + '</text></g>'; };
   let g = '<circle cx="100" cy="100" r="' + R + '" fill="none" stroke="var(--line)" stroke-width="3"/>';
   if(full){
     // left 1…l, then right l+1…l+r, numbered in the order she would count them
     for(let k = 1; k <= q.l + q.r + 1; k++){
       if(k === q.l + 1) continue;                     // Иван's place
       const n = k <= q.l ? k : k - 1, [x, y] = at(k);
-      g += '<g' + pop(k, n) + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="10.5" fill="' + col(k) + '"/><text x="' + f(x) + '" y="' + f(y + 4.2) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + n + '</text></g>';
+      g += '<g' + popAt(n) + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="10.5" fill="' + col(k) + '"/><text x="' + f(x) + '" y="' + f(y + 4.2) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + n + '</text></g>';
     }
   } else {
     // each group as a thick arc between the boys, its count beside it
@@ -46,7 +45,7 @@ function ringSvg(q, full){
   }
   g += boy(0, tr('П', 'П'), q.l + q.r + 1) + boy(q.l + 1, tr('И', 'І'), q.l + q.r + 2);
   // and the count they make, in the middle, once everyone is in
-  if(full) g += '<text' + pop(0, q.l + q.r + 4) + ' x="100" y="116" text-anchor="middle" font-size="46" font-weight="800" fill="var(--ink)" font-family="Fredoka, Nunito, sans-serif">' + q.ans + '</text>';
+  if(full) g += '<text' + popAt(q.l + q.r + 4) + ' x="100" y="116" text-anchor="middle" font-size="46" font-weight="800" fill="var(--ink)" font-family="Fredoka, Nunito, sans-serif">' + q.ans + '</text>';
   return '<svg viewBox="-12 -12 224 224" style="display:block; width:170px; max-width:100%; margin:4px auto 0" role="img" aria-label="' + tr('децата в кръга', 'діти в колі') + '">' + g + '</svg>';
 }
 function whyRing(q, full){

@@ -50,20 +50,50 @@ function eqSegCount(q){
   if(q.kind === 'segcount' && q.shape === 'dots') return tr('жълти 2, червени ', 'жовтих 2, червоних ') + (q.n - 1) + tr(', сини ', ', синіх ') + q.n + ' → ' + q.ans;
   if(q.kind === 'segcount') return q.n + ' • → ' + segCountSum(q.n) + ' = ' + q.S + (q.rev ? ' → ' + q.ans : '');
 }
+// The segments as arcs over the points, a colour for each point they start from: the hint draws only those
+// from the first point; the solution adds each point's new ones in turn, and the count under each colour.
+const SEG_COLS = ['var(--accent)', 'var(--warm)', 'var(--good)', 'var(--rose)', 'var(--grape)'];
+function segArcs(n, full){
+  const gap = 220 / (n + 1), X = i => ((i + 1)*gap).toFixed(1);
+  let g = '<line x1="4" y1="0" x2="216" y2="0" stroke="var(--ink)" stroke-width="2"/>', step = 1;
+  for(let i = 0; i < (full ? n - 1 : 1); i++){
+    for(let j = i + 1; j < n; j++){
+      const h = (j - i)*gap*0.45;
+      g += '<path' + (full ? popAt(step++) : '') + ' d="M' + X(i) + ',0 Q' + ((+X(i) + +X(j))/2).toFixed(1) + ',' + (-2*h).toFixed(1) + ' ' + X(j) + ',0" stroke="' + SEG_COLS[i % 5] + '" stroke-width="2.5" fill="none"/>';
+    }
+    if(full) g += svgText(X(i), 34, n - 1 - i, 15, SEG_COLS[i % 5], popAt(step++));
+  }
+  for(let i = 0; i < n; i++) g += '<circle cx="' + X(i) + '" cy="0" r="5" fill="var(--ink)"/>' + svgText(X(i), 16, 'ABCDEF'[i], 12, 'var(--muted)');
+  if(full) g += svgText(110, 58, segCountSum(n) + ' = ' + n*(n - 1)/2, 16, 'var(--ink)', popAt(step + 1));
+  const top = -(n - 1)*gap*0.45 - 8, bottom = full ? 66 : 42;
+  return '<svg viewBox="0 ' + top.toFixed(0) + ' 220 ' + (bottom - top).toFixed(0) + '" style="display:block; width:220px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('отсечките между точките', 'відрізки між точками') + '">' + g + '</svg>';
+}
+// The dots along the segment: yellow ends, red dividers, a blue one in each piece. The hint is a small
+// example of three pieces; the solution draws the real segment, one colour at a time.
+function segDots(n, full){
+  const W = 200, X = v => (10 + v / (2*n) * W).toFixed(1);
+  let g = '<line x1="' + X(0) + '" y1="0" x2="' + X(2*n) + '" y2="0" stroke="var(--ink)" stroke-width="2.5"/>', step = 1;
+  const dot = (v, col) => '<circle' + (full ? popAt(step++) : '') + ' cx="' + X(v) + '" cy="0" r="' + (n > 6 ? 4.5 : 6) + '" fill="' + col + '" stroke="var(--ink)" stroke-width="1"/>';
+  g += dot(0, 'var(--pear)') + dot(2*n, 'var(--pear)');
+  for(let i = 1; i < n; i++) g += dot(2*i, 'var(--bad)');
+  for(let i = 0; i < n; i++) g += dot(2*i + 1, 'var(--accent)');
+  if(full) g += svgText(110, 32, '2 + ' + (n - 1) + ' + ' + n + ' = ' + (2*n + 1), 15, 'var(--ink)', popAt(step + 1));
+  return '<svg viewBox="0 -14 220 ' + (full ? 54 : 30) + '" style="display:block; width:220px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('точките върху отсечката', 'точки на відрізку') + '">' + g + '</svg>';
+}
 function whySegCount(q, full){
   if(q.kind === 'segcount' && q.shape === 'dots'){
-    if(!full) return tr('Начертай по-къса отсечка на няколко части и преброй: разделящите точки са с една по-малко от частите.', 'Намалюй коротший відрізок на кілька частин і порахуй: точок поділу на одну менше, ніж частин.');
+    if(!full) return tr('Начертай по-къса отсечка на няколко части и преброй: разделящите точки са с една по-малко от частите.', 'Намалюй коротший відрізок на кілька частин і порахуй: точок поділу на одну менше, ніж частин.') + segDots(3, false);
     return tr('жълти: 2 (краищата), червени: ', 'жовтих: 2 (кінці), червоних: ') + q.n + ' − 1 = <b>' + (q.n - 1) + '</b>' + tr(', сини: по една във всяка част, <b>', ', синіх: по одній у кожній частині, <b>') + q.n + '</b>' +
-      ' &nbsp;→&nbsp; ' + (q.asks === 0 ? '2 + ' + (q.n - 1) + ' + ' + q.n + ' = ' : '') + q.ans;
+      ' &nbsp;→&nbsp; ' + (q.asks === 0 ? '2 + ' + (q.n - 1) + ' + ' + q.n + ' = ' : '') + q.ans + (q.asks === 0 ? segDots(q.n, true) : '');
   }
   if(q.kind === 'segcount'){
     if(!full) return q.rev ? tr('Опитай с малко точки и брой отсечките, после добавяй по една точка.', 'Спробуй з кількома точками й рахуй відрізки, потім додавай по одній точці.')
-                           : tr('Започни от първата точка: колко отсечки тръгват от нея? После от втората — само новите.', 'Почни з першої точки: скільки відрізків від неї виходить? Потім від другої — лише нові.');
+                           : tr('Започни от първата точка: колко отсечки тръгват от нея? После от втората — само новите.', 'Почни з першої точки: скільки відрізків від неї виходить? Потім від другої — лише нові.') + segArcs(q.n, false);
     if(q.rev){
       const rows = []; for(let k = 2; k <= q.n; k++) rows.push(k + ' • → ' + k*(k - 1)/2);
       return rows.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
     }
-    return tr('от първата ', 'від першої ') + (q.n - 1) + tr(', от втората още ', ', від другої ще ') + (q.n - 2) + ', … &nbsp;→&nbsp; ' + segCountSum(q.n) + ' = ' + q.ans;
+    return tr('от първата ', 'від першої ') + (q.n - 1) + tr(', от втората още ', ', від другої ще ') + (q.n - 2) + ', … &nbsp;→&nbsp; ' + segCountSum(q.n) + ' = ' + q.ans + segArcs(q.n, true);
   }
 }
 KIND.segcount = { draw:drawSegCount, eq:eqSegCount, why:whySegCount };

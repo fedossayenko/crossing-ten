@@ -13,6 +13,24 @@ const ukN = (n, one, few, many) => n + ' ' + ({one, few}[new Intl.PluralRules('u
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 const SLOT = '<span class="slot" id="slot0"></span>';
+// A solution picture that builds up: the part drawn at step n pops in n·0.12 s after the picture appears
+// (still, all at once, when motion is reduced). Attributes for an SVG element: '<g' + popAt(3) + '>'.
+const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
+// a label in a solution picture, centred on x
+const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
+// A line with points and distances, for the pictures of the line levels. Points: [{at, name, col, step}];
+// distances: [{from, to, label, row, col, step}], drawn as brackets in rows above (row < 0) or below the line.
+// The coordinates are lengths; lo and hi are the ends of the line. A step makes that part pop in.
+function lineSvg(pts, spans, lo, hi, label){
+  const X = v => (20 + (v - lo) / (hi - lo) * 200).toFixed(1), rows = spans.map(s => s.row).concat(0);
+  const top = Math.min(...rows) * 22 - 18, bottom = Math.max(...rows) * 22 + 34, at = st => st === undefined ? '' : popAt(st);
+  let g = '<line x1="8" y1="0" x2="232" y2="0" stroke="var(--ink)" stroke-width="2"/>';
+  spans.forEach(s => { const y = s.row * 22, col = s.col || 'var(--accent)', x1 = X(Math.min(s.from, s.to)), x2 = X(Math.max(s.from, s.to));
+    g += '<g' + at(s.step) + '><path d="M' + x1 + ',' + (y - 5) + ' v10 M' + x1 + ',' + y + ' H' + x2 + ' M' + x2 + ',' + (y - 5) + ' v10" stroke="' + col + '" stroke-width="2.5" fill="none"/>' +
+      (s.label === '' ? '' : svgText(((+x1 + +x2) / 2).toFixed(1), s.row < 0 ? y - 6 : y + 16, s.label, 13, col)) + '</g>'; });
+  pts.forEach(p => { g += '<g' + at(p.step) + '><circle cx="' + X(p.at) + '" cy="0" r="5" fill="' + (p.col || 'var(--ink)') + '"/>' + (p.name ? svgText(X(p.at), -10, p.name, 14, 'var(--ink)') : '') + '</g>'; });
+  return '<svg viewBox="0 ' + top + ' 240 ' + (bottom - top) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
+}
 const CM = ' <span class="unit">см</span>';
 
 const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
