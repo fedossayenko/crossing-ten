@@ -143,7 +143,7 @@ first. A paper's full name and its short tag are `papers` and `paperTag` in `js/
 Everything is a classic script sharing one global scope, loaded in the order the
 `<script>` tags list them, so a kind can use anything in `js/core.js`. To add a level:
 write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row
-to `js/levels.js`, and add a check to `check.js`.
+to `js/levels.js`, and add a check to `check/kinds.js` (a paper's printed tasks are pinned in `check/papers.js`).
 
 ## Players, languages and mascots
 
@@ -288,7 +288,8 @@ through the service worker), plays one round of every level through the real pic
 and keypad, missing the first question twice to reach the hint and the reveal, and
 fails on any script error.
 
-`node check.js` generates thousands of questions per level and verifies the answer,
+`node check.js` runs the checks in `check/` (inside the app's scope: `levels.js`, `kinds.js`; beside it:
+`app.js`, `grade3.js`, `papers.js` — an error names the real file and line). It generates thousands of questions per level and verifies the answer,
 the worked line, the summary line and the layout agree, plus targeted checks that
 compare a closed form against a brute-force search wherever one is used, and pin the
 original worksheet instance of each task.

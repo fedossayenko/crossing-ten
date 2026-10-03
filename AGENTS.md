@@ -6,7 +6,8 @@ design rules (difficulty rubric, training path) are in `README.md`.
 
 ## Commands
 - `npx -p typescript@7.0.2 tsc -p .`: TypeScript checks the plain JS against `types.d.ts` (no build, nothing emitted).
-- `node check.js`: generator checks. `node smoke.js`: plays every level in headless Chrome.
+- `node check.js`: generator checks. The checks live in `check/`: `levels.js` and `kinds.js` run inside the app's
+  scope (they call the generators directly), `app.js`, `grade3.js` and `papers.js` beside it; an error names the real file and line. `node smoke.js`: plays every level in headless Chrome.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local`, then `node worker/test.js`
   and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local --file schema.sql`).
@@ -18,7 +19,7 @@ design rules (difficulty rubric, training path) are in `README.md`.
   near-duplicate.
 - A new kind file goes into `index.html` before `js/questions.js`; its level row goes in
   `js/levels.js` with `gen:` and a `d:` from the rubric in `README.md`.
-- Pin the worksheet's original instance and add a brute-force check in `check.js`.
+- Pin the worksheet's original instance in `check/papers.js` and add a brute-force check in `check/kinds.js`.
 - A level from another paper says so on its row (`grade:3`, `src:'mbg-winter-2024'`; `src` defaults to `'mbg-autumn'`).
   A task that another paper also asks, at the same difficulty, tags the existing level with `also:['mbg-winter-2024-2']`
   instead of a copy; easier or harder is a new level with its own `d`. A new paper needs its name in
