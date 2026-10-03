@@ -1723,16 +1723,21 @@ eval(head + body + test);
     // one review between new levels, and never when it was just practised.
     const rv = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
       const day = 864e5, now = 100 * day, learned = (at, streak) => ({ n:20, f:18, rate:.9, done:true, rounds:streak, lastRate:.9, at, streak });
+      // every 2nd-grade level tried once, none learned: reviews may come now
+      const tried = extra => { const m = {}; LEVELS.forEach(l => { m[l.id] = { n:10, f:5, rate:.5, done:false, rounds:1, lastRate:.5, at:now - day, streak:0 }; }); return Object.assign(m, extra); };
+      const notAll = Object.assign(tried({ 4: learned(now - 2*day, 2) }));
+      delete notAll[8];
       return {
-        fresh: nextUp({ 4: learned(now - day/2, 2) }, null, false, now).id,
-        due: nextUp({ 4: learned(now - 2*day, 2) }, null, false, now).id,
-        between: nextUp({ 4: learned(now - 2*day, 2) }, null, true, now).id,
-        step: [nextUp({ 4: learned(now - 2*day, 3) }, null, false, now).id, nextUp({ 4: learned(now - 4*day, 3) }, null, false, now).id],
-        late: nextUp({ 4: learned(now - 2*day, 2), 8: learned(now - 9*day, 3) }, null, false, now).id };
+        breadth: nextUp(notAll, null, false, now).id,
+        fresh: nextUp(tried({ 4: learned(now - day/2, 2) }), null, false, now).id,
+        due: nextUp(tried({ 4: learned(now - 2*day, 2) }), null, false, now).id,
+        between: nextUp(tried({ 4: learned(now - 2*day, 2) }), null, true, now).id,
+        step: [nextUp(tried({ 4: learned(now - 2*day, 3) }), null, false, now).id, nextUp(tried({ 4: learned(now - 4*day, 3) }), null, false, now).id],
+        late: nextUp(tried({ 4: learned(now - 2*day, 2), 8: learned(now - 9*day, 3) }), null, false, now).id };
     })()`);
-    if(rv.fresh === 4 || rv.due !== 4 || rv.between === 4 || rv.step[0] === 4 || rv.step[1] !== 4 || rv.late !== 8)
+    if(rv.breadth !== 8 || rv.fresh === 4 || rv.due !== 4 || rv.between === 4 || rv.step[0] === 4 || rv.step[1] !== 4 || rv.late !== 8)
       throw new Error('the review ladder went wrong: ' + JSON.stringify(rv));
-    console.log('review: a learned level comes back on its day (1, 3, 7, 14, 30), one between new levels, the longest overdue first');
+    console.log('review: only once every level is tried, a learned level comes back on its day (1, 3, 7, 14, 30), one between repairs, the longest overdue first');
   }
 }
 

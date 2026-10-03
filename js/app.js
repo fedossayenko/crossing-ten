@@ -775,21 +775,15 @@ const dueReview = (m, id, now) => { const x = m[id];
   return !!(x && x.done && x.at && now - x.at >= REVIEW_DAYS[Math.min(Math.max(x.streak - 2, 0), REVIEW_DAYS.length - 1)] * 864e5); };
 // The next thing to practise: the easiest level she has not learned yet whose
 // groundwork is done. It recommends — nothing is ever locked away.
-// lastDone: the round just played was on a learned level (a review), so this time something new.
+// lastDone: the round just played was on a learned level (a review), so this time a repair.
+// Reviews wait until every level has been tried: breadth first.
 function nextUp(m, lastGrp, lastDone, now = Date.now()){
   const done = id => m[id] && m[id].done;
-  // a review first, one at a time between new levels: the longest overdue for its step
-  if(!lastDone){
-    const due = LEVELS.filter(l => l.grade === myGrade() && dueReview(m, l.id, now));
-    const late = l => (now - m[l.id].at) / REVIEW_DAYS[Math.min(Math.max(m[l.id].streak - 2, 0), REVIEW_DAYS.length - 1)];
-    if(due.length) return due.sort((a, b) => late(b) - late(a))[0];
-  }
   // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
   const met = id => done(id) || LEVELS.find(l => l.id === id).grade < myGrade();
   const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(met));
   // her own grade first (the profile's, 2nd by default); the rest once those are learned
   const open = all.some(l => l.grade === myGrade()) ? all.filter(l => l.grade === myGrade()) : all;
-  if(!open.length) return null;
   const grp = l => l.grp || l.op;
   const fresh = open.filter(l => !m[l.id]);
   if(fresh.length){
@@ -806,6 +800,14 @@ function nextUp(m, lastGrp, lastDone, now = Date.now()){
         || ranked.filter(l => l.d === best.d + 1 && grp(l) !== lastGrp)[0]
         || best;
   }
+  // Every level tried: now the learned ones come back when due — one at a time between repairs,
+  // the longest overdue for its step first.
+  if(!lastDone){
+    const due = LEVELS.filter(l => l.grade === myGrade() && dueReview(m, l.id, now));
+    const late = l => (now - m[l.id].at) / REVIEW_DAYS[Math.min(Math.max(m[l.id].streak - 2, 0), REVIEW_DAYS.length - 1)];
+    if(due.length) return due.sort((a, b) => late(b) - late(a))[0];
+  }
+  if(!open.length) return null;
   // She has met them all: go back to whichever is going worst, by its record and then
   // by how the last round went — a task many papers ask counts a little worse, so it is repaired first.
   // ponytail: 0.02 a paper is a nudge (8 papers ≈ 16 points of first-try rate), tune if repair feels off
