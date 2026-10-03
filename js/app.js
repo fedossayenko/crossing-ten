@@ -72,8 +72,10 @@ function speak(q, force){
   const text = q.kind ? $('stage').innerText.replace(/[□■◯○●△▲★☆?]/g, ' ').replace(/\s+/g, ' ').trim() : sayWords(q);
   try {
     speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(text), cat = $('cat');
     u.lang = q.kind && LANG === 'en' ? 'bg-BG' : LANG_TAG[LANG]; u.rate = .8; u.pitch = 1.05;
+    u.onstart = () => { if(!REDUCED) cat.dataset.talk = ''; };       // the mascot reads it to her
+    u.onend = u.onerror = () => { delete cat.dataset.talk; };
     speechSynthesis.speak(u);
   } catch(e){}
 }
@@ -212,6 +214,21 @@ function medal(b, got){
 
 /* ---------- cat ---------- */
 function mood(m){ const c = $('cat'); if(c.dataset.mood !== m) c.dataset.mood = m; }
+// A small move — a glance, an ear, the tail — played once; the same one again restarts it.
+function fidget(kind){
+  const c = $('cat');
+  if(REDUCED) return;
+  delete c.dataset.fidget; void c.getBoundingClientRect();
+  c.dataset.fidget = kind;
+  clearTimeout(fidget.t); fidget.t = setTimeout(() => { delete c.dataset.fidget; }, 1700);
+}
+// While she thinks over a task the mascot is not a statue: every 7–14 seconds, one small move.
+(function life(){
+  setTimeout(() => {
+    if(document.visibilityState === 'visible' && $('cat').dataset.mood === 'idle' && !S.settled) fidget(['look', 'ear', 'flick'][rnd(3)]);
+    life();
+  }, 7000 + rnd(7000));
+})();
 function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
 function catFor(score, total){ return score >= total - 2 ? 'happy' : score >= total/2 ? 'idle' : 'sad'; }
 
@@ -244,7 +261,7 @@ function confetti(n, spread){
 }
 function putCat(slot, m){
   const big = $('cat').cloneNode(true);
-  big.removeAttribute('id'); big.dataset.mood = m;
+  big.removeAttribute('id'); big.dataset.mood = m; delete big.dataset.talk; delete big.dataset.fidget;
   $(slot).replaceChildren(big);
 }
 
@@ -266,6 +283,12 @@ function wake(){
   clearTimeout(napTimer);
   if($('cat').dataset.mood === 'sleepy') mood('idle');
   napTimer = setTimeout(() => { if(!S.settled) mood('sleepy'); }, 45000);
+  clearTimeout(wake.yawn);
+  wake.yawn = setTimeout(() => {          // a yawn first, then back to waiting
+    if(S.settled || $('cat').dataset.mood !== 'idle') return;
+    mood('yawn');
+    setTimeout(() => { if($('cat').dataset.mood === 'yawn') mood('idle'); }, 2400);
+  }, 30000);
 }
 function show(){
   const q = S.qs[S.i];
@@ -338,7 +361,7 @@ function press(k){
     if(S.at < S.parts.length - 1 && S.parts[S.at] !== ''){ S.at++; paintSlot(); return; }
     check(); return;
   }
-  if(S.parts[S.at].length < 3){ S.parts[S.at] += k; mood('idle'); sfx.tap(); paintSlot(); }
+  if(S.parts[S.at].length < 3){ S.parts[S.at] += k; mood('idle'); fidget('ear'); sfx.tap(); paintSlot(); }
 }
 // The feedback under the question: a coloured box with a mark and a word, never colour alone.
 const MARK = { ok:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
@@ -373,7 +396,9 @@ function check(){
     $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
     $('hint').innerHTML = box('ok', t(quick ? 'yes' : 'gotIt'), why(q, true));
     $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
-    mood(quick && S.results.filter(Boolean).length >= 5 && S.results.slice(-5).every(Boolean) ? 'wiggle' : 'happy');
+    // a run of right answers: five in a row dances, three get star eyes
+    const run = n => quick && S.results.length >= n && S.results.slice(-n).every(Boolean);
+    mood(run(5) ? 'wiggle' : run(3) ? 'star' : 'happy');
     quick ? sfx.good() : sfx.ok();
     S.settled = true;
     $('go').textContent = '→';
@@ -506,6 +531,7 @@ function finish(){
   const nowM = mastery(LOCAL.rounds)[S.level];
   const learned = !COMP && nowM && nowM.done && !(was && was.done);
   $('learnedCard').hidden = !learned;
+  if(learned) putCat('sheetcat', 'proud');         // a level learned: the mascot wears a medal
   if(learned) $('learnedCard').innerHTML = '<span class="bicon">' + MARK.ok.replace('width="16" height="16"', 'width="22" height="22"') +
     '</span><div><b>' + t('learnedNew') + '</b><span>' + levelName(lv) + ' · ' + t('learnedRule') + '</span></div>';
 

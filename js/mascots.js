@@ -77,8 +77,8 @@ const MASCOTS = {
 // The face every animal shares, and the moods it shows (see .only-* in app.css).
 const FACE =
   '<g class="eyes-open only-idle"><ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>' +
-  '<ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/>' +
-  '<circle cx="93" cy="79" r="2.8" fill="#fff" opacity=".9"/><circle cx="139" cy="79" r="2.8" fill="#fff" opacity=".9"/></g>' +
+  '<g class="pupil"><ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/>' +
+  '<circle cx="93" cy="79" r="2.8" fill="#fff" opacity=".9"/><circle cx="139" cy="79" r="2.8" fill="#fff" opacity=".9"/></g></g>' +
   '<g class="eyes-open only-sad"><ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>' +
   '<ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/></g>' +
   '<g class="only-sad"><path d="M83,64 L108,73 M157,64 L132,73" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" fill="none"/></g>' +
@@ -92,16 +92,26 @@ const FACE_MORE =
   '<g class="only-sleep"><path d="M83,86 q14,8 28,0 M129,86 q14,8 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
   '<path d="M120,113 v5 M115,125 a5,3.5 0 1 0 10,0 a5,3.5 0 1 0 -10,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
   '<path class="zz" d="M188,44 h12 l-12,12 h12 M206,20 h16 l-16,16 h16" stroke="#5F6675" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>';
+// star: three right in a row, the eyes turn to stars; yawn: before she nods off; talk: while the task is read aloud
+const STAR_EYE = (x, y) => '<path d="M' + x + ',' + (y - 15) + ' l4.4,9 9.9,1.4 -7.2,7 1.7,9.8 -8.8,-4.6 -8.8,4.6 1.7,-9.8 -7.2,-7 9.9,-1.4 Z" fill="var(--warm)" stroke="#15181d" stroke-width="2" stroke-linejoin="round"/>';
+const FACE_NEW =
+  '<g class="only-star"><g class="stareye">' + STAR_EYE(97, 86) + '</g><g class="stareye b">' + STAR_EYE(143, 86) + '</g></g>' +
+  '<g class="only-yawn"><path d="M83,84 q14,-6 28,0 M129,84 q14,-6 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
+  '<ellipse class="yawnmouth" cx="120" cy="131" rx="13" ry="15" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/></g>' +
+  '<ellipse class="talkmouth" cx="120" cy="122" rx="6.5" ry="6" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/>';
+// proud: a level learned — a medal on the chest, under the head so every animal wears it the same
+const MEDAL = '<g class="only-proud medal"><path d="M108,128 L114,150 M132,128 L126,150" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/>' +
+  '<circle cx="120" cy="160" r="14" fill="var(--warm)" stroke="#15181d" stroke-width="2.5"/><path d="M120,151 l2.6,5.4 5.9,.8 -4.3,4.1 1,5.8 -5.2,-2.8 -5.2,2.8 1,-5.8 -4.3,-4.1 5.9,-.8 Z" fill="#fff" opacity=".9"/></g>';
 const MOUTHS =
-  '<path class="only-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7" stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
-  '<path class="only-happy" d="M120,113 v4 M120,117 q-2,11 -13,7 M120,117 q2,11 13,7" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+  '<path class="only-idle m-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7" stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
+  '<path class="only-happy m-happy" d="M120,113 v4 M120,117 q-2,11 -13,7 M120,117 q2,11 13,7" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
   '<path class="only-sad" d="M120,113 v5 M109,128 q11,-9 22,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>';
 function mascotInner(key){
   const m = MASCOTS[key] || MASCOTS.cat;
   return '<g class="whole"><g class="tail">' + m.tail + '</g>' +
-    '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g></g>' +
+    '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g>' + MEDAL + '</g>' +
     '<g class="head"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
-    m.head + FACE + FACE_MORE + m.nose + MOUTHS + m.whiskers + '</g></g>';
+    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
 const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;

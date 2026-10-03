@@ -511,6 +511,36 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .cat[data-mood="sleepy"] .tail{animation:none}
 .cat[data-mood="sleepy"] .only-sleep .zz{animation:rise 3.6s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.975) translateY(2px)}}
+/* more life: star eyes for a run of right answers, a yawn before the nap, proud with a medal for a level
+   learned, a mouth that moves while the task is read aloud, and small moves while she thinks (data-fidget) */
+.cat .only-star,.cat .only-yawn,.cat .only-proud,.cat .talkmouth{display:none}
+.cat[data-mood="star"] .only-star,.cat[data-mood="star"] .m-happy{display:inline}
+.cat[data-mood="star"] .whole{animation:hop .66s ease}
+.cat .stareye{transform-origin:50% 50%; animation:twinkle 1.2s ease-in-out infinite}
+.cat .stareye.b{animation-delay:.15s}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.18) rotate(14deg)}}
+.cat[data-mood="yawn"] .only-yawn{display:inline}
+.cat[data-mood="yawn"] .head{animation:yawnhead 2.4s ease-in-out}
+.cat[data-mood="yawn"] .yawnmouth{transform-origin:50% 0; animation:yawnmouth 2.4s ease-in-out}
+.cat[data-mood="yawn"] .ear-l{transform:rotate(-10deg)} .cat[data-mood="yawn"] .ear-r{transform:rotate(10deg)}
+@keyframes yawnhead{0%,100%{transform:rotate(0)}40%,70%{transform:rotate(-6deg) translateY(-3px)}}
+@keyframes yawnmouth{0%,100%{transform:scaleY(.3)}40%,70%{transform:scaleY(1.15)}}
+.cat[data-mood="proud"] .only-happy,.cat[data-mood="proud"] .only-proud{display:inline}
+.cat[data-mood="proud"] .head{animation:chinup 2.6s ease-in-out infinite}
+.cat[data-mood="proud"] .medal{transform-origin:50% 0; animation:medalin .7s cubic-bezier(.2,1.5,.4,1) both, swing 2.6s ease-in-out .7s infinite}
+.cat[data-mood="proud"] .ear-l{transform:rotate(6deg)} .cat[data-mood="proud"] .ear-r{transform:rotate(-6deg)}
+@keyframes chinup{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg) translateY(-3px)}}
+@keyframes medalin{from{opacity:0; transform:translateY(-14px) scale(.5)}to{opacity:1; transform:none}}
+@keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.cat[data-talk]:is([data-mood="idle"],[data-mood="nod"],[data-mood="tilt"],[data-mood="thinking"]) .talkmouth{display:inline; transform-origin:50% 30%; animation:talk .32s ease-in-out infinite alternate}
+.cat[data-talk]:is([data-mood="idle"],[data-mood="nod"],[data-mood="tilt"],[data-mood="thinking"]) .m-idle{display:none}
+@keyframes talk{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.cat[data-fidget="look"] .pupil{animation:look 1.6s ease-in-out}
+@keyframes look{0%,100%{transform:translateX(0)}25%,40%{transform:translateX(-5px)}60%,75%{transform:translateX(5px)}}
+.cat[data-fidget="ear"] .ear-r{animation:twitch .45s ease-in-out}
+@keyframes twitch{0%,100%{transform:rotate(0)}35%{transform:rotate(-14deg)}65%{transform:rotate(4deg)}}
+.cat[data-fidget="flick"] .tail{animation:flick .7s ease-in-out}
+@keyframes flick{0%,100%{transform:rotate(0)}30%{transform:rotate(-16deg)}60%{transform:rotate(9deg)}}
 
 /* iPad: the same screens in two columns */
 @media (min-width:900px){
