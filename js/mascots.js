@@ -5,7 +5,7 @@
 // --fur-dark for the mouth and brows). Drawn after the design canvas's mascot sheet.
 const MASCOTS = {
   cat: {
-    view:'0 0 240 224', vars:'',
+    view:'0 0 240 224', vars:'--arm:var(--fur);--paw:var(--fur-light);--pad:var(--rose)',
     tail:'<path d="M170,204 C212,208 226,178 212,156 C204,143 187,142 180,154" stroke="var(--fur)" stroke-width="15" stroke-linecap="round" fill="none"/>',
     body:'<path d="M120,120 C158,120 175,158 178,190 C180,207 168,209 120,209 C72,209 60,207 62,190 C65,158 82,120 120,120 Z" fill="var(--fur)"/>' +
          '<path d="M120,132 C138,140 144,162 144,186 C144,202 136,208 120,210 C104,208 96,202 96,186 C96,162 102,140 120,132 Z" fill="var(--fur-light)" opacity=".72"/>',
@@ -14,13 +14,13 @@ const MASCOTS = {
     earL:'<path d="M80,60 L64,14 L114,40 Z" fill="var(--fur)"/><path d="M84,55 L76,28 L104,43 Z" fill="var(--rose)" opacity=".8"/>',
     earR:'<path d="M160,60 L176,14 L126,40 Z" fill="var(--fur)"/><path d="M156,55 L164,28 L136,43 Z" fill="var(--rose)" opacity=".8"/>',
     head:'<ellipse cx="120" cy="88" rx="63" ry="54" fill="var(--fur)"/>' +
-         '<path d="M100,44 q7,13 4,25 M120,40 q0,14 0,24 M140,44 q-7,13 -4,25" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" opacity=".38" fill="none"/>' +
+         '<path d="M100,44 q7,13 4,25 M120,40 q0,14 0,24 M140,44 q-7,13 -4,25" stroke="var(--fur-dark)" stroke-width="5.5" stroke-linecap="round" opacity=".55" fill="none"/>' +
          '<ellipse cx="120" cy="107" rx="28" ry="21" fill="var(--fur-light)"/>',
     nose:'<path d="M120,112 l-9,-7 h18 Z" fill="var(--rose)"/>',
     whiskers:'<path d="M104,110 C84,105 68,104 52,107 M104,116 C84,117 66,120 50,125 M136,110 C156,105 172,104 188,107 M136,116 C156,117 174,120 190,125" stroke="var(--fur-light)" stroke-width="2.2" stroke-linecap="round" fill="none"/>'
   },
   fox: {
-    view:'0 -32 240 256', vars:'--eye:#4E8F6E;--fur-dark:#3E2A1E',
+    view:'0 -32 240 256', vars:'--eye:#4E8F6E;--fur-dark:#3E2A1E;--arm:#E07B39;--paw:#3E2A1E;--pad:#F6D9C4',
     tail:'<path d="M168,200 C216,206 234,168 216,140 C206,126 188,128 180,142" stroke="#E07B39" stroke-width="22" stroke-linecap="round" fill="none"/>' +
          '<path d="M222,152 C228,168 222,186 208,198" stroke="#FBF1E6" stroke-width="12" stroke-linecap="round" fill="none"/>',
     body:'<path d="M120,120 C160,120 178,158 180,190 C182,207 168,209 120,209 C72,209 58,207 60,190 C62,158 80,120 120,120 Z" fill="#E07B39"/>' +
@@ -38,7 +38,7 @@ const MASCOTS = {
     whiskers:''
   },
   owl: {
-    view:'0 -32 240 256', vars:'--eye:#E8A33D;--fur-dark:#4A3A2A',
+    view:'0 -32 240 256', vars:'--eye:#E8A33D;--fur-dark:#4A3A2A;--arm:#8B6B4E;--paw:#7A5C42;--pad:transparent',
     tail:'',
     body:'<path d="M120,112 C170,112 188,158 188,194 C188,212 160,214 120,214 C80,214 52,212 52,194 C52,158 70,112 120,112 Z" fill="#8B6B4E"/>' +
          '<ellipse cx="120" cy="178" rx="38" ry="32" fill="#D9C3A5"/>' +
@@ -58,7 +58,7 @@ const MASCOTS = {
     whiskers:''
   },
   bun: {
-    view:'0 -32 240 256', vars:'--eye:#4F87B3;--fur-dark:#5A6275',
+    view:'0 -32 240 256', vars:'--eye:#4F87B3;--fur-dark:#5A6275;--arm:#B9C1D2;--paw:#E6EAF1;--pad:#E9B7BD',
     tail:'<circle cx="178" cy="190" r="16" fill="#E6EAF1"/><circle cx="184" cy="184" r="7" fill="#F4F6F9"/>',
     body:'<path d="M120,124 C160,124 178,160 180,190 C182,207 166,209 120,209 C74,209 58,207 60,190 C62,160 80,124 120,124 Z" fill="#B9C1D2"/>' +
          '<ellipse cx="120" cy="182" rx="28" ry="24" fill="#E6EAF1"/>',
@@ -76,12 +76,13 @@ const MASCOTS = {
 };
 // The face every animal shares, and the moods it shows (see .only-* in app.css).
 const FACE =
-  '<g class="eyes-open only-idle"><ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>' +
+  '<g class="eyes-open only-idle"><ellipse cx="97" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/>' +
   '<g class="pupil"><ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/>' +
-  '<circle cx="93" cy="79" r="2.8" fill="#fff" opacity=".9"/><circle cx="139" cy="79" r="2.8" fill="#fff" opacity=".9"/></g></g>' +
-  '<g class="eyes-open only-sad"><ellipse cx="97" cy="85" rx="14" ry="16" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="14" ry="16" fill="var(--eye)"/>' +
+  '<circle cx="93" cy="79" r="3.2" fill="#fff" opacity=".9"/><circle cx="139" cy="79" r="3.2" fill="#fff" opacity=".9"/>' +
+  '<circle cx="101" cy="92" r="1.6" fill="#fff" opacity=".75"/><circle cx="147" cy="92" r="1.6" fill="#fff" opacity=".75"/></g></g>' +
+  '<g class="eyes-open only-sad"><ellipse cx="97" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/>' +
   '<ellipse cx="97" cy="85" rx="4.4" ry="12" fill="#15181d"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/></g>' +
-  '<g class="only-sad"><path d="M83,64 L108,73 M157,64 L132,73" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" fill="none"/></g>' +
+  '<g class="only-sad"><path d="M84,70 L107,61 M156,70 L133,61" stroke="var(--fur-dark)" stroke-width="5" stroke-linecap="round" fill="none"/></g>' +
   '<g class="only-happy"><path d="M85,89 q12,-15 24,0 M131,89 q12,-15 24,0" stroke="#15181d" stroke-width="5.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark" d="M186,66 l0,-16 M178,58 l16,0" stroke="var(--good)" stroke-width="4.5" stroke-linecap="round" fill="none"/>' +
   '<path class="spark b" d="M56,52 l0,-12 M50,46 l12,0" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
@@ -104,14 +105,23 @@ const MEDAL = '<g class="only-proud medal"><path d="M108,128 L114,150 M132,128 L
   '<circle cx="120" cy="160" r="14" fill="var(--warm)" stroke="#15181d" stroke-width="2.5"/><path d="M120,151 l2.6,5.4 5.9,.8 -4.3,4.1 1,5.8 -5.2,-2.8 -5.2,2.8 1,-5.8 -4.3,-4.1 5.9,-.8 Z" fill="#fff" opacity=".9"/></g>';
 const MOUTHS =
   '<path class="only-idle m-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7" stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
-  '<path class="only-happy m-happy" d="M120,113 v4 M120,117 q-2,11 -13,7 M120,117 q2,11 13,7" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+  '<g class="only-happy m-happy"><path d="M107,119 q13,4 26,0 q-2,15 -13,15 q-11,0 -13,-15 Z" fill="#15181d"/>' +
+  '<path d="M113,129 q7,-5 14,0 q-2,5 -7,5 q-5,0 -7,-5 Z" fill="#E8838A"/></g>' +
   '<path class="only-sad" d="M120,113 v5 M109,128 q11,-9 22,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>';
+const PAW = (x, y) => '<circle cx="' + x + '" cy="' + y + '" r="14" fill="var(--paw)"/><circle cx="' + x + '" cy="' + (y + 3) + '" r="4.2" fill="var(--pad)"/>' +
+  [-6, 0, 6].map(d => '<circle cx="' + (x + d) + '" cy="' + (y - 5 + Math.abs(d) / 3) + '" r="2.2" fill="var(--pad)"/>').join('');
+const LEG = d => '<path d="' + d + '" stroke="var(--arm)" stroke-width="20" stroke-linecap="round" fill="none"/>';
+const ARMS =
+  '<g class="arm arm-up-l">' + LEG('M86,156 Q62,140 50,104') + PAW(48, 98) + '</g>' +
+  '<g class="arm arm-up-r">' + LEG('M154,156 Q178,140 190,104') + PAW(192, 98) + '</g>' +
+  '<g class="arm arm-chin">' + LEG('M82,174 Q86,162 98,154') + PAW(100, 150) + '</g>';
 function mascotInner(key){
   const m = MASCOTS[key] || MASCOTS.cat;
   return '<g class="whole"><g class="tail">' + m.tail + '</g>' +
     '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g>' + MEDAL + '</g>' +
-    '<g class="head"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
-    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>';
+    // the head a size up, round its own centre: rounder, younger proportions
+    '<g class="head"><g transform="translate(120 90) scale(1.08) translate(-120 -90)"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
+    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + '</g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
 const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;
