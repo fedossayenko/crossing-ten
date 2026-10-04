@@ -680,6 +680,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   .card:has(.fb) .card-in:has(> .choices[hidden]) .fig.tall svg{height:clamp(120px,36vh,280px)}
   /* the answer line's size is set on the element by each kind; beside a hint it may be a little smaller */
   .card:has(.fb) .card-in:has(> .choices[hidden]) .stage > .line:last-child{font-size:clamp(26px,7vh,46px) !important}
+  /* …but a worked picture (not the small ten-frame) needs the width: the solution goes under the question */
+  .card:has(.hint .fb:not(.tip) svg:not(.tenframe)) .card-in:has(> .choices[hidden]){grid-template-columns:minmax(0,1fr); row-gap:10px}
 }
 /* iPad and laptop: the picker's side column holds two filter rows, the recommendation and the
    competition — smaller chips keep it short enough to stay in view beside the list */
