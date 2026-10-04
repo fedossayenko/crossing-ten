@@ -396,7 +396,8 @@ function check(){
     const quick = S.tries === 0;
     $('verdict').className = 'verdict ok';
     $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
-    $('hint').innerHTML = box('ok', t(quick ? 'yes' : 'gotIt'), why(q, true));
+    const shown = why(q, true);
+    $('hint').innerHTML = box('ok', t(quick ? 'yes' : 'gotIt'), shown);
     $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
     // a run of right answers: five in a row dances, three get star eyes
     const run = n => quick && S.results.length >= n && S.results.slice(-n).every(Boolean);
@@ -405,7 +406,8 @@ function check(){
     S.settled = true;
     $('go').textContent = '→';
     paintDots();
-    S.timers.push(setTimeout(next, quick ? 1900 : 2700));
+    // a solution picture plays step by step and is there to be looked at: it waits for her tap on → or the card
+    if(!shown.includes('<svg')) S.timers.push(setTimeout(next, quick ? 1900 : 2700));
     return;
   }
   S.results[S.i] = false;
