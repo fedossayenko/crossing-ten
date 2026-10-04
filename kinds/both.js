@@ -62,10 +62,25 @@ function eqBoth(q){
   if(q.kind === 'both') return tr(q.T + ' ученика, ' + q.A + ' и ' + q.B + ', и двата: ',
     bothUkPupils(q.T) + ', ' + q.A + ' і ' + q.B + ', обидві: ') + q.both + ' → ' + q.ans;
 }
+// The class as a row of dots, one a pupil: the first language bracketed from the left, the second
+// from the right. They only fit by overlapping, and the overlap — the pupils counted twice — is orange.
+function bothSvg(q){
+  const s = Math.min(9, 230 / q.T), x = i => 6 + (i + 0.5) * s, lo = q.T - q.B;   // pupils lo … T−1 study the second
+  let g = '';
+  for(let i = 0; i < q.T; i++) g += '<circle' + popAt(i * 0.06) + ' cx="' + x(i).toFixed(1) + '" cy="0" r="' + (s * 0.36).toFixed(1) + '" fill="' + (i >= lo && i < q.A ? 'var(--warm)' : 'var(--muted)') + '"/>';
+  const brace = (a, b, y, t, col, step) => { const x1 = (6 + a * s).toFixed(1), x2 = (6 + b * s).toFixed(1), d = y < 0 ? 5 : -5;
+    return '<g' + popAt(step) + '><path d="M' + x1 + ',' + (y + d) + ' V' + y + ' H' + x2 + ' V' + (y + d) + '" stroke="' + col + '" stroke-width="2" fill="none"/>' + svgText(((+x1 + +x2) / 2).toFixed(1), y < 0 ? y - 5 : y + 15, t, 12, col) + '</g>'; };
+  g += brace(0, q.A, -12, q.A + ' ' + tr(q.lang[0], bothUkLang[q.lang[0]]), 'var(--accent)', 2) + brace(lo, q.T, 12, q.B + ' ' + tr(q.lang[1], bothUkLang[q.lang[1]]), 'var(--good)', 3);
+  const foot = q.A + ' + ' + q.B + ' − ' + q.T + ' = ' + q.both + (q.asksBoth ? '' : ', ' + q.B + ' − ' + q.both + ' = ' + q.ans);
+  g += svgText(121, 52, foot, 15, 'var(--ink)', popAt(4.5));
+  return '<svg viewBox="0 -36 242 96" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('учениците и езиците им', 'учні та їхні мови') + '">' + g + '</svg>';
+}
 function whyBoth(q, full){
   if(q.kind === 'both' && q.shape === 'venn'){
     if(!full) return tr('Виж примера: числото над кръга е сборът от двете числа в него.', 'Подивись на приклад: число над колом — сума двох чисел у ньому.');
-    return '□ = ' + q.L + ' − ' + q.m + ' = <b>' + (q.L - q.m) + '</b>, △ = ' + q.R + ' − ' + q.m + ' = <b>' + (q.R - q.m) + '</b> &nbsp;→&nbsp; ' + (q.L - q.m) + ' + ' + (q.R - q.m) + ' = ' + q.ans;
+    // the circles again, filled in: what each side holds once the middle is taken off its total
+    return '□ = ' + q.L + ' − ' + q.m + ' = <b>' + (q.L - q.m) + '</b>, △ = ' + q.R + ' − ' + q.m + ' = <b>' + (q.R - q.m) + '</b>' +
+      '<div class="fig pop">' + vennSvg(q.L, q.R, q.L - q.m, q.m, q.R - q.m) + '</div>' + (q.L - q.m) + ' + ' + (q.R - q.m) + ' = ' + q.ans;
   }
   if(q.kind === 'both'){
     if(!full) return tr('Събери двата броя — излиза повече от учениците. Кой се брои два пъти?',
@@ -74,8 +89,8 @@ function whyBoth(q, full){
       q.both + '</b> учат и двата езика',
       q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учнів ' + q.T + ' &nbsp;→&nbsp; <b>' +
       q.both + '</b> ' + bothUkStudy(q.both) + ' обидві мови');
-    return q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
-      ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans;
+    return (q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
+      ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans) + bothSvg(q);
   }
 }
 KIND.both = { draw:drawBoth, eq:eqBoth, why:whyBoth };

@@ -80,7 +80,32 @@ function eqShared(q){
     ? 'квадрат ' + q.P + tr(', триъгълник ', ', трикутник ') + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
 }
+// The pictures. A triangle cut in two: the halves pull apart and the cut lights up on both — it is
+// in both perimeters, so the sum is the big one plus the cut twice. The stack: the two upright sides
+// of the square are all that ABEF has more than DCEF. The notch: three sides of the square stay, the
+// fourth goes, and the triangle's other two take its place.
+function sharedSvg(q){
+  if(q.shape === 2) return sqWalkSvg(q.a, q.a + q.h, [[0, q.h, q.a, q.h]], [0, q.h, q.a, q.a], [[0, q.h, 0, q.h + q.a, q.a], [q.a, q.h, q.a, q.h + q.a, q.a]],
+    q.d + ' : 2 = ' + q.a + ', 4 × ' + q.a + ' = ' + q.ans);
+  if(q.shape === 1){
+    const c = q.c, k = c * 0.55;
+    return sqWalkSvg(c, c, [[0, 0, c / 2, k], [c / 2, k, c, 0]], null, [[0, 0, 0, c, c], [0, c, c, c, c], [c, c, c, 0, c], [0, 0, c / 2, k, ''], [c / 2, k, c, 0, '']],
+      q.P + ' − ' + c + ' + ' + (q.p - c) + ' = ' + q.ans);
+  }
+  // the two halves, apart, the cut on each
+  const half = (dx, a, b, step) => '<g' + popAt(step) + '><path d="M' + (a[0] + dx) + ',' + a[1] + ' L' + (b[0] + dx) + ',' + b[1] + ' L' + (80 + dx) + ',0" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round"/>' +
+    '<line x1="' + (80 + dx) + '" y1="0" x2="' + (90 + dx) + '" y2="90" stroke="var(--warm)" stroke-width="4" stroke-linecap="round"/></g>';
+  const g = half(-14, [90, 90], [0, 90], 1) + half(14, [90, 90], [170, 90], 2) +
+    svgText(30, 112, q.p1, 13, 'var(--accent)', popAt(1)) + svgText(150, 112, q.p2, 13, 'var(--accent)', popAt(2)) +
+    svgText(85, 112, '?', 14, 'var(--warm)', popAt(3)) +
+    svgText(90, 140, '(' + q.p1 + ' + ' + q.p2 + ' − ' + q.P + ') : 2 = ' + q.ans, 15, 'var(--ink)', popAt(4));
+  return '<svg viewBox="-30 -10 240 160" style="display:block; width:280px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете части и общата им страна', 'дві частини і їхня спільна сторона') + '">' + g + '</svg>';
+}
 function whyShared(q, full){
+  const text = whySharedText(q, full);
+  return full && text ? text + sharedSvg(q) : text;
+}
+function whySharedText(q, full){
   if(q.kind === 'shared' && q.shape === 2){
     if(!full) return tr('Височината на горния правоъгълник влиза и в двете обиколки — тя отпада.',
       'Висота верхнього прямокутника входить в обидва периметри — вона скорочується.');

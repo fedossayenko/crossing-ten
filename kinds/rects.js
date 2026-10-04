@@ -73,6 +73,27 @@ function eqRects(q){
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
     : q.W + '×' + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
 }
+// The ant's picture: every rectangle that holds her, each drawn small on its own copy of the grid.
+// They stand in a table — a row for each way up and down, a column for each way across — so the
+// count is the columns times the rows, and the table shows it.
+function rectsAntSvg(q){
+  const s = 9, tw = q.W * s, th = q.H * s, gx = 10, gy = 10, ext = (n, k) => { const out = []; for(let a = 1; a <= k; a++) for(let b = k; b <= n; b++) out.push([a, b]); return out; };
+  const across = ext(q.W, q.c), down = ext(q.H, q.r);
+  let g = '', k = 0;
+  down.forEach(([r1, r2], i) => across.forEach(([c1, c2], j) => {
+    const x = j * (tw + gx), y = i * (th + gy);
+    let cells = '';
+    for(let a = 1; a < q.W; a++) cells += '<line x1="' + (x + a * s) + '" y1="' + y + '" x2="' + (x + a * s) + '" y2="' + (y + th) + '"/>';
+    for(let b = 1; b < q.H; b++) cells += '<line x1="' + x + '" y1="' + (y + b * s) + '" x2="' + (x + tw) + '" y2="' + (y + b * s) + '"/>';
+    g += '<g' + popAt(1 + k++ * 0.25) + '><rect x="' + x + '" y="' + y + '" width="' + tw + '" height="' + th + '" fill="none" stroke="var(--line)"/><g stroke="var(--line)" stroke-width=".6">' + cells + '</g>' +
+      '<rect x="' + (x + (c1 - 1) * s) + '" y="' + (y + (r1 - 1) * s) + '" width="' + (c2 - c1 + 1) * s + '" height="' + (r2 - r1 + 1) * s + '" fill="rgba(47,111,143,.18)" stroke="var(--accent)" stroke-width="1.6"/>' +
+      '<circle cx="' + (x + (q.c - 0.5) * s) + '" cy="' + (y + (q.r - 0.5) * s) + '" r="2.4" fill="var(--warm)"/></g>';
+  }));
+  const W = across.length * (tw + gx) - gx, H = down.length * (th + gy) - gy;
+  g += svgText(W / 2, H + 22, q.wide + ' × ' + q.tall + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k * 0.25));
+  return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8) * 1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('всички правоъгълници с мравката', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
+}
 function whyRects(q, full){
   if(q.kind === 'rects' && q.shape === 2){
     if(!full) return tr('Преброй поотделно квадратите — малки и големи — и всички правоъгълници. Квадратът също е правоъгълник.',
@@ -92,7 +113,7 @@ function whyRects(q, full){
       'Прямокутник може складатися з одного або з кількох квадратиків.');
     const rep = n => Array(n).fill(q.wide).join(' + ');
     return tr('по ширина <b>', 'по ширині <b>') + q.wide + tr('</b>, по височина <b>', '</b>, по висоті <b>') + q.tall + '</b> &nbsp;→&nbsp; ' +
-      (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans);
+      (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans) + rectsAntSvg(q);
   }
 }
 KIND.rects = { draw:drawRects, eq:eqRects, why:whyRects };
