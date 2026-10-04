@@ -61,10 +61,20 @@ function catsSvg(q){
   return '<svg viewBox="0 -10 ' + (X0 + 252) + ' 112" style="display:block; width:' + Math.round((X0 + 252) * 1.3) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('кутиите на двете котки по дни', 'коробки обох кішок по днях') + '">' + g + '</svg>';
 }
+// The hint's picture: the idea without her numbers — two rows of boxes, one short and one long,
+// that end together, and a question mark where they meet. Its boxes are not the task's own, so
+// counting them gives nothing away.
+function catsHintSvg(q){
+  const u = 40, row = (y, len, n, stroke, fill, name) => svgText(22, y + 13, catsNm(name), 11, stroke) +
+    Array.from({length: n}, (_, i) => '<rect x="' + (47 + i * len * u) + '" y="' + y + '" width="' + (len * u - 2) + '" height="18" rx="4" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.6"/>').join('');
+  return '<svg viewBox="0 -10 312 58" style="display:block; width:312px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('ден, в който и двете свършват кутия', 'день, коли обидві доїдають коробку') + '">' +
+    row(0, 2, 3, 'var(--warm)', 'var(--warmbg)', q.nm[0]) + row(26, 3, 2, 'var(--accent)', 'rgba(47,111,143,.14)', q.nm[1]) +
+    '<line x1="286" y1="-6" x2="286" y2="48" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 3"/>' + svgText(301, 27, '?', 16, 'var(--ink)') + '</svg>';
+}
 function whyCats(q, full){
   if(q.kind === 'cats'){
     if(!full) return tr('Намери ден, в който и двете котки свършват точно по цяла кутия.',
-      'Знайди день, коли обидві кішки доїдають рівно по цілій коробці.');
+      'Знайди день, коли обидві кішки доїдають рівно по цілій коробці.') + catsHintSvg(q);
     const base = q.p * q.q;
     const head = tr('за ' + base + ' дни ' + q.nm[0] + ' изяжда ' + q.q + ' кутии, а ' + q.nm[1] + ' — ' +
       q.p + ' &nbsp;→&nbsp; общо ' + (q.p + q.q) + ' кутии',
