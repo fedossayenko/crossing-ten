@@ -778,11 +778,13 @@ const dueReview = (m, id, now) => { const x = m[id];
 // groundwork is done. It recommends — nothing is ever locked away.
 // lastDone: the round just played was on a learned level (a review), so this time a repair.
 // Reviews wait until every level has been tried: breadth first.
-function nextUp(m, lastGrp, lastDone, now = Date.now()){
+// pool: the picker's focus (say МБГ · Есен · 2 клас) — only its levels are suggested, and groundwork
+// outside it does not hold them back.
+function nextUp(m, lastGrp, lastDone, now = Date.now(), pool){
   const done = id => m[id] && m[id].done;
   // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
-  const met = id => done(id) || LEVELS.find(l => l.id === id).grade < myGrade();
-  const all = LEVELS.filter(l => !done(l.id) && (l.needs || []).every(met));
+  const met = id => { const l = LEVELS.find(x => x.id === id); return done(id) || l.grade < myGrade() || (pool && !pool(l)); };
+  const all = LEVELS.filter(l => (!pool || pool(l)) && !done(l.id) && (l.needs || []).every(met));
   // her own grade first (the profile's, 2nd by default); the rest once those are learned
   const open = all.some(l => l.grade === myGrade()) ? all.filter(l => l.grade === myGrade()) : all;
   const grp = l => l.grp || l.op;
@@ -804,7 +806,7 @@ function nextUp(m, lastGrp, lastDone, now = Date.now()){
   // Every level tried: now the learned ones come back when due — one at a time between repairs,
   // the longest overdue for its step first.
   if(!lastDone){
-    const due = LEVELS.filter(l => l.grade === myGrade() && dueReview(m, l.id, now));
+    const due = LEVELS.filter(l => (pool ? pool(l) : l.grade === myGrade()) && dueReview(m, l.id, now));
     const late = l => (now - m[l.id].at) / REVIEW_DAYS[Math.min(Math.max(m[l.id].streak - 2, 0), REVIEW_DAYS.length - 1)];
     if(due.length) return due.sort((a, b) => late(b) - late(a))[0];
   }
@@ -854,11 +856,8 @@ function buildPicker(){
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
   // three filters: the grade, the competition (МБГ, Коледно, the basics), and within it one paper
-  if(PICK_FOR !== PLAYER.id){ PICK_FOR = PLAYER.id; PICK_GRADE = myGrade(); PICK_COMP = PICK_ROUND = PICK_PAPER = ''; }   // each child starts on her own grade
-  const gradeOk = l => !PICK_GRADE || l.grade === PICK_GRADE;
-  const compOk = l => !PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP);
-  const roundOk = l => !PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND);
-  const shown = l => gradeOk(l) && compOk(l) && roundOk(l) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
+  loadFocus();
+  const gradeOk = l => !PICK_GRADE || l.grade === PICK_GRADE, shown = inFocus;
   const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && shown(l)) })).filter(g => g.levels.length);
   if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = -1;
   $('pickTopics').innerHTML = '<button data-k="-1" aria-pressed="' + (PICK_TOPIC === -1) + '">' + t('all') + '</button>' +
@@ -869,7 +868,7 @@ function buildPicker(){
   const chips = (id, items, cur, pick) => {
     $(id).hidden = items.length < 2;
     $(id).innerHTML = items.map(([v, label, title]) => '<button data-v="' + v + '" aria-pressed="' + (cur === v) + '"' + (title ? ' title="' + title + '"' : '') + '>' + label + '</button>').join('');
-    $(id).querySelectorAll('button').forEach(b => b.onclick = () => { pick(b.dataset.v); buildPicker(); });
+    $(id).querySelectorAll('button').forEach(b => b.onclick = () => { pick(b.dataset.v); buildPicker(); saveFocus(); });
   };
   const grades = [...new Set(LEVELS.map(l => l.grade))].sort();
   chips('pickGrades', [['0', t('allGrades')]].concat(grades.map(g => [String(g), t('gradeN', g)])), String(PICK_GRADE), v => { PICK_GRADE = +v; PICK_ROUND = PICK_PAPER = ''; });
@@ -893,10 +892,11 @@ function buildPicker(){
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
   const lastLvl = lastRound && LEVELS.filter(l => l.id === lastRound.level)[0];
   const grp = l => l && (l.grp || l.op);
-  const nx = nextUp(m, grp(lastLvl), !!(lastLvl && done(lastLvl)));
+  const nx = suggest(m, grp(lastLvl), !!(lastLvl && done(lastLvl)));
   const review = nx && dueReview(m, nx.id, Date.now());
-  const after = nx && nextUp(Object.assign({}, m, { [nx.id]: { done:true, rate:1, lastRate:1, n:15, f:15, rounds:1, at:Date.now(), streak:3 } }), grp(nx), true);
-  const learned = LEVELS.filter(done).length, met = LEVELS.filter(l => m[l.id]).length;
+  const after = nx && suggest(Object.assign({}, m, { [nx.id]: { done:true, rate:1, lastRate:1, n:15, f:15, rounds:1, at:Date.now(), streak:3 } }), grp(nx), true);
+  const scope = PICK_COMP ? LEVELS.filter(shown) : LEVELS;   // with a focus, the bar counts what is in it
+  const learned = scope.filter(done).length, met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = (nx ? '<button class="gcard nextcard" data-lvl="' + nx.id + '"><span class="nm">' +
       '<span class="lab">' + t(review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
       '<span class="eq">' + levelName(nx) + '</span>' +
@@ -904,10 +904,15 @@ function buildPicker(){
       (after ? '<span class="meta">' + t('nextAfter', levelName(after)) + '</span>' : '') +
       '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>'
     : '<div class="gcard advice">' + t('allLearned') + '</div>') +
-    '<div class="progress"><span class="track"><i style="width:' + Math.round(100*learned/LEVELS.length) + '%"></i></span><span>' +
-    t('learnedOf', learned, LEVELS.length) + '</span></div>';
+    '<div class="progress"><span class="track"><i style="width:' + Math.round(100*learned/scope.length) + '%"></i></span><span>' +
+    t('learnedOf', learned, scope.length) + '</span></div>';
 
-  $('pickAll').innerHTML = groups.filter(g => PICK_TOPIC === -1 || g.k === PICK_TOPIC).map(g =>
+  // a competition picked is something to train for: one path through its levels, easiest first,
+  // in the order the suggestion takes them
+  const path = PICK_COMP && LEVELS.filter(l => shown(l) && (PICK_TOPIC === -1 || PICK_GROUPS[PICK_TOPIC].has(l))).sort((a, b) => a.d - b.d || b.freq - a.freq);
+  $('pickAll').innerHTML = path ? '<div class="grouphead"><b>' + t('byDifficulty') + '</b><span>' + t('learnedGroup', path.filter(done).length, path.length) + '</span></div>' +
+    '<div class="gcard list">' + path.map(row).join('') + '</div>' :
+    groups.filter(g => PICK_TOPIC === -1 || g.k === PICK_TOPIC).map(g =>
     '<div class="grouphead"><b>' + t('groups')[g.k] + '</b><span>' + t('learnedGroup', g.levels.filter(done).length, g.levels.length) + '</span></div>' +
     '<div class="gcard list">' + g.levels.map(row).join('') + '</div>').join('');
   document.querySelectorAll('#picker [data-lvl]').forEach(b => b.onclick = () => {
@@ -917,6 +922,20 @@ function buildPicker(){
   });
 }
 let PICK_TOPIC = -1, PICK_FOR = null, PICK_GRADE = 0, PICK_COMP = '', PICK_ROUND = '', PICK_PAPER = '';
+// The picker's filters are her focus, kept on this device: each child starts on her own grade, and a
+// competition picked stays picked — the list and the suggestion keep to it until it is changed.
+function loadFocus(){
+  if(PICK_FOR === PLAYER.id) return;
+  PICK_FOR = PLAYER.id;
+  // a focus picked while she was in another grade is dropped: a new school year starts on the new grade
+  const f = Array.isArray(LOCAL.focus) && LOCAL.focus[4] === myGrade() ? LOCAL.focus : [myGrade(), '', '', ''];
+  [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER] = f;
+}
+const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
+const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&
+  (!PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND)) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
+// the suggestion keeps to the focus while a competition is picked; once that is all learned, the whole grade again
+const suggest = (m, lastGrp, lastDone) => (PICK_COMP && nextUp(m, lastGrp, lastDone, Date.now(), inFocus)) || nextUp(m, lastGrp, lastDone);
 const roundOf = p => compOf(p) === 'mbg' ? paperSrc(p).split('-')[1] : '';
 const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
 // the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year
@@ -1070,7 +1089,8 @@ const say = t => { $('synced').textContent = t + builtOn(); };
 // A launch starts on the level the picker would recommend, not on a fixed one.
 {
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
-  const m0 = mastery(LOCAL.rounds), nx = nextUp(m0, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m0[lastLvl.id] && m0[lastLvl.id].done));
+  loadFocus();
+  const m0 = mastery(LOCAL.rounds), nx = suggest(m0, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m0[lastLvl.id] && m0[lastLvl.id].done));
   if(nx){ S.level = nx.id; paintPill(); }
 }
 // a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one

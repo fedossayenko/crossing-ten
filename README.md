@@ -251,6 +251,11 @@ showing how many of the levels are learned.
   first; in repair a weak level counts 0.02 of first-try rate worse per paper, so an every-year task
   is fixed before a one-off; and a competition draws its tasks with weight 1 + `freq`. Difficulty
   still leads — frequency never pulls a harder level ahead of an easier one.
+- **A competition picked is a focus.** With a competition (or a round, or a paper) picked in the
+  filters, the list is one path through its levels, easiest first in the order above, the
+  recommendation keeps inside it — groundwork outside it holds nothing back — and the bar counts
+  only its levels. The filters are kept on the device, so the focus survives a relaunch, until they
+  are changed or her grade changes; once the focus is all learned, the whole grade is suggested again.
 - **Prerequisites** are declared only where a level genuinely builds on another
   (`42 − 17` after `42 − 7`, `Оцветени` after `Правоъгълници`, `Плодове` after `6 − ◯`).
   Difficulty handles the rest of the ordering.

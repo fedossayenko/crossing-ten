@@ -117,6 +117,16 @@
     if(rv.breadth !== 8 || rv.fresh === 4 || rv.due !== 4 || rv.between === 4 || rv.step[0] === 4 || rv.step[1] !== 4 || rv.late !== 8)
       throw new Error('the review ladder went wrong: ' + JSON.stringify(rv));
     console.log('review: only once every level is tried, a learned level comes back on its day (1, 3, 7, 14, 30), one between repairs, the longest overdue first');
+    // A focus (the picker's competition filter): the suggestion keeps inside it, takes every level in it
+    // easiest first, and groundwork outside it does not hold any back.
+    const fo = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
+      const pool = l => l.grade === 2 && (l.grp === 'geo' || l.grp === 'word'), m = {}, order = [];
+      for(let step = 0; step < 200; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break; order.push(nx); m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2, at:0, streak:2 }; }
+      return { order: order.map(l => [l.id, l.d, pool(l)]), want: LEVELS.filter(pool).length };
+    })()`);
+    if(fo.order.some(x => !x[2]) || fo.order.length !== fo.want || fo.order.some((x, i) => i && x[1] < fo.order[i-1][1] - 1))
+      throw new Error('a focused path went wrong: ' + JSON.stringify(fo));
+    console.log('focus: a picked competition keeps the suggestion inside it, all ' + fo.want + ' of its levels, easiest first');
   }
 }
 

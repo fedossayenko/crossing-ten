@@ -99,8 +99,9 @@ const server = http.createServer((req, res) => {
   const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length, welcome: !$("playerEdit").hidden && $("editTitle").textContent, rounds: LOCAL.rounds.length }');
   expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1 && first.welcome === 'Добре дошли!', 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
   // the picker opens on her grade; МБГ opens a row of its papers; a paper shows only its own levels,
-  // and «Есен · други» only the autumn levels no year claims
-  const filt = await page(`(() => { PICK_FOR = null; buildPicker(); const ids = () => [...document.querySelectorAll('#pickAll .pick')].map(b => +b.dataset.lvl);
+  // and «Есен · други» only the autumn levels no year claims; a round picked is kept as her focus —
+  // after a relaunch too — with its levels easiest first and the suggestion inside it
+  const filt = await page(`(() => { PICK_FOR = null; delete LOCAL.focus; buildPicker(); const ids = () => [...document.querySelectorAll('#pickAll .pick')].map(b => +b.dataset.lvl);
     const r = { grade: document.querySelector('#pickGrades [aria-pressed="true"]').dataset.v, papersHidden: $('pickPapers').hidden, g2: ids().every(id => LEVELS.find(l => l.id === id).grade === 2) };
     document.querySelector('#pickComps [data-v="mbg"]').click(); r.papersShown = !$('pickPapers').hidden;
     r.rounds = !$('pickRounds').hidden; document.querySelector('#pickRounds [data-v="winter"]').click();
@@ -110,8 +111,11 @@ const server = http.createServer((req, res) => {
     const other = document.querySelector('#pickPapers [data-v="mbg-autumn-2"]');   // shown only while some autumn level has no year
     r.other = other ? (other.click(), ids().every(id => !LEVELS.find(l => l.id === id).papers.some(p => /^mbg-autumn-\\d{4}/.test(p))) && ids().length) :
       LEVELS.filter(l => l.papers[0] === 'mbg-autumn-2' && !l.papers.some(p => /^mbg-autumn-\\d{4}/.test(p))).length === 0;
+    document.querySelector('#pickRounds [data-v="autumn"]').click(); PICK_FOR = null; buildPicker();
+    const ds = ids().map(id => LEVELS.find(l => l.id === id).d), nx = LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl);
+    r.focus = PICK_COMP === 'mbg' && PICK_ROUND === 'autumn' && ds.every((d, i) => !i || d >= ds[i-1]) && inFocus(nx);
     document.querySelector('#pickComps [data-v=""]').click(); r.back = $('pickPapers').hidden; return r; })()`);
-  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter, 'the picker filters are wrong: ' + JSON.stringify(filt));
+  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
