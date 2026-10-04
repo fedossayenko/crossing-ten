@@ -62,6 +62,35 @@ function eqDcount(q){
     ? tr('цифрата ' + q.d + ' от ' + q.from + ' до ' + q.to, 'цифра ' + q.d + ' від ' + q.from + ' до ' + q.to) + ' → ' + q.ans
     : tr(q.k + ' пъти цифрата ' + q.d + ', от ', 'цифра ' + q.d + ' — ' + ukN(q.k, 'раз', 'рази', 'разів') + ', від ') + q.from + ' → ' + q.ans;
 }
+// The picture is the hundred chart from the first number to the last: the numbers that end in the
+// digit make a column and light up first (orange), the ones that start with it make a row and light
+// up next (blue), and the one where they cross, like 33, is in both — so it is counted twice.
+function dcountSvg(q){
+  const top = q.shape === 0 ? q.to : q.ans, d = q.d, C = 23, R = 21;
+  const end = q.shape === 0 ? top : top + 1;   // asked for the largest end: the next number, which would bring one too many
+  if(end > 99) return '';
+  const r0 = Math.floor(q.from / 10), rows = Math.floor(end / 10) - r0 + 1, inRun = v => v >= q.from && v <= top;
+  const xy = v => [(v % 10) * C, (Math.floor(v / 10) - r0) * R];
+  const num = (v, col) => { const [x, y] = xy(v), s = String(v);
+    return svgText(x + C / 2, y + 15, s.split('').map((ch, i) => +ch === d && (i === s.length - 1 ? col === 'o' : col === 't') ?
+      '<tspan fill="' + (col === 'o' ? 'var(--warm)' : 'var(--accent)') + '">' + ch + '</tspan>' : ch).join(''), 11.5, 'var(--ink)'); };
+  let g = '';
+  for(let v = r0 * 10; v < (r0 + rows) * 10; v++) if(inRun(v)) g += num(v, '');
+  const ones = [], tens = [];
+  for(let v = q.from; v <= top; v++){ if(v % 10 === d) ones.push(v); if(Math.floor(v / 10) === d) tens.push(v); }
+  const mark = (v, k, col, fill) => { const [x, y] = xy(v);
+    return '<g' + popAt(k) + '><rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (C - 3) + '" height="' + (R - 3) + '" rx="5" fill="' + fill + '" stroke="' + col + '" stroke-width="2"/>' + num(v, col === 'var(--warm)' ? 'o' : 't') + '</g>'; };
+  ones.forEach((v, i) => { g += mark(v, 1 + i * 0.5, 'var(--warm)', 'var(--warmbg)'); });
+  const t0 = 2 + ones.length * 0.5;
+  tens.forEach((v, i) => { g += mark(v, t0 + i * 0.4, 'var(--accent)', v % 10 === d ? 'var(--warmbg)' : 'rgba(47,111,143,.14)'); });
+  if(end > top){ const [x, y] = xy(end);
+    g += '<g' + popAt(t0 + tens.length * 0.4 + 0.5) + '><rect x="' + (x + 1.5) + '" y="' + (y + 1.5) + '" width="' + (C - 3) + '" height="' + (R - 3) + '" rx="5" fill="none" stroke="var(--bad)" stroke-width="2"/>' +
+      svgText(x + C / 2, y + 15, end, 11.5, 'var(--bad)') + '<path d="M' + (x + 4) + ',' + (y + R - 4) + ' L' + (x + C - 4) + ',' + (y + 4) + '" stroke="var(--bad)" stroke-width="2"/></g>'; }
+  const sum = '<tspan fill="var(--warm)">' + ones.length + '</tspan> + <tspan fill="var(--accent)">' + tens.length + '</tspan> = ' + (ones.length + tens.length);
+  g += svgText(5 * C, rows * R + 24, q.shape === 0 ? sum : sum + tr(', до ', ', до ') + q.ans, 15, 'var(--ink)', popAt(t0 + tens.length * 0.4 + 1));
+  return '<svg viewBox="-2 -2 ' + (10 * C + 4) + ' ' + (rows * R + 36) + '" style="display:block; width:' + Math.round((10 * C + 4) * 1.3) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('таблицата на числата', 'таблиця чисел') + '">' + g + '</svg>';
+}
 function whyDcount(q, full){
   if(q.kind === 'dcount' && q.shape === 2){
     if(!full) return tr('Пита се за цифрите, не за числата. Колко цифри има всяко число?', 'Питають про цифри, а не про числа. Скільки цифр у кожному числі?');
@@ -73,11 +102,11 @@ function whyDcount(q, full){
     for(let v = q.from; v <= top && hits.length < 12; v++)
       if(String(v).indexOf(String(q.d)) >= 0) hits.push(v);
     const list = hits.join(', ') + (hits.length >= 12 ? ', …' : '');
-    if(q.shape === 0) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans;
+    if(q.shape === 0) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans + dcountSvg(q);
     return tr('до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
       ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ',
       'до <b>' + q.ans + '</b> цифра з’явилася ' + ukN(q.k, 'раз', 'рази', 'разів') + ' (' + list +
-      ') &nbsp;→&nbsp; наступне число з нею буде далі, отже, ') + q.ans;
+      ') &nbsp;→&nbsp; наступне число з нею буде далі, отже, ') + q.ans + dcountSvg(q);
   }
 }
 KIND.dcount = { draw:drawDcount, eq:eqDcount, why:whyDcount };
