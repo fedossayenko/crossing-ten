@@ -120,7 +120,48 @@ function eqWeekday(q){
     weekdayDays(q.n) + ' → ' + q.q + ' або ' + (q.q + 1) + ' ' +
     weekdayPl(q.q + 1, '', weekdayUk[q.day.nm].few, weekdayUk[q.day.nm].many));
 }
+// The picture is a calendar, a row to a week. For a month it starts under the weekday of the 1st:
+// the dates fill in, then the asked date and its weekday light up (or the asked weekday's dates are
+// ringed one by one down to the last). For a run of days with no known start, every whole week is a
+// green row with one of the asked day in it, and the days left over are an orange row that may or
+// may not hold another.
+function weekdaySvg(q){
+  const C = 24, short = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+  const cell = (c, r, fill, stroke, extra) => '<rect' + (extra || '') + ' x="' + (c * C + 1) + '" y="' + (r * C + 1) + '" width="' + (C - 2) + '" height="' + (C - 2) + '" rx="4" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
+  const svg = (w, h, g) => '<svg viewBox="-2 -' + (q.mon || q.shape === 'which' ? 22 : 2) + ' ' + w + ' ' + h + '" style="display:block; width:' + Math.round(w * 1.25) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('календар', 'календар') + '">' + g + '</svg>';
+  if(q.shape === 'which' || q.shape === 'last'){
+    const c0 = DAYS.indexOf(q.d1), len = q.shape === 'which' ? q.n : q.mon[1], col = q.shape === 'which' ? (c0 + q.n - 1) % 7 : DAYS.indexOf(q.day);
+    const pos = d => [(c0 + d - 1) % 7, Math.floor((c0 + d - 1) / 7)], rows = pos(len)[1] + 1;
+    let g = short.map((nm, c) => svgText(c * C + C / 2, -7, nm, 10, 'var(--muted)')).join('');
+    for(let d = 1; d <= len; d++){ const [c, r] = pos(d); g += '<g' + popAt(d / 4) + '>' + cell(c, r, 'none', 'var(--line)') + svgText(c * C + C / 2, r * C + 16, d, 11, 'var(--ink)') + '</g>'; }
+    const t0 = len / 4 + 1, ring = (d, k) => { const [c, r] = pos(d);
+      return '<g' + popAt(t0 + k) + '>' + cell(c, r, 'var(--warm)', 'var(--warm)') + svgText(c * C + C / 2, r * C + 16, d, 11, '#fff') + '</g>'; };
+    g += '<rect' + popAt(t0) + ' x="' + (col * C) + '" y="-20" width="' + C + '" height="' + (rows * C + 20) + '" rx="6" fill="none" stroke="var(--warm)" stroke-width="2"/>';
+    if(q.shape === 'which'){
+      const nm = DAYS[q.ans - 1].nm;
+      g += ring(q.n, 1) + svgText(84, rows * C + 22, tr(nm, weekdayUk[nm].nm) + ' → ' + q.ans, 15, 'var(--ink)', popAt(t0 + 2));
+      return svg(172, rows * C + 52, g);
+    }
+    let k = 1; for(let d = q.first; d <= len; d += 7) g += ring(d, k++);
+    return svg(172, rows * C + 26, g);
+  }
+  // a run of n days: whole weeks, then what is left
+  const w = Math.floor(q.n / 7), r = q.n % 7, rows = w + (r ? 1 : 0);
+  let g = '';
+  for(let i = 0; i < q.n; i++){ const c = i % 7, row = Math.floor(i / 7), whole = row < w;
+    g += cell(c, row, whole ? 'var(--goodbg)' : 'none', whole ? 'var(--good)' : 'var(--warm)', popAt(row + c / 10)); }
+  for(let row = 0; row < w; row++) g += svgText(7 * C + 14, row * C + 17, row + 1, 13, 'var(--good)', popAt(row + 0.8));
+  if(r) g += svgText(7 * C + 14, w * C + 17, '?', 14, 'var(--warm)', popAt(w + 0.8));
+  const foot = q.shape === 'bound' ? w + (q.most ? ' + 1' : ' + 0') + ' = ' + q.ans : q.q + tr(' или ', ' або ') + (q.q + 1);
+  g += svgText(88, rows * C + 22, foot, 15, 'var(--ink)', popAt(rows + 1.5));
+  return svg(196, rows * C + 32, g);
+}
 function whyWeekday(q, full){
+  const text = whyWeekdayText(q, full);
+  return full && text ? text + weekdaySvg(q) : text;
+}
+function whyWeekdayText(q, full){
   if(q.kind === 'weekday' && q.shape === 'bound'){
     if(!full) return tr('Колко цели седмици се събират, и какво остава след тях?',
       'Скільки цілих тижнів уміщається і що лишається після них?');
@@ -135,8 +176,7 @@ function whyWeekday(q, full){
   if(q.kind === 'weekday' && q.shape === 'which'){
     if(!full) return tr('Само остатъкът след цели седмици мести деня.', 'День зсуває лише остача після цілих тижнів.');
     const gap = q.n - 1, weeks = Math.floor(gap / 7), left = gap % 7;
-    return tr('от първия до ' + q.n + '-ия ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + weeks +
-      ' цели седмици и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
+    return tr('от първия до ' + q.n + '-ия ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + (weeks === 1 ? '1 цяла седмица' : weeks + ' цели седмици') + ' и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
       DAYS[q.ans - 1].nm + '</b>, тоест номер ' + q.ans,
       'від першого до ' + q.n + '-го дня минає <b>' + gap + '</b> ' + weekdayPl(gap, 'день', 'дні', 'днів') +
       ' &nbsp;→&nbsp; ' + weeks + ' ' + weekdayPl(weeks, 'цілий тиждень', 'цілі тижні', 'цілих тижнів') +

@@ -258,7 +258,71 @@ function eqSqcut(q){
     ? tr('лист с обиколка ', 'аркуш із периметром ') + q.P + ', квадрат ' + q.a + ' → ' + q.ans
     : tr('страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ', 'сторона ' + q.side + ', на ' + sqcutQuads(q.parts*q.parts) + ' → ') + q.ans;
 }
+// The picture walks round the figure: drawn in grey with its cuts, the piece that matters tinted,
+// then one side at a time lights up orange with its length beside it, and the total comes last.
+// Sizes are in units of the figure; sides is [x1, y1, x2, y2, label], each pushed out from the middle.
+function sqWalkSvg(W, H, cuts, tint, sides, foot){
+  const u = Math.min(150 / W, 100 / H), f = v => (v * u).toFixed(1);
+  // labels go outwards from the middle of the sides being walked, not of the whole figure
+  const cx = sides.reduce((t, r) => t + r[0] + r[2], 0) / (2 * sides.length), cy = sides.reduce((t, r) => t + r[1] + r[3], 0) / (2 * sides.length);
+  let g = '<g stroke="var(--line)" stroke-width="2" fill="none"><rect x="0" y="0" width="' + f(W) + '" height="' + f(H) + '"/>' +
+    cuts.map(([a, b, c, d]) => '<line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '"/>').join('') + '</g>';
+  if(tint) g += '<rect x="' + f(tint[0]) + '" y="' + f(tint[1]) + '" width="' + f(tint[2]) + '" height="' + f(tint[3]) + '" fill="var(--warm)" opacity=".16"/>';
+  sides.forEach(([a, b, c, d, t], i) => {
+    const mx = (a + c) / 2, my = (b + d) / 2, out = a === c ? [mx < cx ? -1 : 1, 0] : [0, my < cy ? -1 : 1];
+    const lx = mx * u + out[0] * (out[0] ? 8 + 4 * String(t).length : 0), ly = my * u + (out[1] ? out[1] * 9 + 4 : 4);
+    g += '<g' + popAt(1 + i * 1.5) + '><line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '" stroke="var(--warm)" stroke-width="4" stroke-linecap="round"/>' +
+      svgText(lx.toFixed(1), ly.toFixed(1), t, 12, 'var(--warm)') + '</g>';
+  });
+  g += svgText(f(W / 2), (H * u + 38).toFixed(1), foot, 15, 'var(--ink)', popAt(2 + sides.length * 1.5));
+  return '<svg viewBox="-34 -22 ' + (W * u + 68).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(W * u + 68) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('страните една по една', 'сторони одна за одною') + '">' + g + '</svg>';
+}
+// the four sides of a box, clockwise from the top, with their labels
+const sqSides = (x, y, w, h, top, right) => [[x, y, x + w, y, top], [x + w, y, x + w, y + h, right], [x + w, y + h, x, y + h, top], [x, y + h, x, y, right]];
+const sqGrid = (k, S) => { const c = []; for(let i = 1; i < k; i++) c.push([i * S / k, 0, i * S / k, S], [0, i * S / k, S, i * S / k]); return c; };
+function sqcutSvg(q){
+  const P = tr('обиколка ', 'периметр ');
+  if(q.shape === 6 && q.both){
+    // the square's four sides, then the cut, once for each piece
+    const c = q.side / 2, cut = [c, 0, c, q.side, q.side];
+    return sqWalkSvg(q.side, q.side, [cut], null, sqSides(0, 0, q.side, q.side, q.side, q.side).concat([cut, cut]),
+      q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans);
+  }
+  if(q.shape === 6){
+    const k = q.half ? 2 : q.slots ? 4 : q.k, w = q.side / k, mm = q.mm ? 10 : 1, cuts = [];
+    for(let i = 1; i < k; i++) cuts.push([0, i * w, q.side, i * w]);
+    const unit = q.mm ? ' мм' : ' см';
+    return sqWalkSvg(q.side, q.side, cuts, [0, 0, q.side, w], sqSides(0, 0, q.side, w, mm * q.side, mm * w),
+      P + q.ans + unit);
+  }
+  if(q.shape === 5){
+    const t = q.t, s = q.rev ? q.ans / Math.min.apply(null, t.sq.map(r => r[2])) : q.s, cuts = [];
+    t.sq.forEach(([x, y, k]) => cuts.push([x, y, x + k, y], [x + k, y, x + k, y + k]));
+    if(q.rev){
+      // the short side, made of the smallest squares' sides
+      const m = Math.min(t.w, t.h), least = q.ans, side = t.h <= t.w ? [t.w, 0, t.w, t.h, q.short] : [0, t.h, t.w, t.h, q.short];
+      return sqWalkSvg(t.w, t.h, cuts, null, [side], q.short + ' : ' + m + ' = ' + least);
+    }
+    return sqWalkSvg(t.w, t.h, cuts, null, sqSides(0, 0, t.w, t.h, t.w * s, t.h * s), P + q.ans);
+  }
+  if(q.shape === 4) return '';
+  if(q.shape === 3){
+    const W = q.a + q.extra, B = [q.a, 0, q.extra, q.a];
+    const sides = q.asksSide ? [[0, 0, W, 0, W], [q.a, 0, q.a, q.a, q.a]] : sqSides(q.a, 0, q.extra, q.a, q.extra, q.a);
+    return sqWalkSvg(W, q.a, [[q.a, 0, q.a, q.a]], B, sides, q.asksSide ? W + ' − ' + q.a + ' = ' + q.ans : P + 'B = ' + q.ans);
+  }
+  // a square cut into parts × parts
+  const S = q.side, k = q.parts, sm = S / k;
+  if(q.shape === 1) return sqWalkSvg(S, S, sqGrid(k, S), null, sqSides(0, 0, S, S, S, S), P + q.ans);
+  if(q.shape === 0) return sqWalkSvg(S, S, sqGrid(k, S), [0, 0, sm, sm], sqSides(0, 0, sm, sm, q.small, q.small), q.small + ' + ' + q.small + ' + ' + q.small + ' + ' + q.small + ' = ' + q.ans);
+  return sqWalkSvg(S, S, sqGrid(k, S), [0, 0, S, S], sqSides(0, 0, sm, sm, q.small, q.small), (k * k) + ' × ' + (4 * q.small) + ' = ' + q.ans);
+}
 function whySqcut(q, full){
+  const text = whySqcutText(q, full);
+  return full && text ? text + sqcutSvg(q) : text;
+}
+function whySqcutText(q, full){
   if(q.kind === 'sqcut' && q.shape === 6 && q.both){
     if(!full) return tr('Двете парчета имат всичко от обиколката на квадрата — и още нещо. Какво?', 'Дві частини мають увесь периметр квадрата — і ще дещо. Що?');
     return tr('страната е ', 'сторона ') + q.P + ' : 4 = <b>' + q.side + '</b> &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;

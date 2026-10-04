@@ -110,7 +110,44 @@ function eqMissing(q){
   if(q.kind === 'missing') return tr('липсват ', 'пропущено ') + q.hidden[0] + tr(' и ', ' і ') + q.hidden[1] +
     (q.asksDigits ? tr(' → цифри: ', ' → цифр: ') : tr(' → сбор: ', ' → сума: ')) + q.ans;
 }
+// The picture: the run again, an arc over every step with what it adds, walking left to right; the
+// missing places stand in an orange frame and fill in as the arcs reach them. Two runs woven together
+// step over every other number, one run above and the other below.
+function missingSvg(q){
+  const vals = q.woven || (q.one && q.next ? q.seq.concat(q.ans) : q.seq);
+  const gone = q.grows ? q.gaps : q.woven ? q.hideAt : q.one ? [q.at] : [q.at, q.at + 1];
+  const N = vals.length, cw = 30, x = i => 15 + i * cw, W = N * cw, below = !!q.woven;
+  let g = '';
+  vals.forEach((v, i) => {
+    if(gone.includes(i)) g += '<rect x="' + (x(i) - 14) + '" y="-13" width="28" height="19" rx="6" fill="none" stroke="var(--warm)" stroke-width="2"/>' +
+      svgText(x(i), 1, v, v > 99 ? 11 : 13, 'var(--warm)', popAt(1.5 + i * 0.45));
+    else g += svgText(x(i), 1, v, v > 99 ? 11 : 13, 'var(--ink)');
+  });
+  const step = (i, j, up) => {   // an arc from place i to place j, above or below the numbers, with what it adds
+    const a = x(i) + 3, b = x(j) - 3, m = (a + b) / 2, y0 = up ? -15 : 9, y1 = up ? -33 : 27;
+    return '<g' + popAt(1 + j * 0.45) + '><path d="M' + a + ',' + y0 + ' Q' + m + ',' + y1 + ' ' + b + ',' + y0 + '" stroke="var(--accent)" stroke-width="1.8" fill="none"/>' +
+      svgText(m, up ? -27 : 35, '+' + (vals[j] - vals[i]), 10, 'var(--accent)') + '</g>';
+  };
+  for(let j = 1; j < N; j++){
+    if(!below) g += step(j - 1, j, true);
+    else if(j >= 2) g += step(j - 2, j, j % 2 === 0);
+  }
+  const a = q.one && q.seq[q.at - 1], b = q.one && q.seq[q.at - 2];
+  const foot = q.grows ? vals[q.gaps[0]] + tr(' и ', ' і ') + vals[q.gaps[1]]
+    : q.woven ? q.star + ' − ' + q.dot + ' = ' + q.ans
+    : q.one ? (q.rule === 0 ? b + ' + ' + a : a + ' + ' + (q.ans - a)) + ' = ' + q.ans
+    : q.asksDigits ? String(q.hidden[0]).length + ' + ' + String(q.hidden[1]).length + ' = ' + q.ans
+    : q.hidden[0] + ' + ' + q.hidden[1] + ' = ' + q.ans;
+  const y = below ? 60 : 32;
+  g += svgText(W / 2, y, foot, 15, 'var(--ink)', popAt(2.5 + N * 0.45));
+  return '<svg viewBox="0 -42 ' + W + ' ' + (y + 50) + '" style="display:block; width:' + Math.round(W * 1.3) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('стъпките на редицата', 'кроки ряду') + '">' + g + '</svg>';
+}
 function whyMissing(q, full){
+  const text = whyMissingText(q, full);
+  return full && text ? text + missingSvg(q) : text;
+}
+function whyMissingText(q, full){
   if(q.kind === 'missing' && q.grows){
     if(!full) return tr('С колко расте всяко число? Виж как се мени и самата стъпка.', 'На скільки зростає кожне число? Подивись, як змінюється сам крок.');
     const st = q.seq.slice(1).map((v, i) => v - q.seq[i]);
