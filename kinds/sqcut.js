@@ -306,7 +306,8 @@ function sqcutSvg(q){
     }
     return sqWalkSvg(t.w, t.h, cuts, null, sqSides(0, 0, t.w, t.h, t.w * s, t.h * s), P + q.ans);
   }
-  if(q.shape === 4) return '';
+  if(q.shape === 4) return diffBars([[tr('квадрат', 'квадрат'), q.P, 'var(--accent)'], [tr('триъг.', 'трик.'), q.p, 'var(--good)']],
+    q.P === q.p ? '' : Math.abs(q.P - q.p), Math.max(q.P, q.p) + ' − ' + Math.min(q.P, q.p) + ' = ' + q.ans, tr('двете обиколки', 'обидва периметри'));
   if(q.shape === 3){
     const W = q.a + q.extra, B = [q.a, 0, q.extra, q.a];
     const sides = q.asksSide ? [[0, 0, W, 0, W], [q.a, 0, q.a, q.a, q.a]] : sqSides(q.a, 0, q.extra, q.a, q.extra, q.a);

@@ -60,24 +60,55 @@ function eqSumdiff(q){
   if(q.kind === 'sumdiff' && q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + tr(' от ', ' від ') + q.c + ' → ' + q.ans;
   if(q.kind === 'sumdiff') return q.a + tr(' и разлика ', ' і різниця ') + q.d + ' → ' + (2*q.a - q.d) + tr(' и ', ' і ') + q.ans;
 }
+// The pictures. Two sums: the number, and the other one a step of the difference to its left or to
+// its right. The widest gap: A and B each on either side of the number, and the widest pair across it.
+// A sum and a difference: two bars, the longer one longer by the difference — take that off, and what
+// is left is two equal halves.
+function sumdiffSvg(q){
+  if(q.shape === 'sd'){
+    const u = 180 / q.big, half = q.small * u;
+    let g = '';
+    [[0, q.small, 0], [30, q.big, 1]].forEach(([y, v, i]) => { g += '<rect' + popAt(1 + i) + ' x="40" y="' + y + '" width="' + (v * u).toFixed(1) + '" height="20" rx="5" fill="none" stroke="var(--accent)" stroke-width="2"/>'; });
+    g += svgText(20, 15, tr('по-м.', 'менше'), 10, 'var(--accent)') + svgText(20, 45, tr('по-г.', 'більше'), 10, 'var(--accent)');
+    g += '<g' + popAt(3) + '><rect x="' + (40 + half).toFixed(1) + '" y="30" width="' + (q.d * u).toFixed(1) + '" height="20" rx="5" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="2"/>' +
+      svgText((40 + half + q.d * u / 2).toFixed(1), 45, q.d, 12, 'var(--warm)') + '</g>';
+    g += '<g' + popAt(4) + '><path d="M' + (40 + half + q.d * u + 8).toFixed(1) + ',0 h5 v50 h-5" stroke="var(--ink)" stroke-width="1.6" fill="none"/>' + svgText((40 + half + q.d * u + 26).toFixed(1), 30, q.S, 13, 'var(--ink)') + '</g>';
+    g += '<g' + popAt(5) + '>' + svgText((40 + half / 2).toFixed(1), 15, q.small, 13, 'var(--accent)') + svgText((40 + half / 2).toFixed(1), 45, q.small, 13, 'var(--accent)') + '</g>';
+    const foot = q.asksBig ? q.small + ' + ' + q.d + ' = ' + q.big : '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small;
+    g += svgText(130, 78, foot, 15, 'var(--ink)', popAt(6));
+    return '<svg viewBox="0 -8 272 96" style="display:block; width:326px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете числа като ленти', 'два числа як смужки') + '">' + g + '</svg>';
+  }
+  if(q.shape === 'gap'){
+    const m = Math.max(q.d1, q.d2), A = 'var(--warm)', B = 'var(--accent)';
+    return lineSvg([{at:q.c, step:0}, {at:q.c - q.d1, name:'A', col:A, step:1}, {at:q.c + q.d1, name:'A', col:A, step:1},
+        {at:q.c - q.d2, name:'B', col:B, step:2}, {at:q.c + q.d2, name:'B', col:B, step:2}],
+      [{from:q.c - q.d1, to:q.c, label:q.d1, row:1, col:A, step:3}, {from:q.c, to:q.c + q.d2, label:q.d2, row:1, col:B, step:3.5},
+       {from:q.c - q.d1, to:q.c + q.d2, label:q.d1 + ' + ' + q.d2 + ' = ' + q.ans, row:2, col:'var(--ink)', step:4.5}],
+      q.c - m - 1, q.c + m + 1, tr('A и B около ', 'A і B навколо ') + q.c);
+  }
+  const lo = q.a - q.d, hi = q.a + q.d;
+  return lineSvg([{at:q.a, name:String(q.a), step:0}, {at:lo, name:String(lo), col:'var(--warm)', step:1.5}, {at:hi, name:String(hi), col:'var(--accent)', step:2.5}],
+    [{from:lo, to:q.a, label:q.d, row:1, col:'var(--warm)', step:1}, {from:q.a, to:hi, label:q.d, row:1, col:'var(--accent)', step:2}],
+    lo - 1, hi + 1, tr('другото число от двете страни', 'інше число з обох боків'));
+}
 function whySumdiff(q, full){
   if(q.kind === 'sumdiff' && q.shape === 'sd'){
     if(!full) return tr('Махни разликата — остават две равни части.', 'Прибери різницю — лишаються дві рівні частини.');
-    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b>' + (q.asksBig ? ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' &nbsp;→&nbsp; ' + q.ans;
+    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b>' + (q.asksBig ? ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' &nbsp;→&nbsp; ' + q.ans + sumdiffSvg(q);
   }
   if(q.kind === 'sumdiff' && q.shape === 'gap'){
     if(!full) return tr('Всяко от двете може да е от едната или от другата страна.',
       'Кожне з двох чисел може бути як з одного, так і з іншого боку.');
     return 'A ' + tr('е ', '— ') + (q.c - q.d1) + tr(' или ', ' або ') + (q.c + q.d1) + ', B ' + tr('е ', '— ') +
-      (q.c - q.d2) + tr(' или ', ' або ') + (q.c + q.d2) +
-      tr(' &nbsp;→&nbsp; най-далече са <b>', ' &nbsp;→&nbsp; найдалі одне від одного <b>') + (q.c - q.d1) +
+      (q.c - q.d2) + tr(' или ', ' або ') + (q.c + q.d2) + sumdiffSvg(q) +
+      tr('най-далече са <b>', 'найдалі одне від одного <b>') + (q.c - q.d1) +
       tr('</b> и <b>', '</b> і <b>') + (q.c + q.d2) + '</b> &nbsp;→&nbsp; ' +
       (q.c + q.d2) + ' − ' + (q.c - q.d1) + ' = ' + q.ans;
   }
   if(q.kind === 'sumdiff'){
     if(!full) return tr('Другото число може да е по-малко или по-голямо — намери и двата сбора.',
       'Інше число може бути меншим або більшим — знайди обидві суми.');
-    return tr('другото е <b>', 'інше — <b>') + (q.a - q.d) + tr('</b> или <b>', '</b> або <b>') + (q.a + q.d) + '</b> &nbsp;→&nbsp; ' +
+    return tr('другото е <b>', 'інше — <b>') + (q.a - q.d) + tr('</b> или <b>', '</b> або <b>') + (q.a + q.d) + '</b>' + sumdiffSvg(q) +
       q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
       ' = ' + q.ans;
   }

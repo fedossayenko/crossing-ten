@@ -23,13 +23,30 @@ const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="'
 // The coordinates are lengths; lo and hi are the ends of the line. A step makes that part pop in.
 function lineSvg(pts, spans, lo, hi, label){
   const X = v => (20 + (v - lo) / (hi - lo) * 200).toFixed(1), rows = spans.map(s => s.row).concat(0);
-  const top = Math.min(...rows) * 22 - 18, bottom = Math.max(...rows) * 22 + 34, at = st => st === undefined ? '' : popAt(st);
+  const top = Math.min(...rows) * 22 - 24, bottom = Math.max(...rows) * 22 + 34, at = st => st === undefined ? '' : popAt(st);
   let g = '<line x1="8" y1="0" x2="232" y2="0" stroke="var(--ink)" stroke-width="2"/>';
   spans.forEach(s => { const y = s.row * 22, col = s.col || 'var(--accent)', x1 = X(Math.min(s.from, s.to)), x2 = X(Math.max(s.from, s.to));
     g += '<g' + at(s.step) + '><path d="M' + x1 + ',' + (y - 5) + ' v10 M' + x1 + ',' + y + ' H' + x2 + ' M' + x2 + ',' + (y - 5) + ' v10" stroke="' + col + '" stroke-width="2.5" fill="none"/>' +
       (s.label === '' ? '' : svgText(((+x1 + +x2) / 2).toFixed(1), s.row < 0 ? y - 6 : y + 16, s.label, 13, col)) + '</g>'; });
   pts.forEach(p => { g += '<g' + at(p.step) + '><circle cx="' + X(p.at) + '" cy="0" r="5" fill="' + (p.col || 'var(--ink)') + '"/>' + (p.name ? svgText(X(p.at), -10, p.name, 14, 'var(--ink)') : '') + '</g>'; });
   return '<svg viewBox="0 ' + top + ' 240 ' + (bottom - top) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
+}
+// Two bars to compare, the shorter one's length marked on the longer, and what sticks out —
+// the difference — in orange with its size. rows: [label, value, colour]; foot ends on the answer.
+function diffBars(rows, extra, foot, label){
+  const max = Math.max(...rows.map(r => r[1])), min = Math.min(...rows.map(r => r[1])), u = 180 / max;
+  let g = '';
+  rows.forEach(([name, v, col], i) => { const y = i * 30;
+    g += '<g' + popAt(1 + i) + '>' + svgText(22, y + 14, name, 11, col) + '<rect x="46" y="' + y + '" width="' + (v * u).toFixed(1) + '" height="20" rx="5" fill="none" stroke="' + col + '" stroke-width="2"/>' +
+      svgText((46 + v * u + 16).toFixed(1), y + 15, v, 12, col) + '</g>'; });   // the length beside the bar, never under the difference
+  if(max > min){
+    const y = rows.findIndex(r => r[1] === max) * 30;
+    g += '<g' + popAt(3.5) + '><rect x="' + (46 + min * u).toFixed(1) + '" y="' + y + '" width="' + ((max - min) * u).toFixed(1) + '" height="20" rx="5" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="2"/>' +
+      svgText((46 + (min + max) / 2 * u).toFixed(1), y + 15, extra, 12, 'var(--warm)') + '</g>' +
+      '<line' + popAt(3) + ' x1="' + (46 + min * u).toFixed(1) + '" y1="-4" x2="' + (46 + min * u).toFixed(1) + '" y2="' + (rows.length * 30 - 6) + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>';
+  }
+  g += svgText(136, rows.length * 30 + 20, foot, 15, 'var(--ink)', popAt(5));
+  return '<svg viewBox="0 -8 262 ' + (rows.length * 30 + 38) + '" style="display:block; width:327px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
 }
 const CM = ' <span class="unit">см</span>';
 
