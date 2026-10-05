@@ -139,7 +139,13 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   (a "why" is opened after the round is saved and synced, so it cannot ride in that round).
 
 ### Phase C — structure (each verified by A2)
-- **C1. Native ES modules** (#7): as planned (script adds imports/exports, adapter for the checks).
+- **C1. Native ES modules — DONE 2026-10-05 (36b77e0, b6b7911, live).** 176 modules, 288 exports, ~80% of
+  top-level names now private. check.js imports the page-free modules for real and gives the checks one
+  live `APP` (not 24 pasted copies); app.js puts the names smoke reads on `window`. Corrections: the
+  harness was rebuilt on real Node ESM rather than an adapter over concatenated text (it now tests strict
+  mode, imports and load order); the cross-file writes were only W, LANG and the competition (setters);
+  one load-order bug (sync's first paint reading app.js before it ran) was caught by the two-device sync
+  smoke only — compete/sync wiring now runs from startCompete()/startSync() at the end of app.js.
 - **C2. Kind cleanup** (#8, #18, merge 4): guards, headers, `ask()`/`answerLine()`/`steps()`, the
   hard-coded Nunito and inline sizes, chain/pairs draw, cross/crossmin lister.
 - **C3. `template()` for word problems.**
