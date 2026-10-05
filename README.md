@@ -123,7 +123,7 @@ genSegShort, genNamedSum, genShift, genBoundShort); the rest are new kinds.
 The **spring round, 1st grade, 2022 and 2021** (tags `mbg-spring-2022-1` and `mbg-spring-2021-1`) are in
 whole too, pinned in check/grade1b.js and grade1b-A/B/C.js. Half their tasks are tags on 155–179, some
 widened (sides, symeq, eqcross, crossmin, digperm, pairs, ineq, count, weekday, cmp, cross, dcount,
-twodig); 16 new levels, 180–195, hold the rest: the middle digit, children and sums, scales, a dice tower,
+twodig); 16 new levels, 180–195, hold the rest, and 196 the paper's last task, 1 − 10 + 2 + 3 + 4 + 5 (pluses first — it breaks the left-to-right habit of 155 and 156, so it is its own d:3 level): the middle digit, children and sums, scales, a dice tower,
 the star digit, prices, hops, who is which colour (А/Б/В/Г), the digit rule, the blindfold and the bowl.
 
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is

@@ -19,7 +19,7 @@
   pin('Пролет 2022 task 1', 155, {kind:'chain', terms: ex('2 − 0 + 2 − 2'), paired:0, ans:2}, [2], '2 − 0 + 2 − 2', 3e6);
   pin('Пролет 2021 task 1', 155, {kind:'chain', terms: ex('2 + 0 + 2 + 1'), paired:0, ans:5}, [5], '2 + 0 + 2 + 1', 3e6);
   pin('Пролет 2022 task 3', 156, {kind:'pairs', shape:'twice', a:1, b:2, c:3, off:0, terms: ex('1 + 1 + 2 + 2 − 3 − 3'), ans:0}, [0], '1 + 1 + 2 + 2 − 3 − 3');
-  pin('Пролет 2022 task 20', 156, {kind:'pairs', shape:'regroup', s:1, B:10, adds:[2, 3, 4, 5], terms: ex('1 − 10 + 2 + 3 + 4 + 5'), ans:5}, [5], '1 − 10 + 2 + 3 + 4 + 5');
+  pin('Пролет 2022 task 20', 196, {kind:'pairs', shape:'regroup', s:1, B:10, adds:[2, 3, 4, 5], terms: ex('1 − 10 + 2 + 3 + 4 + 5'), ans:5}, [5], '1 − 10 + 2 + 3 + 4 + 5');
   pin('Пролет 2021 task 3', 156, {kind:'pairs', shape:'upup', n:4, first:1, terms: ex('1 + 2 + 3 + 4 − 2 − 3 − 4'), ans:1}, [1], '1 + 2 + 3 + 4 − 2 − 3 − 4');
   pin('Пролет 2022 task 8', 175, {kind:'ineq', shape:7, ask:'count', terms: ex('100 − 10 − 20'), V:70, less:true, traps:[3], ans:2}, [2], 'броят на различните цифри, които можем да поставим вместо □, за да е вярно: 100 − 10 − 20 < □0');
   pin('Пролет 2021 task 9', 175, {kind:'ineq', shape:7, ask:'which', terms: ex('31 − 9 − 1'), V:21, more:true, T:2, traps:[1, 2, 8], ans:0}, [0], 'цифрата, която трябва да поставим вместо □, за да е вярно: 31 − 9 − 1 > 2□');

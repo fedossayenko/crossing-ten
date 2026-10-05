@@ -157,6 +157,7 @@ const LEVELS = [
   // 1st grade: МБГ Пролет 2025 and 2023, rated against each other on a 1st-grade scale
   { id:155, op:'w', grp:'chain', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1', 'mbg-spring-2022-1', 'mbg-spring-2021-1'], d:1, eq:'2 − 0 − 2 + 5', desc:'A short chain of + and −, worked left to right', gen:genChainShort },
   { id:156, op:'w', grp:'chain', needs:[155], grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1', 'mbg-spring-2022-1', 'mbg-spring-2021-1'], d:2, eq:'1 − 0 + 2 − 1', desc:'Short chains that fall into pairs, or take back what they added', gen:genPairsShort },
+  { id:196, op:'w', grp:'chain', needs:[156], grade:1, src:'mbg-spring-2022', d:3, eq:'1 − 10 + 2 + 3 + 4 + 5', desc:'A chain that takes too much at first: add the pluses, then take away', gen:genPairsRegroup },
   { id:164, op:'w', grp:'count', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1', 'mbg-spring-2022-1', 'mbg-spring-2021-1'], d:2, eq:'Не по-големи от 14', desc:'How many numbers up to a bound — 0 counts — or the sum of the one-digit ones', gen:genCountShort },
   { id:175, op:'w', grp:'count', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2022-1', 'mbg-spring-2021-1'], d:2, eq:'10 + ■ < 12', desc:'How many numbers fit the box — 0 among them', gen:genIneqSmall },
   { id:170, op:'w', grp:'count', grade:1, src:'mbg-spring-2023', d:2, eq:'Рожденият ден', desc:'A weekday some days after another', gen:genShift },

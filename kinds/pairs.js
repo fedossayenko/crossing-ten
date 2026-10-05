@@ -118,8 +118,20 @@ function genPairsSub(){
 // Пролет 2022 and 2021: 1 + 1 + 2 + 2 − 3 − 3 (two equal halves taken back: 0), 1 − 10 + 2 + 3 + 4 + 5 (too
 // little to take 10 from at first, so the plus terms go first: 15 − 10 = 5), and 1 + 2 + 3 + 4 − 2 − 3 − 4
 // (everything but the first comes off again: 1).
+// Level 196, Пролет 2022 task 20 (the paper's last): 1 − 10 can't be worked left to right in 1st grade, so the
+// plus terms go first. A level of its own: it undoes the left-to-right habit 155 and 156 build.
+function genPairsRegroup(){
+  for(;;){
+    const s = 1 + rnd(3), k = 3 + rnd(3), first = 2 + rnd(2), adds = [];
+    for(let i = 0; i < k; i++) adds.push(first + i);
+    const S = adds.reduce((t, v) => t + v, 0), B = s + 4 + rnd(9);   // more than the first number, never more than all of it
+    if(B > s + S || B <= s) continue;
+    const terms = [{op:'', n:s}, {op:'−', n:B}].concat(adds.map(n => ({op:'+', n})));
+    return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
+  }
+}
 function genPairsShort(){
-  const pick = rnd(7);
+  const pick = rnd(6);
   if(pick === 4){
     const a = 1 + rnd(4), b = a + rnd(3), c = a + b, off = rnd(3), terms = [];
     [a, a, b, b].forEach((n, i) => terms.push({op: i ? '+' : '', n}));
@@ -127,14 +139,6 @@ function genPairsShort(){
     return {kind:'pairs', shape:'twice', a, b, c, off, terms, ans: off};
   }
   if(pick === 5){
-    const s = 1 + rnd(3), k = 3 + rnd(3), first = 2 + rnd(2), adds = [];
-    for(let i = 0; i < k; i++) adds.push(first + i);
-    const S = adds.reduce((t, v) => t + v, 0), B = s + 4 + rnd(9);   // more than the first number, never more than all of it
-    if(B > s + S || B <= s) return genPairsShort();
-    const terms = [{op:'', n:s}, {op:'−', n:B}].concat(adds.map(n => ({op:'+', n})));
-    return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
-  }
-  if(pick === 6){
     const n = 3 + rnd(4), first = 1 + rnd(3), terms = [];
     for(let i = 0; i < n; i++) terms.push({op: i ? '+' : '', n:first + i});
     for(let i = 1; i < n; i++) terms.push({op:'−', n:first + i});
