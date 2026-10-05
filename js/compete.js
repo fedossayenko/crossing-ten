@@ -23,7 +23,7 @@ function compTasks(){
     let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0));
     const l = pool.find(l => (w -= 1 + l.freq) < 0);
     used.add(l.id); lastGrp = l.grp;
-    const q = Object.assign(raw(l.id), { lvl: l.id, pts: Math.min(5, Math.max(1, l.d)) });
+    const q = Object.assign(seededRaw(l.id), { lvl: l.id, pts: Math.min(5, Math.max(1, l.d)) });
     out.push(i < COMP_CHOICE ? withChoices(q) : q);
   }
   return out;
@@ -68,6 +68,7 @@ function compNext(){
 function compEnd(){
   if(!COMP) return;
   clearInterval(compTick); clearTimeout(COMP.go);
+  S.skipped = S.qs.map((_, k) => S.results[k] === undefined);                         // kept apart in the round's record
   S.qs.forEach((_, k) => { if(S.results[k] === undefined) S.results[k] = false; });   // unanswered is not right
   finish();
 }

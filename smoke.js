@@ -219,12 +219,16 @@ const server = http.createServer((req, res) => {
       }
       out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
       const r = LOCAL.rounds[LOCAL.rounds.length - 1];
-      out.round = { level: r.level, n: r.n, firstTry: r.firstTry, pts: r.pts, max: r.max, levels: (r.levels || []).length };
+      out.round = { level: r.level, n: r.n, firstTry: r.firstTry, pts: r.pts, max: r.max, levels: (r.levels || []).length, secs: Number.isInteger(r.secs),
+        // each task's record: drawn again from its level and seed, it has the recorded answer; its right/wrong marks add up
+        tasks: r.t.length, redrawn: r.t.every(x => Number.isInteger(x[2]) && answer(seeded(x[2], () => raw(x[0]))) === x[5]), right: r.t.filter(x => x[4] === 1).length,
+        small: JSON.stringify(r).length < 4096 };   // the sync server drops a round over 4 KB (MAX_ROUND)
       out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
+      cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header), 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
@@ -235,6 +239,20 @@ const server = http.createServer((req, res) => {
     const back = await page(`{ level: S.level, i: S.i, results: S.results.length, q: JSON.stringify(S.qs[S.i]) }`);
     expect(back.level === 4 && back.i === 2 && back.results === 2 && back.q === want, 'a reload mid-round did not come back to the same task: ' + JSON.stringify(back));
     await run(`localStorage.removeItem(RS); newRound(); 1`);
+  }
+  // The archive: a log longer than localStorage's 400 comes back whole after a reload, and a level learned
+  // in its oldest rounds — gone from localStorage — is still learned
+  {
+    const had = await page(`{ n: LOCAL.rounds.length }`);
+    const kept = await run(`(async () => {
+      const old = Array.from({ length: 450 }, (_, i) => ({ id: 'old' + i, ts: 1e12 + i*1000, day: '2001-09-09', level: i < 3 ? 5 : 4, n: 10, firstTry: 10, best: 10, lang: 'bg', seen: [], missed: [], slips: [] }));
+      await ARCHIVE.put(PLAYER.id, old);
+      LOCAL.rounds = unionRounds(old, LOCAL.rounds); saveLocal();
+      return String(JSON.parse(localStorage.getItem(LS)).rounds.length); })()`);
+    await cmd('Page.reload'); await settle();
+    const arc = await page(`{ n: LOCAL.rounds.length, five: !!(mastery(LOCAL.rounds)[5] || {}).done }`);
+    expect(kept === '400' && arc.n === had.n + 450 && arc.five, 'the archive did not bring the whole log back: ' + JSON.stringify({ kept, had, arc }));
+    await run(`(async () => { await ARCHIVE.drop(PLAYER.id, 1e12 + 450*1000); LOCAL.rounds = LOCAL.rounds.filter(r => !r.id.startsWith('old')); saveLocal(); return ''; })()`);
   }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.

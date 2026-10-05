@@ -15,17 +15,19 @@ function raw(level){
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
+// A question with the seed that drew it: seeded(q.seed, () => raw(level)) draws it again.
+function seededRaw(level){ const seed = 1 + Math.floor(Math.random() * 2147483646); return Object.assign(seeded(seed, () => raw(level)), { seed }); }
 // Weighted rejection sampling: a crossing step she keeps missing is likelier to come up.
 function gen(level){
   let best = null;
   for(let i = 0; i < 36; i++){
-    const q = raw(level);
+    const q = seededRaw(level);
     const w = W.m[factKey(q)];
     if(w === undefined) return q;
     if(Math.random() < w / W.max) return q;
     best = q;
   }
-  return best || raw(level);
+  return best || seededRaw(level);
 }
 // A sum whose crossing step is exactly this fact, built from the digits rather than
 // sampled: the borrow-only levels cannot produce a no-borrow fact at all.

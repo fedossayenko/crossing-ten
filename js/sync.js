@@ -18,19 +18,20 @@ const saveFamily = () => { try { FAMILY ? localStorage.setItem(FKEY, JSON.string
 const SYNC_ON = !!SYNC_URL && typeof fetch === 'function';
 const IN = () => !!(FAMILY && FAMILY.token);
 
-// Every player's rounds, from her own storage key (the current player's are in LOCAL).
+// Every player's whole log (the current player's is LOCAL.rounds; see ARCH in app.js).
 function roundsOf(p){
   if(p.id === PLAYER.id) return LOCAL.rounds;
-  try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; }
+  return unionRounds(ARCH[p.id] || [], lsRounds(p));
 }
+// A player's log after a merge: all of it in memory, the last 400 in localStorage (saveStore). The
+// archive gets the rounds that were added and loses the ones a reset cleared (mergeFromServer).
 function keepRounds(p, rounds){
-  rounds = rounds.sort((a, b) => a.ts - b.ts).slice(-400);
+  rounds = rounds.sort((a, b) => a.ts - b.ts);
   if(p.id === PLAYER.id){ LOCAL.rounds = rounds; saveLocal(); W = weightsFrom(LOCAL.rounds); return; }
-  try {
-    const kept = JSON.parse(localStorage.getItem(roundsKey(p))) || { muted:false, speak:true, n:10 };
-    kept.rounds = rounds;
-    localStorage.setItem(roundsKey(p), JSON.stringify(kept));
-  } catch(e){}
+  ARCH[p.id] = rounds;
+  let kept = { muted:false, speak:true, n:10 };
+  try { kept = JSON.parse(localStorage.getItem(roundsKey(p))) || kept; } catch(e){}
+  saveStore(roundsKey(p), Object.assign(kept, { rounds }));
 }
 
 function mergeFromServer(r){
@@ -43,6 +44,7 @@ function mergeFromServer(r){
     if(!mine) return;
     PLAYERS.list = PLAYERS.list.filter(p => p.id !== g.id);
     try { localStorage.removeItem(roundsKey(mine)); } catch(e){}
+    ARCHIVE.drop(mine.id); delete ARCH[mine.id];
     if(mine.id === PLAYER.id) reload = true;
   });
   (r.players || []).forEach(p => {
@@ -65,7 +67,10 @@ function mergeFromServer(r){
     const ids = new Set(have.map(x => x.id));
     const add = (incoming[p.id] || []).filter(x => x && x.id && !ids.has(x.id));
     const kept = have.filter(x => x.ts >= cut);
-    if(add.length || kept.length !== have.length) keepRounds(p, kept.concat(add.filter(x => x.ts >= cut)));
+    const fresh = add.filter(x => x.ts >= cut);
+    if(add.length || kept.length !== have.length) keepRounds(p, kept.concat(fresh));
+    ARCHIVE.put(p.id, fresh);
+    if(kept.length !== have.length) ARCHIVE.drop(p.id, cut);
     FAMILY.sent[p.id] = [...new Set((FAMILY.sent[p.id] || []).concat((incoming[p.id] || []).map(x => x.id)))];
   });
   return reload;
@@ -83,6 +88,7 @@ function syncNow(){
   if(!SYNC_ON || !IN()) return Promise.resolve(false);
   if(syncing) return syncing;
   syncing = (async () => {
+    await ARCHIVE_READY;          // the whole log first: what was sent is told apart by the rounds held here
     let reload = false;
     try {
       FAMILY.sent = FAMILY.sent || {};

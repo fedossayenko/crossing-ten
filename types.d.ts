@@ -63,3 +63,6 @@ interface HTMLElement { value: string; checked: boolean; placeholder: string; au
 interface Window { webkitAudioContext?: typeof AudioContext; google?: any; }
 /** Google sign-in, loaded from accounts.google.com when it is used */
 declare var google: any;
+
+/** iOS Safari: true when opened from the home screen */
+interface Navigator { standalone?: boolean }

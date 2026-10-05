@@ -1,5 +1,5 @@
 const $ = s => document.getElementById(s);
-const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], t0:0, timers:[], touched:false };
+const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
@@ -10,9 +10,27 @@ try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCA
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
-function saveLocal(){
-  try { localStorage.setItem(LS, JSON.stringify(Object.assign({}, LOCAL, { rounds: LOCAL.rounds.slice(-400) }))); } catch(e){}
+// localStorage holds the settings and the last 400 rounds; the archive (js/archive.js) holds them all.
+// Full storage keeps fewer recent rounds here rather than losing the settings.
+function saveStore(key, store){
+  for(const keep of [400, 100, 0]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: keep ? store.rounds.slice(-keep) : [] }))); return; } catch(e){}
 }
+function saveLocal(){ saveStore(LS, LOCAL); }
+const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
+// Every player's whole log: the archive and the last 400 in localStorage, merged before the first question
+// (the current player's lands in LOCAL.rounds, the others' in ARCH). A database that does not answer in
+// 2 s does not hold up the first question; its rounds still merge in when it does.
+const ARCH = {};
+const ARCHIVE_READY = Promise.race([
+  Promise.all(PLAYERS.list.map(p => ARCHIVE.all(p.id).then(rs => {
+    const here = p.id === PLAYER.id ? LOCAL.rounds : lsRounds(p), known = new Set(rs.map(r => r.id));
+    ARCHIVE.put(p.id, here.filter(r => !known.has(r.id)));          // rounds from before the archive
+    const all = unionRounds(rs, here).filter(r => r.ts >= (p.resetAt || 0));
+    if(p.id === PLAYER.id){ LOCAL.rounds = unionRounds(all, LOCAL.rounds); W = weightsFrom(LOCAL.rounds); }
+    else ARCH[p.id] = unionRounds(all, ARCH[p.id] || []);
+  }))),
+  new Promise(res => setTimeout(res, 2000))
+]);
 
 /* ---------- language and mascot ---------- */
 document.documentElement.lang = LANG;
@@ -274,7 +292,7 @@ function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
-  S.i = 0; S.results = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
+  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
   ['sheet', 'stats', 'picker', 'parent'].forEach(id => { $(id).hidden = true; });
   $('confetti').innerHTML = '';
   show();
@@ -515,17 +533,23 @@ function finish(){
 
   const before = earnedSet(LOCAL.rounds), was = mastery(LOCAL.rounds)[S.level];
   const now = Date.now();
-  LOCAL.rounds.push({
+  const round = {
     id: 'r' + now + '_' + Math.random().toString(36).slice(2,7),
     ts: now, day: dayKey(now),
     level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
-    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: COMP ? Math.round((Date.now() - COMP.t0) / 1000) : undefined,
+    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: Math.round((now - (COMP ? COMP.t0 : S.t0)) / 1000),
     levels: COMP ? S.qs.map(q => q.lvl) : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
-    redo: S.redo || undefined
-  });
+    redo: S.redo || undefined,
+    // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
+    // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
+    // generator has changed since is told apart, never shown as something it was not
+    t: S.qs.map((q, k) => [q.lvl || S.level, q.shape ?? null, q.seed ?? null, S.typed[k] ?? null, S.skipped[k] ? -1 : S.results[k] ? 1 : 0, answer(q)])
+  };
+  LOCAL.rounds.push(round);
+  ARCHIVE.put(PLAYER.id, [round]);
   saveLocal();
   W = weightsFrom(LOCAL.rounds);
   syncSoon();
@@ -713,7 +737,7 @@ $('reset').onclick = () => {
   }
   clearTimeout(resetArmed); resetArmed = null;
   $('reset').classList.remove('armed'); $('reset').textContent = t('reset');
-  LOCAL.rounds = []; saveLocal();
+  LOCAL.rounds = []; saveLocal(); ARCHIVE.drop(PLAYER.id);
   PLAYER.resetAt = PLAYER.updated = Date.now(); savePlayers(); syncSoon();   // other devices drop her older rounds too
   W = weightsFrom(LOCAL.rounds);
   renderParent();
@@ -962,8 +986,10 @@ function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); location.reload
 // A player's saved log and settings (the current player's are LOCAL).
 function storeOf(p){
   if(p.id === PLAYER.id) return LOCAL;
-  try { return Object.assign({ rounds:[], muted:false, speak:true, n:10 }, JSON.parse(localStorage.getItem(roundsKey(p))) || {}); }
-  catch(e){ return { rounds:[], muted:false, speak:true, n:10 }; }
+  let s = { rounds:[], muted:false, speak:true, n:10 };
+  try { s = Object.assign(s, JSON.parse(localStorage.getItem(roundsKey(p))) || {}); } catch(e){}
+  s.rounds = unionRounds(ARCH[p.id] || [], s.rounds);
+  return s;
 }
 function openPlayers(){
   $('playerList').innerHTML = PLAYERS.list.map(p => {
@@ -1042,7 +1068,7 @@ $('pSave').onclick = () => {
   const kept = storeOf(EDIT);
   kept.muted = !$('pSound').checked; kept.speak = $('pSpeak').checked; kept.calm = $('pCalm').checked;
   if(EDIT.id === PLAYER.id) saveLocal();
-  else try { localStorage.setItem(roundsKey(EDIT), JSON.stringify(kept)); } catch(e){}
+  else saveStore(roundsKey(EDIT), kept);
   // A new player starts playing at once; the current one reloads to wear the change.
   if(!old || EDIT.id === PLAYER.id) switchTo(EDIT.id); else openPlayers();
 };
@@ -1057,6 +1083,7 @@ $('pDelete').onclick = () => {
   PLAYERS.list = PLAYERS.list.filter(p => p.id !== EDIT.id);
   PLAYERS.gone.push({ id: EDIT.id, updated: Date.now() });   // so the other devices delete her too
   try { localStorage.removeItem(roundsKey(EDIT)); } catch(e){}
+  ARCHIVE.drop(EDIT.id); delete ARCH[EDIT.id];
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
 $('who').onclick = openPlayers;
@@ -1091,26 +1118,32 @@ const say = t => { $('synced').textContent = t + builtOn(); };
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(g =>
   document.addEventListener(g, e => e.preventDefault(), { passive: false }));
 
-// A launch starts on the level the picker would recommend, not on a fixed one.
-{
-  const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
-  loadFocus();
-  const m0 = mastery(LOCAL.rounds), nx = suggest(m0, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m0[lastLvl.id] && m0[lastLvl.id].done));
-  if(nx){ S.level = nx.id; paintPill(); }
-}
-// a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
-(() => {
-  try {
-    const kept = JSON.parse(localStorage.getItem(RS));
-    if(kept && Date.now() - kept.at < 12*3600e3 && LEVELS.some(l => l.id === kept.s.level) && kept.s.i < kept.s.qs.length){
-      Object.assign(S, kept.s); paintPill(); show(); return;
-    }
-  } catch(e){}
-  newRound();
-})();
-// Only the very first launch on a device asks who she is; every launch after that goes
-// straight to the exercise (the mascot switches player).
-if(FIRST) openEdit(PLAYER, true);
+// The whole history first (it decides what is learned), then the first question.
+ARCHIVE_READY.then(() => {
+  // A launch starts on the level the picker would recommend, not on a fixed one.
+  {
+    const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
+    loadFocus();
+    const m0 = mastery(LOCAL.rounds), nx = suggest(m0, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m0[lastLvl.id] && m0[lastLvl.id].done));
+    if(nx){ S.level = nx.id; paintPill(); }
+  }
+  // a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
+  (() => {
+    try {
+      const kept = JSON.parse(localStorage.getItem(RS));
+      if(kept && Date.now() - kept.at < 12*3600e3 && LEVELS.some(l => l.id === kept.s.level) && kept.s.i < kept.s.qs.length){
+        Object.assign(S, kept.s); paintPill(); show(); return;
+      }
+    } catch(e){}
+    newRound();
+  })();
+  // Only the very first launch on a device asks who she is; every launch after that goes
+  // straight to the exercise (the mascot switches player).
+  if(FIRST) openEdit(PLAYER, true);
+});
+// Installed on the home screen, ask the browser to keep this data (in a tab, Firefox would ask the child).
+if((matchMedia('(display-mode: standalone)').matches || navigator.standalone) && navigator.storage && navigator.storage.persist)
+  navigator.storage.persist().catch(() => {});
 
 // A home-screen app, or a tab, stays open for days. At the start of a round, and coming back
 // to the screen between rounds, it picks up a newer build, told by the page's Last-Modified

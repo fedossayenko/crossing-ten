@@ -323,8 +323,13 @@ is used, and pin the original worksheet instance of each task — replayed from 
 
 ## Progress storage
 
-The GitHub copy keeps each player's rounds in that browser's local storage — per
-device, not synced until a family account is logged in. The very first launch on a device
+The GitHub copy keeps each player's rounds in that browser — per device, not synced until a
+family account is logged in. Local storage holds her settings and the last 400 rounds (small and
+synchronous: the app has them at once); IndexedDB (`js/archive.js`) holds every round, merged in
+before the first question, so what she has learned, her reviews and her badges never fall off
+the end of the log. Each round records its tasks: level, shape and seed (the question is drawn
+again from them), what she wrote when she missed, right / wrong / unanswered, and the answer.
+An installed app asks the browser to keep this storage (`navigator.storage.persist`). The very first launch on a device
 asks for the player's name, mascot and language (or logs in to a family that already plays
 elsewhere). On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate**
 storage, so each one logs in on its own.

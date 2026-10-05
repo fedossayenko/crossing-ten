@@ -23,17 +23,12 @@ scripts.filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f)).f
 ['check/levels.js', 'check/kinds.js'].forEach(f => vm.runInThisContext(read(f), { filename:f }));
 
 // A printed task is replayed from a seed instead of searched for among hundreds of thousands of draws:
-// seeded(seed, fn) runs fn with Math.random drawn from that seed (mulberry32), so a level's generator
+// seeded(seed, fn) (js/core.js) runs fn with Math.random drawn from that seed, so a level's generator
 // asks the same question every time. check/seeds.json holds one seed per pin; when a generator changes
 // and a seed no longer gives its task, the pin searches as before and fails naming the new seed —
 // `node check.js --repin` records the new seeds instead of failing.
 const REPIN = process.argv.includes('--repin'), SEEDS = JSON.parse(read('check/seeds.json')), USED = {};
 let CHECK_FILE = '';   // the check file running: seeds are keyed by file and pin, as two papers may both have a task 3
-function seeded(seed, fn){
-  const real = Math.random; let s = seed | 0;
-  Math.random = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  try { return fn(); } finally { Math.random = real; }
-}
 // match(question): 2 = the printed question, 1 = the same question with other numbers (where a pin
 // allows that), 0 = not it. Returns { q, exact } for the best match within `tries` seeds, or null.
 function pinSeed(name, draw, match, tries = 300000){

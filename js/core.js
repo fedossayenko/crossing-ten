@@ -3,6 +3,14 @@
 
 const rnd = n => Math.floor(Math.random()*n);
 const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
+// A seeded draw: fn runs with Math.random drawn from the seed (mulberry32), so a level's generator asks
+// the same question from the same seed. A round records each question's seed (to draw it again); the
+// checks replay the printed tasks from theirs.
+function seeded(seed, fn){
+  const real = Math.random; let s = seed | 0;
+  Math.random = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  try { return fn(); } finally { Math.random = real; }
+}
 const KIND = {};                     // kinds/*.js register { draw, eq, why } here
 // Task text in the player's language: tr('Колко са?', 'Скільки їх?'). Bulgarian is the
 // original and the fallback; anything not yet translated simply stays Bulgarian. Both
