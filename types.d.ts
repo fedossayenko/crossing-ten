@@ -34,6 +34,8 @@ interface Level {
   src?: string;
   grade?: number;
   d: number;
+  /** a level that draws several shapes rates each (rubric d), none above the level's own d */
+  shapes?: Record<string, number>;
   eq: string;
   desc: string;
   also?: string[];

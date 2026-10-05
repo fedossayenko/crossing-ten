@@ -115,7 +115,7 @@ console.log('twenty-pairs: every pair makes twenty, zero turns up as an answer a
 // the two new comparison shapes
 let sh1 = 0, sh2 = 0, sh3 = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(10);
+  const q = raw(i % 2 ? 10 : 197);
   if(q.shape === 3){
     sh3++;
     const sum = a => a.reduce((t, v) => t + v, 0);
@@ -184,7 +184,7 @@ console.log('cancelling chains: the walk and the collapsed form agree, worksheet
 // задача 2: two unknowns, one in each given
 let twos = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(11);
+  const q = raw(i % 2 ? 11 : 198);
   if(q.shape !== 'two') continue;
   twos++;
   if(q.sq + q.tri !== q.ans) throw new Error('the two unknowns do not add to the answer');
@@ -203,7 +203,7 @@ console.log('two unknowns: each given fixes one symbol, worksheet instance gives
 // the circle level now reaches every start from 7 to 20
 {
   const starts = new Set();
-  for(let i = 0; i < 4000; i++) starts.add(raw(11).a);
+  for(let i = 0; i < 4000; i++) starts.add(raw(i % 2 ? 11 : 198).a);
   for(const want of [7, 11, 13, 17, 19, 20])
     if(!starts.has(want)) throw new Error('the circle level never starts from ' + want);
 }
@@ -298,7 +298,7 @@ console.log('ranges: the two-sided wording reaches into the teens, worksheet ins
   if(shown.indexOf('20 + ■ = 60') < 0) throw new Error('the given is not drawn as printed');
   let seen = 0;
   for(let i = 0; i < 6000; i++){
-    const g = raw(11);
+    const g = raw(i % 2 ? 11 : 198);
     if(g.shape !== 'plus') continue;
     seen++;
     if(g.g + g.box !== g.S) throw new Error('the given addition does not hold');
@@ -347,7 +347,7 @@ console.log('sequence scan: matches a plain double loop, and every run is a perm
 
 // задача 17: the digits must actually satisfy the equation, and stay different
 for(let i = 0; i < 4000; i++){
-  const q = raw(23);
+  const q = raw(i % 2 ? 23 : 199);
   if(q.shape === 2){   // Зима 2021: two unknown units digits, every pair tried
     const sums = new Set(); for(let x = 0; x <= 9; x++) for(let y = 0; y <= 9; y++) if(10*q.A + x - 10*q.B - y === q.D) sums.add(x + y);
     if([...sums].sort((a, b) => a - b).join() !== [q.ans].concat(q.alt).join() || q.slots !== sums.size) throw new Error('place two: ' + JSON.stringify(q));
@@ -536,7 +536,7 @@ console.log('cut sheet: perimeter matches the pieces, worksheet instance leaves 
 // задача 14: the perimeters summed must match every sub-rectangle of the strip
 let strips = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(19);
+  const q = raw(i % 2 ? 19 : 202);
   if(q.shape !== 1) continue;
   strips++;
   let brute = 0;
@@ -1139,7 +1139,7 @@ console.log('tens and ones: every spelling balances and agrees with its numeral,
 // задачи 2 and 4: both sides say the same thing
 let balanced = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(11);
+  const q = raw(i % 2 ? 11 : 198);
   if(q.shape !== 'bal') continue;
   balanced++;
   const L = q.plus ? q.x + q.y : q.x - q.y;
@@ -1165,7 +1165,7 @@ console.log('both sides equal: the two sides agree whichever way the box sits, w
 // задача 3: the same two numbers, added once and taken away once
 let sames = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(10);
+  const q = raw(i % 2 ? 10 : 197);
   if(!q.same) continue;
   sames++;
   if(q.p !== q.x || q.q !== q.y) throw new Error('the pair is not the same on both sides');
@@ -1180,7 +1180,7 @@ console.log('same pair both ways: the gap is twice the smaller number, worksheet
 // задача 16: one bracket take away another, the second in a different order
 let written = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(10);
+  const q = raw(i % 2 ? 10 : 197);
   if(!q.written) continue;
   written++;
   const rest = q.terms.slice();
@@ -1370,7 +1370,7 @@ console.log('most or fewest: matches a count from every starting weekday, worksh
 // задача 19: two runs stepping by two, one odd and one even
 let runs = 0;
 for(let i = 0; i < 6000; i++){
-  const q = raw(10);
+  const q = raw(i % 2 ? 10 : 197);   // level 10 and the shape split from it (197)
   if(!q.runs) continue;
   runs++;
   if(q.A.some((v, k) => k && v !== q.A[k-1] + 2) || q.B.some((v, k) => k && v !== q.B[k-1] + 2))
@@ -1431,7 +1431,7 @@ console.log('the snail: matched day by day against the climb, worksheet instance
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0, boards = 0;
 for(let i = 0; i < 4000; i++){
-  const q = raw(32);
+  const q = raw(i % 2 ? 32 : 200);
   if(q.shape === 4){                           // задача 13: one stick, a leftover, answered in дм
     boards++;
     if(q.cm !== q.k*q.a + q.left) throw new Error('the board is not the sticks plus what is left');

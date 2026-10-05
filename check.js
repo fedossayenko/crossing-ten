@@ -49,8 +49,10 @@ const js = scripts.map(read).map(classic).join('\n');
   function pinSeed(name, draw, match, tries = 300000){
     const key = CHECK_FILE + ': ' + name;
     if(USED[key] !== undefined) throw new Error('two pins named ' + key);
+    // a seed is recorded as found: positive for the printed question itself, negative for the same
+    // question with other numbers — and must replay as the same, or the pin searches again
     const at = SEEDS[key];
-    if(at !== undefined){ const q = seeded(at, draw), m = match(q); if(m){ USED[key] = at; return { q, exact: m === 2 }; } }
+    if(at !== undefined){ const q = seeded(Math.abs(at), draw), m = match(q); if(m === (at > 0 ? 2 : 1)){ USED[key] = at; return { q, exact: m === 2 }; } }
     let best = null;
     for(let seed = 1; seed <= tries; seed++){
       const q = seeded(seed, draw), m = match(q);
@@ -58,8 +60,8 @@ const js = scripts.map(read).map(classic).join('\n');
       if(m === 1 && !best) best = { seed, q, exact: false };
     }
     if(!best) return null;
-    if(!REPIN) throw new Error(key + ': ' + (at === undefined ? 'no seed recorded' : 'seed ' + at + ' no longer asks it') + ' — it is at seed ' + best.seed + '; run node check.js --repin');
-    USED[key] = best.seed;
+    if(!REPIN) throw new Error(key + ': ' + (at === undefined ? 'no seed recorded' : 'seed ' + at + ' no longer asks it as recorded') + ' — it is at seed ' + best.seed + '; run node check.js --repin');
+    USED[key] = best.exact ? best.seed : -best.seed;
     return { q: best.q, exact: best.exact };
   }
 

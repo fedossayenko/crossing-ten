@@ -28,6 +28,9 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - A new kind file goes into `index.html` (`<script type="module" src=…>`) before `js/questions.js`; its level row goes in
   `js/levels.js` with `gen:` and a `d:` from the rubric in `README.md`.
 - Pin the worksheet's original instance in `check/papers.js` and add a brute-force check in `check/kinds.js`.
+- A level whose generator draws several `shape`s rates each on its row (`shapes: { name: d }`, the rubric
+  in `README.md`); none above the level's `d` (`check/shapes.js`). A harder shape gets a level of its own
+  (`only(gen, shape)` there, `without(gen, shape)` on the old one), and its printed tasks move with it.
 - A level from another paper says so on its row (`grade:3`, `src:'mbg-winter-2024'`; `src` defaults to `'mbg-autumn'`).
   A task that another paper also asks, at the same difficulty, tags the existing level with `also:['mbg-winter-2024-2']`
   instead of a copy; easier or harder is a new level with its own `d`. A new paper needs its name in

@@ -84,7 +84,7 @@
   pin('Пролет 2025 task 6', 175, {kind:'ineq', shape:6, form:0, A:10, L:12, traps:[1], ans:2}, [2], '10 + ■ < 12');
   pin('Пролет 2025 task 8', 159, {kind:'named', shape:7, a:1, b:0, sum:true, traps:[], ans:19}, [19], 'сбора на най-голямото едноцифрено число и най-малкото двуцифрено число');
   pin('Пролет 2023 task 8', 159, {kind:'named', shape:7, a:0, b:0, sum:true, traps:[11], ans:10}, [10], 'сбора на най-малкото едноцифрено число и най-малкото двуцифрено число');
-  pin('Пролет 2025 task 10', 164, {kind:'count', shape:6, one:true, sum:true, natural:false, two:false, a:7, lo:7, hi:9, ans:24}, [24], 'едноцифрени числа, които НЕ са по-малки от 7');
+  pin('Пролет 2025 task 10', 201, {kind:'count', shape:6, one:true, sum:true, natural:false, two:false, a:7, lo:7, hi:9, ans:24}, [24], 'едноцифрени числа, които НЕ са по-малки от 7');
   pin('Пролет 2023 task 15', 164, {kind:'count', shape:0, sum:false, natural:false, two:false, n:14, lo:0, hi:14, ans:15}, [15], 'числа, които не са по-големи от 14');
   pin('Пролет 2025 task 12', 163, {kind:'seg', shape:'cb', p:5, q:3, r:7, AD:15, traps:[10, 12], ans:3}, [3], 'AD = 15 см AC = 5 см BD = 7 см');
   pin('Пролет 2023 task 13', 163, {kind:'seg', mm:true, p:4, q:2, r:7, AB:6, CD:9, ans:13}, [13], 'AB = 6 мм CD = 9 мм CB = 2 мм');

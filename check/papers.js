@@ -38,7 +38,7 @@
   Object.keys(want).forEach(k => { if(key[k] !== want[k]) throw new Error('Зима 2024 task ' + k + ': ' + key[k] + ', the key says ' + want[k]); });
   // …and those levels really ask that kind of question
   const asks = {12: /по-малки от \d+ и са по-големи от \d+/, 16: /сбора на всички .*НЕ е вярно/, 49: /две равни събираеми и като сбор на три|три равни събираеми и като сбор на две/,
-    19: /правоъгълници, които не са квадрати/, 18: /една от цифрите на които е \d+ , а другата е по-малка/, 38: /не са зелени/, 39: /не ми достигат, за да имам/i};
+    202: /правоъгълници, които не са квадрати/, 18: /една от цифрите на които е \d+ , а другата е по-малка/, 38: /не са зелени/, 39: /не ми достигат, за да имам/i};
   Object.keys(asks).forEach(id => {
     const L = Q.LEVELS.find(l => l.id === +id);
     if(!L.papers.includes('mbg-winter-2024-2')) throw new Error('level ' + id + ' is not tagged Зима 2024');
@@ -341,7 +341,7 @@
     [11, 40, {kind:'seg', p:4, q:1, r:5, AB:5, CD:6, ans:10}, [10], 'AB = 5 см CD = 6 см CB = 1 см'],
     [12, 41, {kind:'three', who:'Хари', a:1, b:4, slots:2, ans:3, alt:[5]}, [3, 5], 'записал две от тях: 1 см и 4 см', ['a','b']],
     [13, 21, {kind:'sqcut', shape:3, a:4, extra:2, P:20, ans:2, asksSide:true}, [2], 'лист с обиколка 20 см на квадрат A със страна 4 см'],
-    [14, 19, {kind:'rects', shape:1, n:3, s:3, squares:false, parts:[[2,2,18],[3,1,24]], ans:60}, [60], 'размери 3 см и 9 см е разделен на три квадрата'],
+    [14, 202, {kind:'rects', shape:1, n:3, s:3, squares:false, parts:[[2,2,18],[3,1,24]], ans:60}, [60], 'размери 3 см и 9 см е разделен на три квадрата'],
     [15, 18, {kind:'digits', shape:2, d:5, smaller:true, list:[15,25,35,45,50,51,52,53,54], ans:9}, [9], 'една от цифрите на които е 5, а другата е по-малка от 5'],
     [16, 13, {kind:'named', shape:3, k:5, S:26, wit:[0,2,7,8,9], ans:9}, [9], 'различни едноцифрени числа е 26'],
     [17, 42, {kind:'cats', nm:['Мими','Рижко'], p:4, q:5, k:1, boxes:9, ans:20}, [20], 'кутия храна за 4 дни', ['p','q','k','boxes']],
@@ -455,7 +455,7 @@
     [16, 52, {kind:'step', shape:1, W:6, H:5, w:4, h:1, sides:[6,4,4,1,2,5], equal:2, ans:22}, [22], 'обиколката на получената фигура', ['W','H','w','h']],
     [17, 25, {kind:'weekday', shape:'bound', n:22, most:true, day:D('събота'), ans:4}, [4], 'Колко най-много съботи може да има сред 22 последователни дни'],
     [18, 57, {kind:'rank', who:['Георги','Емил','Борис','Даниел'], n:4, k:2, asksAbove:true, ans:2}, [2], 'а Борис е с повече точки само от Даниел', ['n','k','asksAbove']],
-    [19, 10, {kind:'cmp', runs:1, A:run(2, 18, 2), B:run(3, 17, 2), sa:90, sb:80, nm:['Мария','Деми'], back:false, big:0, ans:10}, [10], 'Мария пресметнала вярно 2 + 4 + 6'],
+    [19, 197, {kind:'cmp', runs:1, A:run(2, 18, 2), B:run(3, 17, 2), sa:90, sb:80, nm:['Мария','Деми'], back:false, big:0, ans:10}, [10], 'Мария пресметнала вярно 2 + 4 + 6'],
     [20, 58, {kind:'snail', H:23, up:8, down:5, gain:3, k:5, ans:11}, [11], 'висока 23 метра']
   ]);  paperCheck('Зима 2023', 'mbg-winter-2023-2', '40, 60, 1, 36, 10, 5, 14, 27, 100, 7, 1, 14, 1, 2, 0, 5 или 6, 34, 5, 12, 6 7 8 9', [
     [1,  99,  {kind:'brackets', shape:0, a:86, b:51, c:5, inner:46, ans:40}, [40], '86 − (51 − 5)'],
@@ -541,7 +541,7 @@
     [17, 109, {kind:'pairsum', nums:[7,9,10,11,13], ans:10}, [10], 'От числата 7, 9, 10, 11 и 13 изберете четири'],
     [18, 87,  {kind:'balloons', k:2, m:3, rest:16, T:22, ans:18}, [18], 'общо 22 балона, като 2 деца имат по 3 балона'],
     [19, 48,  {kind:'both', T:12, A:6, B:8, both:2, lang:['немски','английски'], asksBoth:false, ans:6}, [6], 'учат само английски', ['T','A','B','asksBoth']],
-    [20, 23,  {kind:'place', shape:2, A:9, B:7, D:12, sols:[[0,8],[1,9]], slots:2, ans:8, alt:[10]}, [8, 10], '9□ − 7△ = 12']
+    [20, 199, {kind:'place', shape:2, A:9, B:7, D:12, sols:[[0,8],[1,9]], slots:2, ans:8, alt:[10]}, [8, 10], '9□ − 7△ = 12']
   ]);
   for(let i = 0; i < 300; i++){   // the Зима 2021 kinds, counted out
     const a = Q.raw(107); let best = -1; for(let first = 0; first < 2; first++){ const sq = Array.from({length: a.n}, (_, j) => (j + first) % 2 === 0).filter(Boolean).length; best = best < 0 ? sq : a.most ? Math.max(best, sq) : Math.min(best, sq); }
@@ -577,7 +577,7 @@
     [1,  123, {kind:'vtri', f:0, V:'o', ans:8}, [8], 'На колко триъгълника е връх точка A', ['f', 'V']],
     [2,  27,  {kind:'missing', grows:1, seq:[2,3,5,8,12,17,23,30,38,47], gaps:[5,7], slots:2, ans:17, alt:[30]}, [17, 30], '2, 3, 5, 8, 12, …, 23, …, 38, 47'],
     [3,  30,  {kind:'term', shape:3, mins:false, k:6, list:[[12,'−',9],[8,'−',4],[11,'+',34],[31,'−',7],[27,'−',0]], traps:[3], ans:2}, [2], 'Колко от умалителите в задачите 12 − 9, 8 − 4, 11 + 34, 31 − 7, 27 − 0 са по-големи от 6'],
-    [4,  11,  {kind:'box', shape:'sym', a:12, b:16, X:28, c:20, Y:8, T:9, most:false, traps:[1], ans:0}, [0], 'На колко е равно ☺, ако 12 + 16 = ●, ● − 20 = ■, ■ + ☺ < 9'],
+    [4,  198, {kind:'box', shape:'sym', a:12, b:16, X:28, c:20, Y:8, T:9, most:false, traps:[1], ans:0}, [0], 'На колко е равно ☺, ако 12 + 16 = ●, ● − 20 = ■, ■ + ☺ < 9'],
     [5,  18,  {kind:'digits', shape:4, k:2, ones:true, list:[22,45,76,81,57,92,84,49,37,41,69,62,51], traps:[5], ans:4}, [4], 'Колко от числата 22, 45, 76, 81, 57, 92, 84, 49, 37, 41, 69, 62, 51 имат цифра на единиците, поне с 2 по-голяма от цифрата на десетиците'],
     [6,  99,  {kind:'brackets', shape:4, a:31, b:19, c:78, d:40, e:28, f:22, g:19, ans:57}, [57], '(31 + 19) + (78 − 40) − (28 + 22 − 19)'],
     [7,  124, {kind:'numpyr', b:[0,1,1,2,1], z:14, r1:[1,2,3,3], r2:[3,5,6], top:19, bot:18, asks:2, ans:1}, [1], 'разликата от числата, които трябва да се запишат на мястото на звездичките'],
@@ -596,7 +596,7 @@
     [2,  99,  {kind:'brackets', shape:6, a:100, b:57, c:96, d:78, ans:25}, [25], '(100 − 57) + 0 − (96 − 78)'],
     [3,  143, {kind:'corners', n:[2,1,3], asks:0, sides:21, traps:[21], ans:42}, [42], 'Колко общо са страните и върховете на два правоъгълника, един квадрат и три триъгълника'],
     [4,  97,  {kind:'isoperim', shape:2, a:4, laps:2, base:3, leg:5, route:'MEKME', ant:24, tort:16, traps:[4, 5], ans:8}, [8], 'Мравка изминала два пъти пътечката ABCA (триъгълник ABC е равностранен). Костенурка се разходила по равнобедрения триъгълник MEK по следния начин: MEKME', ['a', 'laps', 'base', 'leg', 'route']],
-    [5,  32,  {kind:'ribbon', shape:6, T:53, longer:true, groups:[{n:4, r:{d:4, c:18}, cm:58}, {n:2, r:{d:4}, cm:40}, {n:1, r:{d:6}, cm:60}, {n:3, r:{c:57}, cm:57}, {n:1, r:{d:7}, cm:70}], traps:[4], ans:9}, [9],
+    [5,  200, {kind:'ribbon', shape:6, T:53, longer:true, groups:[{n:4, r:{d:4, c:18}, cm:58}, {n:2, r:{d:4}, cm:40}, {n:1, r:{d:6}, cm:60}, {n:3, r:{c:57}, cm:57}, {n:1, r:{d:7}, cm:70}], traps:[4], ans:9}, [9],
       'Ива купила гирлянди: четири — по 4 дм и 18 см, две — по 4 дм, една — по 6 дм, три — по 57 см и една — по 7 дм. Колко от гирляндите са по-дълги от 53 см', ['T', 'longer']],
     [6,  144, {kind:'films', f:2, m:2, x:2, traps:[9, 7], ans:6}, [6], 'Бащата на Яна участва в 2 филма. Майка ѝ участва в един от тези филми и в още 2 други. Брат ѝ участва в един филм заедно с двамата си родители, в 2 филма сам'],
     [7,  145, {kind:'rests', g:3, n:5, t:4, r:3, work:60, traps:[69, 60], ans:66}, [66], 'Във фитнеса Ани прави 3 групи упражнения. Във всяка група има по 5 упражнения. Всяко упражнение трае 4 минути. Между всяка група упражнения Ани почива 3 минути'],
@@ -619,7 +619,7 @@
     [6,  142, {kind:'vtri', shape:'count', f:1, tri:11, sq:11, asks:0, traps:[11], ans:11}, [11], 'Колко са триъгълниците на чертежа', ['f', 'asks']],
     [7,  152, {kind:'named', shape:6, w:0, A:11, d:0, lo:22, B:24, L:25, traps:[24, 11], ans:12}, [12], 'Числото A е най-малкото двуцифрено число с еднакви цифри, B > A + A, B < 25, C + C = B'],
     [8,  153, {kind:'sqrect', one:true, lo:3, hi:9, a:8, b:4, P:24, asksP:false, traps:[24, 12, 4], ans:6}, [6], 'Квадрат и правоъгълник имат равни обиколки. Дължините на страните на правоъгълника са едноцифрени числа, по-големи от 3'],
-    [9,  32,  {kind:'ribbon', shape:7, list:[{d:2, c:40}, {c:90}, {d:8, c:8}, {c:100}, {d:8, c:10}, {c:60}, {d:5, c:10}, {m:1}, {d:6}, {d:10}],
+    [9,  200, {kind:'ribbon', shape:7, list:[{d:2, c:40}, {c:90}, {d:8, c:8}, {c:100}, {d:8, c:10}, {c:60}, {d:5, c:10}, {m:1}, {d:6}, {d:10}],
       cms:[60, 90, 88, 100, 90, 60, 60, 100, 60, 100], traps:[10, 9], ans:4}, [4], '2 дм и 40 см', ['ans']],
     [10, 154, {kind:'liftday', shape:3, fk:2, fm:30, F:4, sk:6, L:2, R:30, rest:32, flat:60, down:20, start:534, total:187, back:721,
       options:['12:01', '11:29', '12:16', '11:11'].map((s, id) => ({id, v:id, text:[s, s]})), pick:0, own:true, ans:0}, [0], 'Иво тръгнал от стадиона в 854 часа, качил се до Станция 2 с лифта, починал си 32 минути и се върнал пеш до стадиона', ['fk', 'fm', 'sk', 'R']]
@@ -643,7 +643,7 @@
     [16, 127, {kind:'dice', S:5, x:3, y:2, more:true, n:4, traps:[1], ans:3}, [3], 'Петър хвърлил два различни зара'],
     [17, 25,  {kind:'weekday', shape:'bound', n:15, most:true, day:D('вторник'), ans:3}, [3], 'Колко най-много вторника може да има сред 15 последователни дни'],
     [18, 57,  {kind:'rank', who:['Георги','Емил','Борис','Даниел'], n:4, k:2, asksAbove:true, tall:true, ans:2}, [2], 'е по-висок и от', ['n', 'k', 'asksAbove', 'tall']],
-    [19, 10,  {kind:'cmp', runs:1, A:run(2, 20, 2), B:run(1, 19, 2), sa:110, sb:100, nm:['Мария','Деми'], back:true, big:0, ans:10}, [10], '2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20', ['A', 'B', 'back']],
+    [19, 197, {kind:'cmp', runs:1, A:run(2, 20, 2), B:run(1, 19, 2), sa:110, sb:100, nm:['Мария','Деми'], back:true, big:0, ans:10}, [10], '2 + 4 + 6 + 8 + 10 + 12 + 14 + 16 + 18 + 20', ['A', 'B', 'back']],
     [20, 112, {kind:'blocks', n:3, pairs:[[1,2]], ans:4}, [4], 'числата 1, 2 и 3 едно до друго, така че 1 и 2 да са винаги съседни']
   ]);
   paperCheck('Пролет 2025', 'mbg-spring-2025-2', '11, 5, 0, 1, 20, 15, 24, 22, 18, 60, 1, 25, 12, 6, 20, 6, 5, 3, 1, 4', [
@@ -736,7 +736,7 @@
       if(t.T % 10 || (t.short ? base : base + t.d) !== t.ans) throw new Error('two triangles: ' + JSON.stringify(t));
     }
     for(let i = 0; i < 3000; i++){   // the new shapes of older levels
-      const m = Q2.raw(11); if(m.shape === 'sym'){ const fit = []; for(let v = 0; v < 100; v++) if(m.Y + v < m.T && m.a + m.b - m.c === m.Y) fit.push(v); if((m.most ? Math.max(...fit) : fit.length === 1 && fit[0]) !== m.ans || (!m.most && fit.length !== 1)) throw new Error('box sym: ' + JSON.stringify(m)); }
+      const m = Q2.raw(i % 2 ? 11 : 198); if(m.shape === 'sym'){ const fit = []; for(let v = 0; v < 100; v++) if(m.Y + v < m.T && m.a + m.b - m.c === m.Y) fit.push(v); if((m.most ? Math.max(...fit) : fit.length === 1 && fit[0]) !== m.ans || (!m.most && fit.length !== 1)) throw new Error('box sym: ' + JSON.stringify(m)); }
       const tm = Q2.raw(30); if(tm.shape === 3 && tm.list.filter(([a, op, b]) => op === '−' && (tm.mins ? a : b) > tm.k).length !== tm.ans) throw new Error('term: ' + JSON.stringify(tm));
       const br = Q2.raw(99); if(br.shape === 4 && eval('(' + br.a + '+' + br.b + ')+(' + br.c + '-' + br.d + ')-(' + br.e + '+' + br.f + '-' + br.g + ')') !== br.ans) throw new Error('brackets: ' + JSON.stringify(br));
       const dg = Q2.raw(18); if(dg.shape === 4 && dg.list.filter(v => (dg.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= dg.k).length !== dg.ans) throw new Error('digit gap: ' + JSON.stringify(dg));

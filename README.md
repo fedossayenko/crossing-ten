@@ -233,6 +233,14 @@ score was tried first and rejected: it rates `Четири карти` as easy b
 line is a single subtraction, when the task is a search through twenty-four
 arrangements.
 
+**A level that draws several shapes rates each one** on its row, `shapes: { name: d }`, by the same
+rubric, and no shape may be harder than its level (`check/shapes.js`): a hard shape cannot hide in an
+easy level. Where the harder shapes are a quarter or more of a level's questions, the level is rated
+up; where they are fewer, they get a level of their own, which needs the level they came from
+(`only()` / `without()` in `js/levels.js`). So 197–202 were split from 10, 11, 23, 32, 164 and 19, and
+17, 79, 96, 97, 175 and 180 went up a dot (2026-10-05, each shape rated twice, blind; only shapes both
+ratings put above their level were moved).
+
 **This rating is a prior, not a verdict.** The picker also shows her real first-try
 rate per level, which is the honest measure; when the two disagree, believe the data.
 

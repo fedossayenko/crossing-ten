@@ -7,7 +7,7 @@
 // the generators: every level rated, in a known group, and easiest first.
 {
   const block = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
-  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d), eq:.(.*?)., desc/g)]
+  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d),(?: shapes:\{[^}]*\},)? eq:.(.*?)., desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
   if(rows.length !== 57) throw new Error('parsed ' + rows.length + ' levels, expected 57');
   const seen = new Set();
@@ -82,13 +82,13 @@
   // suggest something whose groundwork is undone, never step back in difficulty, and
   // not grind one group for too long.
   {
-    const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).replace(/, gen:\w+/g, '');
+    const levelsSrc = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).replace(/, gen:\w+(\([^)]*\))?/g, '');
     const nextSrc = js.slice(js.indexOf('const REVIEW_DAYS'), js.indexOf('function buildPicker'));
     const walk = `
       const grp = l => l.grp || l.op;
       const m = {}, order = [];
       let last = null;
-      for(let step = 0; step < 200; step++){
+      for(let step = 0; step < 1000; step++){   // a safety bound, well above the number of levels
         const nx = nextUp(m, last);
         if(!nx) break;
         if(!(nx.needs || []).every(n => m[n] && m[n].done)) throw new Error(nx.eq + ' was suggested before its groundwork');
@@ -112,10 +112,13 @@
       let run = 1, worst = 1;
       for(let i = 1; i < order.length; i++){
         run = grp(order[i]) === grp(order[i-1]) ? run + 1 : 1;
-        if(run > worst) worst = run;
+        // the top of a grade may hold one group's levels alone: a run that ends its grade with nothing else
+        // left in it is no choice of the path's
+        const rest = order.slice(i - run + 1).filter(l => l.grade === order[i].grade);
+        if(run > worst && rest.some(l => grp(l) !== grp(order[i]))) worst = run;
       }
       if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running: ' + order.map(l => l.id + (l.grp || l.op)).join(' '));
-      console.log('training path, grade ' + PLAYER.grade + ': reaches all ' + order.length + ' levels from her grade up, groundwork first, a grade before the next, climbing within each, at most ' + worst + ' in a row from one group');
+      console.log('training path, grade ' + PLAYER.grade + ': reaches all ' + order.length + ' levels from her grade up, groundwork first, a grade before the next, climbing within each, at most ' + worst + ' in a row from one group (but where a grade ends with one group left)');
     `;
     eval('const PLAYER = { grade:2 };' + levelsSrc + nextSrc + walk);   // the default 2nd-grade player
     eval('const PLAYER = { grade:1 };' + levelsSrc + nextSrc + walk);   // a 1st-grader climbs through all three grades
@@ -146,7 +149,7 @@
     // easiest first, and groundwork outside it does not hold any back.
     const fo = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
       const pool = l => l.grade === 2 && (l.grp === 'geo' || l.grp === 'word'), m = {}, order = [];
-      for(let step = 0; step < 200; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break; order.push(nx); m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2, at:0, streak:2 }; }
+      for(let step = 0; step < 1000; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break; order.push(nx); m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2, at:0, streak:2 }; }
       return { order: order.map(l => [l.id, l.d, pool(l)]), want: LEVELS.filter(pool).length };
     })()`);
     if(fo.order.some(x => !x[2]) || fo.order.length !== fo.want || fo.order.some((x, i) => i && x[1] < fo.order[i-1][1] - 1))
@@ -154,7 +157,7 @@
     // a 2nd-grader focused on the 1st grade: every 1st-grade level, each after its own groundwork
     const f1 = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
       const pool = l => l.grade === 1, m = {}, order = [];
-      for(let step = 0; step < 200; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break;
+      for(let step = 0; step < 1000; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break;
         if(!(nx.needs || []).every(n => m[n] && m[n].done)) return { early: nx.id };
         order.push(nx); m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2, at:0, streak:2 }; }
       return { n: order.length, want: LEVELS.filter(pool).length, all: order.every(pool) };

@@ -39,7 +39,7 @@
     const n = Q.raw(175);
     if(n.shape === 7){ const V = walk(n.terms), fit = run(n.ask === 'count' ? 1 : 0, 9).filter(d => n.ask === 'count' ? (n.less ? V < 10*d : V > 10*d) : (n.more ? V > 10*n.T + d : V < 10*n.T + d));
       if(V !== n.V || (n.ask === 'count' ? fit.length !== n.ans : fit.length !== 1 || fit[0] !== n.ans)) fail('ineq digit: ' + fit, n); }
-    const c = Q.raw(164);
+    const c = Q.raw(i % 2 ? 164 : 201);   // 164 and the shape split from it (201)
     if(c.one && c.shape !== 6){ const fit = run(0, 9).filter(v => c.shape === 7 || (c.shape === 0 ? v <= c.n : v < c.n)); if(fit.length !== c.ans) fail('count one-digit', c); }
     if(c.two){ const fit = run(10, 99).filter(v => v < c.n); if(fit.length !== c.ans) fail('count two-digit', c); }
     const w = Q.raw(191); let k = 0; for(let d = 2; d <= w.mon[1]; d++) if((Q.DAYS.indexOf(w.d1) + d - 1) % 7 === Q.DAYS.indexOf(w.day)) k++;
