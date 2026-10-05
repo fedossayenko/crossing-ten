@@ -135,7 +135,10 @@ first. A paper's full name and its short tag are `papers` and `paperTag` in `js/
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
 as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels.
 
-- Live: https://fedossayenko.github.io/crossing-ten/
+- Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages, on every push — through GitHub Actions)
+- Also: https://crossing-ten.sayenkofedor.workers.dev/ (Cloudflare, `./deploy-cf.sh` from a clean tree — no CI, free).
+  The two are different addresses, so each keeps its own copy on a device; the family profile brings the rounds
+  across. Google sign-in works on an address only once it is an authorised JavaScript origin of the OAuth client.
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.
 
 ## Where things live

@@ -17,6 +17,7 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local`, then `node worker/test.js`
   and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local --file schema.sql`).
 - Run them before finishing. None may be weakened to make a change pass.
+- Deploy: `git push` (GitHub Pages, via Actions) and `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
 
 ## Adding or changing a level
 - One question kind per file in `kinds/`, registering `KIND.<kind> = { draw, eq, why }`. It imports what it
