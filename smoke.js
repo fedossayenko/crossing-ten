@@ -266,6 +266,29 @@ const server = http.createServer((req, res) => {
     expect(ln.size && ln.size === ln.want, 'the answer line is not sized by its class: ' + JSON.stringify(ln));
     await run(`localStorage.removeItem(RS); newRound(); 1`);
   }
+  // R0, the framework trial: with ?ui=next the badges screen is a Preact component (js/ui/badges.js); it must
+  // show what the hand-built screen shows for the same rounds, and answer a tapped badge the same way
+  {
+    await cmd('Page.navigate', { url: url + '?ui=next' }); await settle();
+    const r0 = JSON.parse(await run(`(async () => {
+      $('statsBtn').click();
+      for(let i = 0; i < 100 && !document.querySelector('#statsNext .badge'); i++) await new Promise(r => setTimeout(r, 20));
+      const box = $('statsNext'), txt = el => el ? el.textContent.replace(/\\s+/g, ' ').trim() : null, labels = root => [...root.querySelectorAll('.badge')].map(b => b.getAttribute('aria-label'));
+      const out = { same: { labels: labels(box).join() === labels($('badges')).join() && labels(box).length === 16,
+        next: txt(box.querySelector('.nextbadge')) === txt($('nextBadge')), tiles: txt(box.querySelector('.bigstat')) === txt($('tiles')),
+        medals: box.querySelector('.badge svg').outerHTML.length > 400 } };
+      const pickB = box.querySelectorAll('.badge')[4]; pickB.click(); await new Promise(r => setTimeout(r, 30));
+      $('badges').querySelectorAll('.badge')[4].click();
+      out.same.tap = txt(box.querySelector('.badgeneed')) === txt($('badgeNeed')) && pickB.getAttribute('aria-pressed') === 'true';
+      const m = await import('./js/ui/badges.js'); let t = performance.now();
+      for(let i = 0; i < 50; i++) m.showBadges(box, LOCAL.rounds);
+      out.rerenderMs = ((performance.now() - t) / 50).toFixed(2);
+      t = performance.now(); for(let i = 0; i < 50; i++) renderStats(); out.legacyMs = ((performance.now() - t) / 50).toFixed(2);
+      return JSON.stringify(out); })()`) || '{}');
+    expect(r0.same && Object.values(r0.same).every(Boolean), 'the Preact badges screen differs from the hand-built one: ' + JSON.stringify(r0));
+    console.log('smoke: R0 trial — the Preact badges screen matches the hand-built one; re-render ' + r0.rerenderMs + ' ms, hand-built ' + r0.legacyMs + ' ms');
+    await cmd('Page.navigate', { url }); await settle();
+  }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){

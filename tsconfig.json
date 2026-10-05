@@ -5,5 +5,5 @@
     "target": "es2022", "module": "esnext", "moduleResolution": "bundler", "lib": ["es2023", "dom", "dom.iterable"], "types": [],
     "strict": false
   },
-  "include": ["types.d.ts", "js/*.js", "kinds/*.js"]
+  "include": ["types.d.ts", "js/*.js", "js/ui/*.js", "kinds/*.js"]
 }

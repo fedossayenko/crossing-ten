@@ -131,7 +131,7 @@ export function weightsFrom(rounds){
   return { max, m };
 }
 const dayKey = ms => new Date(ms - new Date(ms).getTimezoneOffset()*60000).toISOString().slice(0,10);
-function statsFrom(rounds){
+export function statsFrom(rounds){
   let sums = 0, first = 0, perfect = 0;
   const lvl = {}, seen = {}, miss = {}, byOp = { '-':{seen:0,miss:0}, '+':{seen:0,miss:0} }, days = {}, langs = {};
   let bestRun = 0, clean10 = 0, fixed = 0, comps = 0;
@@ -178,7 +178,7 @@ function statsFrom(rounds){
    padlock when not yet. Every condition is positive (nothing is ever lost) and shows the
    child how far she is: prog gives [where she is, what it takes]. Names and conditions
    live in js/i18n.js under badge.<id>. */
-const FAM = {
+export const FAM = {
   teal:['#2F6F8F', '#DDE9EF', '#255B76', '#255B76'], warm:['#E8A33D', '#FBEBCF', '#7A4A2B', '#C7862A'],
   green:['#23795A', '#DCEFE5', '#1E5C45', '#1B5F47'], grape:['#9769C2', '#EEE4F7', '#5E3B87', '#7B52A6'],
   rose:['#C4878A', '#F8E4E5', '#7E4A4D', '#A66A6D'], lock:['#B8BEC9', '#E9ECF1', '#8D93A0', '#9DA4B1']
@@ -202,7 +202,7 @@ export const GLYPH = {
   compass:['stroke', 'M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0-18 0M15.5 8.5l-2 5-5 2 2-5z']
 };
 const THROUGH_TEN = [1, 2, 7, 4, 5, 6];            // the ladders that cross a ten
-const BADGES = [
+export const BADGES = [
   { id:'first',   g:'paw',     fam:'teal',  prog:s => [s.rounds, 1] },
   { id:'ten',     g:'fish',    fam:'teal',  prog:s => [s.rounds, 10] },
   { id:'perfect', g:'star',    fam:'grape', prog:s => [s.perfect, 1] },
@@ -221,7 +221,7 @@ const BADGES = [
   { id:'explorer',g:'compass', fam:'warm',  prog:s => [s.groups, PICK_GROUPS.length] }
 ];
 BADGES.forEach(b => { b.has = s => { const [a, n] = b.prog(s); return a >= n; }; });
-const badgeName = b => t('badge')[b.id][0], badgeNeed = b => t('badge')[b.id][1];
+export const badgeName = b => t('badge')[b.id][0], badgeNeed = b => t('badge')[b.id][1];
 const earnedSet = rounds => { const s = statsFrom(rounds); return BADGES.filter(b => b.has(s)).map(b => b.id); };
 function medal(b, got){
   const [ring, disc, ink, ribbon] = FAM[got ? b.fam : 'lock'], [how, d] = GLYPH[b.g];
@@ -701,7 +701,18 @@ $('csv').onclick = () => {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 };
-function openStats(){ renderStats(); $('stats').hidden = false; }
+// R0, the framework trial (PLAN.md): with ?ui=next the badges screen is the Preact component in js/ui/badges.js
+const UI_NEXT = new URLSearchParams(location.search).get('ui') === 'next';
+function openStats(){
+  renderStats();
+  if(UI_NEXT) import('./ui/badges.js').then(m => {
+    const box = $('statsNext') || Object.assign(document.createElement('div'), { id: 'statsNext' });
+    if(!box.parentNode) $('nextBadge').before(box);   // under the bar, with its back button and count
+    ['#nextBadge', '.gcard:has(#badges)', '#tiles'].forEach(s => { const el = $('stats').querySelector('.sheet-in > ' + s); if(el) el.hidden = true; });
+    m.showBadges(box, LOCAL.rounds);
+  });
+  $('stats').hidden = false;
+}
 // The grown-ups' page opens over whatever was showing and goes back to it.
 let parentFrom = null;
 function openParent(){
@@ -1177,5 +1188,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  raw: () => raw, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

@@ -160,8 +160,14 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   in 4 threads sharing its draws with the shape check); smoke 58 → 22 s, with sync 82 → 41 s. E5 done.
 
 ### Phase R — the redesign, on the new structure
-- **R0. Spike**: Badges (the simplest screen, all data exists) in Preact + htm, vendored, behind a flag;
-  decide framework vs plain views; smoke drives it.
+- **R0. Spike — DONE: Preact + htm it is.** The badges screen as a Preact component (`js/ui/badges.js`, behind
+  `?ui=next`), against the hand-built `renderStats` on the same rounds: the same labels, next badge, tiles and
+  tap answer (smoke checks it), pixel-identical screenshots, re-render 0.15 ms vs 0.25 ms hand-built. Cost:
+  Preact 11.0.0 + hooks + htm 3.1.1 vendored in `js/vendor/` (17 KB, 7 KB gzipped), no build, no import map
+  (the hooks' one `"preact"` import points at `./preact.js`), offline through `<link rel="modulepreload">`
+  (the service worker caches every href), vendor files `@ts-nocheck`. Code: about the same length for this
+  static screen, but no ids, no hand-wired handlers, no `aria-pressed` bookkeeping — the selected badge is
+  state. The gain grows with screens that share state (R2: decide @preact/signals there).
 - **R1. Look** (merge 6): tokens light/dark, system font + self-hosted Fredoka, solid surfaces + glass on
   chrome only, an in-app "solid, no glass" setting, a theme switch, versioned SW cache (E4); progress
   segments get a class that isn't `.seg` (taken by the settings control).
