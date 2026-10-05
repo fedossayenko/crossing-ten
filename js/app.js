@@ -6,7 +6,8 @@ import { ARCHIVE, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
-import { compAnswer, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, compAnswer, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { showToday } from './ui/today.js';
 import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
 /* ---------- screens and the address ----------
    Each screen has an address (#/levels, #/badges …), so a reload and the back gesture of an installed app land
@@ -14,6 +15,7 @@ import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from '.
    pushes a step (back returns from it) or, with replace, swaps the current one (a tab, a round starting). */
 const ROUTES = {
   play: null,
+  today: { sheet: 'today', show: () => showToday($('todayIn')) },
   levels: { sheet: 'picker', show: () => { buildPicker(); $('pickWarn').hidden = !midRound(); } },
   badges: { sheet: 'stats', show: () => showStats() },
   parents: { sheet: 'parent', show: () => renderParent() },
@@ -24,10 +26,14 @@ const routeOfAddress = () => { const r = (location.hash.match(/^#\/([\w-]+)/) ||
 // (Chrome does past a few hundred in seconds), and the screen must not follow it there.
 let ROUTE = routeOfAddress();
 export const routeNow = () => ROUTE;
+const TABBED = ['today', 'levels', 'badges', 'parents'];   // the sections the tab bar (sidebar on iPad) moves between
 export function applyRoute(){
   const r = ROUTES[ROUTE];
   Object.values(ROUTES).forEach(x => { if(x && x !== r) $(x.sheet).hidden = true; });
   if(r){ r.show(); $(r.sheet).hidden = false; }
+  const tabbed = TABBED.includes(ROUTE);
+  $('tabs').hidden = !tabbed; document.body.classList.toggle('tabbed', tabbed);
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.r === ROUTE ? 'page' : 'false'));
 }
 // history.state.depth counts the steps the app pushed, so back() never leaves the app
 export function go(route, replace){
@@ -746,7 +752,25 @@ function showStats(){
     m.showBadges(box, LOCAL.rounds);
   });
 }
-$('statsBtn').onclick = () => go('badges');
+$('homeBtn').onclick = () => go('today', true);
+// a tab swaps the section in place, so the back gesture does not walk through the tabs
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.r, true));
+
+// What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
+export function todayData(){
+  const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
+  const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
+  const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
+  const gi = l => PICK_GROUPS.findIndex(g => g.has(l));
+  const card = l => ({ id: l.id, name: levelName(l), group: gi(l) >= 0 ? t('groups')[gi(l)] : '', d: l.d, review: !!(m[l.id] && m[l.id].done) });
+  const lv = LEVELS.find(l => l.id === S.level);
+  return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
+    mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
+    next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).slice(0, 4).map(card),
+    compN: COMP_N, compMin: COMP_MIN };
+}
+// Today's cards: play this level now
+export function playLevel(id){ S.level = id; paintPill(); newRound(); }
 $('toStats').onclick = () => go('badges');
 $('closeStats').onclick = back;
 $('toParent').onclick = () => go('parents');
@@ -1202,11 +1226,12 @@ ARCHIVE_READY.then(() => {
       }
     } catch(e){}
     newRound();
+    if(START_ROUTE === 'play') go('today', true);   // nothing unfinished: the day starts on Today
   })();
   // reloaded on a screen (the round under it ready): back to that screen
   if(START_ROUTE !== 'play') go(START_ROUTE, true);
-  // Only the very first launch on a device asks who she is; every launch after that goes
-  // straight to the exercise (the mascot switches player).
+  // Only the very first launch on a device asks who she is; after that a launch opens on Today, or on the round
+  // left unfinished (the mascot switches player).
   if(FIRST) openEdit(PLAYER, true);
 });
 // Installed on the home screen, ask the browser to keep this data (in a tab, Firefox would ask the child).

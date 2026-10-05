@@ -12,7 +12,7 @@ import { PLAYER } from './players.js';
 import { t } from './i18n.js';
 import { withChoices } from './choice.js';
 import { COMP, GLYPH, LOCAL, S, clearTimers, compTick, finish, newRound, setComp, sfx, show } from './app.js';
-const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
+export const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
 // Plain sums (the Take away and Add groups) are drill, not olympiad tasks: a paper leaves them out.
 // A paper is for the player's own grade (her profile's, 2nd by default).
 const olympiad = () => LEVELS.filter(l => l.op !== '-' && l.op !== '+' && l.op !== 'x' && l.grade === (PLAYER.grade || 2));

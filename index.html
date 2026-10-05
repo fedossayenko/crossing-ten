@@ -23,9 +23,9 @@
           <path id="wave2" d="M19.5 6a9 9 0 0 1 0 12"/><path id="waveX" d="M17 9.5l5 5M22 9.5l-5 5" style="display:none"/>
         </svg>
       </button>
-      <button class="icon" id="statsBtn" data-t-aria="progress">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>
+      <button class="icon" id="homeBtn" data-t-aria="tabToday">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>
         </svg>
       </button>
     </div>
@@ -62,6 +62,17 @@
 </div>
 
 <!-- Choose a level -->
+<!-- Today (#/today): drawn by js/ui/today.js -->
+<div class="sheet" id="today" hidden data-t-aria="tabToday"><div class="sheet-in wide" id="todayIn"></div></div>
+
+<!-- The sections: a tab bar on a phone, a sidebar on a wide screen; shown on Today, Levels, Badges and Parents -->
+<nav class="tabs" id="tabs" hidden data-t-aria="sections">
+  <button data-r="today" id="tabToday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabToday"></span></button>
+  <button data-r="levels" id="tabLevels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg><span data-t="tabLevels"></span></button>
+  <button data-r="badges" id="tabBadges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-2 7 5.5-3 5.5 3-2-7"/></svg><span data-t="badges"></span></button>
+  <button data-r="parents" id="tabParents"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-t="tabParents"></span></button>
+</nav>
+
 <div class="sheet" id="picker" hidden role="dialog" data-t-aria="chooseLevel">
   <div class="sheet-in wide">
     <div class="bar">

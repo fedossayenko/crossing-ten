@@ -762,3 +762,34 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 
 /* R0 trial (?ui=next): the Preact badges screen's wrapper takes no part in the layout, its cards do */
 #statsNext{display:contents}
+
+/* The sections (R2): a floating glass tab bar on a phone, a sidebar on a wide screen — only on Today, Levels,
+   Badges and Parents; the round has the screen to itself. */
+.tabs{position:fixed; z-index:6; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:520px; margin:0 auto; height:64px;
+  border-radius:999px; display:flex; align-items:center; gap:2px; padding:0 6px; box-sizing:border-box;
+  background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); box-shadow:var(--glass-shadow)}
+:root[data-solid] .tabs{background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+.tabs button{flex:1 1 0; height:52px; border:0; border-radius:999px; background:none; color:var(--muted); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:3px; font-size:11px; font-weight:600; min-width:0}
+.tabs svg{width:24px; height:24px}
+.tabs button[aria-current="page"]{background:color-mix(in srgb, var(--accent) 13%, transparent); color:var(--accent)}
+body.tabbed .sheet-in{padding-bottom:96px}
+@media (min-width:900px){
+  .tabs{top:0; bottom:0; left:0; right:auto; width:220px; height:auto; max-width:none; margin:0; border-radius:0; flex-direction:column;
+    align-items:stretch; justify-content:flex-start; padding:calc(24px + env(safe-area-inset-top)) 12px 24px; gap:6px}
+  .tabs button{flex:none; height:48px; flex-direction:row; justify-content:flex-start; padding:0 16px; gap:12px; font-size:16px}
+  body.tabbed .sheet{padding-left:calc(220px + 16px)}   /* the sheet still covers the round behind the glass sidebar */
+  body.tabbed .sheet-in{padding-bottom:0}
+}
+
+/* Today (#/today) */
+.today-bar{align-items:flex-start}
+.today-bar .hello h1{font-size:30px; letter-spacing:-.01em}
+.today-bar .date{color:var(--muted); font-size:15px; margin-top:2px}
+.chiprow{display:flex; gap:8px; flex-wrap:wrap}
+.chiprow .pill{font-size:14px; padding:6px 12px; background:var(--well); color:var(--muted)}
+.chiprow .pill.warm{background:var(--warmbg); color:var(--warmink)}
+.duegrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap:10px}
+#today .nextcard:not(.main){border-color:transparent !important}
+#today .nextcard.main .eq{font-size:26px}
+#today .sheet-in{max-width:760px}

@@ -177,10 +177,14 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   system font offers (д like g, т like m) are off ("locl" 0) to keep the shapes she has read so far — one CSS
   line to turn on. Verified: before/after screenshots of five screens × iPhone/iPad × light/dark; smoke checks
   the settings survive a reload and the font loads offline.
-- **R2. Navigation**: hash router (`#/today`, `#/levels`, `#/badges`, `#/parents`, `#/parents/more`,
-  `#/notebook`, `#/play`); tabs via `replaceState`, drill-downs push; tab bar < 900 px, sidebar ≥ 900 px;
-  launch → saved round if any, else Today; `location.reload()` keeps the hash; tabs hidden in a
-  competition; the keyboard guard becomes "is the play view active".
+- **R2. Navigation — DONE (ce78ea2 + this).** Screens have addresses (#/today, #/levels, #/badges, #/parents,
+  #/players); back returns to where a screen was opened from (history.state.depth, never out of the app), a
+  reload comes back to its screen, the route is kept in memory (Chrome drops history changes past a few hundred
+  in seconds). Tabs (Днес · Нива · Значки · Родители): a floating glass bar on a phone, a sidebar ≥ 900 px; only
+  on those four, the round has the screen to itself. Today (js/ui/today.js, Preact): hello, streak, rounds
+  today, the round to go back to, start here, the levels due again, the practice paper. Launch: a round left
+  unfinished goes on, else Today. The play view's progress button became Home. Signals not needed yet: each
+  screen draws again when shown. Left for R5: the countdown + readiness (paper dates), the iPad two-column Today.
 - **R3. Play view** (merge 7): pill + segments + "N in a row"; iPad level list beside the task (respects
   `midRound()`); hint after a miss with real numbers, the wrong answer kept, keypad hidden on phone;
   `slipOf` for swapped digits and chain signs; competition: points, group, "Напред", quit, unanswered ≠
