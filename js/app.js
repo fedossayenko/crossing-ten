@@ -47,7 +47,7 @@ export function back(){ if(history.state && history.state.depth > 0) history.bac
 addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
 const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
 
-export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
+export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], t0:0, timers:[], touched:false };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
@@ -361,7 +361,7 @@ function wake(){
 export function show(){
   const q = S.qs[S.i];
   S.parts = Array(q.slots || 1).fill(''); S.at = 0;
-  S.tries = 0; S.revealed = false; S.settled = false;
+  S.tries = 0; S.revealed = false; S.settled = false; S.wrong = false;
   clearTimers();
   $('stage').innerHTML = drawQ(q);
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, q.pts) : t('taskOf', S.i + 1, S.qs.length);
@@ -392,7 +392,9 @@ function saveRound(){
 function paintSlot(){
   S.parts.forEach((p, i) => {
     const el = $('slot' + i);
-    if(el) el.innerHTML = p + (!S.revealed && i === S.at && !S.qs[S.i].options ? '<span class="caret"></span>' : '');   // nothing to type with А/Б/В/Г
+    if(!el) return;
+    el.classList.toggle('no', S.wrong);   // a miss stays in its box, struck through, until she types again
+    el.innerHTML = p + (!S.revealed && !S.wrong && i === S.at && !S.qs[S.i].options ? '<span class="caret"></span>' : '');   // nothing to type with А/Б/В/Г
   });
 }
 function paintDots(){
@@ -401,13 +403,17 @@ function paintDots(){
     $('dots').innerHTML = '<span class="ctrack"><i style="width:' + Math.round(100 * done / S.qs.length) + '%"></i></span>' +
       '<span class="cnum">' + done + ' / ' + S.qs.length + '</span><span class="clock" id="compClock">' + compLeft() + '</span>';
     $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
+    $('run').textContent = '';
     return;
   }
   $('dots').innerHTML = S.qs.map((_, k) => {
     const r = S.results[k];
-    return '<span class="dot ' + (r === true ? 'ok' : r === false ? 'no' : '') + ' ' + (k === S.i ? 'now' : '') + '"></span>';
+    return '<span class="step ' + (r === true ? 'ok' : r === false ? 'no' : '') + ' ' + (k === S.i ? 'now' : '') + '"></span>';
   }).join('');
   $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
+  let run = 0;   // right first time, in a row, up to now
+  for(let k = S.results.length - 1; k >= 0 && S.results[k] === true; k--) run++;
+  $('run').textContent = run >= 2 ? t('inARow', run) : '';
 }
 function press(k){
   S.touched = true;
@@ -419,6 +425,7 @@ function press(k){
     if(k >= '0' && k <= '9'){ S.parts[0] = k; sfx.tap(); paintSlot(); }
     return;
   }
+  if(S.wrong){ retry(); if(k === 'del' || k === 'go') return; }   // the first digit after a miss starts a new answer
   if(k === 'del'){
     if(S.parts[S.at] === '' && S.at > 0) S.at--;
     else S.parts[S.at] = S.parts[S.at].slice(0,-1);
@@ -491,18 +498,29 @@ function check(){
     // one slim line for what she wrote, then the hint with "show the solution" inside it: two boxes, not three
     $('hint').innerHTML = box('no', '<span class="typed">' + esc(S.typed[S.i]) + '</span>', nudge, t('notThis')) +
       '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div><span class="tiptext">' + why(q) + '</span>' +
-      '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>';
+      '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>' +
+      (q.options ? '' : '<button class="btn again" id="again">' + t('tryAgain') + ' →</button>');   // a phone hides the keys behind the hint (app.css)
     $('reveal').onclick = e => { e.stopPropagation(); reveal(); };
+    if(!q.options) $('again').onclick = e => { e.stopPropagation(); retry(); };
     $('hint').scrollIntoView({ block:'nearest' });      // a phone in portrait: the hint lands under the question, maybe out of sight
     S.timers.push(setTimeout(() => { if(!S.settled) mood('thinking'); }, 1100));
-    S.parts = S.parts.map(() => ''); S.at = 0; paintSlot();
+    if(q.options){ S.parts = S.parts.map(() => ''); S.at = 0; }
+    else { S.wrong = true; $('card').classList.add('missed'); }
+    paintSlot();
   } else reveal();
+}
+// After a miss: the struck answer goes, the keys come back, the hint stays.
+function retry(){
+  S.wrong = false; S.parts = S.parts.map(() => ''); S.at = 0;
+  $('card').classList.remove('missed');
+  paintSlot();
 }
 // Show the answer and how it is worked: after a second miss, or when she asks for it.
 function reveal(){
   const q = S.qs[S.i];
   S.results[S.i] = false;
-  S.revealed = true; S.settled = true;
+  S.revealed = true; S.settled = true; S.wrong = false;
+  $('card').classList.remove('missed');
   S.parts = answers(q).slice(0, S.parts.length).map(String);
   $('verdict').className = 'verdict no';
   $('verdict').textContent = eqText(q);

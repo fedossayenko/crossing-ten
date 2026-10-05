@@ -144,12 +144,14 @@ const server = http.createServer((req, res) => {
     newRound([{ a:42, b:17, op:'-' }]);
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     key('3'); key('5'); key('go');
-    const hint = { slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe') };
-    key('3'); key('5'); key('go'); key('go');
+    const hint = { slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
+      struck: $('slot0').classList.contains('no') && $('slot0').textContent === '35' && !!$('again') };   // the miss stays in its box, struck
+    key('3'); hint.fresh = !$('slot0').classList.contains('no') && $('slot0').textContent === '3' && !$('card').classList.contains('missed');   // and goes at the next digit
+    key('5'); key('go'); key('go');
     return Object.assign(hint, { wrote: ($('misslist').querySelector('.wrote') || {}).textContent || '',
       logged: LOCAL.rounds[LOCAL.rounds.length - 1].slips });
   })()`);
-  expect(slip.slip && slip.frame && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
+  expect(slip.slip && slip.frame && slip.struck && slip.fresh && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
     'the forgotten borrow was not named: ' + JSON.stringify(slip));
   // ...and the grown-ups see it: the slip counted, the groups charted, every round in the CSV
   const grown = await page(`(() => { $('tabBadges').click(); $('toParent').click();

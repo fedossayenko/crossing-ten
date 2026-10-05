@@ -30,11 +30,13 @@
       </button>
     </div>
   </div>
-  <div class="dots" id="dots" data-t-aria="progress"></div>
+  <div class="roundbar">
+    <div class="dots" id="dots" data-t-aria="progress"></div>
+    <div class="segline"><span class="qnum" id="qnum"></span><span class="run" id="run"></span></div>
+  </div>
 
   <div class="card" id="card">
     <div class="cardtop">
-      <span class="qnum" id="qnum"></span>
       <button class="read" id="readBtn" data-t-aria="speak">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></svg>
         <span data-t="readMe"></span>

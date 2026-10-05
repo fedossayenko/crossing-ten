@@ -185,9 +185,12 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   today, the round to go back to, start here, the levels due again, the practice paper. Launch: a round left
   unfinished goes on, else Today. The play view's progress button became Home. Signals not needed yet: each
   screen draws again when shown. Left for R5: the countdown + readiness (paper dates), the iPad two-column Today.
-- **R3. Play view** (merge 7): pill + segments + "N in a row"; iPad level list beside the task (respects
-  `midRound()`); hint after a miss with real numbers, the wrong answer kept, keypad hidden on phone;
-  `slipOf` for swapped digits and chain signs; competition: points, group, "Напред", quit, unanswered ≠
+- **R3a. Play view — DONE.** One segment a task (green/red kept: she sees which she missed) with "Задача N от M" and
+  "N верни подред" under it; a miss stays in its box struck through until the next digit; a phone upright hides
+  the keys behind the hint, "Опитвам пак" brings them back (iPad keeps them beside it); `slipOf` names swapped
+  tens and ones. Hints already used her numbers. Moved: the iPad level list beside the task → R4 (it needs R4's
+  shared row); chain-sign slips → R6 (chains are kinds, slips there come with the notebook's categories).
+- **R3b. Competition play**: points, group, "Напред", quit, unanswered ≠
   wrong, result table, previous best, redo padded from the paper (fixes the current `gen(S.level)` bug).
 - **R4. Levels page** (E1, E2, C4): one row renderer shared with the sidebar; groups keyed by `grp`;
   collapsed groups; status as %; level text from its row.

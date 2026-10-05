@@ -153,5 +153,6 @@ export function slipOf(q, parts){
     if(v === q.a - q.b) return 'wrongOpAdd';
     if(o + bo >= 10 && v === ans - 10) return 'forgotCarry';
   }
+  if(ans >= 10 && String(v) === [...String(ans)].reverse().join('')) return 'swapped';   // 52 for 25: tens and ones traded places
   return Math.abs(v - ans) === 1 ? 'offByOne' : null;
 }
