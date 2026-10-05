@@ -774,6 +774,13 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .tabs svg{width:24px; height:24px}
 .tabs button[aria-current="page"]{background:color-mix(in srgb, var(--accent) 13%, transparent); color:var(--accent)}
 body.tabbed .sheet-in{padding-bottom:96px}
+/* a short screen (a phone on its side): the compact bar iOS uses there, the label beside the icon */
+@media (max-height:500px) and (max-width:899px){
+  .tabs{height:48px; bottom:calc(8px + env(safe-area-inset-bottom))}
+  .tabs button{height:40px; flex-direction:row; gap:8px; font-size:13px}
+  .tabs svg{width:20px; height:20px}
+  body.tabbed .sheet-in{padding-bottom:72px}
+}
 @media (min-width:900px){
   .tabs{top:0; bottom:0; left:0; right:auto; width:220px; height:auto; max-width:none; margin:0; border-radius:0; flex-direction:column;
     align-items:stretch; justify-content:flex-start; padding:calc(24px + env(safe-area-inset-top)) 12px 24px; gap:6px}
