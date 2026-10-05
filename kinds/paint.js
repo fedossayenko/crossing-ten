@@ -1,5 +1,5 @@
 // Question kind 'paint': level 34 Оцветени — Paint whole rows and columns — what is left.
-import { KIND, SLOT, gridSvg, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, gridSvg, rnd, tr } from '../js/core.js';
 
 const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
 
@@ -14,7 +14,7 @@ export function genPaint(){
 }
 
 const paintRowUk = {1:['одному рядку','одному стовпці'], 2:['двох рядках','двох стовпцях'], 3:['трьох рядках','трьох стовпцях']};
-const paintPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+const paintPl = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
 
 function drawPaint(q){
   return '<div class="ask">' + tr('Правоъгълник е съставен от <span class="num">' + (q.R*q.C) +

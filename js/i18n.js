@@ -7,7 +7,8 @@ export const LANGS = { bg:'Български', uk:'Українська', en:'E
 export const LANG_TAG = { bg:'bg-BG', uk:'uk-UA', en:'en-GB' };
 export let LANG = LANGS[PLAYER.lang] ? PLAYER.lang : 'bg';
 export function setLang(l){ LANG = l; }   // the welcome screen switches language as she picks one
-const pl = (n, forms) => forms[new Intl.PluralRules(LANG).select(n)] || forms.other;
+const PLURALS = {};   // one Intl.PluralRules per language, made once
+const pl = (n, forms) => forms[(PLURALS[LANG] = PLURALS[LANG] || new Intl.PluralRules(LANG)).select(n)] || forms.other;
 
 export const TEXT = {
 en: {

@@ -1,5 +1,5 @@
 // Question kind 'short': level 39 Не достигат — Short by so many — so how many are there now?.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 
 const SWEETS = ['бонбона', 'стикера', 'ябълки', 'монети'];
 
@@ -17,7 +17,7 @@ export function genShort(){
 const shortUk = {'бонбона':['цукерку','цукерки','цукерок','цукерки'], 'стикера':['наліпку','наліпки','наліпок','наліпки'],
                  'ябълки':['яблуко','яблука','яблук','яблука'], 'монети':['монету','монети','монет','монети']};
 // "мати N …" wants the accusative, "не вистачає N …" the genitive
-const shortAcc = (n, f) => f[{one:0, few:1, many:2}[new Intl.PluralRules('uk').select(n)]];
+const shortAcc = (n, f) => f[{one:0, few:1, many:2}[UK_PLURAL.select(n)]];
 const shortGen = (n, f) => n % 10 === 1 && n % 100 !== 11 ? f[3] : f[2];
 function drawShort(q){
   const f = shortUk[q.item];

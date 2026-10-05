@@ -1,7 +1,7 @@
 // Question kind 'fruit': level 28 Ябълки и круши — Count two groups, then add to reach a difference.
 
 // Задача 6: count two mixed groups, then work out how many to add to reach a gap.
-import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 export function genFruit(){
   if(Math.random() < 0.3){
     // Есен 2019, задача 6: 11 apples, 5 of them red and the rest yellow; 2 yellow ones eaten. The
@@ -27,7 +27,7 @@ export function fruitSvg(row){
     '" role="img" aria-label="' + tr('круши и ябълки', 'груші та яблука') + '">' + g + '</svg></div>';
 }
 
-const fruitUk = (n, forms) => forms[{one:0, few:1}[new Intl.PluralRules('uk').select(n)] ?? 2];
+const fruitUk = (n, forms) => forms[{one:0, few:1}[UK_PLURAL.select(n)] ?? 2];
 const fruitPear = n => fruitUk(n, ['груша', 'груші', 'груш']), fruitApple = n => fruitUk(n, ['яблуко', 'яблука', 'яблук']);
 function drawFruit(q){
   if(q.shape === 'rest'){

@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -24,7 +24,7 @@ export function genBoth(){
 }
 
 const bothUkLang = {'английски':'англійську', 'френски':'французьку', 'немски':'німецьку', 'испански':'іспанську'};
-const bothUkPl = (n, one, few, many) => ({one, few})[new Intl.PluralRules('uk').select(n)] || many;
+const bothUkPl = (n, one, few, many) => ({one, few})[UK_PLURAL.select(n)] || many;
 const bothUkPupils = n => n + ' ' + bothUkPl(n, 'учень', 'учні', 'учнів');
 const bothUkStudy = n => bothUkPl(n, 'вивчає', 'вивчають', 'вивчають');
 function vennSvg(tl, tr_, a, m, b){

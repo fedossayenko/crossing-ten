@@ -2,7 +2,7 @@
 
 // Задача 13: flowers of three kinds. Generated so that every way of reaching the
 // total with at least one of each kind gives the SAME number of flowers.
-import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, bgList, rnd, tr } from '../js/core.js';
 export function genFlowers(){
   for(;;){
     const p0 = 3 + rnd(4);
@@ -20,7 +20,7 @@ export function genFlowers(){
   }
 }
 
-const flowersPl = (n, f) => f[['one','few','many'].indexOf(new Intl.PluralRules('uk').select(n))];
+const flowersPl = (n, f) => f[['one','few','many'].indexOf(UK_PLURAL.select(n))];
 function drawFlowers(q){
   return '<div class="ask">' + tr('Имаме цветя с по <span class="num">' + bgList(q.p) +
     '</span> листенца — и от трите вида. Листенцата на всички цветя са общо <span class="num">' +

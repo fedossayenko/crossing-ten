@@ -1,7 +1,7 @@
 // Question kind 'pencils': level 38 Моливи — Colours counted by what they are not.
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
-import { KIND, NAMES, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, NAMES, SLOT, UK_PLURAL, rnd, shuffle, tr } from '../js/core.js';
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
 // Задача 10: the other colour is the whole minus the named one, and then two lots are
 // given away — three plain steps, with only the first one needing any thought.
@@ -29,7 +29,7 @@ export function genPencils(){
 // Ukrainian colour by the Bulgarian plural: [one, 2–4, 5+] — 1 жовтий, 3 жовті, 7 жовтих.
 const pencilsUkCol = {'жълти':['жовтий','жовті','жовтих'], 'зелени':['зелений','зелені','зелених'],
                       'сини':['синій','сині','синіх'], 'червени':['червоний','червоні','червоних']};
-const pencilsUkForm = n => { const i = ['one', 'few'].indexOf(new Intl.PluralRules('uk').select(n)); return i < 0 ? 2 : i; };
+const pencilsUkForm = n => { const i = ['one', 'few'].indexOf(UK_PLURAL.select(n)); return i < 0 ? 2 : i; };
 const pencilsUkPencils = n => ['олівець', 'олівці', 'олівців'][pencilsUkForm(n)];
 const pencilsUkName = bg => NAMES.find(r => r[0] === bg)[2];
 const pencilsUkGen = {'Хари':'Харі', 'Мая':'Маї', 'Ния':'Нії', 'Борис':'Бориса', 'Ива':'Іви', 'Асен':'Асена'};

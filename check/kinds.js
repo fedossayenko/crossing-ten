@@ -1,3 +1,4 @@
+'use strict';   // writing to an app name that cannot change throws, as in the app's own modules
 // Runs inside the app's own scope, after the app's scripts (check.js loads it), so it calls
 // the generators and helpers directly. Run all checks with: node check.js
 // Each task's own check, worked out another way (a brute-force count, an exhaustive search, the

@@ -1,3 +1,4 @@
+'use strict';   // writing to an app name that cannot change throws, as in the app's own modules
 // Runs inside the app's own scope, after the app's scripts (check.js loads it), so it calls
 // the generators and helpers directly. Run all checks with: node check.js
 // Shared helpers, then every level: thousands of questions each — the answer, the worked line,
@@ -6,7 +7,7 @@
 
 const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
 const lastNum = t => { const m = strip(t).match(/\d+/g); return m ? +m[m.length-1] : NaN; };
-let checked = 0; const kinds = {};
+let checked = 0; const kinds = {}, shapesSeen = {};   // shapesSeen: what each level drew, for check/shapes.js
 // Ukrainian task text must be complete: Bulgarian-only words or letters left in it mean a
 // piece was missed (a text made only of shared words such as "5 см" is fine as it is).
 const BG_ONLY = new Set(('и е са от колко сбор сбора сборът сбори числата числото цифрите които която който което това тези още какво ' +
@@ -43,9 +44,13 @@ const NOT = {
   letter: { 94:'the letter asked for' },
 };
 for(const rule in NOT) for(const id in NOT[rule]) if(!IDS.includes(+id)) throw new Error('check/levels.js lifts ' + rule + ' for level ' + id + ', which does not exist');
-for(const L of IDS){
+// check.js hands each worker thread its share of the levels (LEVEL_PART); run alone, all of them
+for(const L of globalThis.LEVEL_PART || IDS){
+  shapesSeen[L] = {};
   for(let i = 0; i < 3000; i++){
-    const q = raw(L), ans = answer(q);
+    // seeds 1…3000: the same questions on every run, and the ones check/shapes.js reads the shapes of
+    const q = seeded(i + 1, () => raw(L)), ans = answer(q);
+    if(q.kind){ const s = String(q.shape ?? '-'); shapesSeen[L][s] = (shapesSeen[L][s] || 0) + 1; }
     if(L >= 8 && !q.kind) throw new Error('level ' + L + ' is not handled by raw() — it fell through to Mixed');
     if(!Number.isInteger(ans) || ans < 0) throw new Error('level ' + L + ' bad answer ' + JSON.stringify(q));
     // plainQ in app.js strips these from every question that is not own: a kind may not keep its data in them
@@ -74,9 +79,13 @@ for(const L of IDS){
     checked++;
   }
 }
-console.log('checked ' + checked + ' questions across ' + IDS.length + ' levels: arithmetic, worked line, summary line and layout all agree, in Bulgarian and in Ukrainian');
-console.log('Ukrainian: every worksheet text is translated, none left in Bulgarian, and drawing a question never draws a random number');
-console.log('worksheet kinds:', JSON.stringify(kinds));
+if(globalThis.LEVEL_REPORT) LEVEL_REPORT({ checked, kinds, shapesSeen });
+else {
+  globalThis.SHAPES_SEEN = shapesSeen;
+  console.log('checked ' + checked + ' questions across ' + IDS.length + ' levels: arithmetic, worked line, summary line and layout all agree, in Bulgarian and in Ukrainian');
+  console.log('Ukrainian: every worksheet text is translated, none left in Bulgarian, and drawing a question never draws a random number');
+  console.log('worksheet kinds:', JSON.stringify(kinds));
+}
 console.log('80 - 9 ->', answer({a:80,b:9,op:'-'}), '| hint:', strip(why({a:80,b:9,op:'-'}, true)));
 
 // answer matching, including the two-box questions

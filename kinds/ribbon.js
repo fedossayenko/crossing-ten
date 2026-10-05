@@ -1,7 +1,7 @@
 // Question kind 'ribbon': level 32 Ленти — Centimetres, decimetres and metres.
 
 // Задача 12: centimetres against decimetres and metres.
-import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UK_PLURAL, rnd, shuffle, tr } from '../js/core.js';
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 // МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
 // 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
@@ -97,7 +97,7 @@ export function genRibbon(){
   }
 }
 
-const ribbonUkTimes = n => ({one:'раз', few:'рази'})[new Intl.PluralRules('uk').select(n)] || 'разів';
+const ribbonUkTimes = n => ({one:'раз', few:'рази'})[UK_PLURAL.select(n)] || 'разів';
 function drawRibbon(q){
   if(q.shape === 6){
     const list = q.groups.map((g, i) => (i ? (i === q.groups.length - 1 ? tr(' и ', ' і ') : ', ') : '') + tr(RIB_N[g.n][0], RIB_N[g.n][1]) + ' — ' + tr('по ', 'по ') + ribLen(g.r)).join('');

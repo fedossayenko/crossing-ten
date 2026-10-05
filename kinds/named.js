@@ -1,7 +1,7 @@
 // Question kind 'named': level 13 Най-малкото — Smallest two-digit, largest one-digit, then compare.
 
 // Задача 6: the vocabulary of place value, on its own or feeding a comparison.
-import { BGNUM, KIND, SLOT, rnd, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 const NAMED = [
   { nm:'най-голямото едноцифрено число', v:9 },
   { nm:'най-малкото двуцифрено число',   v:10 },
@@ -141,7 +141,7 @@ const namedUk = {
   'най-малкото трицифрено число':   'найменше трицифрове число'
 };
 const namedGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’яти', 6:'шести', 7:'семи'};
-const namedNum = n => n + ' ' + (new Intl.PluralRules('uk').select(n) === 'few' ? 'числа' : n === 1 ? 'число' : 'чисел');
+const namedNum = n => n + ' ' + (UK_PLURAL.select(n) === 'few' ? 'числа' : n === 1 ? 'число' : 'чисел');
 
 function drawNamed(q){
   if(q.shape === 7){

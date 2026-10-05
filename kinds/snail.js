@@ -2,7 +2,7 @@
 
 // Задача 20: a snail that climbs by day and slips back by night. It only has to reach the
 // top once, so the last climb is not followed by a slip — the slipping stops there.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 export function genSnail(){
   for(;;){
     const up = 5 + rnd(6), down = 2 + rnd(up - 3);
@@ -14,7 +14,7 @@ export function genSnail(){
   }
 }
 
-const snailM = n => ({one:'метр', few:'метри', many:'метрів'})[new Intl.PluralRules('uk').select(n)] || 'метра';
+const snailM = n => ({one:'метр', few:'метри', many:'метрів'})[UK_PLURAL.select(n)] || 'метра';
 function drawSnail(q){
   return tr('<div class="ask">Един охлюв се катери по дървена греда, висока <span class="num">' + q.H +
     '</span> метра. През деня се изкачва <span class="num">' + q.up +

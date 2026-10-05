@@ -1,5 +1,5 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
-import { KIND, NAMES, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, NAMES, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
 export function genTrees(){
@@ -19,7 +19,7 @@ export function genTrees(){
           ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
 }
 
-const treesPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+const treesPl = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
 const treesN = n => n + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
 const treesM = n => treesPl(n, 'метр', 'метри', 'метрів');
 const treesGaps = n => treesPl(n, 'проміжок', 'проміжки', 'проміжків');

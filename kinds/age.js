@@ -3,7 +3,7 @@
 // МБГ Зима 2024, задача 17: in 10 years Claire will be 3 times as old as now. The 10 years
 // are the two "nows" added on top of the first, so she is 5 now — and the question asks
 // about 5 years on, which is 10.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr, ukN } from '../js/core.js';
 const AGE_KIDS = [['Клеър', 'Клер', 1], ['Мая', 'Мая', 1], ['Ния', 'Нія', 1], ['Асен', 'Асен', 0], ['Борис', 'Борис', 0]];
 export function genAge(){
   const [bg, uk, she] = AGE_KIDS[rnd(AGE_KIDS.length)];
@@ -11,7 +11,7 @@ export function genAge(){
   const b = 1 + rnd(9), shape = Math.random() < 0.25 ? 0 : 1;
   return {kind:'age', bg, uk, she, m, now, a, b, shape, ans: shape === 0 ? now : now + b};
 }
-const ageYearsUk = n => ['рік', 'роки', 'років'][{one:0, few:1, many:2}[new Intl.PluralRules('uk').select(n)]];
+const ageYearsUk = n => ['рік', 'роки', 'років'][{one:0, few:1, many:2}[UK_PLURAL.select(n)]];
 const ageYearsBg = n => n === 1 ? 'година' : 'години';
 function drawAge(q){
   const ask = q.shape === 0 ? tr('<b>На колко години е ' + q.bg + ' сега?</b>', '<b>Скільки років ' + q.uk + ' зараз?</b>')

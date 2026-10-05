@@ -1,5 +1,5 @@
 // Question kind 'tens': level 51 Десетици — A number said in tens, ones and hundreds.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 
 const PLACE = {1:['единица','единици'], 10:['десетица','десетици'], 100:['стотица','стотици']};
 export const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
@@ -38,7 +38,7 @@ export function genTens(){
 // Ukrainian forms by Intl plural category: one (1 десяток), few (2 десятки), many (5 десятків)
 const tensUk = {1:{one:'одиниця', few:'одиниці', many:'одиниць'}, 10:{one:'десяток', few:'десятки', many:'десятків'},
                 100:{one:'сотня', few:'сотні', many:'сотень'}};
-const tensUkPlaces = (n, u) => n + ' ' + tensUk[u][new Intl.PluralRules('uk').select(n)];
+const tensUkPlaces = (n, u) => n + ' ' + tensUk[u][UK_PLURAL.select(n)];
 const tensPlaces = (n, u) => tr(places(n, u), tensUkPlaces(n, u));
 function drawTens(q){
   const B = '<span class="circle">□</span>';

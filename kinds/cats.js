@@ -1,11 +1,11 @@
 // Question kind 'cats': level 42 Котките — Two cats and one box of food between them.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
 
 const CATS = [['Ан','Ед'], ['Мими','Рижко'], ['Сивка','Мурко'], ['Пух','Луна']];
 const catsUk = {'Мими':'Мімі', 'Рижко':'Рижик'};
 const catsNm = n => tr(n, catsUk[n] || n);
 // 1 день, 2 дні, 5 днів — forms in the order one, few, many
-const catsPl = (n, f) => n + ' ' + f[['one','few','many'].indexOf(new Intl.PluralRules('uk').select(n))];
+const catsPl = (n, f) => n + ' ' + f[['one','few','many'].indexOf(UK_PLURAL.select(n))];
 const CATS_DAY = ['день','дні','днів'], CATS_BOX = ['коробка','коробки','коробок'];
 
 // Задача 17: in p times q days the first cat gets through q boxes and the second p,

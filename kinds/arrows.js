@@ -21,11 +21,20 @@ const ARROW_PAIRS = (() => {
   return out;
 })();
 // every way to give 1…6 to the letters that keeps each arrow from the bigger to the smaller
-function arrowOrders(edges){
+function arrowOrders(edges, most = Infinity){   // most: stop once that many are found (a generator that wants few)
   const out = [];
+  // an arrow is checked as soon as both its ends have a number, so a branch that breaks one stops there
+  // (the same orders come out, in the same order, as checking all 720 at the end)
+  const at = [[], [], [], [], [], []];
+  edges.forEach(([a, b]) => at[Math.max(a, b)].push([a, b]));
   (function walk(v, used){
-    if(v.length === 6){ if(edges.every(([a, b]) => v[a] > v[b])) out.push(v.slice()); return; }
-    for(let n = 1; n <= 6; n++) if(!used[n]){ used[n] = 1; v.push(n); walk(v, used); v.pop(); used[n] = 0; }
+    if(v.length === 6){ out.push(v.slice()); return; }
+    const k = v.length;
+    for(let n = 1; n <= 6 && out.length < most; n++) if(!used[n]){
+      v.push(n);
+      if(at[k].every(([a, b]) => v[a] > v[b])){ used[n] = 1; walk(v, used); used[n] = 0; }
+      v.pop();
+    }
   })([], {});
   return out;
 }
@@ -39,7 +48,7 @@ export function genArrows(){
       while(st.length){ const x = st.pop(); for(const f of edges) if(f !== e && f[0] === x && !seen[f[1]]){ if(f[1] === e[1]) return true; seen[f[1]] = 1; st.push(f[1]); } }
       return false; };
     if(edges.some(implied)) continue;
-    const orders = arrowOrders(edges);
+    const orders = arrowOrders(edges, 7);
     if(orders.length < 2 || orders.length > 6) continue;
     // the slip in traps: every arrow read the wrong way round, which turns each n into 7 − n
     // three letters whose numbers are always the same three, though not always in the same places

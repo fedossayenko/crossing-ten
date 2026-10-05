@@ -1,5 +1,5 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
 export const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
@@ -90,7 +90,7 @@ const weekdayMonUk = {
   октомври:['жовтень','жовтня','жовтні'], ноември:['листопад','листопада','листопаді'],
   декември:['грудень','грудня','грудні']
 };
-const weekdayPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+const weekdayPl = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
 const weekdayDays = n => n + ' ' + weekdayPl(n, 'день', 'дні', 'днів');
 
 function drawWeekday(q){

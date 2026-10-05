@@ -34,15 +34,16 @@ const server = http.createServer((req, res) => {
   await cmd('Runtime.enable'); await cmd('Page.enable');
   await cmd('Page.navigate', { url });
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  await sleep(1500);
   // After a load, wait until the app has started, not a fixed time: on a busy machine (right after
   // a rebuild) the service worker's install can hold the page up for several seconds.
-  const settle = async () => {
-    await sleep(1500);
-    for(let i = 0; i < 75; i++){
-      const r = await cmd('Runtime.evaluate', { expression: "document.readyState === 'complete' && typeof S === 'object' && !!document.getElementById('stage')?.innerHTML", returnByValue: true });
-      if(r.result?.result?.value === true) return;
-      await sleep(200);
+  // settle() follows a load: each page that settled is marked, so it waits for a new page, not the one going.
+  // settle(ms) is a plain pause for something with no page load to watch (a sync), never under 1.5 s.
+  const settle = async ms => {
+    if(ms) return sleep(Math.max(ms, 1500));
+    for(let i = 0; i < 300; i++){
+      const r = await cmd('Runtime.evaluate', { expression: "!window.__settled && document.readyState === 'complete' && typeof S === 'object' && !!document.getElementById('stage')?.innerHTML", returnByValue: true });
+      if(r.result?.result?.value === true){ await cmd('Runtime.evaluate', { expression: 'window.__settled = 1' }); return; }
+      await sleep(50);
     }
   };
   const run = async expr => {
@@ -59,7 +60,9 @@ const server = http.createServer((req, res) => {
   // Inside the page: for every level, pick it, miss the first question twice (hint, then
   // the reveal), answer the rest correctly, and land on the end-of-round sheet.
   const play = `(async () => {
-    const tick = () => new Promise(r => setTimeout(r, 0));
+    // a turn of the event loop: a MessageChannel message, which browsers do not stretch to 4 ms as they do a
+    // nested setTimeout(0) (22 of those a level were most of this run)
+    const tick = () => new Promise(r => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(0); });
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     const type = v => String(v).split('').forEach(key);
     const out = [];
@@ -215,7 +218,9 @@ const server = http.createServer((req, res) => {
         } else {
           for(let slot = 0; slot < (q.slots || 1); slot++){ [...(right ? String(answers(q)[slot]) : '999')].forEach(K); K('go'); }
         }
-        await wait(600);
+        // the paper moves on by itself (150 ms, or 450 after А/Б/В/Г): wait for the next task, not a fixed time
+        const at = S.i;
+        for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
       }
       out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
       const r = LOCAL.rounds[LOCAL.rounds.length - 1];

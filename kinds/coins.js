@@ -4,7 +4,7 @@
 // total can be paid and the first that cannot is one above it.
 // МБГ Зима 2023: five coins, each 1 or 2 euro, both kinds there — every amount they can make.
 // All ones would be 5, all twos 10; with both kinds it is 6, 7, 8 or 9 — one per count of twos.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 function genCoinsMix(){
   const n = 3 + rnd(3), vals = [];
   for(let k = 1; k < n; k++) vals.push(n + k);                    // k coins of 2, the rest 1
@@ -18,7 +18,7 @@ export function genCoins(){
   return {kind:'coins', n1, n2, T, limit: T + 2, asksMax, ans: asksMax ? T : T + 1};
 }
 const coinWord = n => n === 1 ? 'монета' : 'монети';
-const coinsUkWord = n => ({one:'монету', few:'монети'})[new Intl.PluralRules('uk').select(n)] || 'монет';
+const coinsUkWord = n => ({one:'монету', few:'монети'})[UK_PLURAL.select(n)] || 'монет';
 
 function drawCoins(q){
   if(q.shape === 'mix'){

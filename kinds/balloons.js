@@ -2,13 +2,13 @@
 
 // МБГ Зима 2024, задача 16: 21 balloons, 3 children with three each, every other child
 // with one. The 3 children are counted as well as the ones with a single balloon: 3 + 12 = 15.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr, ukN } from '../js/core.js';
 export function genBalloons(){
   const k = 2 + rnd(4), m = 2 + rnd(4), rest = 2 + rnd(Math.random() < 0.3 ? 30 : 14);   // Зима 2023: 3 by 3 and 31 more
   return {kind:'balloons', k, m, rest, T: k*m + rest, ans: k + rest};
 }
 // Ukrainian "кулька" after a number: 1 кульку, 2–4 кульки, 5+ кульок
-const balloonsUk = n => ['кульку', 'кульки', 'кульок'][{one:0, few:1, many:2}[new Intl.PluralRules('uk').select(n)]];
+const balloonsUk = n => ['кульку', 'кульки', 'кульок'][{one:0, few:1, many:2}[UK_PLURAL.select(n)]];
 function drawBalloons(q){
   return '<div class="ask">' + tr('Няколко деца имат общо <span class="num">' + q.T + '</span> балона, като <span class="num">' + q.k +
     '</span> деца имат по <span class="num">' + q.m + '</span> балона, а всяко от останалите — по един. <b>Колко са децата?</b>',

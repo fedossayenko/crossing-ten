@@ -3,7 +3,7 @@
 // Задача 10: one vessel of a known size and a bucket that is one of two sizes. Pour and
 // watch: the answer is the fill at which the bigger bucket has overflowed the vessel and
 // the smaller one has not, because that is the first moment the two stories differ.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
 export function genBucket(){
   for(;;){
     const p = 2 + rnd(4), q = p + 1 + rnd(4);
@@ -14,7 +14,7 @@ export function genBucket(){
   }
 }
 
-const bucketLitre = n => ({one:'літр', few:'літри', many:'літрів'})[new Intl.PluralRules('uk').select(n)];
+const bucketLitre = n => ({one:'літр', few:'літри', many:'літрів'})[UK_PLURAL.select(n)];
 function drawBucket(q){
   return '<div class="ask">' + tr('Имам съд, който събира точно <span class="num">' + q.V +
     '</span> литра. Имам и кофа, която събира <b>или</b> <span class="num">' + q.p +

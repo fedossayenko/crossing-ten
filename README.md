@@ -328,7 +328,7 @@ the worked line, the summary line and the layout agree (a rule that cannot fit a
 `NOT`, with the reason), plus targeted checks that compare a closed form against a brute-force search wherever one
 is used, and pin the original worksheet instance of each task — replayed from its seed in `check/seeds.json`
 (`--repin` records new seeds). `check/golden.json` holds a hash of everything each level shows for 30 seeds;
-`--golden` re-records it after a change meant to be seen. About a minute of CPU.
+`--golden` re-records it after a change meant to be seen. It takes about 8 s: the per-level check runs in worker threads beside the rest (`CHECK_SERIAL=1`: one thread, ~30 s).
 
 ## Progress storage
 

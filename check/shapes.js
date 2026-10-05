@@ -2,13 +2,12 @@
 // Difficulty per shape. A level has one difficulty, but many draw several shapes of question; a level
 // that does rates each on its row — shapes: { name: d }, by the same rubric — and none may be harder
 // than the level itself. So a hard shape cannot hide in an easy level: 156 (d2) once held the paper's
-// hardest task, 1 − 10 + 2 + 3 + 4 + 5, now level 196 (d3). Each level is drawn 3000 times from fixed
-// seeds, so the shapes met are the same on every run.
+// hardest task, 1 − 10 + 2 + 3 + 4 + 5, now level 196 (d3). The shapes are those of the 3000 questions
+// check/levels.js drew on each level from seeds 1…3000 (SHAPES_SEEN), so they are the same on every run.
 {
   let mixing = 0, rated = 0;
   for(const L of APP.LEVELS){
-    const seen = {};
-    for(let seed = 1; seed <= 3000; seed++){ const q = APP.seeded(seed, () => APP.raw(L.id)); if(q.kind){ const s = String(q.shape ?? '-'); seen[s] = (seen[s] || 0) + 1; } }
+    const seen = SHAPES_SEEN[L.id] || {};
     const drawn = Object.keys(seen);
     if(drawn.length < 2){ if(L.shapes) throw new Error('level ' + L.id + ' rates shapes, but draws only one'); continue; }
     mixing++;
