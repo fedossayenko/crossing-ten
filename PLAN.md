@@ -1,4 +1,4 @@
-# Plan — making Crossing Ten ready for 500–1,000 task types (2026-10-05)
+# Plan — Crossing Ten for 500–1,000 task types, and the Десетка 2026 redesign (2026-10-05)
 
 Started from "how would this be built from scratch in October 2026?", then checked against the code
 three times: measurements, and three read-only audits (app shell, the 165 kinds, the check harness).
@@ -14,10 +14,9 @@ Time is not the constraint; the aim is to do now what gets more expensive with e
 - What is wrong is structural and mechanical — one global scope, boilerplate, registries kept by hand,
   history recomputed from a capped log, difficulty rated per level instead of per shape — and every
   one of those is cheaper to fix at 165 kinds than at 1,000 (the 165 were added in 2 weeks).
-- A framework would touch the 1,900-line shell, not the kinds (86% of the code, the part that grows).
-  Kinds draw static HTML once per question; the checks run them in plain Node. Revisit only if the
-  shell grows (parent dashboard, teacher view, worksheet printing) or tasks become drag-and-tap —
-  then Preact or Svelte for the shell alone.
+- The kinds never get a framework: they draw static HTML once per question and the checks run them in
+  plain Node. **The shell does** — see *The redesign* below: it rewrites the shell anyway, which is
+  exactly the trigger this plan set for a framework.
 
 ## What the audits found
 
@@ -42,71 +41,148 @@ Time is not the constraint; the aim is to do now what gets more expensive with e
 | 17 | smoke.js has a hard 120 s timeout, close at 195 levels | `smoke.js:18` | Soon |
 | 18 | Real duplication only in chain/pairs draw (identical), cross/crossmin deletion lister, segpts/segcount fencepost; other look-alike names are different puzzles | kinds audit | — |
 
+## The redesign (design canvas "Десетка 2026 — Crossing Ten в стила на Apple")
+
+29 artboards: iPad (main device) — Today, Levels with filters, task with the level list beside it, hint
+after a mistake, word problem, geometry, round end, competition А/Б/В/Г, competition result, mistakes
+notebook, badges, parents, players + family profile, dark; iPhone — the same flow with a floating tab
+bar; a shareable weekly card; the style system ("Liquid Glass 2026"). Mapped screen by screen to the code:
+
+| Already there — a restyle | Really new |
+|---|---|
+| The on-screen keypad (`index.html:51-60`, `press()` `app.js:346`), А/Б/В/Г, multi-box answers | **Navigation**: four tabs (Днес / Нива / Значки / Родители) — tab bar on iPhone, sidebar on iPad; today everything is a `.sheet`, with no `history` at all |
+| Level filters and rows (`buildPicker` `app.js:828-925`) | **Today** home screen: start here, reviews due, week, competition countdown — today the app opens straight into a round |
+| Review ladder, mastery, suggestion (`app.js:755-823`) | **Competition date + "готовност 61%"**: no data — needs a dates table and a definition |
+| Hint after a first miss, `slipOf`, ten-frame (`check()` `app.js:420-432`) | **Mistakes notebook**: grouped by kind of slip, real examples, "Поправи N", "fixed — recheck in a week": rounds don't store the questions |
+| Round end, badges (the same 16), parents' stats, CSV, settings | **Competition result table** (per task: answer, points, unanswered ≠ wrong): not stored |
+| Competition paper, clock, skip (`compete.js`) | **Weekly card** as an image to share (`navigator.share({files})`) |
+| Dark tokens (`app.css:15-35`) | A manual theme switch (`data-theme` is never set); round time for every round (`secs` only for papers) |
+| Welcome / first run (`players.js:6-8`, `openEdit`) | Family devices + "synced N min ago", change password: worker has neither (`schema.sql:42`, `worker/index.js:82`) |
+
+Style: new tokens (ground `#F0F4F7`, ink `#0F171F`, accent `#006AC0`, dark `#0E1318`/`#4BAEED`), the
+system font for the interface (Nunito goes; it is also hard-coded in 35 places in 19 kinds), Fredoka
+for numbers only, **solid content surfaces with glass only on navigation chrome** (the reverse of
+`app.css:61-68` today), radii 24/20/12, keys 64 (76 on iPad).
+
+Web-platform facts that shape it (2026): `backdrop-filter` is costly on mobile — keep glass to 2–3
+elements a screen, never animate it; **Safari has no `prefers-reduced-transparency`**, so "reduce
+transparency → solid" must be an in-app setting; an installed iOS web app has no back button, so the
+tabs swap with `replaceState` and only drill-downs push history; same-document View Transitions work in
+Safari 18+; fonts must be self-hosted to work offline (both the app and the mock load Google Fonts).
+
+### What goes together (the merges)
+
+1. **One round-format change** — the notebook, the competition table, the parents' examples, the "in
+   the notebook" links, round time, the per-shape rating (old B2) and a syncing *curious* badge all need
+   the same thing: a compact per-task record in each round, `t: [[level, shape, seed, wrote, ok(1/0/-1),
+   pts]]`, plus `secs` always, `redo` naming what it fixed, `whys` moved in. With a **seed per question**
+   (the same seeded generator as the checks, A1) a missed task is rebuilt from `(level, seed)` for any
+   kind — no rendered text stored, well under the 4 KB `MAX_ROUND`. The answer is stored too, so a task
+   whose generator changed since is shown by its numbers, never wrongly.
+2. **That makes rounds bigger, so IndexedDB is required, not optional** — ~800 B a round × thousands
+   overflows localStorage. B1 (no cap) and the new format are one migration, one sync-format step, one
+   worker deploy (with `sessions.last_seen` + device, and `/password`).
+3. **The shell is rewritten once, on its final structure**: ES modules (C1) first, then the redesign's
+   router and views on them. The audit items E1 (groups by key), E2 (picker), E3 (competition as a mode),
+   C4 (level text on its row) and `sync.js` redrawing app screens directly all land inside that rewrite
+   instead of being fixed twice.
+4. **Kind cleanup (C2) before the restyle**: its `ask()` / `answerLine(unit, size)` helpers replace 259
+   inline font-size strings and the hard-coded Nunito, so the new type scale and units ("мин",
+   "портокала") apply in one place instead of 165 files.
+5. **Paper data files**: pins as seeds (A1), the paper's name in three languages (out of `i18n.js`), its
+   **date** (the countdown and readiness) and its tasks — one file per paper, one source.
+6. **Style tokens + self-hosted fonts + theme switch + versioned service-worker cache (E4)**: one step —
+   new font files must be precached, and the cache name must change for the new look to arrive.
+7. **Hint redesign + `slipOf` extended** (swapped digits, wrong sign in a chain — today only plain sums)
+   **+ the notebook's categories**: the same code in `questions.js`, one step.
+
+### A framework for the shell — now yes
+
+The shell grows from ~1,900 lines to roughly double: a router, four tab roots, Today, the notebook, a
+parents dashboard, the iPad sidebar beside a running round, the weekly card — with the same state
+(player, mastery, sync status, round progress) shown in several places at once. Hand-updating those
+is where the current code already strains (`COMP ?` at ~20 sites, `sync.js:116-117` redrawing screens).
+**Preact + htm + signals, vendored as ES modules (~10 KB), no build step**: components and state for
+the shell; kinds untouched — a `<Task>` component sets their HTML. Fallback if a spike disappoints:
+plain view functions with one `render()` per view. Decided by R0 on one real screen, not on paper.
+
 ## The plan — phases, each step shipped and verified on its own
 
-Not one batch: a step that changes data and a step that changes structure must fail separately. Phase A
-makes every later step provably safe: after it, a restructure that changes any child-visible output fails.
+Not one batch: a data change and a structure change must fail separately. Phase A makes every later step
+provably safe: after it, any change to what a child sees fails unless re-recorded on purpose.
 
 ### Phase A — safety net (first)
-- **A1. Harness speed and seeds** (#5, #6): capture the real `Math.random` once in `head`; a seeded
-  PRNG (mulberry32); `pin(…, seed)` replays one draw, and on a miss searches and fails with
-  "seed stale, now at seed N" (never a silent pass); `node check.js --repin` rewrites seeds. The 39
-  never-exact papers.js pins get exact instances. ~1 day.
-- **A2. Golden output**: record `draw`, `eq` and `why` (both languages, hint and full) for every level ×
-  50 seeds into `check/golden.json`; check.js compares. Any restructure that changes what a child sees
-  fails; an intended change re-records it in the same commit, visible in the diff.
-- **A3. Registries derived** (#3, #4, #11): `IDS` from `LEVELS` with a commented skip list (triage the
-  18 failing levels: fix the level or name the rule it is exempt from); check file list by `readdir`; the
-  level-table check runs on the loaded `LEVELS` (unique ids, `d` range, `needs` exist, no cycles); a check
-  that `kinds/*` and the script list in `index.html` agree.
+- **A1. Seeded generator, seeded pins, paper files** (#5, #6, merge 5): one seeded PRNG in `js/core.js`
+  (mulberry32) used by the app and the checks; capture the real `Math.random` once in the harness;
+  `pin(…, seed)` replays one draw, a miss searches and fails "seed stale, now at seed N", `--repin`
+  rewrites; papers become `papers/<id>.js` (names ×3 languages, date, tasks → level, seed, key); the 39
+  never-exact pins get exact instances.
+- **A2. Golden output**: `draw`/`eq`/`why` for every level × 50 seeds, both languages → `check/golden.json`.
+- **A3. Registries derived** (#3, #4, #11): `IDS` from `LEVELS` with a commented skip list (triage the 18
+  failing levels), check files by `readdir`, the level-table check on the loaded `LEVELS`, kinds ↔ script
+  list agree.
 
-### Phase B — her data (before ~2026-11-01, can run beside A)
-- **B1. Rounds in IndexedDB, no cap** (#1, #2): the log stays the single source of truth (no counters —
-  counters would conflict across synced devices); mastery over 5,000 rounds is 0.7 ms. Migrate from
-  localStorage once; sync's union by id is unchanged; a new device pulls the full history from cursor 0.
-  `navigator.storage.persist()`; storage errors shown, not swallowed.
-- **B2. Log the shape** (#10): `shapes` beside `seen` in each round; `factKey` unchanged (weights).
+### Phase B — her data, one migration (before ~2026-11-01)
+- **B1. Rounds in IndexedDB, no cap, new round format** (#1, #2, #10, merges 1–2): per-task records with
+  seeds; `secs` always; `redo` targets; `whys` in rounds; migrate localStorage once; sync union unchanged;
+  `navigator.storage.persist()`; storage errors shown. Worker in the same deploy: `MAX_ROUND` checked
+  against a 20-task paper, `sessions.last_seen` + device label, `/password`.
+- If B1 slips toward November: ship the cap raise (400 → 2,000, one line each in `saveLocal`/`keepRounds`)
+  as a stopgap first.
 
-### Phase C — structure (each verified by A2's golden output)
-- **C1. Native ES modules, no bundler** (#7): a one-off script adds imports/exports (kinds mostly use
-  `rnd`, `tr`, `SLOT`, `KIND`, `t`, `LANG`); `ic`, `DAYS`, `weekdayUk`, `sqWalkSvg` move to `core.js`;
-  `W`, `factKey`, `LOCAL` move out of `app.js` (`questions.js:23` uses them); `LANG`, `PICK_FOR` get
-  setters. Checks: an adapter imports everything onto `globalThis` so the 24 `eval` sites keep working
-  (~20–40 lines to edit in `check/app.js`, `sample.js`); smoke exposes the names it reads. Module tags
-  stay in `index.html` (or `modulepreload`) so the service worker still caches them. 1.5–2.5 days.
-- **C2. Kind cleanup** (#8, #18): drop the 522 do-nothing guards and the 161 headers; `ask()`,
-  `answerLine(unit, size)`, `steps()` helpers; one chain/pairs draw; shared deletion lister for
-  cross/crossmin. ~1,600 lines fewer, zero output change.
-- **C3. `template()` for word problems**: the declarative form (gen, ask [bg, uk], unit, eq, hint, why
-  steps) for ~30–40 "text + small sum" kinds; new word problems use it, old ones move when touched.
-- **C4. Per-level text on the row** (#14): `eq`/`desc` in both languages on the level row; i18n.js keeps
-  interface text only.
+### Phase C — structure (each verified by A2)
+- **C1. Native ES modules** (#7): as planned (script adds imports/exports, adapter for the checks).
+- **C2. Kind cleanup** (#8, #18, merge 4): guards, headers, `ask()`/`answerLine()`/`steps()`, the
+  hard-coded Nunito and inline sizes, chain/pairs draw, cross/crossmin lister.
+- **C3. `template()` for word problems.**
+- **D1. Per-shape difficulty**: kinds declare `shapes: { name: d }`; check.js fails on a level mixing
+  shapes far from its `d` (#9). Split what it finds.
 
-### Phase D — difficulty per shape
-- **D1.** A kind declares `shapes: { name: d }`; check.js fails when a level mixes shapes more than one
-  `d` apart from the level's (#9) — the 156/196 class of bug becomes a failing check. Split what it finds.
-- **D2.** After ~2 weeks of B2 data: first-try rate per shape in the stats view; flag shapes well below
-  their level.
+### Phase R — the redesign, on the new structure
+- **R0. Spike**: Badges (the simplest screen, all data exists) in Preact + htm, vendored, behind a flag;
+  decide framework vs plain views; smoke drives it.
+- **R1. Look** (merge 6): tokens light/dark, system font + self-hosted Fredoka, solid surfaces + glass on
+  chrome only, an in-app "solid, no glass" setting, a theme switch, versioned SW cache (E4); progress
+  segments get a class that isn't `.seg` (taken by the settings control).
+- **R2. Navigation**: hash router (`#/today`, `#/levels`, `#/badges`, `#/parents`, `#/parents/more`,
+  `#/notebook`, `#/play`); tabs via `replaceState`, drill-downs push; tab bar < 900 px, sidebar ≥ 900 px;
+  launch → saved round if any, else Today; `location.reload()` keeps the hash; tabs hidden in a
+  competition; the keyboard guard becomes "is the play view active".
+- **R3. Play view** (merge 7): pill + segments + "N in a row"; iPad level list beside the task (respects
+  `midRound()`); hint after a miss with real numbers, the wrong answer kept, keypad hidden on phone;
+  `slipOf` for swapped digits and chain signs; competition: points, group, "Напред", quit, unanswered ≠
+  wrong, result table, previous best, redo padded from the paper (fixes the current `gen(S.level)` bug).
+- **R4. Levels page** (E1, E2, C4): one row renderer shared with the sidebar; groups keyed by `grp`;
+  collapsed groups; status as %; level text from its row.
+- **R5. Today**: start here, `dueList()` of every review due, week numbers, countdown + readiness % (from
+  paper dates; readiness = the focus's levels learned, weighted by how often papers ask them).
+- **R6. Notebook**: from per-task records — slips grouped, examples rebuilt from seeds, "Поправи N"
+  practises those very tasks, fixed → recheck in a week.
+- **R7. Round end, Badges, Parents (+ per-shape report, old D2), ParentsMore (grade moves here), Players
+  (devices, last sync), Welcome.**
+- **R8. Weekly card**: SVG → canvas → PNG, `navigator.share({files})` built before the tap (iOS user
+  activation), download fallback; a parent's action, name optional.
+- smoke.js is rewritten alongside R2–R7, screen by screen.
 
-### Phase E — shell, as kinds grow
-- **E1.** Groups keyed by `grp`, not position (#13). Small, do with C4.
-- **E2.** Picker: groups collapsed by default, one delegated click handler (#15).
-- **E3.** Competition as a mode object before Коледно mode is added (#16).
-- **E4.** Service worker: versioned cache, old caches deleted, stale-while-revalidate (#12).
-- **E5.** check.js level loop on worker threads; smoke split across tabs, timeout per level (#17).
+### Phase E — as kinds grow
+- **E5.** check.js level loop on worker threads; smoke split across tabs, per-level timeout (#17).
+
+### Decisions for you (defaults in bold)
+- Framework for the shell: **Preact + htm, if R0 confirms**; else plain view functions.
+- The mock drops mute, stats and read-aloud from the task screen: **keep read-aloud in the pill's menu,
+  mute in settings**.
+- The mock drops "Покажи решението" after a miss: **keep it, under the hint**.
+- Launch: **Today** (the mock) instead of straight into a round (today) — a saved round still resumes.
 
 ### Triggers, not tasks
-- **Deploy-time bundle** (esbuild/Rolldown in a GitHub Action, dev stays no-build): when a phone shows a
-  slow start or the kind count passes ~400.
-- **A framework for the shell**: when the shell grows a dashboard/teacher/printing screen, or tasks
-  become drag-and-tap.
-- **Cross-family difficulty (Math Garden-style Elo)**: at ~500 families, from B2's shape log — with a
-  privacy notice, parental consent and "delete my data" first.
+- Deploy-time bundle: when a phone shows a slow start or kinds pass ~400.
+- Cross-family difficulty (Elo): at ~500 families, from B1's per-task records — privacy notice, parental
+  consent and "delete my data" first.
 
 ### Dropped
-Moving hosting off GitHub Pages (changes the origin: re-install, re-sign-in); a sync engine (rounds are
-append-only and conflict-free); Vitest/Playwright/fast-check (check.js + smoke.js already cover more);
-a hand rewrite of the kinds; a framework for the kinds.
+Moving hosting off GitHub Pages; a sync engine; Vitest/Playwright/fast-check; a hand rewrite of the kinds;
+a framework for the kinds; SVG-filter "real" liquid glass (Safari can't, and it costs frames).
 
 ### Order
-A1 → A2 → A3, with B1 → B2 beside them (B1 before November) → C1 → C2 → C3 → C4 + E1 → D1 → D2 → E2–E5.
+A1 → A2 → A3 → B1 (before November; stopgap first if late) → C1 → C2 → D1 → R0 → R1 → R2 → R3 → R4 →
+R5 → R6 → R7 → R8 → C3 and E5 when they bite.
