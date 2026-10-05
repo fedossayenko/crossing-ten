@@ -1,0 +1,9 @@
+// A second home for the app, beside GitHub Pages: a static-only Cloudflare Worker on the personal account,
+// deployed from this machine (`npx wrangler@4 deploy`), so a GitHub Actions outage cannot hold a release up.
+// Free: static asset requests are free and unlimited. Only the app's own files go up (.assetsignore).
+{
+  "name": "crossing-ten",
+  "compatibility_date": "2026-09-01",
+  "assets": { "directory": ".deploy" },   // filled by deploy-cf.sh with the app's tracked files only
+  "workers_dev": true
+}
