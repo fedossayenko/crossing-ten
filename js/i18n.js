@@ -5,6 +5,7 @@
 const LANGS = { bg:'Български', uk:'Українська', en:'English' };
 const LANG_TAG = { bg:'bg-BG', uk:'uk-UA', en:'en-GB' };
 let LANG = LANGS[PLAYER.lang] ? PLAYER.lang : 'bg';
+function setLang(l){ LANG = l; }   // the welcome screen switches language as she picks one
 const pl = (n, forms) => forms[new Intl.PluralRules(LANG).select(n)] || forms.other;
 
 const TEXT = {

@@ -15,6 +15,11 @@ function raw(level){
     return raw(2);                        // an id that is not a level: fall back to the staple
   }
 }
+// The fact a question practises (its kind, or a sum's crossing step), and how much weight each fact has
+// now: a step she keeps missing comes up more often. app.js sets W from her rounds (setW).
+function factKey(q){ return q.kind ? 'w:' + q.kind : q.op + ':' + (q.a%10) + '-' + (q.b%10); }
+let W = { max:1, m:{} };
+function setW(w){ W = w; }
 // A question with the seed that drew it: seeded(q.seed, () => raw(level)) draws it again.
 function seededRaw(level){ const seed = 1 + Math.floor(Math.random() * 2147483646); return Object.assign(seeded(seed, () => raw(level)), { seed }); }
 // Weighted rejection sampling: a crossing step she keeps missing is likelier to come up.

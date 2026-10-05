@@ -1,4 +1,3 @@
-const $ = s => document.getElementById(s);
 const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
 
 /* ---------- local log ---------- */
@@ -6,6 +5,7 @@ const LS = roundsKey(PLAYER);
 let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false };
 // a competition under way (js/compete.js), and its clock
 let COMP = null, compTick = null;
+function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
@@ -26,7 +26,7 @@ const ARCHIVE_READY = Promise.race([
     const here = p.id === PLAYER.id ? LOCAL.rounds : lsRounds(p), known = new Set(rs.map(r => r.id));
     ARCHIVE.put(p.id, here.filter(r => !known.has(r.id)));          // rounds from before the archive
     const all = unionRounds(rs, here).filter(r => r.ts >= (p.resetAt || 0));
-    if(p.id === PLAYER.id){ LOCAL.rounds = unionRounds(all, LOCAL.rounds); W = weightsFrom(LOCAL.rounds); }
+    if(p.id === PLAYER.id){ LOCAL.rounds = unionRounds(all, LOCAL.rounds); setW(weightsFrom(LOCAL.rounds)); }
     else ARCH[p.id] = unionRounds(all, ARCH[p.id] || []);
   }))),
   new Promise(res => setTimeout(res, 2000))
@@ -105,13 +105,11 @@ $('stage').addEventListener('click', e => {
 });
 
 /* ---------- facts, weights, stats ---------- */
-function factKey(q){ return q.kind ? 'w:' + q.kind : q.op + ':' + (q.a%10) + '-' + (q.b%10); }
 function factLabel(key){
   const parts = key.split(':'), pair = parts[1].split('-').map(Number);
   const o = pair[0], bo = pair[1];
   return parts[0] === '-' ? (o < bo ? (o+10) : o) + ' − ' + bo : o + ' + ' + bo;
 }
-let W = { max:1, m:{} };
 function weightsFrom(rounds){
   const seen = {}, miss = {};
   rounds.slice(-140).forEach(r => {
@@ -551,7 +549,7 @@ function finish(){
   LOCAL.rounds.push(round);
   ARCHIVE.put(PLAYER.id, [round]);
   saveLocal();
-  W = weightsFrom(LOCAL.rounds);
+  setW(weightsFrom(LOCAL.rounds));
   syncSoon();
 
   // a level learned this very round
@@ -739,7 +737,7 @@ $('reset').onclick = () => {
   $('reset').classList.remove('armed'); $('reset').textContent = t('reset');
   LOCAL.rounds = []; saveLocal(); ARCHIVE.drop(PLAYER.id);
   PLAYER.resetAt = PLAYER.updated = Date.now(); savePlayers(); syncSoon();   // other devices drop her older rounds too
-  W = weightsFrom(LOCAL.rounds);
+  setW(weightsFrom(LOCAL.rounds));
   renderParent();
 };
 
@@ -1047,7 +1045,7 @@ function paintEdit(){
   document.querySelectorAll('.mchoice').forEach(b => b.onclick = () => { EDIT.mascot = b.dataset.m; paintEdit(); });
   document.querySelectorAll('#pLang input').forEach(r => r.onchange = () => {
     EDIT.lang = r.value;
-    if(WELCOME){ LANG = r.value; applyText(); paintWelcome(); paintEdit(); }   // the whole screen switches at once
+    if(WELCOME){ setLang(r.value); applyText(); paintWelcome(); paintEdit(); }   // the whole screen switches at once
   });
 }
 function paintWelcome(){

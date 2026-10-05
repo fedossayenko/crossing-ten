@@ -34,14 +34,13 @@ const compLeft = () => compTime(COMP.end - Date.now());
 function startComp(){
   const qs = compTasks(), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
-  COMP = { t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null };
   clearInterval(compTick);
-  compTick = setInterval(() => {
+  setComp({ t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
     if(!COMP){ clearInterval(compTick); return; }
     const c = $('compClock');
     if(c) c.textContent = compLeft();
     if(Date.now() >= COMP.end) compEnd();
-  }, 1000);
+  }, 1000));
   newRound(qs, true);
   $('levelName').textContent = t('compName');
   $('sub').textContent = t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle');   // a paper mixes levels from every paper of her grade

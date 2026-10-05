@@ -8,9 +8,6 @@ const js = scripts.map(read).join('\n');
 const head = `
 const RAND = globalThis.REAL_RANDOM || (globalThis.REAL_RANDOM = Math.random); let RANDS = 0; Math.random = () => (RANDS++, RAND());   // counts every random draw (wrapping the real one, not the last copy's wrapper)
 const localStorage = undefined;   // no browser storage here: players.js falls back to one player
-let W = {max:1, m:{}};
-const LOCAL = {mix:[1,2,4,5], plain:true};
-function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }
 `;
 const body = scripts.filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f)).map(read).join('\n');
 

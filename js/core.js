@@ -11,6 +11,7 @@ function seeded(seed, fn){
   Math.random = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   try { return fn(); } finally { Math.random = real; }
 }
+const $ = s => document.getElementById(s);   // the page's elements by id (only called in the browser)
 const KIND = {};                     // kinds/*.js register { draw, eq, why } here
 // Task text in the player's language: tr('Колко са?', 'Скільки їх?'). Bulgarian is the
 // original and the fallback; anything not yet translated simply stays Bulgarian. Both

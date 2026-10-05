@@ -4,8 +4,7 @@ const fs = require('fs');
 const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
 const scripts = [...read('index.html').matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1])
   .filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f));
-const head = `const localStorage = undefined; let W = {max:1, m:{}}; const LOCAL = {mix:[1,2,4,5], plain:true};
-function factKey(q){ return q.kind ? 'w:'+q.kind : q.op+':'+(q.a%10)+'-'+(q.b%10); }`;
+const head = `const localStorage = undefined;`;
 const Q = eval('(function(){' + head + scripts.map(read).join('\n') + '; return { raw, drawQ, answer, LEVELS }; })()');
 const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 if(!process.argv[2]){ console.log('usage: node sample.js <level ids, comma-separated> [how many]'); process.exit(1); }

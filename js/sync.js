@@ -27,7 +27,7 @@ function roundsOf(p){
 // archive gets the rounds that were added and loses the ones a reset cleared (mergeFromServer).
 function keepRounds(p, rounds){
   rounds = rounds.sort((a, b) => a.ts - b.ts);
-  if(p.id === PLAYER.id){ LOCAL.rounds = rounds; saveLocal(); W = weightsFrom(LOCAL.rounds); return; }
+  if(p.id === PLAYER.id){ LOCAL.rounds = rounds; saveLocal(); setW(weightsFrom(LOCAL.rounds)); return; }
   ARCH[p.id] = rounds;
   let kept = { muted:false, speak:true, n:10 };
   try { kept = JSON.parse(localStorage.getItem(roundsKey(p))) || kept; } catch(e){}
@@ -204,12 +204,12 @@ $('syncLeave').onclick = () => {
 function googleButton(el){
   if(!GOOGLE_ID || !SYNC_ON) return;
   const draw = () => {
-    google.accounts.id.initialize({ client_id: GOOGLE_ID, callback: r => googleIn(r.credential) });
+    window.google.accounts.id.initialize({ client_id: GOOGLE_ID, callback: r => googleIn(r.credential) });
     el.innerHTML = '';
-    google.accounts.id.renderButton(el, { theme:'outline', size:'large', shape:'pill', locale:LANG, text: IN() ? 'continue_with' : 'signin_with' });
+    window.google.accounts.id.renderButton(el, { theme:'outline', size:'large', shape:'pill', locale:LANG, text: IN() ? 'continue_with' : 'signin_with' });
     el.hidden = false;
   };
-  if(window.google && google.accounts) return draw();
+  if(window.google && window.google.accounts) return draw();
   if(document.getElementById('gsi')) return;
   const s = document.createElement('script');
   s.id = 'gsi'; s.src = 'https://accounts.google.com/gsi/client'; s.onload = draw;
