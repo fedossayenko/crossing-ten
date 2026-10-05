@@ -126,13 +126,17 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   other papers' groundwork may be harder than what it unlocks); check files and kind files found by name.
   Fixed on the way: Ukrainian hints of 146 and 150.
 
-### Phase B — her data, one migration (before ~2026-11-01)
-- **B1. Rounds in IndexedDB, no cap, new round format** (#1, #2, #10, merges 1–2): per-task records with
-  seeds; `secs` always; `redo` targets; `whys` in rounds; migrate localStorage once; sync union unchanged;
-  `navigator.storage.persist()`; storage errors shown. Worker in the same deploy: `MAX_ROUND` checked
-  against a 20-task paper, `sessions.last_seen` + device label, `/password`.
-- If B1 slips toward November: ship the cap raise (400 → 2,000, one line each in `saveLocal`/`keepRounds`)
-  as a stopgap first.
+### Phase B — her data — B1 DONE 2026-10-05 (e780814, live)
+- **B1.** Every round in IndexedDB (`js/archive.js`); localStorage keeps settings + the last 400 (small,
+  synchronous, a fallback where IndexedDB is missing); the archive merges in before the first question,
+  sync waits for it, resets and deletions clear it, old rounds move in on first launch. Each round records
+  `t: [level, shape, seed, wrote, 1/0/-1, answer]` per task and `secs` always; `seeded()` is in core.js and
+  every question is drawn from a seed. Persistent storage requested when installed. Verified: check.js,
+  smoke (450-round log survives a reload, a level learned in its oldest rounds stays learned, task
+  records redraw to their answers, a 20-task round < 4 KB), worker tests and the two-device sync smoke.
+  Corrections: no worker change was needed (rounds are opaque JSON; worst case ~2.1 KB of 4 KB) — device
+  names and /password move to R7 with the screens that show them; `whys` and redo targets move to R6
+  (a "why" is opened after the round is saved and synced, so it cannot ride in that round).
 
 ### Phase C — structure (each verified by A2)
 - **C1. Native ES modules** (#7): as planned (script adds imports/exports, adapter for the checks).
