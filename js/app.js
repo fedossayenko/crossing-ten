@@ -8,6 +8,39 @@ import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
 import { compAnswer, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
 import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
+/* ---------- screens and the address ----------
+   Each screen has an address (#/levels, #/badges …), so a reload and the back gesture of an installed app land
+   where they should. A screen's sheet shows when its address does; nothing else opens or closes them. go()
+   pushes a step (back returns from it) or, with replace, swaps the current one (a tab, a round starting). */
+const ROUTES = {
+  play: null,
+  levels: { sheet: 'picker', show: () => { buildPicker(); $('pickWarn').hidden = !midRound(); } },
+  badges: { sheet: 'stats', show: () => showStats() },
+  parents: { sheet: 'parent', show: () => renderParent() },
+  players: { sheet: 'players', show: () => paintPlayers() },
+};
+const routeOfAddress = () => { const r = (location.hash.match(/^#\/([\w-]+)/) || [])[1]; return r && r in ROUTES ? r : 'play'; };
+// The screen showing is kept here, not read back from the address: a browser may drop a history change
+// (Chrome does past a few hundred in seconds), and the screen must not follow it there.
+let ROUTE = routeOfAddress();
+export const routeNow = () => ROUTE;
+export function applyRoute(){
+  const r = ROUTES[ROUTE];
+  Object.values(ROUTES).forEach(x => { if(x && x !== r) $(x.sheet).hidden = true; });
+  if(r){ r.show(); $(r.sheet).hidden = false; }
+}
+// history.state.depth counts the steps the app pushed, so back() never leaves the app
+export function go(route, replace){
+  ROUTE = route;
+  const depth = (history.state && history.state.depth) || 0;
+  try { history[replace ? 'replaceState' : 'pushState']({ depth: replace ? depth : depth + 1 }, '', '#/' + route); } catch(e){}
+  applyRoute();
+}
+// back: to the screen this one was opened from, or to the round when the app was opened straight on it
+export function back(){ if(history.state && history.state.depth > 0) history.back(); else go('play', true); }
+addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
+const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
+
 export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
 
 /* ---------- local log ---------- */
@@ -301,7 +334,8 @@ export function newRound(qs, comp){
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
-  ['sheet', 'stats', 'picker', 'parent'].forEach(id => { $(id).hidden = true; });
+  $('sheet').hidden = true;
+  if(routeNow() !== 'play') go('play', true);
   $('confetti').innerHTML = '';
   show();
 }
@@ -703,7 +737,7 @@ $('csv').onclick = () => {
 };
 // R0, the framework trial (PLAN.md): with ?ui=next the badges screen is the Preact component in js/ui/badges.js
 const UI_NEXT = new URLSearchParams(location.search).get('ui') === 'next';
-function openStats(){
+function showStats(){
   renderStats();
   if(UI_NEXT) import('./ui/badges.js').then(m => {
     const box = $('statsNext') || Object.assign(document.createElement('div'), { id: 'statsNext' });
@@ -711,20 +745,12 @@ function openStats(){
     ['#nextBadge', '.gcard:has(#badges)', '#tiles'].forEach(s => { const el = $('stats').querySelector('.sheet-in > ' + s); if(el) el.hidden = true; });
     m.showBadges(box, LOCAL.rounds);
   });
-  $('stats').hidden = false;
 }
-// The grown-ups' page opens over whatever was showing and goes back to it.
-let parentFrom = null;
-function openParent(){
-  parentFrom = !$('players').hidden ? 'players' : null;
-  $('players').hidden = true;
-  renderParent(); $('parent').hidden = false;
-}
-$('statsBtn').onclick = openStats;
-$('toStats').onclick = openStats;
-$('closeStats').onclick = () => { $('stats').hidden = true; };
-$('toParent').onclick = () => { $('stats').hidden = true; openParent(); };
-$('closeParent').onclick = () => { $('parent').hidden = true; if(parentFrom === 'players') openPlayers(); };
+$('statsBtn').onclick = () => go('badges');
+$('toStats').onclick = () => go('badges');
+$('closeStats').onclick = back;
+$('toParent').onclick = () => go('parents');
+$('closeParent').onclick = back;   // to where it was opened from: badges, players or the round
 
 $('practise').onclick = () => {
   const keys = statsFrom(LOCAL.rounds).trouble.map(x => x.key);
@@ -1004,8 +1030,8 @@ const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
 // the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year
 const inPaper = (l, p) => paperSrc(p) === 'mbg-autumn' ? l.papers[0] === p && !l.papers.some(q => /^mbg-autumn-\d{4}-/.test(q)) : l.papers.includes(p);
 const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
-$('levelPill').onclick = () => { buildPicker(); $('pickWarn').hidden = !midRound(); $('picker').hidden = false; };
-$('closePick').onclick = () => { $('picker').hidden = true; };
+$('levelPill').onclick = () => go('levels');
+$('closePick').onclick = back;
 paintPill();
 
 /* ---------- players ----------
@@ -1016,7 +1042,7 @@ const playerName = p => p.name || t('playerN', PLAYERS.list.indexOf(p) + 1);
 const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
 const FLAME = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 .5-3-1-5 1-9.5z"/></svg>';
 export function chose(){ try { sessionStorage.setItem('crossingten.chosen', '1'); } catch(e){} }
-function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); location.reload(); }
+function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); history.replaceState(null, '', location.pathname + location.search); location.reload(); }   // she starts on the round, not on the screen she switched from
 // A player's saved log and settings (the current player's are LOCAL).
 function storeOf(p){
   if(p.id === PLAYER.id) return LOCAL;
@@ -1025,7 +1051,7 @@ function storeOf(p){
   s.rounds = unionRounds(ARCH[p.id] || [], s.rounds);
   return s;
 }
-function openPlayers(){
+function paintPlayers(){
   $('playerList').innerHTML = PLAYERS.list.map(p => {
     const rounds = storeOf(p).rounds, m = mastery(rounds), st = statsFrom(rounds);
     const pill = !rounds.length ? '<span class="pill cool">' + t('newPl') + '</span>'
@@ -1040,13 +1066,15 @@ function openPlayers(){
     '<button class="padd" id="pAdd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>' +
     t('addPlayer') + '</button>';
   document.querySelectorAll('.pchoose').forEach(b => b.onclick = () => {
-    if(b.dataset.id === PLAYER.id){ chose(); $('players').hidden = true; } else switchTo(b.dataset.id);
+    if(b.dataset.id === PLAYER.id){ chose(); back(); } else switchTo(b.dataset.id);
   });
   document.querySelectorAll('.pedit').forEach(b => b.onclick = () => openEdit(PLAYERS.list.find(p => p.id === b.dataset.edit)));
   $('pAdd').onclick = () => openEdit(null);
   if(typeof paintSync === 'function') paintSync();
-  $('playerEdit').hidden = true; $('players').hidden = false;
+  $('playerEdit').hidden = true;
 }
+// the players' screen, or drawn again when it is already showing (after an edit)
+function openPlayers(){ if(routeNow() === 'players') applyRoute(); else go('players'); }
 let EDIT = null, delArmed = null;
 // welcome: the very first launch on a device - the same form, asking her name, mascot and
 // language before anything else, with a way to join a family that already plays elsewhere.
@@ -1121,8 +1149,8 @@ $('pDelete').onclick = () => {
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
 $('who').onclick = openPlayers;
-$('parentBtn').onclick = openParent;
-$('closePlayers').onclick = () => { chose(); $('players').hidden = true; };
+$('parentBtn').onclick = () => go('parents');
+$('closePlayers').onclick = () => { chose(); back(); };
 
 /* ---------- controls ---------- */
 $('pad').addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
@@ -1175,6 +1203,8 @@ ARCHIVE_READY.then(() => {
     } catch(e){}
     newRound();
   })();
+  // reloaded on a screen (the round under it ready): back to that screen
+  if(START_ROUTE !== 'play') go(START_ROUTE, true);
   // Only the very first launch on a device asks who she is; every launch after that goes
   // straight to the exercise (the mascot switches player).
   if(FIRST) openEdit(PLAYER, true);

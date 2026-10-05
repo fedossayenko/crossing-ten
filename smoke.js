@@ -266,6 +266,20 @@ const server = http.createServer((req, res) => {
     expect(ln.size && ln.size === ln.want, 'the answer line is not sized by its class: ' + JSON.stringify(ln));
     await run(`localStorage.removeItem(RS); newRound(); 1`);
   }
+  // Screens have addresses: back returns to where a screen was opened from, a reload comes back to the screen,
+  // and back from a screen the app was opened on goes to the round, never out of the app
+  {
+    const nav = await page(`(() => { $('statsBtn').click(); const a = !$('stats').hidden && location.hash; $('toParent').click(); const b = !$('parent').hidden && location.hash;
+      return { a, b }; })()`);
+    await run(`$('closeParent').click(); 1`); await new Promise(r => setTimeout(r, 150));
+    const nav2 = await page(`({ stats: !$('stats').hidden, parent: !$('parent').hidden, hash: location.hash })`);
+    await cmd('Page.reload'); await settle();
+    const nav3 = await page(`({ stats: !$('stats').hidden, hash: location.hash })`);
+    await run(`$('closeStats').click(); 1`); await new Promise(r => setTimeout(r, 150));
+    const nav4 = await page(`({ stats: !$('stats').hidden, hash: location.hash, stage: !!$('stage').innerHTML })`);
+    expect(nav.a === '#/badges' && nav.b === '#/parents' && nav2.stats && !nav2.parent && nav2.hash === '#/badges' && nav3.stats && nav3.hash === '#/badges' &&
+      !nav4.stats && nav4.hash === '#/play' && nav4.stage, 'screen addresses went wrong: ' + JSON.stringify({ nav, nav2, nav3, nav4 }));
+  }
   // The look on this device: dark and solid chosen in the grown-ups' settings take effect at once, and come
   // back after a reload before anything is drawn (index.html's data-look script)
   {
