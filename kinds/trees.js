@@ -1,6 +1,4 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { KIND, NAMES, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
@@ -40,25 +38,23 @@ function treesUkAsk(q){
 }
 
 function drawTrees(q){
-  if(q.kind === 'trees'){
-    const ask = LANG === 'uk' ? treesUkAsk(q) : q.shape === 3
-      ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
-        q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
-      : q.shape === 0
-      ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
-        q.d + '</span> ' + (q.d === 1 ? 'метър' : 'метра') + ' едно от друго. Колко метра е дълга редицата?'
-      : q.shape === 1
-      ? q.who + ' ' + q.did + ' дръвчета в една редица, дълга <span class="num">' + q.len +
-        '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
-      : q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в редица, дълга <span class="num">' + q.len +
-        '</span> метра, на равни разстояния. Колко метра е разстоянието между две съседни дръвчета?';
-    return '<div class="ask">' + ask + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT +
-      (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';
-  }
+  const ask = LANG === 'uk' ? treesUkAsk(q) : q.shape === 3
+    ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
+      q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
+    : q.shape === 0
+    ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
+      q.d + '</span> ' + (q.d === 1 ? 'метър' : 'метра') + ' едно от друго. Колко метра е дълга редицата?'
+    : q.shape === 1
+    ? q.who + ' ' + q.did + ' дръвчета в една редица, дълга <span class="num">' + q.len +
+      '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
+    : q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в редица, дълга <span class="num">' + q.len +
+      '</span> метра, на равни разстояния. Колко метра е разстоянието между две съседни дръвчета?';
+  return '<div class="ask">' + ask + '</div>' +
+    '<div class="line lg">' + SLOT +
+    (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';
 }
 function eqTrees(q){
-  if(q.kind === 'trees') return tr(q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans,
+  return tr(q.n + ' дръвчета, ' + q.d + ' м, редица ' + q.len + ' м → ' + q.ans,
     treesN(q.n) + ', ' + q.d + ' м, ряд ' + q.len + ' м → ' + q.ans);
 }
 // The picture: the trees go in first, then an arc over every gap, numbered — so the gaps come out one
@@ -87,12 +83,10 @@ function treesSvg(q, full){
   return svg(104, g + svgText(123, 40, foot, 15, 'var(--ink)', popAt(t0 + at.length + 1)));
 }
 function whyTrees(q, full){
-  if(q.kind === 'trees'){
-    if(!full) return (q.shape === 3 ? tr('Разстоянията са с едно по-малко от дръвчетата — и мерките трябва да съвпадат.',
-                                        'Проміжків на один менше, ніж деревець, — і одиниці вимірювання мають збігатися.')
-                                   : tr('Разстоянията са с едно по-малко от дръвчетата.', 'Проміжків на один менше, ніж деревець.')) + treesSvg(q, false);
-    return whyTreesText(q) + treesSvg(q, true);
-  }
+  if(!full) return (q.shape === 3 ? tr('Разстоянията са с едно по-малко от дръвчетата — и мерките трябва да съвпадат.',
+                                      'Проміжків на один менше, ніж деревець, — і одиниці вимірювання мають збігатися.')
+                                 : tr('Разстоянията са с едно по-малко от дръвчетата.', 'Проміжків на один менше, ніж деревець.')) + treesSvg(q, false);
+  return whyTreesText(q) + treesSvg(q, true);
 }
 function whyTreesText(q){
   const gaps = q.n - 1;

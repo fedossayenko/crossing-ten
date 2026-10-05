@@ -1,6 +1,4 @@
 // Question kind 'grow': level 14 Нов сбор — Every addend changes by the same amount.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 7: every addend moves by the same amount, so the sum moves that many times.
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
@@ -36,31 +34,29 @@ export function genGrow(){
 
 const growUkGen = {2:'двох', 3:'трьох', 4:'чотирьох'};
 function drawGrow(q){
-  if(q.kind === 'grow' && q.shape === 'times'){
+  if(q.shape === 'times'){
     return '<div class="ask">' + tr('Всяко от <b>' + (q.odd ? 'нечетните' : 'четните') + '</b> събираеми в сбора <span class="num">' + q.xs.join(' + ') + '</span> е ' + (q.down ? 'намалено' : 'увеличено') + ' <span class="num">' + q.k + '</span> пъти. Пресметнете получения нов сбор.',
       'Кожен <b>' + (q.odd ? 'непарний' : 'парний') + '</b> доданок у сумі <span class="num">' + q.xs.join(' + ') + '</span> ' + (q.down ? 'зменшили' : 'збільшили') + ' в <span class="num">' + q.k + '</span> рази. Обчисліть нову суму.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'grow' && q.shape === 'diff'){
+  if(q.shape === 'diff'){
     const n = v => '<span class="num">' + v + '</span>';
     return '<div class="ask">' + tr('В разликата ' + n(q.M + ' − ' + q.S) + ' умаляемото е ' + (q.mUp ? 'увеличено' : 'намалено') + ' с ' + n(q.a) + ', а умалителят е ' + (q.sUp ? 'увеличен' : 'намален') + ' с ' + n(q.b) + '. Колко е <b>новата разлика</b>?',
       'У різниці ' + n(q.M + ' − ' + q.S) + ' зменшуване ' + (q.mUp ? 'збільшили' : 'зменшили') + ' на ' + n(q.a) + ', а від’ємник ' + (q.sUp ? 'збільшили' : 'зменшили') + ' на ' + n(q.b) + '. Якою стала <b>нова різниця</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'grow'){
-    return '<div class="ask">' + tr('Сборът на ' + BGNUM[q.k] + ' числа е <span class="num">' + q.base +
-      '</span>. Всяко от събираемите ' + (q.up ? 'увеличаваме' : 'намаляваме') +
-      ' с <span class="num">' + q.d + '</span>. Колко е новият сбор?',
-      'Сума ' + growUkGen[q.k] + ' чисел дорівнює <span class="num">' + q.base +
-      '</span>. Кожен доданок ' + (q.up ? 'збільшуємо' : 'зменшуємо') +
-      ' на <span class="num">' + q.d + '</span>. Якою буде нова сума?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Сборът на ' + BGNUM[q.k] + ' числа е <span class="num">' + q.base +
+    '</span>. Всяко от събираемите ' + (q.up ? 'увеличаваме' : 'намаляваме') +
+    ' с <span class="num">' + q.d + '</span>. Колко е новият сбор?',
+    'Сума ' + growUkGen[q.k] + ' чисел дорівнює <span class="num">' + q.base +
+    '</span>. Кожен доданок ' + (q.up ? 'збільшуємо' : 'зменшуємо') +
+    ' на <span class="num">' + q.d + '</span>. Якою буде нова сума?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqGrow(q){
-  if(q.kind === 'grow' && q.shape === 'times') return q.ys.join(' + ') + ' = ' + q.ans;
-  if(q.kind === 'grow' && q.shape === 'diff') return '(' + q.M + (q.mUp ? ' + ' : ' − ') + q.a + ') − (' + q.S + (q.sUp ? ' + ' : ' − ') + q.b + ') = ' + q.M2 + ' − ' + q.S2 + ' = ' + q.ans;
-  if(q.kind === 'grow') return tr(BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ',
+  if(q.shape === 'times') return q.ys.join(' + ') + ' = ' + q.ans;
+  if(q.shape === 'diff') return '(' + q.M + (q.mUp ? ' + ' : ' − ') + q.a + ') − (' + q.S + (q.sUp ? ' + ' : ' − ') + q.b + ') = ' + q.M2 + ' − ' + q.S2 + ' = ' + q.ans;
+  return tr(BGNUM[q.k] + ' числа, сбор ' + q.base + ', всяко ',
     UKNUM[q.k] + ' числа, сума ' + q.base + ', кожне ') + (q.up ? '+' : '−') + q.d + ' → ' + q.ans;
 }
 // The pictures. Every addend changes, so the change is there as many times as there are addends: the
@@ -98,19 +94,17 @@ function growDiffSvg(q, full){
   return '<svg viewBox="0 0 240 ' + (full ? 112 : 84) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('разликата като ивица', 'різниця як смужка') + '">' + g + '</svg>';
 }
 function whyGrow(q, full){
-  if(q.kind === 'grow' && q.shape === 'times'){
+  if(q.shape === 'times'){
     if(!full) return tr('Кои от събираемите са ' + (q.odd ? 'нечетни' : 'четни') + '? Само те се променят — «пъти» значи ' + (q.down ? 'делим' : 'умножаваме') + '.', 'Які доданки ' + (q.odd ? 'непарні' : 'парні') + '? Змінюються лише вони — «у стільки разів» означає ' + (q.down ? 'ділимо' : 'множимо') + '.');
     return q.xs.map((v, i) => v === q.ys[i] ? String(v) : v + (q.down ? ' : ' : ' · ') + q.k + ' = <b>' + q.ys[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.ys.join(' + ') + ' = ' + q.ans;
   }
-  if(q.kind === 'grow' && q.shape === 'diff'){
+  if(q.shape === 'diff'){
     if(!full) return tr('Намери новото умаляемо и новия умалител, после ги извади.', 'Знайди нове зменшуване й новий від’ємник, потім відніми.') + growDiffSvg(q, false);
     return tr('умаляемото: ', 'зменшуване: ') + q.M + (q.mUp ? ' + ' : ' − ') + q.a + ' = <b>' + q.M2 + '</b>, ' + tr('умалителят: ', 'від’ємник: ') + q.S + (q.sUp ? ' + ' : ' − ') + q.b + ' = <b>' + q.S2 + '</b> &nbsp;→&nbsp; ' + q.M2 + ' − ' + q.S2 + ' = ' + q.ans + growDiffSvg(q, true);
   }
-  if(q.kind === 'grow'){
-    if(!full) return tr('Всяко число се променя — колко пъти общо?', 'Змінюється кожне число — скільки разів загалом?') + growSvg(q, false);
-    const step = Array(q.k).fill(q.d).join(' + ');
-    return step + ' = <b>' + (q.k*q.d) + '</b> ' + (q.up ? tr('повече', 'більше') : tr('по-малко', 'менше')) +
-      ' &nbsp;→&nbsp; ' + q.base + ' ' + (q.up ? '+' : '−') + ' ' + (q.k*q.d) + ' = ' + q.ans + growSvg(q, true);
-  }
+  if(!full) return tr('Всяко число се променя — колко пъти общо?', 'Змінюється кожне число — скільки разів загалом?') + growSvg(q, false);
+  const step = Array(q.k).fill(q.d).join(' + ');
+  return step + ' = <b>' + (q.k*q.d) + '</b> ' + (q.up ? tr('повече', 'більше') : tr('по-малко', 'менше')) +
+    ' &nbsp;→&nbsp; ' + q.base + ' ' + (q.up ? '+' : '−') + ' ' + (q.k*q.d) + ' = ' + q.ans + growSvg(q, true);
 }
 KIND.grow = { draw:drawGrow, eq:eqGrow, why:whyGrow };

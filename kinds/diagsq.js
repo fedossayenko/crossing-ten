@@ -1,6 +1,4 @@
 // Question kind 'diagsq': level 168 Квадратчетата по диагонала — Shaded squares corner to corner give the big square's side.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 11: 4 equal shaded squares, each with a side of 1 см, run
 // corner to corner across a big square. Each takes one centimetre of the bottom side, so the side
@@ -27,27 +25,21 @@ function diagSqSvg(q, full){
     tr('квадрат със защриховани квадратчета по диагонала', 'квадрат із заштрихованими квадратиками по діагоналі') + '">' + g + '</svg>';
 }
 function drawDiagSq(q){
-  if(q.kind === 'diagsq'){
-    return '<div class="ask">' + tr('Защриховани са <span class="num">' + q.n + '</span> еднакви квадратчета, всяко със страна <span class="num">' + q.s + '</span> см. Колко сантиметра е <b>' + (q.side ? 'страната' : 'обиколката') + '</b> на големия квадрат?',
-      'Заштриховано <span class="num">' + ukN(q.n, 'однаковий квадратик', 'однакові квадратики', 'однакових квадратиків').replace(' ', '</span> ') + ', кожен зі стороною <span class="num">' + q.s + '</span> см. Скільки сантиметрів становить <b>' + (q.side ? 'сторона' : 'периметр') + '</b> великого квадрата?') + '</div>' +
-      '<div class="fig">' + diagSqSvg(q, false) + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
-  }
+  return '<div class="ask">' + tr('Защриховани са <span class="num">' + q.n + '</span> еднакви квадратчета, всяко със страна <span class="num">' + q.s + '</span> см. Колко сантиметра е <b>' + (q.side ? 'страната' : 'обиколката') + '</b> на големия квадрат?',
+    'Заштриховано <span class="num">' + ukN(q.n, 'однаковий квадратик', 'однакові квадратики', 'однакових квадратиків').replace(' ', '</span> ') + ', кожен зі стороною <span class="num">' + q.s + '</span> см. Скільки сантиметрів становить <b>' + (q.side ? 'сторона' : 'периметр') + '</b> великого квадрата?') + '</div>' +
+    '<div class="fig">' + diagSqSvg(q, false) + '</div>' +
+    '<div class="line lg">' + SLOT + CM + '</div>';
 }
 function eqDiagSq(q){
-  if(q.kind === 'diagsq'){
-    const side = q.n*q.s;
-    return tr('страна ', 'сторона ') + (q.s === 1 ? '' : Array(q.n).fill(q.s).join(' + ') + ' = ') + side + (q.side ? '' : ' → ' + [side, side, side, side].join(' + ') + ' = ' + q.ans);
-  }
+  const side = q.n*q.s;
+  return tr('страна ', 'сторона ') + (q.s === 1 ? '' : Array(q.n).fill(q.s).join(' + ') + ' = ') + side + (q.side ? '' : ' → ' + [side, side, side, side].join(' + ') + ' = ' + q.ans);
 }
 function whyDiagSq(q, full){
-  if(q.kind === 'diagsq'){
-    if(!full) return tr('Квадратчетата стигат от единия ъгъл до другия. Колко от тях се нареждат по една страна на големия квадрат?',
-      'Квадратики тягнуться від одного кута до іншого. Скільки їх уміщується вздовж однієї сторони великого квадрата?');
-    const side = q.n*q.s, run = Array(q.n).fill(q.s).join(' + ');
-    return tr('по долната страна се нареждат ' + q.n + ' квадратчета', 'вздовж нижньої сторони вміщується ' + ukN(q.n, 'квадратик', 'квадратики', 'квадратиків')) +
-      ' &nbsp;→&nbsp; ' + tr('страната е ', 'сторона — ') + (q.s === 1 ? '' : run + ' = ') + '<b>' + side + '</b> см' + diagSqSvg(q, true) +
-      (q.side ? tr('страната е ', 'сторона — ') + side : tr('обиколката: ', 'периметр: ') + side + ' + ' + side + ' + ' + side + ' + ' + side + ' = ' + q.ans);
-  }
+  if(!full) return tr('Квадратчетата стигат от единия ъгъл до другия. Колко от тях се нареждат по една страна на големия квадрат?',
+    'Квадратики тягнуться від одного кута до іншого. Скільки їх уміщується вздовж однієї сторони великого квадрата?');
+  const side = q.n*q.s, run = Array(q.n).fill(q.s).join(' + ');
+  return tr('по долната страна се нареждат ' + q.n + ' квадратчета', 'вздовж нижньої сторони вміщується ' + ukN(q.n, 'квадратик', 'квадратики', 'квадратиків')) +
+    ' &nbsp;→&nbsp; ' + tr('страната е ', 'сторона — ') + (q.s === 1 ? '' : run + ' = ') + '<b>' + side + '</b> см' + diagSqSvg(q, true) +
+    (q.side ? tr('страната е ', 'сторона — ') + side : tr('обиколката: ', 'периметр: ') + side + ' + ' + side + ' + ' + side + ' + ' + side + ' = ' + q.ans);
 }
 KIND.diagsq = { draw:drawDiagSq, eq:eqDiagSq, why:whyDiagSq };

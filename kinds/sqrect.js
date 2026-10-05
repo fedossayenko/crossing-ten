@@ -1,6 +1,4 @@
 // Question kind 'sqrect': level 153 Квадрат и правоъгълник — Equal perimeters, and a rectangle pinned down by its sides.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2022, задача 8: a square and a rectangle have equal perimeters; the rectangle's sides are one-digit
 // numbers bigger than 3, and one side is the sum of two other sides. The sides go a, b, a, b, and a = a + b
@@ -17,24 +15,20 @@ export function genSqRect(){
   }
 }
 function drawSqRect(q){
-  if(q.kind === 'sqrect'){
-    const sides = q.one ? tr('едноцифрени числа, по-големи от <span class="num">' + q.lo + '</span>', 'одноцифрові числа, більші за <span class="num">' + q.lo + '</span>')
-      : tr('числа, по-големи от <span class="num">' + q.lo + '</span> и не по-големи от <span class="num">' + q.hi + '</span>', 'числа, більші за <span class="num">' + q.lo + '</span> і не більші за <span class="num">' + q.hi + '</span>');
-    return '<div class="ask">' + tr('Квадрат и правоъгълник имат равни обиколки. Дължините на страните на правоъгълника са ' + sides + '. Дължината на едната му страна е равна на сбора от дължините на две от другите страни. ' +
-      (q.asksP ? 'Колко е обиколката на квадрата?' : 'На колко е равна страната на квадрата?') + ' Всички измервания са в сантиметри.',
-      'Квадрат і прямокутник мають рівні периметри. Довжини сторін прямокутника — ' + sides + '. Довжина однієї його сторони дорівнює сумі довжин двох інших сторін. ' +
-      (q.asksP ? 'Чому дорівнює периметр квадрата?' : 'Чому дорівнює сторона квадрата?') + ' Усі вимірювання — в сантиметрах.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + CM + '</div>';
-  }
+  const sides = q.one ? tr('едноцифрени числа, по-големи от <span class="num">' + q.lo + '</span>', 'одноцифрові числа, більші за <span class="num">' + q.lo + '</span>')
+    : tr('числа, по-големи от <span class="num">' + q.lo + '</span> и не по-големи от <span class="num">' + q.hi + '</span>', 'числа, більші за <span class="num">' + q.lo + '</span> і не більші за <span class="num">' + q.hi + '</span>');
+  return '<div class="ask">' + tr('Квадрат и правоъгълник имат равни обиколки. Дължините на страните на правоъгълника са ' + sides + '. Дължината на едната му страна е равна на сбора от дължините на две от другите страни. ' +
+    (q.asksP ? 'Колко е обиколката на квадрата?' : 'На колко е равна страната на квадрата?') + ' Всички измервания са в сантиметри.',
+    'Квадрат і прямокутник мають рівні периметри. Довжини сторін прямокутника — ' + sides + '. Довжина однієї його сторони дорівнює сумі довжин двох інших сторін. ' +
+    (q.asksP ? 'Чому дорівнює периметр квадрата?' : 'Чому дорівнює сторона квадрата?') + ' Усі вимірювання — в сантиметрах.') + '</div>' +
+    '<div class="line xl">' + SLOT + CM + '</div>';
 }
 function eqSqRect(q){
-  if(q.kind === 'sqrect') return q.a + ' = ' + q.b + ' + ' + q.b + ', P = ' + q.P + (q.asksP ? '' : ', ' + q.P + ' : 4 = ' + q.ans);
+  return q.a + ' = ' + q.b + ' + ' + q.b + ', P = ' + q.P + (q.asksP ? '' : ', ' + q.P + ' : 4 = ' + q.ans);
 }
 function whySqRect(q, full){
-  if(q.kind === 'sqrect'){
-    if(!full) return tr('Страните на правоъгълника са a, b, a, b. Коя страна може да е сбор от две други?', 'Сторони прямокутника — a, b, a, b. Яка сторона може дорівнювати сумі двох інших?');
-    return tr('само голямата = малката + малката', 'лише більша = менша + менша') + ' &nbsp;→&nbsp; ' + tr('малката е ', 'менша — ') + q.b + ' (' + (q.b + 1) + ' + ' + (q.b + 1) + ' = ' + (2*q.b + 2) + tr(' е твърде много', ' — забагато') + '), ' +
-      tr('голямата ', 'більша ') + q.a + ' &nbsp;→&nbsp; P = ' + q.a + ' + ' + q.b + ' + ' + q.a + ' + ' + q.b + ' = ' + q.P + (q.asksP ? '' : ' &nbsp;→&nbsp; ' + q.P + ' : 4 = ' + q.ans);
-  }
+  if(!full) return tr('Страните на правоъгълника са a, b, a, b. Коя страна може да е сбор от две други?', 'Сторони прямокутника — a, b, a, b. Яка сторона може дорівнювати сумі двох інших?');
+  return tr('само голямата = малката + малката', 'лише більша = менша + менша') + ' &nbsp;→&nbsp; ' + tr('малката е ', 'менша — ') + q.b + ' (' + (q.b + 1) + ' + ' + (q.b + 1) + ' = ' + (2*q.b + 2) + tr(' е твърде много', ' — забагато') + '), ' +
+    tr('голямата ', 'більша ') + q.a + ' &nbsp;→&nbsp; P = ' + q.a + ' + ' + q.b + ' + ' + q.a + ' + ' + q.b + ' = ' + q.P + (q.asksP ? '' : ' &nbsp;→&nbsp; ' + q.P + ' : 4 = ' + q.ans);
 }
 KIND.sqrect = { draw:drawSqRect, eq:eqSqRect, why:whySqRect };

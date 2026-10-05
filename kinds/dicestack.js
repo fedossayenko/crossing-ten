@@ -1,6 +1,4 @@
 // Question kind 'dicestack': level 183 Невидимите точки — Two dice stacked: the dots that cannot be seen.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2022, 1 клас, задача 16: two dice one on the other; the top one shows 1 on top, 5 and 4 at the
 // sides, the bottom one 6 and 3. A die has 1 + 2 + 3 + 4 + 5 + 6 = 21 dots, two have 42; 19 can be seen,
@@ -30,22 +28,18 @@ function diceStackSvg(q){
     top + side(q.top[1], 0, true) + side(q.top[2], 0, false) + side(q.bot[0], s, true) + side(q.bot[1], s, false) + '</svg></div>';
 }
 function drawDiceStack(q){
-  if(q.kind === 'dicestack'){
-    return '<div class="ask">' + tr('Колко е броят на точките, които <b>не се виждат</b>?', 'Скільки всього точок, яких <b>не видно</b>?') + '</div>' + diceStackSvg(q) +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко е броят на точките, които <b>не се виждат</b>?', 'Скільки всього точок, яких <b>не видно</b>?') + '</div>' + diceStackSvg(q) +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 const diceStackSeen = q => q.top.concat(q.bot);
 function eqDiceStack(q){
-  if(q.kind === 'dicestack') return '42 − (' + diceStackSeen(q).join(' + ') + ') = ' + q.ans;
+  return '42 − (' + diceStackSeen(q).join(' + ') + ') = ' + q.ans;
 }
 function whyDiceStack(q, full){
-  if(q.kind === 'dicestack'){
-    if(!full) return tr('Колко точки има на всички страни на един зар заедно? Махни от двата зара тези, които се виждат.',
-      'Скільки точок на всіх гранях одного кубика разом? Відніми від двох кубиків ті, що видно.');
-    const seen = diceStackSeen(q).reduce((x, y) => x + y, 0);
-    return tr('един зар: ', 'один кубик: ') + '1 + 2 + 3 + 4 + 5 + 6 = <b>21</b> &nbsp;→&nbsp; ' + tr('два зара: ', 'два кубики: ') + '21 + 21 = <b>42</b> &nbsp;→&nbsp; ' +
-      tr('виждат се ', 'видно ') + diceStackSeen(q).join(' + ') + ' = <b>' + seen + '</b> &nbsp;→&nbsp; 42 − ' + seen + ' = ' + q.ans;
-  }
+  if(!full) return tr('Колко точки има на всички страни на един зар заедно? Махни от двата зара тези, които се виждат.',
+    'Скільки точок на всіх гранях одного кубика разом? Відніми від двох кубиків ті, що видно.');
+  const seen = diceStackSeen(q).reduce((x, y) => x + y, 0);
+  return tr('един зар: ', 'один кубик: ') + '1 + 2 + 3 + 4 + 5 + 6 = <b>21</b> &nbsp;→&nbsp; ' + tr('два зара: ', 'два кубики: ') + '21 + 21 = <b>42</b> &nbsp;→&nbsp; ' +
+    tr('виждат се ', 'видно ') + diceStackSeen(q).join(' + ') + ' = <b>' + seen + '</b> &nbsp;→&nbsp; 42 − ' + seen + ' = ' + q.ans;
 }
 KIND.dicestack = { draw:drawDiceStack, eq:eqDiceStack, why:whyDiceStack };

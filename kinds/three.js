@@ -1,6 +1,4 @@
 // Question kind 'three': level 41 Три точки — Three points on a line — two answers.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 12: with three points on a line the longest distance is the other two added,
 // so the third measurement is either the difference or the sum.
@@ -13,22 +11,20 @@ export function genThree(){
 }
 
 function drawThree(q){
-  if(q.kind === 'three'){
-    const nm = NAMES.find(x => x[0] === q.who), he = /в$/.test(nm[3]);
-    return '<div class="ask">' + tr('Върху права са отбелязани <b>3 точки</b>. ' + q.who +
-      ' премерил разстоянията между всеки две от точките и записал две от тях: <span class="num">' +
-      q.a + '</span> см и <span class="num">' + q.b +
-      '</span> см. Колко сантиметра е възможно да е третото разстояние?',
-      'На прямій позначено <b>3 точки</b>. ' + nm[2] + (he ? ' виміряв' : ' виміряла') +
-      ' відстані між кожними двома точками і ' + (he ? 'записав' : 'записала') + ' дві з них: <span class="num">' +
-      q.a + '</span> см і <span class="num">' + q.b +
-      '</span> см. Скільки сантиметрів може становити третя відстань?') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
-      ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span>' + CM + '</div>';
-  }
+  const nm = NAMES.find(x => x[0] === q.who), he = /в$/.test(nm[3]);
+  return '<div class="ask">' + tr('Върху права са отбелязани <b>3 точки</b>. ' + q.who +
+    ' премерил разстоянията между всеки две от точките и записал две от тях: <span class="num">' +
+    q.a + '</span> см и <span class="num">' + q.b +
+    '</span> см. Колко сантиметра е възможно да е третото разстояние?',
+    'На прямій позначено <b>3 точки</b>. ' + nm[2] + (he ? ' виміряв' : ' виміряла') +
+    ' відстані між кожними двома точками і ' + (he ? 'записав' : 'записала') + ' дві з них: <span class="num">' +
+    q.a + '</span> см і <span class="num">' + q.b +
+    '</span> см. Скільки сантиметрів може становити третя відстань?') + '</div>' +
+    '<div class="line md">' + SLOT +
+    ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span>' + CM + '</div>';
 }
 function eqThree(q){
-  if(q.kind === 'three') return q.a + tr(' и ', ' і ') + q.b + ' → ' + (q.b - q.a) + tr(' или ', ' або ') + (q.a + q.b);
+  return q.a + tr(' и ', ' і ') + q.b + ' → ' + (q.b - q.a) + tr(' или ', ' або ') + (q.a + q.b);
 }
 // Three points on a line make two short distances and a long one that is both of them together. The
 // solution draws both ways the given two can sit: the longer one is the long distance, or the third is.
@@ -41,11 +37,9 @@ function threeSvg(q, full){
       {from:0, to:q.a + q.b, row:1, label:n(q.a + q.b), col:'var(--good)', step:10}], 0, q.a + q.b, tr('втората възможност', 'друга можливість'));
 }
 function whyThree(q, full){
-  if(q.kind === 'three'){
-    if(!full) return tr('При три точки върху права най-голямото разстояние е сборът на другите две.',
-      'Коли три точки лежать на прямій, найбільша відстань дорівнює сумі двох інших.') + threeSvg(q, false);
-    return tr('ако ', 'якщо ') + q.b + tr(' е най-голямото', ' — найбільша') + ' &nbsp;→&nbsp; ' + q.b + ' − ' + q.a + ' = <b>' + (q.b - q.a) +
-      '</b>; &nbsp;' + tr('ако третото е най-голямото', 'якщо третя — найбільша') + ' &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b>' + threeSvg(q, true);
-  }
+  if(!full) return tr('При три точки върху права най-голямото разстояние е сборът на другите две.',
+    'Коли три точки лежать на прямій, найбільша відстань дорівнює сумі двох інших.') + threeSvg(q, false);
+  return tr('ако ', 'якщо ') + q.b + tr(' е най-голямото', ' — найбільша') + ' &nbsp;→&nbsp; ' + q.b + ' − ' + q.a + ' = <b>' + (q.b - q.a) +
+    '</b>; &nbsp;' + tr('ако третото е най-голямото', 'якщо третя — найбільша') + ' &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b>' + threeSvg(q, true);
 }
 KIND.three = { draw:drawThree, eq:eqThree, why:whyThree };

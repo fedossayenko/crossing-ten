@@ -1,6 +1,4 @@
 // Question kind 'pyramid': level 86 Пирамида от кутии — Rows of boxes that grow by the same amount each time.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2024, задача 13: a stepped pyramid, three boxes wide, four rows high, the top
 // three shown. Row by row from the top: 3, 9, 15 — six more each time — so the fourth is
@@ -32,27 +30,23 @@ function pyramidSvg(q){
     tr('пирамида от кутии', 'піраміда з ящиків') + '" style="max-width:320px">' + body + '</svg></div>';
 }
 function drawPyramid(q){
-  if(q.kind === 'pyramid'){
-    const top = q.shown === 3 ? tr('Трите най-горни реда', 'Три верхні ряди') : tr('Двата най-горни реда', 'Два верхні ряди');
-    const ask = q.last ? tr('Колко кутии има в <b>най-долния</b> ред?', 'Скільки ящиків у <b>найнижчому</b> ряду?')
-      : tr('Колко е <b>общият брой</b> кутии в тези ' + q.n + ' реда?', 'Скільки <b>всього</b> ящиків у цих ' + q.n + ' рядах?');
-    return '<div class="ask">' + tr('Продавач на плодове е построил пирамида от еднакви кутии с плодове в <span class="num">' + q.n + '</span> реда. ',
-      'Продавець фруктів збудував піраміду з однакових ящиків із фруктами у <span class="num">' + ukN(q.n, 'ряд', 'ряди', 'рядів').replace(' ', '</span> ') + '. ') +
-      top + tr(' са показани на изображението. ', ' показано на малюнку. ') + ask + '</div>' +
-      pyramidSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const top = q.shown === 3 ? tr('Трите най-горни реда', 'Три верхні ряди') : tr('Двата най-горни реда', 'Два верхні ряди');
+  const ask = q.last ? tr('Колко кутии има в <b>най-долния</b> ред?', 'Скільки ящиків у <b>найнижчому</b> ряду?')
+    : tr('Колко е <b>общият брой</b> кутии в тези ' + q.n + ' реда?', 'Скільки <b>всього</b> ящиків у цих ' + q.n + ' рядах?');
+  return '<div class="ask">' + tr('Продавач на плодове е построил пирамида от еднакви кутии с плодове в <span class="num">' + q.n + '</span> реда. ',
+    'Продавець фруктів збудував піраміду з однакових ящиків із фруктами у <span class="num">' + ukN(q.n, 'ряд', 'ряди', 'рядів').replace(' ', '</span> ') + '. ') +
+    top + tr(' са показани на изображението. ', ' показано на малюнку. ') + ask + '</div>' +
+    pyramidSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqPyramid(q){
-  if(q.kind === 'pyramid') return q.rows.join(q.last ? ', ' : ' + ') + (q.last ? ' → ' : ' = ') + q.ans;
+  return q.rows.join(q.last ? ', ' : ' + ') + (q.last ? ' → ' : ' = ') + q.ans;
 }
 function whyPyramid(q, full){
-  if(q.kind === 'pyramid'){
-    if(!full) return tr('Преброй кутиите във всеки ред отгоре надолу. С колко расте всеки следващ ред?',
-                        'Порахуй ящики в кожному ряду згори вниз. На скільки більшає кожен наступний ряд?');
-    const seen = q.rows.slice(0, q.shown).join(', ');
-    return tr('отгоре: ', 'згори: ') + seen + tr(' — всеки ред има с ', ' — кожен ряд має на ') + 2*q.w + tr(' повече', ' більше') +
-      ' &nbsp;→&nbsp; ' + q.rows.slice(q.shown).map((v, k) => (q.rows[q.shown + k - 1]) + ' + ' + 2*q.w + ' = ' + v).join(', ') +
-      (q.last ? '' : ' &nbsp;→&nbsp; ' + q.rows.join(' + ') + ' = ' + q.ans);
-  }
+  if(!full) return tr('Преброй кутиите във всеки ред отгоре надолу. С колко расте всеки следващ ред?',
+                      'Порахуй ящики в кожному ряду згори вниз. На скільки більшає кожен наступний ряд?');
+  const seen = q.rows.slice(0, q.shown).join(', ');
+  return tr('отгоре: ', 'згори: ') + seen + tr(' — всеки ред има с ', ' — кожен ряд має на ') + 2*q.w + tr(' повече', ' більше') +
+    ' &nbsp;→&nbsp; ' + q.rows.slice(q.shown).map((v, k) => (q.rows[q.shown + k - 1]) + ' + ' + 2*q.w + ' = ' + v).join(', ') +
+    (q.last ? '' : ' &nbsp;→&nbsp; ' + q.rows.join(' + ') + ' = ' + q.ans);
 }
 KIND.pyramid = { draw:drawPyramid, eq:eqPyramid, why:whyPyramid };

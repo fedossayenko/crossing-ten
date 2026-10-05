@@ -1,6 +1,4 @@
 // Question kind 'sumdiff': level 17 Сбор и разлика — A number given by how far it sits from another.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 10: each letter sits a given distance from the same number, on either side of
 // it. Sending them opposite ways opens the widest gap — the two distances added.
@@ -31,12 +29,12 @@ export function genSumDiff(){
 }
 
 function drawSumdiff(q){
-  if(q.kind === 'sumdiff' && q.shape === 'sd'){
+  if(q.shape === 'sd'){
     return '<div class="ask">' + tr('Сборът на две числа, едно от които е с <span class="num">' + q.d + '</span> по-голямо от другото, е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'Сума двох чисел, одне з яких на <span class="num">' + q.d + '</span> більше за інше, дорівнює <span class="num">' + q.S + '</span>. Яке число <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'sumdiff' && q.shape === 'gap'){
+  if(q.shape === 'gap'){
     return '<div class="ask">' + tr('Разликата на числото <b>A</b> и <span class="num">' + q.c +
       '</span> е <span class="num">' + q.d1 + '</span>. Разликата на числото <b>B</b> и <span class="num">' +
       q.c + '</span> е <span class="num">' + q.d2 +
@@ -45,21 +43,19 @@ function drawSumdiff(q){
       '</span> дорівнює <span class="num">' + q.d1 + '</span>. Різниця числа <b>B</b> і <span class="num">' +
       q.c + '</span> дорівнює <span class="num">' + q.d2 +
       '</span>. Якою може бути <b>найбільша</b> різниця чисел A і B?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'sumdiff'){
-    return '<div class="ask">' + tr('Пресметнете <b>двата възможни сбора</b> на две числа, едно от които е <span class="num">' +
-      q.a + '</span>, ако разликата им е <span class="num">' + q.d + '</span>.',
-      'Обчисліть <b>обидві можливі суми</b> двох чисел, одне з яких дорівнює <span class="num">' +
-      q.a + '</span>, якщо їхня різниця дорівнює <span class="num">' + q.d + '</span>.') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
-      ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
-  }
+  return '<div class="ask">' + tr('Пресметнете <b>двата възможни сбора</b> на две числа, едно от които е <span class="num">' +
+    q.a + '</span>, ако разликата им е <span class="num">' + q.d + '</span>.',
+    'Обчисліть <b>обидві можливі суми</b> двох чисел, одне з яких дорівнює <span class="num">' +
+    q.a + '</span>, якщо їхня різниця дорівнює <span class="num">' + q.d + '</span>.') + '</div>' +
+    '<div class="line md">' + SLOT +
+    ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
 }
 function eqSumdiff(q){
-  if(q.kind === 'sumdiff' && q.shape === 'sd') return '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
-  if(q.kind === 'sumdiff' && q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + tr(' от ', ' від ') + q.c + ' → ' + q.ans;
-  if(q.kind === 'sumdiff') return q.a + tr(' и разлика ', ' і різниця ') + q.d + ' → ' + (2*q.a - q.d) + tr(' и ', ' і ') + q.ans;
+  if(q.shape === 'sd') return '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
+  if(q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + tr(' от ', ' від ') + q.c + ' → ' + q.ans;
+  return q.a + tr(' и разлика ', ' і різниця ') + q.d + ' → ' + (2*q.a - q.d) + tr(' и ', ' і ') + q.ans;
 }
 // The pictures. Two sums: the number, and the other one a step of the difference to its left or to
 // its right. The widest gap: A and B each on either side of the number, and the widest pair across it.
@@ -93,11 +89,11 @@ function sumdiffSvg(q){
     lo - 1, hi + 1, tr('другото число от двете страни', 'інше число з обох боків'));
 }
 function whySumdiff(q, full){
-  if(q.kind === 'sumdiff' && q.shape === 'sd'){
+  if(q.shape === 'sd'){
     if(!full) return tr('Махни разликата — остават две равни части.', 'Прибери різницю — лишаються дві рівні частини.');
     return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b>' + (q.asksBig ? ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' &nbsp;→&nbsp; ' + q.ans + sumdiffSvg(q);
   }
-  if(q.kind === 'sumdiff' && q.shape === 'gap'){
+  if(q.shape === 'gap'){
     if(!full) return tr('Всяко от двете може да е от едната или от другата страна.',
       'Кожне з двох чисел може бути як з одного, так і з іншого боку.');
     return 'A ' + tr('е ', '— ') + (q.c - q.d1) + tr(' или ', ' або ') + (q.c + q.d1) + ', B ' + tr('е ', '— ') +
@@ -106,12 +102,10 @@ function whySumdiff(q, full){
       tr('</b> и <b>', '</b> і <b>') + (q.c + q.d2) + '</b> &nbsp;→&nbsp; ' +
       (q.c + q.d2) + ' − ' + (q.c - q.d1) + ' = ' + q.ans;
   }
-  if(q.kind === 'sumdiff'){
-    if(!full) return tr('Другото число може да е по-малко или по-голямо — намери и двата сбора.',
-      'Інше число може бути меншим або більшим — знайди обидві суми.');
-    return tr('другото е <b>', 'інше — <b>') + (q.a - q.d) + tr('</b> или <b>', '</b> або <b>') + (q.a + q.d) + '</b>' + sumdiffSvg(q) +
-      q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
-      ' = ' + q.ans;
-  }
+  if(!full) return tr('Другото число може да е по-малко или по-голямо — намери и двата сбора.',
+    'Інше число може бути меншим або більшим — знайди обидві суми.');
+  return tr('другото е <b>', 'інше — <b>') + (q.a - q.d) + tr('</b> или <b>', '</b> або <b>') + (q.a + q.d) + '</b>' + sumdiffSvg(q) +
+    q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
+    ' = ' + q.ans;
 }
 KIND.sumdiff = { draw:drawSumdiff, eq:eqSumdiff, why:whySumdiff };

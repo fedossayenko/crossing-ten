@@ -1,6 +1,4 @@
 // Question kind 'tripts': level 113 Триъгълници от точки — Triangles with corners at given points.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2020, задача 17: five points in a plus. Any three make a triangle unless they lie on one
 // line — and the plus has two such lines of three: 10 threes − 2 = 8. Counted over every three.
@@ -27,18 +25,14 @@ function triPtsSvg(pts){
     pts.map(([x, y]) => '<circle cx="' + x*u + '" cy="' + y*u + '" r="5" fill="var(--ink)"/>').join('') + '</svg></div>';
 }
 function drawTriPts(q){
-  if(q.kind === 'tripts'){
-    return '<div class="ask">' + tr('Колко са триъгълниците с върхове <b>3 от точките</b> на чертежа?', 'Скільки трикутників із вершинами в <b>3 з точок</b> на рисунку?') + '</div>' +
-      triPtsSvg(q.dots) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко са триъгълниците с върхове <b>3 от точките</b> на чертежа?', 'Скільки трикутників із вершинами в <b>3 з точок</b> на рисунку?') + '</div>' +
+    triPtsSvg(q.dots) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqTriPts(q){
-  if(q.kind === 'tripts') return q.all + ' − ' + q.flat + ' = ' + q.ans;
+  return q.all + ' − ' + q.flat + ' = ' + q.ans;
 }
 function whyTriPts(q, full){
-  if(q.kind === 'tripts'){
-    if(!full) return tr('Всеки три точки дават триъгълник — освен ако са на една права.', 'Будь-які три точки дають трикутник — якщо тільки вони не на одній прямій.');
-    return tr('всички тройки точки: <b>', 'усіх трійок точок: <b>') + q.all + '</b>, ' + tr('на една права: <b>', 'на одній прямій: <b>') + q.flat + '</b> &nbsp;→&nbsp; ' + q.all + ' − ' + q.flat + ' = ' + q.ans;
-  }
+  if(!full) return tr('Всеки три точки дават триъгълник — освен ако са на една права.', 'Будь-які три точки дають трикутник — якщо тільки вони не на одній прямій.');
+  return tr('всички тройки точки: <b>', 'усіх трійок точок: <b>') + q.all + '</b>, ' + tr('на една права: <b>', 'на одній прямій: <b>') + q.flat + '</b> &nbsp;→&nbsp; ' + q.all + ' − ' + q.flat + ' = ' + q.ans;
 }
 KIND.tripts = { draw:drawTriPts, eq:eqTriPts, why:whyTriPts };

@@ -1,6 +1,4 @@
 // Question kind 'prodgrid': level 75 Кръстът — Four empty squares; each row and column multiplies to its shaded number.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Есен, 3 клас, задача 17: a 2 × 2 of empty squares with a shaded number at the end of each
 // row and column: column 1 gives 8, row 1 gives 6, row 2 gives 4, column 2 is "?". Both columns
@@ -25,21 +23,17 @@ function prodGridSvg(q){
     shaded.map(([r, k], i) => rect(r, k, 'var(--goodbg)') + txt(r, k, i === q.ask ? '?' : q.sh[i])).join('') + '</svg></div>';
 }
 function drawProdGrid(q){
-  if(q.kind === 'prodgrid'){
-    return '<div class="ask">' + tr('Попълнете празните квадратчета с числа така, че произведението на числата в реда или колоната да е равно на числото в оцветеното квадратче от същия ред или колона. Кое е числото, което трябва да поставим вместо „?“?',
-      'Заповніть порожні клітинки числами так, щоб добуток чисел у рядку чи стовпці дорівнював числу в зафарбованій клітинці того самого рядка чи стовпця. Яке число треба поставити замість «?»?') +
-      '</div>' + prodGridSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Попълнете празните квадратчета с числа така, че произведението на числата в реда или колоната да е равно на числото в оцветеното квадратче от същия ред или колона. Кое е числото, което трябва да поставим вместо „?“?',
+    'Заповніть порожні клітинки числами так, щоб добуток чисел у рядку чи стовпці дорівнював числу в зафарбованій клітинці того самого рядка чи стовпця. Яке число треба поставити замість «?»?') +
+    '</div>' + prodGridSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqProdGrid(q){
-  if(q.kind === 'prodgrid') return q.sh[q.pair[0]] + ' · ' + q.sh[q.pair[1]] + ' : ' + q.sh[q.same] + ' = ' + q.ans;
+  return q.sh[q.pair[0]] + ' · ' + q.sh[q.pair[1]] + ' : ' + q.sh[q.same] + ' = ' + q.ans;
 }
 function whyProdGrid(q, full){
-  if(q.kind === 'prodgrid'){
-    if(!full) return tr('Двата реда заедно и двете колони заедно умножават едни и същи четири числа.', 'Два рядки разом і два стовпці разом перемножують ті самі чотири числа.');
-    return tr('и двата реда, и двете колони дават произведението на четирите числа', 'і два рядки, і два стовпці дають добуток чотирьох чисел') + ' &nbsp;→&nbsp; ' +
-      q.sh[q.same] + ' · ? = ' + q.sh[q.pair[0]] + ' · ' + q.sh[q.pair[1]] + ' = ' + q.sh[q.pair[0]]*q.sh[q.pair[1]] + ' &nbsp;→&nbsp; ? = ' + q.ans +
-      tr(' &nbsp;(например ', ' &nbsp;(наприклад ') + q.c.join(', ') + ')';
-  }
+  if(!full) return tr('Двата реда заедно и двете колони заедно умножават едни и същи четири числа.', 'Два рядки разом і два стовпці разом перемножують ті самі чотири числа.');
+  return tr('и двата реда, и двете колони дават произведението на четирите числа', 'і два рядки, і два стовпці дають добуток чотирьох чисел') + ' &nbsp;→&nbsp; ' +
+    q.sh[q.same] + ' · ? = ' + q.sh[q.pair[0]] + ' · ' + q.sh[q.pair[1]] + ' = ' + q.sh[q.pair[0]]*q.sh[q.pair[1]] + ' &nbsp;→&nbsp; ? = ' + q.ans +
+    tr(' &nbsp;(например ', ' &nbsp;(наприклад ') + q.c.join(', ') + ')';
 }
 KIND.prodgrid = { draw:drawProdGrid, eq:eqProdGrid, why:whyProdGrid };

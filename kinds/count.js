@@ -1,6 +1,4 @@
 // Question kind 'count': level 12 Колко? Сбор? — How many — or the sum — of a range given by a condition.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 5: counting a range given as a condition. The wording rotates — including
 // «между», where the two ends are NOT counted — so the condition has to be read.
@@ -71,54 +69,52 @@ export function genCountShort(){
 }
 
 function drawCount(q){
-  if(q.kind === 'count' && q.set){
+  if(q.set){
     return '<div class="ask">' + tr('Колко ' + (q.asksSum ? 'е <b>сборът</b> на' : 'са') +
       ' <b>различните</b> цифри?', q.asksSum ? 'Чому дорівнює <b>сума</b> <b>різних</b> цифр?' : 'Скільки <b>різних</b> цифр?') + '</div>' +
       '<div class="seq">' + q.list.join(', ') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'count' && q.shape === 7){
+  if(q.shape === 7){
     return '<div class="ask">' + tr('<b>Колко са</b> едноцифрените числа?', '<b>Скільки всього</b> одноцифрових чисел?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'count'){
-    const cond = q.shape === 6 ? 'НЕ са по-малки от ' + q.a
-               : q.shape === 0 ? 'не са по-големи от ' + q.n
-               : q.shape === 1 ? 'са по-малки от ' + q.n
-               : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
-               : q.shape === 3 ? 'са между ' + q.a + ' и ' + q.b
-               : 'са по-малки от ' + q.b + ' и са по-големи от ' + q.a;
-    const ukCond = q.shape === 6 ? 'НЕ менші за ' + q.a
-                 : q.shape === 0 ? 'не більші за ' + q.n
-                 : q.shape === 1 ? 'менші за ' + q.n
-                 : q.shape === 2 ? 'не менші за ' + q.a + ' і не більші за ' + q.b
-                 : q.shape === 3 ? 'лежать між ' + q.a + ' і ' + q.b
-                 : 'менші за ' + q.b + ' і більші за ' + q.a;
-    const what = q.one ? '<b>едноцифрени</b> числа' : q.natural ? '<b>естествени</b> числа' : q.two ? '<b>двуцифрени</b> числа' : 'числа';
-    const ukWhat = q.one ? '<b>одноцифрових</b> чисел' : q.natural ? '<b>натуральних</b> чисел' : q.two ? '<b>двоцифрових</b> чисел' : 'чисел';
-    if(q.name){
-      return '<div class="ask">' + tr('<b>Кои са</b> числата, които ' + cond + '?', '<b>Які</b> числа ' + ukCond + '?') + '</div>' +
-        '<div class="note">' + tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …') + '</div>' +
-        '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
-        ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
-    }
-    const ask = q.sum ? tr('Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.',
-                           'Обчисліть <b>суму</b> всіх ' + ukWhat + ', які ' + ukCond + '.')
-                      : tr('<b>Колко са</b> всички ' + what + ', които ' + cond + '?',
-                           '<b>Скільки всього</b> ' + ukWhat + ', які ' + ukCond + '?');
-    return '<div class="ask">' + ask + '</div>' +
-      '<div class="note">' + (q.natural ? tr('Естествените числа са 1, 2, 3, …', 'Натуральні числа — це 1, 2, 3, …')
-        : q.two ? tr('Двуцифрените числа са 10, 11, … 99', 'Двоцифрові числа — це 10, 11, … 99')
-        : q.one ? tr('Едноцифрените числа са 0, 1, 2, … 9', 'Одноцифрові числа — це 0, 1, 2, … 9')
-        : tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …')) + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  const cond = q.shape === 6 ? 'НЕ са по-малки от ' + q.a
+             : q.shape === 0 ? 'не са по-големи от ' + q.n
+             : q.shape === 1 ? 'са по-малки от ' + q.n
+             : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
+             : q.shape === 3 ? 'са между ' + q.a + ' и ' + q.b
+             : 'са по-малки от ' + q.b + ' и са по-големи от ' + q.a;
+  const ukCond = q.shape === 6 ? 'НЕ менші за ' + q.a
+               : q.shape === 0 ? 'не більші за ' + q.n
+               : q.shape === 1 ? 'менші за ' + q.n
+               : q.shape === 2 ? 'не менші за ' + q.a + ' і не більші за ' + q.b
+               : q.shape === 3 ? 'лежать між ' + q.a + ' і ' + q.b
+               : 'менші за ' + q.b + ' і більші за ' + q.a;
+  const what = q.one ? '<b>едноцифрени</b> числа' : q.natural ? '<b>естествени</b> числа' : q.two ? '<b>двуцифрени</b> числа' : 'числа';
+  const ukWhat = q.one ? '<b>одноцифрових</b> чисел' : q.natural ? '<b>натуральних</b> чисел' : q.two ? '<b>двоцифрових</b> чисел' : 'чисел';
+  if(q.name){
+    return '<div class="ask">' + tr('<b>Кои са</b> числата, които ' + cond + '?', '<b>Які</b> числа ' + ukCond + '?') + '</div>' +
+      '<div class="note">' + tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …') + '</div>' +
+      '<div class="line md">' + SLOT +
+      ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
   }
+  const ask = q.sum ? tr('Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.',
+                         'Обчисліть <b>суму</b> всіх ' + ukWhat + ', які ' + ukCond + '.')
+                    : tr('<b>Колко са</b> всички ' + what + ', които ' + cond + '?',
+                         '<b>Скільки всього</b> ' + ukWhat + ', які ' + ukCond + '?');
+  return '<div class="ask">' + ask + '</div>' +
+    '<div class="note">' + (q.natural ? tr('Естествените числа са 1, 2, 3, …', 'Натуральні числа — це 1, 2, 3, …')
+      : q.two ? tr('Двуцифрените числа са 10, 11, … 99', 'Двоцифрові числа — це 10, 11, … 99')
+      : q.one ? tr('Едноцифрените числа са 0, 1, 2, … 9', 'Одноцифрові числа — це 0, 1, 2, … 9')
+      : tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …')) + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCount(q){
-  if(q.kind === 'count' && q.set) return tr('различни: ', 'різні: ') + q.pool.join(', ') + ' → ' + q.ans;
-  if(q.kind === 'count' && q.name) return tr('между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi,
+  if(q.set) return tr('различни: ', 'різні: ') + q.pool.join(', ') + ' → ' + q.ans;
+  if(q.name) return tr('между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi,
                                              'між ' + q.a + ' і ' + q.b + ' → ' + q.lo + ' і ' + q.hi);
-  if(q.kind === 'count') return tr((q.sum ? 'сборът, ' : 'броят, ') +
+  return tr((q.sum ? 'сборът, ' : 'броят, ') +
     (q.natural ? 'естествени, ' : q.two ? 'двуцифрени, ' : q.one ? 'едноцифрени, ' : '') + 'от ' + q.lo + ' до ' + q.hi,
     (q.sum ? 'сума, ' : 'кількість, ') +
     (q.natural ? 'натуральні, ' : q.two ? 'двоцифрові, ' : q.one ? 'одноцифрові, ' : '') + 'від ' + q.lo + ' до ' + q.hi) + ' → ' + q.ans;
@@ -183,49 +179,47 @@ function countSet(q, full){
   return '<svg viewBox="0 -22 240 ' + (full ? 62 : 32) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('различните цифри', 'різні цифри') + '">' + g + '</svg>';
 }
 function whyCount(q, full){
-  if(q.kind === 'count' && q.set){
+  if(q.set){
     if(!full) return tr('Едно и също число, повторено, се брои само веднъж.', 'Те саме число, навіть повторене, рахується лише один раз.');
     return tr('различните са <b>', 'різні — це <b>') + q.pool.join(', ') + '</b> &nbsp;→&nbsp; ' +
       (q.asksSum ? q.pool.join(' + ') + ' = ' + q.ans : tr('на брой ', 'усього ') + q.ans) + countSet(q, true);
   }
-  if(q.kind === 'count' && q.name){
+  if(q.name){
     if(!full) return tr('Краищата не се броят — гледай само какво остава между тях.', 'Кінці не рахуються — дивись лише на те, що є між ними.');
     return tr('между ' + q.a + ' и ' + q.b + ', без краищата', 'між ' + q.a + ' і ' + q.b + ', без кінців') +
       ' &nbsp;→&nbsp; <b>' + q.lo + '</b> ' + tr('и', 'і') + ' <b>' + q.hi + '</b>';
   }
-  if(q.kind === 'count'){
-    if(!full && q.shape === 7) return tr('Едноцифрените числа са от нулата до най-голямата цифра — не забравяй нулата.', 'Одноцифрові числа — від нуля до найбільшої цифри; не забудь про нуль.') + countLine(q, false);
-    if(!full) return (q.one && q.shape === 1 ? tr('Едноцифрените числа започват от нулата. Числото от условието не се брои.', 'Одноцифрові числа починаються з нуля. Число з умови не рахується.')
-            : q.one && q.shape === 0 ? tr('Едноцифрените числа започват от нулата. Числото от условието също се брои.', 'Одноцифрові числа починаються з нуля. Число з умови теж рахується.')
-            : q.one ? tr('Едноцифрените числа стигат до девет. Числото от условието също се брои.', 'Одноцифрові числа закінчуються дев’яткою. Число з умови теж рахується.')
-            : q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
-            : q.natural ? tr('Естествените числа започват от едно.', 'Натуральні числа починаються з одиниці.')
-            : q.sum ? tr('Събирай ги по двойки от двата края.', 'Додавай їх парами з обох кінців.')
-            : q.shape >= 3 ? tr('Краищата не се броят.', 'Кінці не рахуються.')
-            : q.shape === 2 ? tr('И двата края се броят.', 'Обидва кінці рахуються.')
-            : tr('Не забравяй нулата — тя също е число.', 'Не забудь про нуль — це теж число.')) + countLine(q, false);
-    if(q.sum){
-      const n = q.hi - q.lo + 1;
-      if(n >= 4 && n % 2 === 0){
-        const each = q.lo + q.hi;
-        return tr('двойките ', 'пари ') + q.lo + ' + ' + q.hi + ', &nbsp;' + (q.lo+1) + ' + ' + (q.hi-1) +
-          tr(' … правят по <b>', ' … дають по <b>') + each + '</b> &nbsp;→&nbsp; ' + Array(n/2).fill(each).join(' + ') + ' = ' + q.ans + countLine(q, true);
-      }
-      const list = [];
-      for(let v = q.lo; v <= q.hi; v++) list.push(v);
-      return list.join(' + ') + ' = ' + q.ans + countLine(q, true);
+  if(!full && q.shape === 7) return tr('Едноцифрените числа са от нулата до най-голямата цифра — не забравяй нулата.', 'Одноцифрові числа — від нуля до найбільшої цифри; не забудь про нуль.') + countLine(q, false);
+  if(!full) return (q.one && q.shape === 1 ? tr('Едноцифрените числа започват от нулата. Числото от условието не се брои.', 'Одноцифрові числа починаються з нуля. Число з умови не рахується.')
+          : q.one && q.shape === 0 ? tr('Едноцифрените числа започват от нулата. Числото от условието също се брои.', 'Одноцифрові числа починаються з нуля. Число з умови теж рахується.')
+          : q.one ? tr('Едноцифрените числа стигат до девет. Числото от условието също се брои.', 'Одноцифрові числа закінчуються дев’яткою. Число з умови теж рахується.')
+          : q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
+          : q.natural ? tr('Естествените числа започват от едно.', 'Натуральні числа починаються з одиниці.')
+          : q.sum ? tr('Събирай ги по двойки от двата края.', 'Додавай їх парами з обох кінців.')
+          : q.shape >= 3 ? tr('Краищата не се броят.', 'Кінці не рахуються.')
+          : q.shape === 2 ? tr('И двата края се броят.', 'Обидва кінці рахуються.')
+          : tr('Не забравяй нулата — тя също е число.', 'Не забудь про нуль — це теж число.')) + countLine(q, false);
+  if(q.sum){
+    const n = q.hi - q.lo + 1;
+    if(n >= 4 && n % 2 === 0){
+      const each = q.lo + q.hi;
+      return tr('двойките ', 'пари ') + q.lo + ' + ' + q.hi + ', &nbsp;' + (q.lo+1) + ' + ' + (q.hi-1) +
+        tr(' … правят по <b>', ' … дають по <b>') + each + '</b> &nbsp;→&nbsp; ' + Array(n/2).fill(each).join(' + ') + ' = ' + q.ans + countLine(q, true);
     }
-    const edge = q.shape === 7 ? tr('всички едноцифрени', 'усі одноцифрові')
-               : q.shape === 6 ? tr('до 9 — само едноцифрените', 'до 9 — лише одноцифрові')
-               : q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
-               : q.shape === 1 ? q.n + tr(' не се брои', ' не рахується')
-               : q.shape === 2 ? tr('с двата края', 'з обома кінцями')
-               : tr('без краищата', 'без кінців');
-    const zero = q.natural ? tr('нулата не е естествено число', 'нуль не є натуральним числом')
-               : q.lo === 0 ? tr('<b>нулата също се брои</b>', '<b>нуль теж рахується</b>') : '';
-    // a short range is listed whole: 7, 8, 9 — not 7, 8, …, 9
-    return (q.hi - q.lo <= 3 ? Array.from({length: q.hi - q.lo + 1}, (_, i) => q.lo + i).join(', ') : q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi) +
-      ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans + countLine(q, true);
+    const list = [];
+    for(let v = q.lo; v <= q.hi; v++) list.push(v);
+    return list.join(' + ') + ' = ' + q.ans + countLine(q, true);
   }
+  const edge = q.shape === 7 ? tr('всички едноцифрени', 'усі одноцифрові')
+             : q.shape === 6 ? tr('до 9 — само едноцифрените', 'до 9 — лише одноцифрові')
+             : q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
+             : q.shape === 1 ? q.n + tr(' не се брои', ' не рахується')
+             : q.shape === 2 ? tr('с двата края', 'з обома кінцями')
+             : tr('без краищата', 'без кінців');
+  const zero = q.natural ? tr('нулата не е естествено число', 'нуль не є натуральним числом')
+             : q.lo === 0 ? tr('<b>нулата също се брои</b>', '<b>нуль теж рахується</b>') : '';
+  // a short range is listed whole: 7, 8, 9 — not 7, 8, …, 9
+  return (q.hi - q.lo <= 3 ? Array.from({length: q.hi - q.lo + 1}, (_, i) => q.lo + i).join(', ') : q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi) +
+    ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans + countLine(q, true);
 }
 KIND.count = { draw:drawCount, eq:eqCount, why:whyCount };

@@ -1,6 +1,4 @@
 // Question kind 'asmany': level 134 Толкова, колкото — Two counts of odd and even numbers made equal: where the second run ends.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, задача 8: the even numbers from 1 to 11 are as many as the odd numbers from 12 to the
 // even number X. Evens up to 11: 2, 4, 6, 8, 10 — five. Odd from 12 on: 13, 15, 17, 19, 21 — five,
@@ -16,13 +14,11 @@ export function genAsMany(){
   }
 }
 function drawAsMany(q){
-  if(q.kind === 'asmany'){
-    const [p1, p2] = q.evenFirst ? [tr('Четните', 'Парних'), tr('нечетните', 'непарних')] : [tr('Нечетните', 'Непарних'), tr('четните', 'парних')];
-    const x = q.evenFirst ? tr('четното', 'парного') : tr('нечетното', 'непарного');
-    return '<div class="ask">' + tr(p1 + ' числа от 1 до <span class="num">' + q.n + '</span> са толкова, колкото ' + p2 + ' числа от <span class="num">' + q.s + '</span> до ' + x + ' число X. Кое е числото X?',
-      p1 + ' чисел від 1 до <span class="num">' + q.n + '</span> стільки ж, скільки ' + p2 + ' чисел від <span class="num">' + q.s + '</span> до ' + x + ' числа X. Яке число X?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">X = ' + SLOT + '</div>';
-  }
+  const [p1, p2] = q.evenFirst ? [tr('Четните', 'Парних'), tr('нечетните', 'непарних')] : [tr('Нечетните', 'Непарних'), tr('четните', 'парних')];
+  const x = q.evenFirst ? tr('четното', 'парного') : tr('нечетното', 'непарного');
+  return '<div class="ask">' + tr(p1 + ' числа от 1 до <span class="num">' + q.n + '</span> са толкова, колкото ' + p2 + ' числа от <span class="num">' + q.s + '</span> до ' + x + ' число X. Кое е числото X?',
+    p1 + ' чисел від 1 до <span class="num">' + q.n + '</span> стільки ж, скільки ' + p2 + ' чисел від <span class="num">' + q.s + '</span> до ' + x + ' числа X. Яке число X?') + '</div>' +
+    '<div class="line xl">X = ' + SLOT + '</div>';
 }
 function asManyRuns(q){
   const a = [], b = [];
@@ -31,13 +27,11 @@ function asManyRuns(q){
   return [a, b];
 }
 function eqAsMany(q){
-  if(q.kind === 'asmany'){ const [a, b] = asManyRuns(q); return a.length + ': ' + b.join(', ') + ' → ' + q.ans; }
+  const [a, b] = asManyRuns(q); return a.length + ': ' + b.join(', ') + ' → ' + q.ans; 
 }
 function whyAsMany(q, full){
-  if(q.kind === 'asmany'){
-    if(!full) return tr('Първо преброй числата в първата редица. После изреди толкова от втората — и виж кое число идва след последното.', 'Спершу порахуй числа першого ряду. Потім випиши стільки ж із другого — і подивись, яке число йде після останнього.');
-    const [a, b] = asManyRuns(q);
-    return a.join(', ') + ' &nbsp;→&nbsp; <b>' + a.length + '</b>; &nbsp;' + b.join(', ') + ' &nbsp;→&nbsp; ' + tr('следващото е ', 'наступне — ') + q.ans;
-  }
+  if(!full) return tr('Първо преброй числата в първата редица. После изреди толкова от втората — и виж кое число идва след последното.', 'Спершу порахуй числа першого ряду. Потім випиши стільки ж із другого — і подивись, яке число йде після останнього.');
+  const [a, b] = asManyRuns(q);
+  return a.join(', ') + ' &nbsp;→&nbsp; <b>' + a.length + '</b>; &nbsp;' + b.join(', ') + ' &nbsp;→&nbsp; ' + tr('следващото е ', 'наступне — ') + q.ans;
 }
 KIND.asmany = { draw:drawAsMany, eq:eqAsMany, why:whyAsMany };

@@ -1,6 +1,4 @@
 // Question kind 'vtri': level 123 Връх A — How many triangles in a figure of lines have one given point as a corner.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2024, задача 1: a rectangle of two squares with both its diagonals; A is where they
 // cross. A triangle with a corner at A has its other two corners on two different lines through
@@ -91,31 +89,27 @@ function figSvg(q){
     F.lines.map(l => { const [x1, y1] = P(l[0]), [x2, y2] = P(l[l.length - 1]); return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>'; }).join('') + '</svg></div>';
 }
 function drawVTri(q){
-  if(q.kind === 'vtri' && q.shape === 'count'){
+  if(q.shape === 'count'){
     const ask = [tr('Колко са <b>триъгълниците</b> на чертежа?', 'Скільки <b>трикутників</b> на рисунку?'), tr('Колко са <b>квадратите</b> на чертежа?', 'Скільки <b>квадратів</b> на рисунку?'),
       tr('С колко броят на триъгълниците е по-голям от броя на квадратите?', 'На скільки трикутників більше, ніж квадратів?')][q.asks];
-    return '<div class="ask">' + ask + '</div>' + figSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+    return '<div class="ask">' + ask + '</div>' + figSvg(q) + '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'vtri'){
-    return '<div class="ask">' + tr('На колко триъгълника е <b>връх</b> точка A?', 'Скільки трикутників мають <b>вершину</b> в точці A?') + '</div>' +
-      vtriSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('На колко триъгълника е <b>връх</b> точка A?', 'Скільки трикутників мають <b>вершину</b> в точці A?') + '</div>' +
+    vtriSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqVTri(q){
-  if(q.kind === 'vtri' && q.shape === 'count') return tr('триъгълници ', 'трикутників ') + q.tri + tr(', квадрати ', ', квадратів ') + q.sq + ' → ' + q.ans;
-  if(q.kind === 'vtri') return tr('триъгълници с връх A → ', 'трикутників з вершиною A → ') + q.ans;
+  if(q.shape === 'count') return tr('триъгълници ', 'трикутників ') + q.tri + tr(', квадрати ', ', квадратів ') + q.sq + ' → ' + q.ans;
+  return tr('триъгълници с връх A → ', 'трикутників з вершиною A → ') + q.ans;
 }
 function whyVTri(q, full){
-  if(q.kind === 'vtri' && q.shape === 'count'){
+  if(q.shape === 'count'){
     if(!full) return tr('Брой по големина: първо най-малките, после съставените от няколко. И големият квадрат се брои.', 'Рахуй за розміром: спершу найменші, потім складені з кількох. І великий квадрат теж рахується.');
     return tr('триъгълници: <b>', 'трикутників: <b>') + q.tri + tr('</b>, квадрати: <b>', '</b>, квадратів: <b>') + q.sq + '</b>' + (q.asks === 2 ? ' &nbsp;→&nbsp; ' + q.tri + ' − ' + q.sq + ' = ' + q.ans : '');
   }
-  if(q.kind === 'vtri'){
-    if(!full) return tr('От A тръгват няколко отсечки. Вземи две различни — триъгълник има, ако краищата им са свързани с трета отсечка.', 'Від A виходить кілька відрізків. Візьми два різні — трикутник є, якщо їхні кінці сполучені третім відрізком.');
-    const F = VTRI[q.f], on = (p, r) => F.lines.find(l => l.includes(p) && l.includes(r));
-    const by = {};
-    vtriCount(F, q.V).forEach(t => { const l = on(t[1], t[2]); by[l] = (by[l] || 0) + 1; });
-    return tr('по третата страна: ', 'за третьою стороною: ') + Object.values(by).join(' + ') + ' = ' + q.ans;
-  }
+  if(!full) return tr('От A тръгват няколко отсечки. Вземи две различни — триъгълник има, ако краищата им са свързани с трета отсечка.', 'Від A виходить кілька відрізків. Візьми два різні — трикутник є, якщо їхні кінці сполучені третім відрізком.');
+  const F = VTRI[q.f], on = (p, r) => F.lines.find(l => l.includes(p) && l.includes(r));
+  const by = {};
+  vtriCount(F, q.V).forEach(t => { const l = on(t[1], t[2]); by[l] = (by[l] || 0) + 1; });
+  return tr('по третата страна: ', 'за третьою стороною: ') + Object.values(by).join(' + ') + ' = ' + q.ans;
 }
 KIND.vtri = { draw:drawVTri, eq:eqVTri, why:whyVTri };

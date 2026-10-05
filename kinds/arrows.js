@@ -1,6 +1,4 @@
 // Question kind 'arrows': level 174 Стрелките — Six letters for 1…6, arrows pointing at the smaller number.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 20: letters A…F stand for 1…6, and an arrow points at the letter
 // with the smaller number: F → E, A → D, E → D, D → C, B → A, B → F. Nothing points at B, so B is
@@ -73,17 +71,15 @@ function arrowsSvg(q){
 }
 const arrowAsk = q => bgList(q.ask.map(arrowName));
 function drawArrows(q){
-  if(q.kind === 'arrows'){
-    const [a, b] = q.edges[q.ex].map(arrowName);
-    return '<div class="ask">' + tr('На рисунката, вместо числата 1, 2, 3, 4, 5 и 6, са поставени буквите A, B, C, D, E и F. Стрелката, съединяваща две букви, сочи буквата, зад която е <b>по-малкото</b> число. Например: ' +
-      a + ' → ' + b + ' показва, че ' + a + ' > ' + b + '.',
-      'На малюнку замість чисел 1, 2, 3, 4, 5 і 6 поставлено букви A, B, C, D, E і F. Стрілка, що з’єднує дві букви, вказує на букву, за якою стоїть <b>менше</b> число. Наприклад: ' +
-      a + ' → ' + b + ' означає, що ' + a + ' > ' + b + '.') + '</div>' +
-      '<div class="fig">' + arrowsSvg(q) + '</div>' +
-      '<div class="ask">' + tr('Колко е сборът на числата, на мястото на които са поставени буквите ' + arrowAsk(q) + '?',
-        'Чому дорівнює сума чисел, замість яких поставлено букви ' + arrowAsk(q) + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  const [a, b] = q.edges[q.ex].map(arrowName);
+  return '<div class="ask">' + tr('На рисунката, вместо числата 1, 2, 3, 4, 5 и 6, са поставени буквите A, B, C, D, E и F. Стрелката, съединяваща две букви, сочи буквата, зад която е <b>по-малкото</b> число. Например: ' +
+    a + ' → ' + b + ' показва, че ' + a + ' > ' + b + '.',
+    'На малюнку замість чисел 1, 2, 3, 4, 5 і 6 поставлено букви A, B, C, D, E і F. Стрілка, що з’єднує дві букви, вказує на букву, за якою стоїть <b>менше</b> число. Наприклад: ' +
+    a + ' → ' + b + ' означає, що ' + a + ' > ' + b + '.') + '</div>' +
+    '<div class="fig">' + arrowsSvg(q) + '</div>' +
+    '<div class="ask">' + tr('Колко е сборът на числата, на мястото на които са поставени буквите ' + arrowAsk(q) + '?',
+      'Чому дорівнює сума чисел, замість яких поставлено букви ' + arrowAsk(q) + '?') + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 // what each letter can be, over every order the arrows allow
 function arrowsCan(q){
@@ -91,10 +87,8 @@ function arrowsCan(q){
   return ARROW_LETTERS.map((c, i) => [...new Set(orders.map(o => o[i]))].sort((x, y) => x - y));
 }
 function eqArrows(q){
-  if(q.kind === 'arrows'){
-    const can = arrowsCan(q), vs = q.ask.flatMap(i => can[i]).filter((v, k, a) => a.indexOf(v) === k).sort((x, y) => x - y);
-    return q.ask.map(arrowName).join(' + ') + ' = ' + vs.join(' + ') + ' = ' + q.ans;
-  }
+  const can = arrowsCan(q), vs = q.ask.flatMap(i => can[i]).filter((v, k, a) => a.indexOf(v) === k).sort((x, y) => x - y);
+  return q.ask.map(arrowName).join(' + ') + ' = ' + vs.join(' + ') + ' = ' + q.ans;
 }
 // The solution's picture: the numbers 1…6 in a row, each fixed letter under its number, and the
 // asked letters together over the numbers they share.
@@ -111,15 +105,13 @@ function arrowsLineSvg(q, can){
   return '<svg viewBox="-4 -4 210 86" style="display:block; width:252px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('буквите върху числата от 1 до 6', 'букви над числами від 1 до 6') + '">' + g + '</svg>';
 }
 function whyArrows(q, full){
-  if(q.kind === 'arrows'){
-    if(!full) return tr('Намери буквата, към която не сочи нито една стрелка, и буквата, от която не излиза нито една.',
-      'Знайди букву, на яку не вказує жодна стрілка, і букву, з якої не виходить жодна.');
-    const can = arrowsCan(q), fixed = can.map((c, i) => c.length === 1 ? arrowName(i) + ' = ' + c[0] : '').filter(Boolean);
-    const vs = [...new Set(q.ask.flatMap(i => can[i]))].sort((x, y) => x - y), names = arrowAsk(q);
-    return q.edges.map(([a, b]) => arrowName(a) + ' > ' + arrowName(b)).join(', ') +
-      (fixed.length ? ' &nbsp;→&nbsp; ' + tr('сигурно: ', 'точно: ') + fixed.join(', ') : '') + arrowsLineSvg(q, can) +
-      tr(names + ' са ' + bgList(vs.map(String)) + ', не знаем в какъв ред — но сборът е един и същ: ',
-        names + ' — це ' + bgList(vs.map(String)) + ', невідомо в якому порядку, але сума та сама: ') + vs.join(' + ') + ' = ' + q.ans;
-  }
+  if(!full) return tr('Намери буквата, към която не сочи нито една стрелка, и буквата, от която не излиза нито една.',
+    'Знайди букву, на яку не вказує жодна стрілка, і букву, з якої не виходить жодна.');
+  const can = arrowsCan(q), fixed = can.map((c, i) => c.length === 1 ? arrowName(i) + ' = ' + c[0] : '').filter(Boolean);
+  const vs = [...new Set(q.ask.flatMap(i => can[i]))].sort((x, y) => x - y), names = arrowAsk(q);
+  return q.edges.map(([a, b]) => arrowName(a) + ' > ' + arrowName(b)).join(', ') +
+    (fixed.length ? ' &nbsp;→&nbsp; ' + tr('сигурно: ', 'точно: ') + fixed.join(', ') : '') + arrowsLineSvg(q, can) +
+    tr(names + ' са ' + bgList(vs.map(String)) + ', не знаем в какъв ред — но сборът е един и същ: ',
+      names + ' — це ' + bgList(vs.map(String)) + ', невідомо в якому порядку, але сума та сама: ') + vs.join(' + ') + ' = ' + q.ans;
 }
 KIND.arrows = { draw:drawArrows, eq:eqArrows, why:whyArrows };

@@ -1,6 +1,4 @@
 // Question kind 'shapes': level 37 Фигури — Add the fewest shapes to make two counts match.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 20: only additions are allowed. Raising the white circles costs three (the
 // circle, a black square to match it, and a black circle), while raising the white
@@ -22,23 +20,19 @@ export function genShapes(){
 }
 
 function drawShapes(q){
-  if(q.kind === 'shapes'){
-    return '<div class="ask">' + tr('Колко <b>най-малко</b> фигури общо трябва да добавим, така че черните квадрати ■ да са толкова, колкото белите кръгове ○, а черните кръгове ● да са толкова, колкото са <b>всичките бели</b> фигури?',
-      'Скільки <b>найменше</b> фігур загалом треба додати, щоб чорних квадратів ■ було стільки, скільки білих кругів ○, а чорних кругів ● — стільки, скільки <b>всіх білих</b> фігур?') + '</div>' +
-      '<div class="seq" style="letter-spacing:.2em">' + q.row.map(t => SHAPE_GLYPH[t]).join(' ') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко <b>най-малко</b> фигури общо трябва да добавим, така че черните квадрати ■ да са толкова, колкото белите кръгове ○, а черните кръгове ● да са толкова, колкото са <b>всичките бели</b> фигури?',
+    'Скільки <b>найменше</b> фігур загалом треба додати, щоб чорних квадратів ■ було стільки, скільки білих кругів ○, а чорних кругів ● — стільки, скільки <b>всіх білих</b> фігур?') + '</div>' +
+    '<div class="seq" style="letter-spacing:.2em">' + q.row.map(t => SHAPE_GLYPH[t]).join(' ') + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqShapes(q){
-  if(q.kind === 'shapes') return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
+  return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;
 }
 function whyShapes(q, full){
-  if(q.kind === 'shapes'){
-    if(!full) return tr('Белите квадратчета също се броят към белите фигури.', 'Білі квадратики теж належать до білих фігур.');
-    return tr('сега ○', 'зараз ○') + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc +
-      ' &nbsp;→&nbsp; ' + tr('накрая', 'наприкінці') + ' <b>○' + q.W + ' □' + q.D + ' ■' + q.W + ' ●' + (q.W + q.D) +
-      '</b> &nbsp;→&nbsp; ' + tr('добавяме ', 'додаємо ') + (q.W - q.wo) + ' + ' + (q.D - q.ws) + ' + ' + (q.W - q.bs) +
-      ' + ' + (q.W + q.D - q.bc) + ' = ' + q.ans;
-  }
+  if(!full) return tr('Белите квадратчета също се броят към белите фигури.', 'Білі квадратики теж належать до білих фігур.');
+  return tr('сега ○', 'зараз ○') + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc +
+    ' &nbsp;→&nbsp; ' + tr('накрая', 'наприкінці') + ' <b>○' + q.W + ' □' + q.D + ' ■' + q.W + ' ●' + (q.W + q.D) +
+    '</b> &nbsp;→&nbsp; ' + tr('добавяме ', 'додаємо ') + (q.W - q.wo) + ' + ' + (q.D - q.ws) + ' + ' + (q.W - q.bs) +
+    ' + ' + (q.W + q.D - q.bc) + ' = ' + q.ans;
 }
 KIND.shapes = { draw:drawShapes, eq:eqShapes, why:whyShapes };

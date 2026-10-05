@@ -1,6 +1,4 @@
 // Question kind 'sides': level 157 Двете страни — A box at the end of one side of an equality of two short chains.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, 1 клас, задача 3: 2 + 0 − 2 + 4 = 2 + 0 − 2 + 5 − ☺. Both sides start with the
 // same 2 + 0 − 2, so only what follows matters: 4 = 5 − ☺, ☺ = 1. Пролет 2023, задача 3:
@@ -58,18 +56,16 @@ const sidesRight = q => exprText(q.right) + (q.minus ? ' − ' : ' + ') + q.sym;
 const sidesText = q => q.shape === 'one' ? exprText(q.terms.map((t, i) => i === q.at ? {op: t.op, n: q.sym} : t)) + ' = ' + q.R
   : q.shape === 'tens' ? exprText(q.left) + ' + ' + q.sym + ' = ' + exprText(q.right) : exprText(q.left) + ' = ' + sidesRight(q);
 function drawSides(q){
-  if(q.kind === 'sides'){
-    const e = sidesText(q);
-    return '<div class="ask">' + tr('Кое число е скрито под ' + q.sym + '?', 'Яке число сховане під ' + q.sym + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(17px,calc((100vw - 56px)/' + (e.length*0.56).toFixed(2) + '),36px)">' + e + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.sym + ' = ' + SLOT + '</div>';
-  }
+  const e = sidesText(q);
+  return '<div class="ask">' + tr('Кое число е скрито под ' + q.sym + '?', 'Яке число сховане під ' + q.sym + '?') + '</div>' +
+    '<div class="line" style="font-size:clamp(17px,calc((100vw - 56px)/' + (e.length*0.56).toFixed(2) + '),36px)">' + e + '</div>' +
+    '<div class="line lg">' + q.sym + ' = ' + SLOT + '</div>';
 }
 function eqSides(q){
-  if(q.kind === 'sides') return sidesText(q) + ' → ' + q.sym + ' = ' + q.ans;
+  return sidesText(q) + ' → ' + q.sym + ' = ' + q.ans;
 }
 function whySides(q, full){
-  if(q.kind === 'sides' && q.shape === 'one'){
+  if(q.shape === 'one'){
     if(!full) return tr('Пресметни първо това, което знаеш. После: какво трябва да е ' + q.sym + ', за да излезе числото вдясно?',
       'Спершу обчисли те, що знаєш. Потім: яким має бути ' + q.sym + ', щоб вийшло число праворуч?');
     if(q.at === 0){ const t = q.terms[1]; return q.sym + ' ' + t.op + ' ' + t.n + ' = ' + q.R + ' &nbsp;→&nbsp; ' + q.sym + ' = ' + q.R + (t.op === '−' ? ' + ' : ' − ') + t.n + ' = ' + q.ans; }
@@ -77,24 +73,22 @@ function whySides(q, full){
     return (pre.length > 1 ? exprText(pre) + ' = <b>' + P + '</b> &nbsp;→&nbsp; ' : '') + P + ' ' + op + ' ' + q.sym + ' = ' + q.R + ' &nbsp;→&nbsp; ' + q.sym + ' = ' +
       (op === '−' ? P + ' − ' + q.R : q.R + ' − ' + P) + ' = ' + q.ans;
   }
-  if(q.kind === 'sides' && q.shape === 'tens'){
+  if(q.shape === 'tens'){
     if(!full) return tr('Пресметни всяка страна без ' + q.sym + '. С колко дясната е повече?', 'Обчисли кожну сторону без ' + q.sym + '. На скільки права більша?');
     return tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') + exprText(q.right) + ' = <b>' + q.VR +
       '</b> &nbsp;→&nbsp; ' + q.VL + ' + ' + q.sym + ' = ' + q.VR + ' &nbsp;→&nbsp; ' + q.sym + ' = ' + q.VR + ' − ' + q.VL + ' = ' + q.ans;
   }
-  if(q.kind === 'sides' && q.shape === 'same'){
+  if(q.shape === 'same'){
     if(!full) return tr('И двете страни започват еднакво — сравни само това, което е различно.', 'Обидві сторони починаються однаково — порівняй лише те, що різне.');
     const a = q.left[3].n, b = q.right[3].n;
     return tr('и двете страни започват с <b>', 'обидві сторони починаються з <b>') + exprText(q.left.slice(0, 3)) +
       tr('</b> — то е еднакво и не се брои', '</b> — це однакове, його не рахуємо') + ' &nbsp;→&nbsp; ' + a + ' = ' + b + (q.minus ? ' − ' : ' + ') + q.sym +
       ' &nbsp;→&nbsp; ' + q.sym + ' = ' + (q.minus ? b + ' − ' + a : a + ' − ' + b) + ' = ' + q.ans;
   }
-  if(q.kind === 'sides'){
-    if(!full) return tr('Пресметни всяка страна поотделно. После: колко трябва да махнеш или добавиш, за да станат равни?',
-      'Обчисли кожну сторону окремо. Потім: скільки треба відняти чи додати, щоб вони стали рівні?');
-    return tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') +
-      exprText(q.right) + ' = <b>' + q.VR + '</b> &nbsp;→&nbsp; ' + q.VL + ' = ' + q.VR + (q.minus ? ' − ' : ' + ') + q.sym +
-      ' &nbsp;→&nbsp; ' + q.sym + ' = ' + (q.minus ? q.VR + ' − ' + q.VL : q.VL + ' − ' + q.VR) + ' = ' + q.ans;
-  }
+  if(!full) return tr('Пресметни всяка страна поотделно. После: колко трябва да махнеш или добавиш, за да станат равни?',
+    'Обчисли кожну сторону окремо. Потім: скільки треба відняти чи додати, щоб вони стали рівні?');
+  return tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') +
+    exprText(q.right) + ' = <b>' + q.VR + '</b> &nbsp;→&nbsp; ' + q.VL + ' = ' + q.VR + (q.minus ? ' − ' : ' + ') + q.sym +
+    ' &nbsp;→&nbsp; ' + q.sym + ' = ' + (q.minus ? q.VR + ' − ' + q.VL : q.VL + ' − ' + q.VR) + ' = ' + q.ans;
 }
 KIND.sides = { draw:drawSides, eq:eqSides, why:whySides };

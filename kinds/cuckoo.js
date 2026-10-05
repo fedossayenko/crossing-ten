@@ -1,6 +1,4 @@
 // Question kind 'cuckoo': level 116 Кукувичката — So many times in so many seconds: how many in longer.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2020, задача 13: the clock's cuckoo calls 3 times every 4 seconds; in 16 seconds that is
 // four lots of 4 seconds, so 4 · 3 = 12 calls.
@@ -10,14 +8,12 @@ export function genCuckoo(){
   return {kind:'cuckoo', k, s, m, t: s*m, ans: k*m};
 }
 function drawCuckoo(q){
-  if(q.kind === 'cuckoo'){
-    return '<div class="ask">' + tr('Кукувичката от часовника кука по <span class="num">' + q.k + '</span> пъти за <span class="num">' + q.s + '</span> секунди. Колко пъти ще изкука кукувичката за <span class="num">' + q.t + '</span> секунди?',
-      'Зозуля з годинника кукає по <span class="num">' + ukN(q.k, 'разу', 'рази', 'разів').replace(' ', '</span> ') + ' за <span class="num">' + ukN(q.s, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '. Скільки разів вона кукне за <span class="num">' + ukN(q.t, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Кукувичката от часовника кука по <span class="num">' + q.k + '</span> пъти за <span class="num">' + q.s + '</span> секунди. Колко пъти ще изкука кукувичката за <span class="num">' + q.t + '</span> секунди?',
+    'Зозуля з годинника кукає по <span class="num">' + ukN(q.k, 'разу', 'рази', 'разів').replace(' ', '</span> ') + ' за <span class="num">' + ukN(q.s, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '. Скільки разів вона кукне за <span class="num">' + ukN(q.t, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCuckoo(q){
-  if(q.kind === 'cuckoo') return q.t + ' : ' + q.s + ' = ' + q.m + ', ' + q.m + ' · ' + q.k + ' = ' + q.ans;
+  return q.t + ' : ' + q.s + ' = ' + q.m + ', ' + q.m + ' · ' + q.k + ' = ' + q.ans;
 }
 // The picture counts both at once, with no proportion: the time line is cut into lots of so many
 // seconds, each lot fills with its calls, and the seconds below and the calls above run on together
@@ -38,9 +34,7 @@ function cuckooSvg(q){
     tr('секундите и кукането заедно', 'секунди й кування разом') + '">' + g + '</svg>';
 }
 function whyCuckoo(q, full){
-  if(q.kind === 'cuckoo'){
-    if(!full) return tr('Колко пъти по толкова секунди се събират в цялото време?', 'Скільки разів по стільки секунд уміщається в увесь час?');
-    return tr(q.t + ' секунди са ' + q.m + ' пъти по ', ukN(q.t, 'секунда', 'секунди', 'секунд') + ' — це ' + ukN(q.m, 'раз', 'рази', 'разів') + ' по ') + q.s + ' &nbsp;→&nbsp; ' + q.m + ' · ' + q.k + ' = ' + q.ans + cuckooSvg(q);
-  }
+  if(!full) return tr('Колко пъти по толкова секунди се събират в цялото време?', 'Скільки разів по стільки секунд уміщається в увесь час?');
+  return tr(q.t + ' секунди са ' + q.m + ' пъти по ', ukN(q.t, 'секунда', 'секунди', 'секунд') + ' — це ' + ukN(q.m, 'раз', 'рази', 'разів') + ' по ') + q.s + ' &nbsp;→&nbsp; ' + q.m + ' · ' + q.k + ' = ' + q.ans + cuckooSvg(q);
 }
 KIND.cuckoo = { draw:drawCuckoo, eq:eqCuckoo, why:whyCuckoo };

@@ -1,6 +1,4 @@
 // Question kind 'ineq': level 16 Вместо ? — How many digits make the statement false.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 10: how many single digits make the statement false. The relation and the
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
@@ -80,98 +78,94 @@ export function genIneq(){
 }
 
 function drawIneq(q){
-  if(q.kind === 'ineq' && q.shape === 7){
+  if(q.shape === 7){
     return '<div class="ask">' + (q.ask === 'count' ? tr('Колко е броят на различните цифри, които можем да поставим вместо □, за да е вярно:', 'Скільки різних цифр можна поставити замість □, щоб було правильно:')
       : tr('Коя е цифрата, която трябва да поставим вместо □, за да е вярно:', 'Яку цифру треба поставити замість □, щоб було правильно:')) + '</div>' +
-      '<div class="given">' + ineqDigitText(q) + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="given">' + ineqDigitText(q) + '</div><div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'ineq' && q.shape === 6){
+  if(q.shape === 6){
     return '<div class="ask">' + tr('Колко числа можем да поставим вместо ■, за да е вярно?', 'Скільки чисел можна поставити замість ■, щоб було правильно?') + '</div>' +
-      '<div class="given">' + ineqSmallText(q) + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="given">' + ineqSmallText(q) + '</div><div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'ineq' && q.shape === 4){
+  if(q.shape === 4){
     return '<div class="ask">' + tr('Колко са всички <b>двуцифрени</b> числа, които могат да се запишат в □, така че да е вярно', 'Скільки всього <b>двоцифрових</b> чисел можна записати в □, щоб було правильно') + '</div>' +
-      '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div><div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'ineq' && q.shape === 5){
+  if(q.shape === 5){
     const slots = q.fits.map((_, i) => i ? ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot' + i + '"></span>' : SLOT).join('');
     return '<div class="ask">' + tr('Кои цифри можем да поставим вместо ❄, така че числото <span class="num">' + q.N + '</span> да <b>не е по-малко</b> от ' + (q.three ? 'трицифреното' : 'двуцифреното') + ' число ❄' + q.d + (q.three ? q.d : '') + '?',
       'Які цифри можна поставити замість ❄, щоб число <span class="num">' + q.N + '</span> було <b>не менше</b> за ' + (q.three ? 'трицифрове' : 'двоцифрове') + ' число ❄' + q.d + (q.three ? q.d : '') + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + slots + '</div>';
+      '<div class="line md">' + slots + '</div>';
   }
-  if(q.kind === 'ineq'){
-    const rel = q.shape === 3 ? q.A + ' − ' + q.B + ' &gt; ? + ' + q.C
-      : q.shape === 2
-      ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
-      : q.A + ' − ' + q.B + ' &lt; ? + ' + q.C;
-    const head = q.shape === 3
-      ? tr('Намерете <b>броя</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да е вярно</b>:',
-           'Знайдіть <b>кількість</b> усіх різних чисел, які можна поставити замість ?, щоб <b>було правильно</b>:')
-      : q.asksSum
-      ? tr('Намерете <b>сбора</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да НЕ е вярно</b>:',
-           'Знайдіть <b>суму</b> всіх різних чисел, які можна поставити замість ?, щоб <b>НЕ було правильно</b>:')
-      : tr('Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
-        (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':',
-           'Скільки різних одноцифрових чисел можна поставити замість ?, щоб ' +
-        (q.shape === 1 ? '<b>було правильно</b>' : '<b>НЕ було правильно</b>') + ':');
-    return '<div class="ask">' + head + '</div>' +
-      '<div class="given">' + rel + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const rel = q.shape === 3 ? q.A + ' − ' + q.B + ' &gt; ? + ' + q.C
+    : q.shape === 2
+    ? '? + ' + q.C + ' &lt; ' + q.A + ' − ' + q.B
+    : q.A + ' − ' + q.B + ' &lt; ? + ' + q.C;
+  const head = q.shape === 3
+    ? tr('Намерете <b>броя</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да е вярно</b>:',
+         'Знайдіть <b>кількість</b> усіх різних чисел, які можна поставити замість ?, щоб <b>було правильно</b>:')
+    : q.asksSum
+    ? tr('Намерете <b>сбора</b> на всички различни числа, които можем да поставим вместо ?, така че <b>да НЕ е вярно</b>:',
+         'Знайдіть <b>суму</b> всіх різних чисел, які можна поставити замість ?, щоб <b>НЕ було правильно</b>:')
+    : tr('Колко различни едноцифрени числа можем да поставим вместо ?, така че ' +
+      (q.shape === 1 ? '<b>да е вярно</b>' : '<b>да НЕ е вярно</b>') + ':',
+         'Скільки різних одноцифрових чисел можна поставити замість ?, щоб ' +
+      (q.shape === 1 ? '<b>було правильно</b>' : '<b>НЕ було правильно</b>') + ':');
+  return '<div class="ask">' + head + '</div>' +
+    '<div class="given">' + rel + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqIneq(q){
-  if(q.kind === 'ineq' && q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;
-  if(q.kind === 'ineq' && q.shape === 6) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
-  if(q.kind === 'ineq' && q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
-  if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
-  if(q.kind === 'ineq' && q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
-  if(q.kind === 'ineq') return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
+  if(q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;
+  if(q.shape === 6) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
+  if(q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
+  if(q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
+  if(q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
+  return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? tr(' вярно', ' правильно') : tr(' невярно', ' неправильно')) +
     (q.asksSum ? tr(', сборът', ', сума') : '') + ' → ' + q.ans;
 }
 function whyIneq(q, full){
-  if(q.kind === 'ineq' && q.shape === 7){
+  if(q.shape === 7){
     if(!full) return tr('Първо пресметни лявата страна. После опитай цифрите на мястото на □.', 'Спершу обчисли ліву частину. Потім пробуй цифри замість □.');
     const head = exprText(q.terms) + ' = <b>' + q.V + '</b> &nbsp;→&nbsp; ';
     if(q.ask === 'which') return head + q.V + (q.more ? ' &gt; ' : ' &lt; ') + q.T + '□ ' + tr('само за ', 'лише для ') + q.T + q.ans + ' &nbsp;→&nbsp; □ = ' + q.ans;
     const fit = []; for(let d = 1; d <= 9; d++) if(q.less ? 10*d > q.V : 10*d < q.V) fit.push(d);
     return head + q.V + (q.less ? ' &lt; □0' : ' &gt; □0') + ' &nbsp;→&nbsp; □ = ' + fit.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'ineq' && q.shape === 6){
+  if(q.shape === 6){
     if(!full) return tr('Опитвай числата подред, като започнеш от нулата — докога е вярно?', 'Пробуй числа по черзі, починаючи з нуля, — доки правильно?');
     const fit = [...Array(q.ans).keys()];
     return ineqSmallText(q) + ' &nbsp;→&nbsp; ■ &lt; ' + q.ans + ' &nbsp;→&nbsp; ■ = <b>' + fit.join(', ') + '</b> &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'ineq'){
-    if(q.shape === 4){
-      if(!full) return tr('Колко най-много може да е □? И само двуцифрените се броят.', 'Яким найбільшим може бути □? І рахуються лише двоцифрові.');
-      return '□ + ' + q.C + ' < ' + q.T + ' &nbsp;→&nbsp; □ < ' + (q.T - q.C) + ' &nbsp;→&nbsp; 10, 11, …, ' + (q.T - q.C - 1) + ' &nbsp;→&nbsp; ' + (q.T - q.C - 1) + ' − 10 + 1 = ' + q.ans;
-    }
-    if(q.shape === 5){
-      if(!full) return tr('„Не е по-малко" значи по-голямо или равно. Опитвай цифрите подред.', '«Не менше» означає більше або дорівнює. Пробуй цифри по черзі.');
-      const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) { const v = q.three ? 100*t + 11*q.d : 10*t + q.d; tries.push(v + (v <= q.N ? ' ≤ ' : ' > ') + q.N); }
-      return tries.join(', ') + ' &nbsp;→&nbsp; ❄ = ' + q.fits.join(tr(' и ', ' і '));
-    }
-    if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');
-    if(q.shape === 3 && full) return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' < ' + q.L +
-      tr(', значи', ', отже') + ' ? < ' + (q.L - q.C) + ' &nbsp;→&nbsp; 0 … ' + (q.L - q.C - 1) + ' &nbsp;→&nbsp; ' + q.ans;
-    if(!full) return q.asksSum ? tr('Първо намери кои числа стават, после ги събери.', 'Спочатку знайди, які числа підходять, а потім додай їх.')
-            : q.shape === 1 ? tr('Първо пресметни лявата страна.', 'Спочатку обчисли ліву частину.')
-            : tr('„Не е вярно" обръща знака.', '«НЕ правильно» перевертає знак.');
-    const lim = q.L - q.C;
-    if(q.asksSum){
-      const list = [];
-      for(let v = 0; v <= lim; v++) list.push(v);
-      return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L +
-        tr(', значи', ', отже') + ' ? ≤ ' + lim + ' &nbsp;→&nbsp; ' + list.join(' + ') + ' = ' + q.ans;
-    }
-    const head = q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ';
-    if(q.shape === 0) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L + tr(', значи', ', отже') + ' ? ≤ ' + lim +
-      ' &nbsp;→&nbsp; 0 … ' + lim + ' &nbsp;→&nbsp; ' + q.ans;
-    if(q.shape === 1) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' > ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + (lim+1) +
-      ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
-    return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≥ ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + lim +
-      ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  if(q.shape === 4){
+    if(!full) return tr('Колко най-много може да е □? И само двуцифрените се броят.', 'Яким найбільшим може бути □? І рахуються лише двоцифрові.');
+    return '□ + ' + q.C + ' < ' + q.T + ' &nbsp;→&nbsp; □ < ' + (q.T - q.C) + ' &nbsp;→&nbsp; 10, 11, …, ' + (q.T - q.C - 1) + ' &nbsp;→&nbsp; ' + (q.T - q.C - 1) + ' − 10 + 1 = ' + q.ans;
   }
+  if(q.shape === 5){
+    if(!full) return tr('„Не е по-малко" значи по-голямо или равно. Опитвай цифрите подред.', '«Не менше» означає більше або дорівнює. Пробуй цифри по черзі.');
+    const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) { const v = q.three ? 100*t + 11*q.d : 10*t + q.d; tries.push(v + (v <= q.N ? ' ≤ ' : ' > ') + q.N); }
+    return tries.join(', ') + ' &nbsp;→&nbsp; ❄ = ' + q.fits.join(tr(' и ', ' і '));
+  }
+  if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');
+  if(q.shape === 3 && full) return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' < ' + q.L +
+    tr(', значи', ', отже') + ' ? < ' + (q.L - q.C) + ' &nbsp;→&nbsp; 0 … ' + (q.L - q.C - 1) + ' &nbsp;→&nbsp; ' + q.ans;
+  if(!full) return q.asksSum ? tr('Първо намери кои числа стават, после ги събери.', 'Спочатку знайди, які числа підходять, а потім додай їх.')
+          : q.shape === 1 ? tr('Първо пресметни лявата страна.', 'Спочатку обчисли ліву частину.')
+          : tr('„Не е вярно" обръща знака.', '«НЕ правильно» перевертає знак.');
+  const lim = q.L - q.C;
+  if(q.asksSum){
+    const list = [];
+    for(let v = 0; v <= lim; v++) list.push(v);
+    return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L +
+      tr(', значи', ', отже') + ' ? ≤ ' + lim + ' &nbsp;→&nbsp; ' + list.join(' + ') + ' = ' + q.ans;
+  }
+  const head = q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ';
+  if(q.shape === 0) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L + tr(', значи', ', отже') + ' ? ≤ ' + lim +
+    ' &nbsp;→&nbsp; 0 … ' + lim + ' &nbsp;→&nbsp; ' + q.ans;
+  if(q.shape === 1) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' > ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + (lim+1) +
+    ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≥ ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + lim +
+    ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
 }
 KIND.ineq = { draw:drawIneq, eq:eqIneq, why:whyIneq };

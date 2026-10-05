@@ -1,6 +1,4 @@
 // Question kind 'hops': level 186 Скакалецът — Jumps of two lengths, and the ways to land on a spot.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2021, 1 клас, задача 17: a grasshopper jumps 3 m or 4 m; in how many ways does it reach a
 // flower 14 m away? 14 is only 3 + 3 + 4 + 4, and those four jumps can come in 6 orders:
@@ -36,24 +34,20 @@ function hopsSvg(q){
   return '<div class="fig wide"><svg viewBox="0 0 300 66" role="img" aria-label="' + tr('скакалецът и цветчето', 'коник і квіточка') + '">' + g + '</svg></div>';
 }
 function drawHops(q){
-  if(q.kind === 'hops'){
-    return '<div class="ask">' + tr('Скакалец скача по права линия или <span class="num">' + q.a + '</span> метра, или <span class="num">' + q.b + '</span> метра. По колко начина той може да достигне по права до цветче, което се намира на <span class="num">' + q.N + '</span> метра?',
-      'Коник стрибає по прямій або на ' + hopsUk(q.a) + ', або на ' + hopsUk(q.b) + '. Скількома способами він може дістатися по прямій до квіточки, яка розташована за ' + hopsUk(q.N) + '?') + '</div>' +
-      hopsSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Скакалец скача по права линия или <span class="num">' + q.a + '</span> метра, или <span class="num">' + q.b + '</span> метра. По колко начина той може да достигне по права до цветче, което се намира на <span class="num">' + q.N + '</span> метра?',
+    'Коник стрибає по прямій або на ' + hopsUk(q.a) + ', або на ' + hopsUk(q.b) + '. Скількома способами він може дістатися по прямій до квіточки, яка розташована за ' + hopsUk(q.N) + '?') + '</div>' +
+    hopsSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 // the ways grouped by which jumps they use: for each mix, all its orders
 const hopsMixes = q => { const m = {}; hopWays(q.a, q.b, q.N).forEach(w => { const k = w.split('').sort().join(''); (m[k] = m[k] || []).push(w); }); return Object.values(m); };
 function eqHops(q){
-  if(q.kind === 'hops') return hopsMixes(q).map(ws => ws[0].split('').sort().join(' + ') + ' (' + ws.length + ')').join(', ') + ' → ' + q.ans;
+  return hopsMixes(q).map(ws => ws[0].split('').sort().join(' + ') + ' (' + ws.length + ')').join(', ') + ' → ' + q.ans;
 }
 function whyHops(q, full){
-  if(q.kind === 'hops'){
-    if(!full) return tr('Първо намери от кои скокове се събира разстоянието. После ги подреди по всички начини — редът има значение.',
-      'Спершу знайди, з яких стрибків складається відстань. Потім розстав їх усіма способами — порядок важливий.');
-    const mixes = hopsMixes(q);
-    return mixes.map(ws => '<b>' + ws[0].split('').sort().join(' + ') + '</b>: ' + ws.map(w => w.split('').join(' ')).join(', ')).join('; &nbsp;') +
-      ' &nbsp;→&nbsp; ' + (mixes.length > 1 ? mixes.map(ws => ws.length).join(' + ') + ' = ' : '') + q.ans;
-  }
+  if(!full) return tr('Първо намери от кои скокове се събира разстоянието. После ги подреди по всички начини — редът има значение.',
+    'Спершу знайди, з яких стрибків складається відстань. Потім розстав їх усіма способами — порядок важливий.');
+  const mixes = hopsMixes(q);
+  return mixes.map(ws => '<b>' + ws[0].split('').sort().join(' + ') + '</b>: ' + ws.map(w => w.split('').join(' ')).join(', ')).join('; &nbsp;') +
+    ' &nbsp;→&nbsp; ' + (mixes.length > 1 ? mixes.map(ws => ws.length).join(' + ') + ' = ' : '') + q.ans;
 }
 KIND.hops = { draw:drawHops, eq:eqHops, why:whyHops };

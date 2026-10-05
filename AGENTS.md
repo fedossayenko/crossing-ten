@@ -20,6 +20,9 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - One question kind per file in `kinds/`, registering `KIND.<kind> = { draw, eq, why }`. It imports what it
   uses (`import { KIND, SLOT, rnd, tr } from '../js/core.js';`) and exports its generators, which
   `js/levels.js` imports for `gen:`. Everything else in the file stays private to it.
+  `draw`/`eq`/`why` are only ever called for their own kind (`KIND[q.kind]`), so they need no
+  `if(q.kind === …)` guard — test `q.shape` where a kind has several. The answer line takes a size class,
+  `<div class="line xl|lg|md">` (app.css); an inline font-size only for a line that must fit its own length.
   Search `kinds/` and `js/levels.js` first; extend an existing kind rather than add a
   near-duplicate.
 - A new kind file goes into `index.html` (`<script type="module" src=…>`) before `js/questions.js`; its level row goes in

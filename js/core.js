@@ -61,6 +61,11 @@ export function diffBars(rows, extra, foot, label){
 export const CM = ' <span class="unit">см</span>';
 
 export const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
+// A chain of + and − with its answer box, sized to fit one line on any screen (chain, pairs).
+export function chainLine(terms){
+  const e = exprText(terms) + ' = ';
+  return '<div class="line" style="font-size:clamp(19px,calc((100vw - 56px)/' + (e.length*0.56).toFixed(2) + '),40px)">' + e + SLOT + '</div>';
+}
 
 export const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
 // Ukrainian number words: masculine and neuter nouns take UKNUM (два числа), feminine ones UKNUM_F (дві цифри).

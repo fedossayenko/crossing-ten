@@ -1,6 +1,4 @@
 // Question kind 'notrue': level 147 Кое не е вярно? — Three numbers worked out, and the one false statement among four.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2022, задача 1: A = 34 + 22, B = 87 − 25, C = 55. Which is NOT true: A < B, C < A, B > C, A > B?
 // A = 56, B = 62, C = 55, so A > B is the false one. Each statement is checked against the worked numbers;
@@ -20,18 +18,14 @@ export function genNoTrue(){
   }
 }
 function drawNoTrue(q){
-  if(q.kind === 'notrue'){
-    return '<div class="given">A = ' + q.x + ' + ' + q.y + ', &nbsp;B = ' + q.p + ' − ' + q.r + ', &nbsp;C = ' + q.C + '</div>' +
-      '<div class="ask">' + tr('Кое твърдение <b>не е</b> вярно?', 'Яке твердження <b>хибне</b>?') + '</div>';
-  }
+  return '<div class="given">A = ' + q.x + ' + ' + q.y + ', &nbsp;B = ' + q.p + ' − ' + q.r + ', &nbsp;C = ' + q.C + '</div>' +
+    '<div class="ask">' + tr('Кое твърдение <b>не е</b> вярно?', 'Яке твердження <b>хибне</b>?') + '</div>';
 }
 function eqNoTrue(q){
-  if(q.kind === 'notrue') return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.C + ' → ' + q.st[q.pick];
+  return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.C + ' → ' + q.st[q.pick];
 }
 function whyNoTrue(q, full){
-  if(q.kind === 'notrue'){
-    if(!full) return tr('Първо пресметни A и B. После провери всяко твърдение — търсим това, което не е вярно.', 'Спершу обчисли A і B. Потім перевір кожне твердження — шукаємо хибне.');
-    return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.C + ' &nbsp;→&nbsp; ' + q.st.map((s, i) => s + (q.oks[i] ? ' ✓' : ' <b>✗</b>')).join(', ');
-  }
+  if(!full) return tr('Първо пресметни A и B. После провери всяко твърдение — търсим това, което не е вярно.', 'Спершу обчисли A і B. Потім перевір кожне твердження — шукаємо хибне.');
+  return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.C + ' &nbsp;→&nbsp; ' + q.st.map((s, i) => s + (q.oks[i] ? ' ✓' : ' <b>✗</b>')).join(', ');
 }
 KIND.notrue = { draw:drawNoTrue, eq:eqNoTrue, why:whyNoTrue };

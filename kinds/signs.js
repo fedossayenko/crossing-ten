@@ -1,6 +1,4 @@
 // Question kind 'signs': level 50 Плюс или минус — Choose the signs in a run — how many can be minus.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 20: the numbers stand in a row and every sign but the first may be a minus.
 // Turning a term round costs twice its value, so the terms turned round have to add to
@@ -37,38 +35,34 @@ export function signsExample(q){
   return line + ' = ' + (minus === undefined ? total : total - 2*minus);
 }
 function drawSigns(q){
-  if(q.kind === 'signs'){
-    return tr('<div class="ask">Естествените числа от <span class="num">' + q.a + '</span> до <span class="num">' +
-      q.b + '</span> включително се записват едно след друго. Поставете между тях знаците „+" или „−", ' +
-      'за да получим числото <span class="num">' + q.T + '</span>. Колко <b>най-много</b> могат да са минусите?</div>',
-      '<div class="ask">Натуральні числа від <span class="num">' + q.a + '</span> до <span class="num">' +
-      q.b + '</span> включно записано одне за одним. Поставте між ними знаки «+» або «−», ' +
-      'щоб отримати число <span class="num">' + q.T + '</span>. Скільки <b>найбільше</b> може бути мінусів?</div>') +
-      '<div class="seq">' + q.nums.join(' &nbsp;') + '</div>' +
-      '<div class="note">' + tr('Например', 'Наприклад') + ': ' + signsExample(q) + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return tr('<div class="ask">Естествените числа от <span class="num">' + q.a + '</span> до <span class="num">' +
+    q.b + '</span> включително се записват едно след друго. Поставете между тях знаците „+" или „−", ' +
+    'за да получим числото <span class="num">' + q.T + '</span>. Колко <b>най-много</b> могат да са минусите?</div>',
+    '<div class="ask">Натуральні числа від <span class="num">' + q.a + '</span> до <span class="num">' +
+    q.b + '</span> включно записано одне за одним. Поставте між ними знаки «+» або «−», ' +
+    'щоб отримати число <span class="num">' + q.T + '</span>. Скільки <b>найбільше</b> може бути мінусів?</div>') +
+    '<div class="seq">' + q.nums.join(' &nbsp;') + '</div>' +
+    '<div class="note">' + tr('Например', 'Наприклад') + ': ' + signsExample(q) + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqSigns(q){
-  if(q.kind === 'signs') return q.a + '…' + q.b + ' = ' + q.T + tr(' → минуси: ', ' → мінуси: ') + q.ans;
+  return q.a + '…' + q.b + ' = ' + q.T + tr(' → минуси: ', ' → мінуси: ') + q.ans;
 }
 function whySigns(q, full){
-  if(q.kind === 'signs'){
-    // The row is read left to right, but it is NOT computed left to right: 2 − 3 − 4 + 5 + 6 + 7
-    // would dip below zero. MBG's own tests give the rule with an example (1 − 8 + 9 = 1 + 9 − 8 = 2):
-    // add every plus first, then take the minuses off — so the hint shows the sum regrouped that way.
-    if(!full) return tr('Всяко число, което обърнеш, сваля сбора два пъти със себе си. Смятай първо плюсовете, после изваждай.',
-      'Мінус перед числом зменшує суму на це число двічі. Спочатку додай усі плюси, потім віднімай.');
-    const total = q.nums.reduce((t, v) => t + v, 0), drop = (total - q.T) / 2;
-    const line = q.nums.map((v, i) => i ? (q.wit.indexOf(v) >= 0 ? ' − ' : ' + ') + v : v).join('');
-    const plus = q.nums.filter(v => q.wit.indexOf(v) < 0), plusSum = total - drop;
-    const regroup = tr('първо плюсовете: ', 'спочатку плюси: ') + plus.join(' + ') + ' = ' + plusSum +
-      tr(', после минусите: ', ', потім мінуси: ') + plusSum + ' − ' + q.wit.join(' − ') + ' = ' + q.T;
-    return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
-      'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
-      drop + ' &nbsp;→&nbsp; ' + q.wit.join(' + ') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
-      ' &nbsp;→&nbsp; ' + regroup +
-      tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
-  }
+  // The row is read left to right, but it is NOT computed left to right: 2 − 3 − 4 + 5 + 6 + 7
+  // would dip below zero. MBG's own tests give the rule with an example (1 − 8 + 9 = 1 + 9 − 8 = 2):
+  // add every plus first, then take the minuses off — so the hint shows the sum regrouped that way.
+  if(!full) return tr('Всяко число, което обърнеш, сваля сбора два пъти със себе си. Смятай първо плюсовете, после изваждай.',
+    'Мінус перед числом зменшує суму на це число двічі. Спочатку додай усі плюси, потім віднімай.');
+  const total = q.nums.reduce((t, v) => t + v, 0), drop = (total - q.T) / 2;
+  const line = q.nums.map((v, i) => i ? (q.wit.indexOf(v) >= 0 ? ' − ' : ' + ') + v : v).join('');
+  const plus = q.nums.filter(v => q.wit.indexOf(v) < 0), plusSum = total - drop;
+  const regroup = tr('първо плюсовете: ', 'спочатку плюси: ') + plus.join(' + ') + ' = ' + plusSum +
+    tr(', после минусите: ', ', потім мінуси: ') + plusSum + ' − ' + q.wit.join(' − ') + ' = ' + q.T;
+  return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
+    'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
+    drop + ' &nbsp;→&nbsp; ' + q.wit.join(' + ') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
+    ' &nbsp;→&nbsp; ' + regroup +
+    tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
 }
 KIND.signs = { draw:drawSigns, eq:eqSigns, why:whySigns };

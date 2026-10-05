@@ -1,6 +1,4 @@
 // Question kind 'step': level 52 Изрязан ъгъл — A corner cut from a rectangle — its sides and its outline.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 16: the cut edge belongs to both halves, so the two perimeters count it twice.
 // Задача 15: a corner cut out of a rectangle. Two of the six sides are never labelled,
@@ -40,22 +38,20 @@ function stepSvg(q){
 }
 
 function drawStep(q){
-  if(q.kind === 'step'){
-    const ask = q.shape === 0
-      ? tr('От правоъгълник е изрязан правоъгълник. Получила се е друга фигура. <b>Колко са отсечките</b> на тази фигура, които са с <b>равни дължини</b>?',
-           'З прямокутника вирізали прямокутник. Вийшла інша фігура. <b>Скільки відрізків</b> цієї фігури мають <b>однакову довжину</b>?')
-      : q.shape === 1
-      ? tr('От правоъгълник е изрязан правоъгълник. Колко сантиметра е <b>обиколката</b> на получената фигура?',
-           'З прямокутника вирізали прямокутник. Скільки сантиметрів становить <b>периметр</b> отриманої фігури?')
-      : tr('От правоъгълник е изрязан правоъгълник. Колко сантиметра е дължината на <b>неозначената изправена</b> страна?',
-           'З прямокутника вирізали прямокутник. Скільки сантиметрів становить довжина <b>непозначеної вертикальної</b> сторони?');
-    return '<div class="ask">' + ask + '</div>' + stepSvg(q) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
-      (q.shape === 0 ? '' : CM) + '</div>';
-  }
+  const ask = q.shape === 0
+    ? tr('От правоъгълник е изрязан правоъгълник. Получила се е друга фигура. <b>Колко са отсечките</b> на тази фигура, които са с <b>равни дължини</b>?',
+         'З прямокутника вирізали прямокутник. Вийшла інша фігура. <b>Скільки відрізків</b> цієї фігури мають <b>однакову довжину</b>?')
+    : q.shape === 1
+    ? tr('От правоъгълник е изрязан правоъгълник. Колко сантиметра е <b>обиколката</b> на получената фигура?',
+         'З прямокутника вирізали прямокутник. Скільки сантиметрів становить <b>периметр</b> отриманої фігури?')
+    : tr('От правоъгълник е изрязан правоъгълник. Колко сантиметра е дължината на <b>неозначената изправена</b> страна?',
+         'З прямокутника вирізали прямокутник. Скільки сантиметрів становить довжина <b>непозначеної вертикальної</b> сторони?');
+  return '<div class="ask">' + ask + '</div>' + stepSvg(q) +
+    '<div class="line md">' + SLOT +
+    (q.shape === 0 ? '' : CM) + '</div>';
 }
 function eqStep(q){
-  if(q.kind === 'step') return q.W + '×' + q.H + tr(', изрязано ', ', вирізано ') + q.w + '×' + q.h + ' → ' + q.ans;
+  return q.W + '×' + q.H + tr(', изрязано ', ', вирізано ') + q.w + '×' + q.h + ' → ' + q.ans;
 }
 // The picture: the figure again, its six sides walked as the answer needs them. For the outline the
 // two sides of the notch slide out to the missing corner (dashed), so it is the whole rectangle's.

@@ -19,24 +19,20 @@ const BEE = '<svg class="ic" viewBox="-13 -12 26 24" aria-hidden="true"><ellipse
   '<path d="M-3,-4.5 V8.5 M3,-4.5 V8.5" stroke="var(--ink)" stroke-width="2.4"/><circle cx="7" cy="0" r="1.2" fill="var(--ink)"/></svg>';
 const betweenRow = q => '<span style="white-space:nowrap">' + q.p + ' − ' + q.s1 + ' &lt; ' + LADYBIRD + ' &lt; ' + BEE + ' &lt; ' + q.p + ' + ' + q.s2 + '</span>';
 function drawBetween(q){
-  if(q.kind === 'between'){
-    return '<div class="ask">' + tr('Калинката и пчеличката са числа. Кои са <b>всички</b> възможни стойности на ' + LADYBIRD + ' + ' + BEE + ', ако',
-      'Сонечко і бджілка — це числа. Які <b>всі</b> можливі значення ' + LADYBIRD + ' + ' + BEE + ', якщо') + '</div>' +
-      '<div class="given" style="font-size:clamp(20px,6vw,30px)">' + betweenRow(q) + '</div>' +
-      '<div class="line" style="font-size:clamp(26px,7vw,42px)">' + SLOT + ', <span class="slot" id="slot1"></span>, <span class="slot" id="slot2"></span></div>';
-  }
+  return '<div class="ask">' + tr('Калинката и пчеличката са числа. Кои са <b>всички</b> възможни стойности на ' + LADYBIRD + ' + ' + BEE + ', ако',
+    'Сонечко і бджілка — це числа. Які <b>всі</b> можливі значення ' + LADYBIRD + ' + ' + BEE + ', якщо') + '</div>' +
+    '<div class="given" style="font-size:clamp(20px,6vw,30px)">' + betweenRow(q) + '</div>' +
+    '<div class="line" style="font-size:clamp(26px,7vw,42px)">' + SLOT + ', <span class="slot" id="slot1"></span>, <span class="slot" id="slot2"></span></div>';
 }
 function eqBetween(q){
-  if(q.kind === 'between') return (q.lo + 1) + ', ' + (q.lo + 2) + ', ' + (q.lo + 3) + ' → ' + q.ans + ', ' + q.alt.join(', ');
+  return (q.lo + 1) + ', ' + (q.lo + 2) + ', ' + (q.lo + 3) + ' → ' + q.ans + ', ' + q.alt.join(', ');
 }
 function whyBetween(q, full){
-  if(q.kind === 'between'){
-    if(!full) return tr('Пресметни двата края и изпиши числата между тях. Калинката е по-малкото число.',
-      'Обчисли обидва краї і випиши числа між ними. Сонечко — менше число.');
-    const a = q.lo + 1, b = q.lo + 2, c = q.lo + 3;
-    return q.p + ' − ' + q.s1 + ' = ' + q.lo + tr(' и ', ' і ') + q.p + ' + ' + q.s2 + ' = ' + q.hi + tr(' &nbsp;→&nbsp; между тях са само <b>', ' &nbsp;→&nbsp; між ними лише <b>') +
-      a + ', ' + b + tr('</b> и <b>', '</b> і <b>') + c + '</b> &nbsp;→&nbsp; ' + LADYBIRD + ' + ' + BEE + ': ' +
-      a + ' + ' + b + ' = ' + q.ans + ', ' + a + ' + ' + c + ' = ' + q.alt[0] + ', ' + b + ' + ' + c + ' = ' + q.alt[1];
-  }
+  if(!full) return tr('Пресметни двата края и изпиши числата между тях. Калинката е по-малкото число.',
+    'Обчисли обидва краї і випиши числа між ними. Сонечко — менше число.');
+  const a = q.lo + 1, b = q.lo + 2, c = q.lo + 3;
+  return q.p + ' − ' + q.s1 + ' = ' + q.lo + tr(' и ', ' і ') + q.p + ' + ' + q.s2 + ' = ' + q.hi + tr(' &nbsp;→&nbsp; между тях са само <b>', ' &nbsp;→&nbsp; між ними лише <b>') +
+    a + ', ' + b + tr('</b> и <b>', '</b> і <b>') + c + '</b> &nbsp;→&nbsp; ' + LADYBIRD + ' + ' + BEE + ': ' +
+    a + ' + ' + b + ' = ' + q.ans + ', ' + a + ' + ' + c + ' = ' + q.alt[0] + ', ' + b + ' + ' + c + ' = ' + q.alt[1];
 }
 KIND.between = { draw:drawBetween, eq:eqBetween, why:whyBetween };

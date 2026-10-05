@@ -1,6 +1,4 @@
 // Question kind 'rects': level 19 Правоъгълници — How many rectangles in the grid hold the ant.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 13: a rectangle holds the ant when its left edge is at or left of the ant's
 // column and its right edge at or right of it — so the count is the choices each way.
@@ -41,14 +39,14 @@ export function genRects(){
 }
 
 function drawRects(q){
-  if(q.kind === 'rects' && q.shape === 2){
+  if(q.shape === 2){
     return '<div class="ask">' + (q.asksAll ? tr('С колко <b>правоъгълниците</b> на чертежа са повече от <b>квадратите</b>?', 'На скільки <b>прямокутників</b> на рисунку більше, ніж <b>квадратів</b>?')
       : tr('С колко правоъгълниците на чертежа, които <b>не са квадрати</b>, са ' + (q.fewer ? 'по-малко' : 'повече') + ' от <b>квадратите</b>?',
            'На скільки прямокутників на рисунку, які <b>не є квадратами</b>, ' + (q.fewer ? 'менше' : 'більше') + ', ніж <b>квадратів</b>?')) + '</div>' +
       gridSvg(q.W, q.H, 0, 0) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
+      '<div class="line md">' + SLOT + '</div>';
   }
-  if(q.kind === 'rects' && q.shape === 1){
+  if(q.shape === 1){
     return '<div class="ask">' + tr('Правоъгълникът с размери <span class="num">' + q.s +
       '</span> см и <span class="num">' + (q.n * q.s) + '</span> см е разделен на <b>' + BGNUM[q.n] +
       ' квадрата</b>. Колко сантиметра е сборът от обиколките на всички правоъгълници, които <b>' +
@@ -57,20 +55,18 @@ function drawRects(q){
       '</span> см поділено на <b>' + UKNUM[q.n] + ' квадрати</b>. Скільки сантиметрів становить сума периметрів усіх прямокутників, які <b>' +
       (q.squares ? 'є квадратами' : 'не є квадратами') + '</b>?') + '</div>' +
       gridSvg(q.n, 1, 0, 0) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'rects'){
-    return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има мравка?',
-      'Скільки всього на рисунку прямокутників, у яких є мурашка?') + '</div>' +
-      gridSvg(q.W, q.H, q.c, q.r) +
-      '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
-      'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има мравка?',
+    'Скільки всього на рисунку прямокутників, у яких є мурашка?') + '</div>' +
+    gridSvg(q.W, q.H, q.c, q.r) +
+    '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
+    'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
+    '<div class="line md">' + SLOT + '</div>';
 }
 function eqRects(q){
-  if(q.kind === 'rects' && q.shape === 2) return q.W + '×' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
-  if(q.kind === 'rects') return q.shape === 1
+  if(q.shape === 2) return q.W + '×' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
+  return q.shape === 1
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
     : q.W + '×' + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
 }
@@ -96,25 +92,23 @@ function rectsAntSvg(q){
     tr('всички правоъгълници с мравката', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
 }
 function whyRects(q, full){
-  if(q.kind === 'rects' && q.shape === 2){
+  if(q.shape === 2){
     if(!full) return tr('Преброй поотделно квадратите — малки и големи — и всички правоъгълници. Квадратът също е правоъгълник.',
       'Порахуй окремо квадрати — малі й великі — і всі прямокутники. Квадрат теж прямокутник.');
     return tr('квадрати: ', 'квадратів: ') + q.sizes.join(' + ') + ' = <b>' + q.sq + '</b>; ' + tr('всички правоъгълници: <b>', 'усіх прямокутників: <b>') + q.all + '</b>' +
       (q.asksAll ? ' &nbsp;→&nbsp; ' + q.all + ' − ' + q.sq + ' = ' + q.ans
         : tr(', от тях не са квадрати ', ', з них не квадратів ') + q.all + ' − ' + q.sq + ' = <b>' + q.other + '</b> &nbsp;→&nbsp; ' + Math.max(q.sq, q.other) + ' − ' + Math.min(q.sq, q.other) + ' = ' + q.ans);
   }
-  if(q.kind === 'rects' && q.shape === 1){
+  if(q.shape === 1){
     if(!full) return tr('Брой всички правоъгълници, не само квадратчетата поотделно.',
       'Рахуй усі прямокутники, а не лише окремі квадратики.');
     return q.parts.map(pt => pt[1] + tr(' на ширина ', ' завширшки ') + (pt[0]*q.s) + tr(' см, обиколка ', ' см, периметр ') + pt[2]).join('; &nbsp;') +
       ' &nbsp;→&nbsp; ' + q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans;
   }
-  if(q.kind === 'rects'){
-    if(!full) return tr('Правоъгълникът може да е от едно или от повече квадратчета.',
-      'Прямокутник може складатися з одного або з кількох квадратиків.');
-    const rep = n => Array(n).fill(q.wide).join(' + ');
-    return tr('по ширина <b>', 'по ширині <b>') + q.wide + tr('</b>, по височина <b>', '</b>, по висоті <b>') + q.tall + '</b> &nbsp;→&nbsp; ' +
-      (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans) + rectsAntSvg(q);
-  }
+  if(!full) return tr('Правоъгълникът може да е от едно или от повече квадратчета.',
+    'Прямокутник може складатися з одного або з кількох квадратиків.');
+  const rep = n => Array(n).fill(q.wide).join(' + ');
+  return tr('по ширина <b>', 'по ширині <b>') + q.wide + tr('</b>, по височина <b>', '</b>, по висоті <b>') + q.tall + '</b> &nbsp;→&nbsp; ' +
+    (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans) + rectsAntSvg(q);
 }
 KIND.rects = { draw:drawRects, eq:eqRects, why:whyRects };

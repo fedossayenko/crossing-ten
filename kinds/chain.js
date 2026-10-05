@@ -1,10 +1,8 @@
 // Question kind 'chain': level 8 2 + 6 − 5 — A long chain of + and −, worked left to right.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 1: a plain ± chain worked left to right. The zeros are deliberate —
 // noticing that + 0 changes nothing is part of the task.
-import { KIND, SLOT, exprText, rnd, tr } from '../js/core.js';
+import { KIND, chainLine, exprText, rnd, tr } from '../js/core.js';
 export function genChain(){
   for(;;){
     const len = 6 + rnd(3);
@@ -36,23 +34,15 @@ export function genChainShort(){
   }
 }
 
-function drawChain(q){
-  if(q.kind === 'chain' || q.kind === 'pairs'){
-    const e = exprText(q.terms) + ' = ';
-    return '<div class="line" style="font-size:clamp(19px,calc((100vw - 56px)/' +
-           (e.length*0.56).toFixed(2) + '),40px)">' + e + SLOT + '</div>';
-  }
-}
+function drawChain(q){ return chainLine(q.terms); }
 function eqChain(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyChain(q, full){
-  if(q.kind === 'chain'){
-    if(!full) return tr('Стъпка по стъпка, отляво надясно.', 'Крок за кроком, зліва направо.');
-    let run = q.terms[0].n;
-    const steps = [run];
-    q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
-    return tr('Стъпка по стъпка: ', 'Крок за кроком: ') + '<b>' + steps.join(', ') + '</b>';
-  }
+  if(!full) return tr('Стъпка по стъпка, отляво надясно.', 'Крок за кроком, зліва направо.');
+  let run = q.terms[0].n;
+  const steps = [run];
+  q.terms.slice(1).forEach(t => { run += t.op === '+' ? t.n : -t.n; steps.push(run); });
+  return tr('Стъпка по стъпка: ', 'Крок за кроком: ') + '<b>' + steps.join(', ') + '</b>';
 }
 KIND.chain = { draw:drawChain, eq:eqChain, why:whyChain };

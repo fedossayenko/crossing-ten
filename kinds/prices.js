@@ -1,6 +1,4 @@
 // Question kind 'prices': level 185 Цените — School things priced in pairs, and one on its own.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2021, 1 клас, задача 14: a ruler and an eraser cost 50 стотинки, a ruler and a triangle 60,
 // the triangle alone 40 — the eraser? The triangle's price takes the ruler out of the second pair:
@@ -42,20 +40,16 @@ function pricesSvg(q){
 }
 const priceName = (q, k) => tr(PRICE_THINGS[q.it[k]][0], PRICE_THINGS[q.it[k]][2]);
 function drawPrices(q){
-  if(q.kind === 'prices'){
-    const t = PRICE_THINGS[q.it[1]];
-    return '<div class="ask">' + tr('Колко стотинки струва <b>' + t[1] + '</b>?', 'Скільки стотинок коштує <b>' + t[2] + '</b>?') + '</div>' + pricesSvg(q) +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + ' <span class="unit">ст.</span></div>';
-  }
+  const t = PRICE_THINGS[q.it[1]];
+  return '<div class="ask">' + tr('Колко стотинки струва <b>' + t[1] + '</b>?', 'Скільки стотинок коштує <b>' + t[2] + '</b>?') + '</div>' + pricesSvg(q) +
+    '<div class="line lg">' + SLOT + ' <span class="unit">ст.</span></div>';
 }
 function eqPrices(q){
-  if(q.kind === 'prices') return priceName(q, 0) + ' ' + q.B + ' − ' + q.z + ' = ' + q.x + ', ' + priceName(q, 1) + ' ' + q.A + ' − ' + q.x + ' = ' + q.ans;
+  return priceName(q, 0) + ' ' + q.B + ' − ' + q.z + ' = ' + q.x + ', ' + priceName(q, 1) + ' ' + q.A + ' − ' + q.x + ' = ' + q.ans;
 }
 function whyPrices(q, full){
-  if(q.kind === 'prices'){
-    if(!full) return tr('Във втората картинка има нещо, чиято цена знаеш. Махни го — какво остава?', 'На другому малюнку є річ, ціну якої ти знаєш. Прибери її — що лишається?');
-    return priceName(q, 0) + ' + ' + priceName(q, 2) + ' = ' + q.B + ', ' + priceName(q, 2) + ' = ' + q.z + ' &nbsp;→&nbsp; ' + priceName(q, 0) + ' = ' + q.B + ' − ' + q.z + ' = <b>' + q.x + '</b> &nbsp;→&nbsp; ' +
-      priceName(q, 1) + ' = ' + q.A + ' − ' + q.x + ' = ' + q.ans;
-  }
+  if(!full) return tr('Във втората картинка има нещо, чиято цена знаеш. Махни го — какво остава?', 'На другому малюнку є річ, ціну якої ти знаєш. Прибери її — що лишається?');
+  return priceName(q, 0) + ' + ' + priceName(q, 2) + ' = ' + q.B + ', ' + priceName(q, 2) + ' = ' + q.z + ' &nbsp;→&nbsp; ' + priceName(q, 0) + ' = ' + q.B + ' − ' + q.z + ' = <b>' + q.x + '</b> &nbsp;→&nbsp; ' +
+    priceName(q, 1) + ' = ' + q.A + ' − ' + q.x + ' = ' + q.ans;
 }
 KIND.prices = { draw:drawPrices, eq:eqPrices, why:whyPrices };

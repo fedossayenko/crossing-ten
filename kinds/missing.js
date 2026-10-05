@@ -1,6 +1,4 @@
 // Question kind 'missing': level 27 Пропуснатите — Find the rule, fill the gaps — then read what is asked.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 5: find the rule, fill the two gaps — then read whether the question wants
 // the digits of the missing numbers or the numbers themselves.
@@ -75,40 +73,38 @@ export function genMissing(){
 }
 
 function drawMissing(q){
-  if(q.kind === 'missing' && q.grows){
+  if(q.grows){
     return '<div class="ask">' + tr('<b>Кои са</b> пропуснатите числа в редицата?', '<b>Які</b> числа пропущено в ряду?') + '</div>' +
       '<div class="seq">' + q.seq.map((v, i) => q.gaps.includes(i) ? '…' : v).join(', ') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
+      '<div class="line md">' + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
   }
-  if(q.kind === 'missing' && q.woven){
+  if(q.woven){
     const shown = q.woven.map((v, i) =>
       i === q.hideAt[0] ? '<span class="circle">●</span>'
       : i === q.hideAt[1] ? '<span class="circle">★</span>' : v).join(', ');
     return '<div class="ask"><span class="circle">★</span> − <span class="circle">●</span> = ?</div>' +
       '<div class="seq">' + shown + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
+      '<div class="line lg">' + SLOT + '</div>';
   }
-  if(q.kind === 'missing' && q.one){
+  if(q.one){
     const shown = q.next ? q.seq.join(', ') + ', …' : q.seq.map((v, i) => i === q.at ? '…' : v).join(', ');
     return '<div class="ask">' + tr('Кое е <b>' + (q.next ? 'следващото' : 'пропуснатото') + '</b> число?',
       'Яке число <b>' + (q.next ? 'наступне' : 'пропущене') + '</b>?') + '</div>' +
       '<div class="seq">' + shown + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
+      '<div class="line lg">' + SLOT + '</div>';
   }
-  if(q.kind === 'missing'){
-    const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
-    return '<div class="ask">' + (q.asksDigits
-        ? tr('Колко е <b>броят на цифрите</b> на пропуснатите числа?', 'Скільки <b>всього цифр</b> у пропущених числах?')
-        : tr('Колко е <b>сборът</b> на пропуснатите числа?', 'Чому дорівнює <b>сума</b> пропущених чисел?')) + '</div>' +
-      '<div class="seq">' + shown + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
+  return '<div class="ask">' + (q.asksDigits
+      ? tr('Колко е <b>броят на цифрите</b> на пропуснатите числа?', 'Скільки <b>всього цифр</b> у пропущених числах?')
+      : tr('Колко е <b>сборът</b> на пропуснатите числа?', 'Чому дорівнює <b>сума</b> пропущених чисел?')) + '</div>' +
+    '<div class="seq">' + shown + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqMissing(q){
-  if(q.kind === 'missing' && q.grows) return tr('стъпките ', 'кроки ') + q.seq.slice(1).map((v, i) => v - q.seq[i]).join(', ') + ' → ' + q.ans + tr(' и ', ' і ') + q.alt[0];
-  if(q.kind === 'missing' && q.one) return tr('правило ' + q.rule + ', липсва на място ', 'правило ' + q.rule + ', пропуск на місці ') + (q.at + 1) + ' → ' + q.ans;
-  if(q.kind === 'missing' && q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
-  if(q.kind === 'missing') return tr('липсват ', 'пропущено ') + q.hidden[0] + tr(' и ', ' і ') + q.hidden[1] +
+  if(q.grows) return tr('стъпките ', 'кроки ') + q.seq.slice(1).map((v, i) => v - q.seq[i]).join(', ') + ' → ' + q.ans + tr(' и ', ' і ') + q.alt[0];
+  if(q.one) return tr('правило ' + q.rule + ', липсва на място ', 'правило ' + q.rule + ', пропуск на місці ') + (q.at + 1) + ' → ' + q.ans;
+  if(q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
+  return tr('липсват ', 'пропущено ') + q.hidden[0] + tr(' и ', ' і ') + q.hidden[1] +
     (q.asksDigits ? tr(' → цифри: ', ' → цифр: ') : tr(' → сбор: ', ' → сума: ')) + q.ans;
 }
 // The picture: the run again, an arc over every step with what it adds, walking left to right; the

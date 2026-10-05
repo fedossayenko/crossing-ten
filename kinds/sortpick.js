@@ -1,6 +1,4 @@
 // Question kind 'sortpick': level 180 Подреди и избери — Numbers put in order, then the middle one read off.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2022, 1 клас, задача 5: the rule is shown on two examples — 9, 12, 10 ⟹ 9 < 10 < 12 ⟹ 91012 ⟹ 0:
 // in order, written one after another, and the digit in the middle. Then 30, 9, 20, 10 ⟹ 9102030, seven
@@ -34,36 +32,30 @@ export function genSortPick(){
 }
 const sortPickRow = (ns, mid, end) => ns.join(', ') + ' &nbsp;⟹&nbsp; ' + mid + ' &nbsp;⟹&nbsp; ' + end;
 function drawSortPick(q){
-  if(q.kind === 'sortpick'){
-    const ex = SORTPICK_EX[q.shape].map(([ns, j, out]) => '<div class="given" style="font-size:clamp(14px,3.8vw,20px)">' +
-      sortPickRow(ns, sortUp(ns).join(' &lt; ') + (j ? ' &nbsp;⟹&nbsp; ' + j : ''), out) + '</div>').join('');
-    const dots = q.nums.map(() => '…').join(' &lt; ') + (q.shape === 'digit' ? ' &nbsp;⟹&nbsp; …' : '');
-    return '<div class="ask">' + tr('Разгледайте примерите и открийте правилото. Какво число трябва да е на мястото на въпросителния знак?',
-      'Розгляньте приклади й знайдіть правило. Яке число має стояти на місці знака питання?') + '</div>' + ex +
-      '<div class="given" style="font-size:clamp(15px,4.2vw,22px); font-weight:800">' + q.nums.join(', ') + ' &nbsp;⟹&nbsp; ' + dots + ' &nbsp;⟹&nbsp; ?</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">? = ' + SLOT + '</div>';
-  }
+  const ex = SORTPICK_EX[q.shape].map(([ns, j, out]) => '<div class="given" style="font-size:clamp(14px,3.8vw,20px)">' +
+    sortPickRow(ns, sortUp(ns).join(' &lt; ') + (j ? ' &nbsp;⟹&nbsp; ' + j : ''), out) + '</div>').join('');
+  const dots = q.nums.map(() => '…').join(' &lt; ') + (q.shape === 'digit' ? ' &nbsp;⟹&nbsp; …' : '');
+  return '<div class="ask">' + tr('Разгледайте примерите и открийте правилото. Какво число трябва да е на мястото на въпросителния знак?',
+    'Розгляньте приклади й знайдіть правило. Яке число має стояти на місці знака питання?') + '</div>' + ex +
+    '<div class="given" style="font-size:clamp(15px,4.2vw,22px); font-weight:800">' + q.nums.join(', ') + ' &nbsp;⟹&nbsp; ' + dots + ' &nbsp;⟹&nbsp; ?</div>' +
+    '<div class="line xl">? = ' + SLOT + '</div>';
 }
 function eqSortPick(q){
-  if(q.kind === 'sortpick'){
-    const up = sortUp(q.nums);
-    return up.join(' < ') + (q.shape === 'digit' ? ' → ' + up.join('') : '') + ' → ' + q.ans;
-  }
+  const up = sortUp(q.nums);
+  return up.join(' < ') + (q.shape === 'digit' ? ' → ' + up.join('') : '') + ' → ' + q.ans;
 }
 function whySortPick(q, full){
-  if(q.kind === 'sortpick'){
-    if(!full) return q.shape === 'digit'
-      ? tr('Подреди числата от най-малкото до най-голямото, запиши ги едно до друго и намери цифрата точно по средата.', 'Розстав числа від найменшого до найбільшого, випиши їх поруч і знайди цифру точно посередині.')
-      : tr('Подреди числата от най-малкото до най-голямото и виж кое стои точно по средата.', 'Розстав числа від найменшого до найбільшого й подивись, яке стоїть точно посередині.');
-    const up = sortUp(q.nums);
-    if(q.shape === 'digit'){
-      const j = up.join(''), at = (j.length - 1) / 2;
-      return up.join(' &lt; ') + ' &nbsp;⟹&nbsp; ' + j.slice(0, at) + '<b>' + j[at] + '</b>' + j.slice(at + 1) + ' &nbsp;→&nbsp; ' +
-        tr(j.length + ' цифри, по средата е ' + (at + 1) + '-ата: ', ukN(j.length, 'цифра', 'цифри', 'цифр') + ', посередині — ' + (at + 1) + '-а: ') + q.ans;
-    }
-    const at = (up.length - 1) / 2;
-    return up.map((v, i) => i === at ? '<b>' + v + '</b>' : v).join(' &lt; ') + ' &nbsp;→&nbsp; ' +
-      tr(up.length + ' числа, по средата е ' + (at + 1) + '-ото: ', ukN(up.length, 'число', 'числа', 'чисел') + ', посередині — ' + (at + 1) + '-е: ') + q.ans;
+  if(!full) return q.shape === 'digit'
+    ? tr('Подреди числата от най-малкото до най-голямото, запиши ги едно до друго и намери цифрата точно по средата.', 'Розстав числа від найменшого до найбільшого, випиши їх поруч і знайди цифру точно посередині.')
+    : tr('Подреди числата от най-малкото до най-голямото и виж кое стои точно по средата.', 'Розстав числа від найменшого до найбільшого й подивись, яке стоїть точно посередині.');
+  const up = sortUp(q.nums);
+  if(q.shape === 'digit'){
+    const j = up.join(''), at = (j.length - 1) / 2;
+    return up.join(' &lt; ') + ' &nbsp;⟹&nbsp; ' + j.slice(0, at) + '<b>' + j[at] + '</b>' + j.slice(at + 1) + ' &nbsp;→&nbsp; ' +
+      tr(j.length + ' цифри, по средата е ' + (at + 1) + '-ата: ', ukN(j.length, 'цифра', 'цифри', 'цифр') + ', посередині — ' + (at + 1) + '-а: ') + q.ans;
   }
+  const at = (up.length - 1) / 2;
+  return up.map((v, i) => i === at ? '<b>' + v + '</b>' : v).join(' &lt; ') + ' &nbsp;→&nbsp; ' +
+    tr(up.length + ' числа, по средата е ' + (at + 1) + '-ото: ', ukN(up.length, 'число', 'числа', 'чисел') + ', посередині — ' + (at + 1) + '-е: ') + q.ans;
 }
 KIND.sortpick = { draw:drawSortPick, eq:eqSortPick, why:whySortPick };

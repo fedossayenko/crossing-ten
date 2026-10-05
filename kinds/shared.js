@@ -1,6 +1,4 @@
 // Question kind 'shared': level 22 Обща страна — Two figures share an edge — what it costs the outline.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
 import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
@@ -47,7 +45,7 @@ export function genShared(){
 }
 
 function drawShared(q){
-  if(q.kind === 'shared' && q.shape === 2){
+  if(q.shape === 2){
     return '<div class="ask">' + tr('Квадрат <b>ABCD</b> и правоъгълник <b>DCEF</b> имат обща страна <b>DC</b>. ' +
       'Обиколката на правоъгълника <b>ABEF</b> е по-голяма от обиколката на правоъгълника <b>DCEF</b> с <span class="num">' +
       q.d + '</span> см. Колко сантиметра е обиколката на <b>квадрата ABCD</b>?',
@@ -55,30 +53,28 @@ function drawShared(q){
       'Периметр прямокутника <b>ABEF</b> більший за периметр прямокутника <b>DCEF</b> на <span class="num">' +
       q.d + '</span> см. Скільки сантиметрів становить периметр <b>квадрата ABCD</b>?') + '</div>' +
       stackSvg(q) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'shared' && q.shape === 1){
+  if(q.shape === 1){
     return '<div class="ask">' + tr('От квадрат с обиколка <span class="num">' + q.P +
       '</span> см е изрязан триъгълник с обиколка <span class="num">' + q.p +
       '</span> см, който има обща страна с квадрата. Колко см е обиколката на получената фигура?',
       'Від квадрата з периметром <span class="num">' + q.P +
       '</span> см відрізали трикутник з периметром <span class="num">' + q.p +
       '</span> см, який має спільну сторону з квадратом. Скільки см становить периметр фігури, що залишилася?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
+      '<div class="line lg">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'shared'){
-    return '<div class="ask">' + tr('Триъгълник с обиколка <span class="num">' + q.P +
-      '</span> см разрязали на два триъгълника с обиколки <span class="num">' + q.p1 +
-      '</span> см и <span class="num">' + q.p2 + '</span> см. Колко сантиметра е общата им страна?',
-      'Трикутник з периметром <span class="num">' + q.P +
-      '</span> см розрізали на два трикутники з периметрами <span class="num">' + q.p1 +
-      '</span> см і <span class="num">' + q.p2 + '</span> см. Скільки сантиметрів завдовжки їхня спільна сторона?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
-  }
+  return '<div class="ask">' + tr('Триъгълник с обиколка <span class="num">' + q.P +
+    '</span> см разрязали на два триъгълника с обиколки <span class="num">' + q.p1 +
+    '</span> см и <span class="num">' + q.p2 + '</span> см. Колко сантиметра е общата им страна?',
+    'Трикутник з периметром <span class="num">' + q.P +
+    '</span> см розрізали на два трикутники з периметрами <span class="num">' + q.p1 +
+    '</span> см і <span class="num">' + q.p2 + '</span> см. Скільки сантиметрів завдовжки їхня спільна сторона?') + '</div>' +
+    '<div class="line lg">' + SLOT + CM + '</div>';
 }
 function eqShared(q){
-  if(q.kind === 'shared' && q.shape === 2) return tr('разлика ', 'різниця ') + q.d + tr(' → страна ', ' → сторона ') + q.a + ' → ' + q.ans;
-  if(q.kind === 'shared') return q.shape === 1
+  if(q.shape === 2) return tr('разлика ', 'різниця ') + q.d + tr(' → страна ', ' → сторона ') + q.a + ' → ' + q.ans;
+  return q.shape === 1
     ? 'квадрат ' + q.P + tr(', триъгълник ', ', трикутник ') + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
 }

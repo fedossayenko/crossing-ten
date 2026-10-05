@@ -1,6 +1,4 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
@@ -38,29 +36,27 @@ function vennSvg(tl, tr_, a, m, b){
     t(40, 16, tl) + t(92, 16, tr_) + t(32, 62, a, 1) + t(66, 62, m, 1) + t(100, 62, b, 1) + '</svg>';
 }
 function drawBoth(q){
-  if(q.kind === 'both' && q.shape === 'venn'){
+  if(q.shape === 'venn'){
     const [a, m, b] = q.ex;
     return '<div class="ask">' + tr('Пресметнете сбора', 'Обчисліть суму') + ' <span class="circle">□</span> + <span class="circle">△</span>.</div>' +
       '<div class="fig">' + vennSvg(a + m, m + b, a, m, b) + vennSvg(q.L, q.R, '□', q.m, '△') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)"><span class="circle">□</span> + <span class="circle">△</span> = ' + SLOT + '</div>';
+      '<div class="line lg"><span class="circle">□</span> + <span class="circle">△</span> = ' + SLOT + '</div>';
   }
-  if(q.kind === 'both'){
-    return '<div class="ask">' + tr('В един клас има <span class="num">' + q.T + '</span> ученика. От тях <span class="num">' +
-      q.A + '</span> учат <b>' + q.lang[0] + '</b> език, а <span class="num">' + q.B + '</span> — <b>' +
-      q.lang[1] + '</b>. Колко ученици от този клас учат ' +
-      (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?'),
-      'В одному класі <span class="num">' + q.T + '</span> ' + bothUkPl(q.T, 'учень', 'учні', 'учнів') +
-      '. З них <span class="num">' + q.A + '</span> ' + bothUkStudy(q.A) + ' <b>' + bothUkLang[q.lang[0]] +
-      '</b> мову, а <span class="num">' + q.B + '</span> — <b>' + bothUkLang[q.lang[1]] +
-      '</b>. Скільки учнів цього класу вивчають ' +
-      (q.asksBoth ? '<b>обидві</b> мови?' : '<b>лише ' + bothUkLang[q.lang[1]] + '</b> мову?')) + '</div>' +
-      '<div class="note">' + tr('Всеки ученик учи поне един от двата езика.', 'Кожен учень вивчає щонайменше одну з двох мов.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('В един клас има <span class="num">' + q.T + '</span> ученика. От тях <span class="num">' +
+    q.A + '</span> учат <b>' + q.lang[0] + '</b> език, а <span class="num">' + q.B + '</span> — <b>' +
+    q.lang[1] + '</b>. Колко ученици от този клас учат ' +
+    (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?'),
+    'В одному класі <span class="num">' + q.T + '</span> ' + bothUkPl(q.T, 'учень', 'учні', 'учнів') +
+    '. З них <span class="num">' + q.A + '</span> ' + bothUkStudy(q.A) + ' <b>' + bothUkLang[q.lang[0]] +
+    '</b> мову, а <span class="num">' + q.B + '</span> — <b>' + bothUkLang[q.lang[1]] +
+    '</b>. Скільки учнів цього класу вивчають ' +
+    (q.asksBoth ? '<b>обидві</b> мови?' : '<b>лише ' + bothUkLang[q.lang[1]] + '</b> мову?')) + '</div>' +
+    '<div class="note">' + tr('Всеки ученик учи поне един от двата езика.', 'Кожен учень вивчає щонайменше одну з двох мов.') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqBoth(q){
-  if(q.kind === 'both' && q.shape === 'venn') return '□ = ' + q.L + ' − ' + q.m + ', △ = ' + q.R + ' − ' + q.m + ' → ' + q.ans;
-  if(q.kind === 'both') return tr(q.T + ' ученика, ' + q.A + ' и ' + q.B + ', и двата: ',
+  if(q.shape === 'venn') return '□ = ' + q.L + ' − ' + q.m + ', △ = ' + q.R + ' − ' + q.m + ' → ' + q.ans;
+  return tr(q.T + ' ученика, ' + q.A + ' и ' + q.B + ', и двата: ',
     bothUkPupils(q.T) + ', ' + q.A + ' і ' + q.B + ', обидві: ') + q.both + ' → ' + q.ans;
 }
 // The class as a row of dots, one a pupil: the first language bracketed from the left, the second
@@ -77,21 +73,19 @@ function bothSvg(q){
   return '<svg viewBox="0 -36 242 96" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('учениците и езиците им', 'учні та їхні мови') + '">' + g + '</svg>';
 }
 function whyBoth(q, full){
-  if(q.kind === 'both' && q.shape === 'venn'){
+  if(q.shape === 'venn'){
     if(!full) return tr('Виж примера: числото над кръга е сборът от двете числа в него.', 'Подивись на приклад: число над колом — сума двох чисел у ньому.');
     // the circles again, filled in: what each side holds once the middle is taken off its total
     return '□ = ' + q.L + ' − ' + q.m + ' = <b>' + (q.L - q.m) + '</b>, △ = ' + q.R + ' − ' + q.m + ' = <b>' + (q.R - q.m) + '</b>' +
       '<div class="fig pop">' + vennSvg(q.L, q.R, q.L - q.m, q.m, q.R - q.m) + '</div>' + (q.L - q.m) + ' + ' + (q.R - q.m) + ' = ' + q.ans;
   }
-  if(q.kind === 'both'){
-    if(!full) return tr('Събери двата броя — излиза повече от учениците. Кой се брои два пъти?',
-      'Додай обидва числа — вийде більше, ніж учнів у класі. Кого пораховано двічі?');
-    const head = tr(q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учениците са ' + q.T + ' &nbsp;→&nbsp; <b>' +
-      q.both + '</b> учат и двата езика',
-      q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учнів ' + q.T + ' &nbsp;→&nbsp; <b>' +
-      q.both + '</b> ' + bothUkStudy(q.both) + ' обидві мови');
-    return (q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
-      ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans) + bothSvg(q);
-  }
+  if(!full) return tr('Събери двата броя — излиза повече от учениците. Кой се брои два пъти?',
+    'Додай обидва числа — вийде більше, ніж учнів у класі. Кого пораховано двічі?');
+  const head = tr(q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учениците са ' + q.T + ' &nbsp;→&nbsp; <b>' +
+    q.both + '</b> учат и двата езика',
+    q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учнів ' + q.T + ' &nbsp;→&nbsp; <b>' +
+    q.both + '</b> ' + bothUkStudy(q.both) + ' обидві мови');
+  return (q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
+    ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans) + bothSvg(q);
 }
 KIND.both = { draw:drawBoth, eq:eqBoth, why:whyBoth };

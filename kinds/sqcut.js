@@ -1,6 +1,4 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { CM, KIND, SLOT, UKNUM, diffBars, popAt, rnd, svgText, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
@@ -161,12 +159,12 @@ function sqSvg(parts, side){
 }
 
 function drawSqcut(q){
-  if(q.kind === 'sqcut' && q.shape === 6 && q.both){
+  if(q.shape === 6 && q.both){
     return '<div class="ask">' + tr('Квадрат с обиколка <span class="num">' + q.P + '</span> см е разрязан на два правоъгълника. Колко сантиметра е <b>сборът от обиколките</b> на двата правоъгълника?',
       'Квадрат із периметром <span class="num">' + q.P + '</span> см розрізали на два прямокутники. Скільки сантиметрів становить <b>сума периметрів</b> обох прямокутників?') + '</div>' +
-      stripSvg(1, q.side) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      stripSvg(1, q.side) + '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 6){
+  if(q.shape === 6){
     return '<div class="ask">' + tr('Квадрат със страна <span class="num">' + q.side +
       '</span> см е разрязан на <span class="num">' + BGNUM_M[q.k] +
       '</span> еднакви правоъгълника. Колко <b>' + (q.mm ? 'милиметра' : 'сантиметра') +
@@ -176,11 +174,11 @@ function drawSqcut(q){
       '</span> однакові прямокутники. Скільки <b>' + (q.mm ? 'міліметрів' : 'сантиметрів') +
       '</b> становить периметр кожного з цих прямокутників?') + '</div>' +
       stripSvg(q.slots ? 1 : q.k, q.side) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT +
+      '<div class="line md">' + SLOT +
       (q.slots ? ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span>' : '') +
       ' <span class="unit">' + (q.mm ? 'мм' : 'см') + '</span></div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 5 && q.rev){
+  if(q.shape === 5 && q.rev){
     const sizes = [...new Set(q.t.sq.map(r => r[2]))], twoAndTwo = q.n === 4 && q.few === 2 && sizes.length === 3;   // the paper's own figure
     return '<div class="ask">' + (twoAndTwo
       ? tr('Правоъгълникът на чертежа е съставен от <b>два еднакви и два различни</b> квадрата. По-малката страна на този правоъгълник е <span class="num">' + q.short + '</span> см. Колко сантиметра е страната на <b>еднаквите</b> квадрати?',
@@ -188,9 +186,9 @@ function drawSqcut(q){
       : tr('Правоъгълникът на чертежа е съставен от <span class="num">' + q.n + '</span> квадрата. По-малката му страна е <span class="num">' + q.short + '</span> см. Колко сантиметра е страната на <b>най-малките</b> квадрати?',
            'Прямокутник на рисунку складено з <span class="num">' + q.n + '</span> квадратів. Його менша сторона — <span class="num">' + q.short + '</span> см. Скільки сантиметрів становить сторона <b>найменших</b> квадратів?')) + '</div>' +
       tilesSvg(q.t) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 5){
+  if(q.shape === 5){
     const many = {2:'два', 3:'три', 4:'четири'}[q.few];
     const which = q.few === q.n ? 'всички квадрати имат' : many + ' от квадратите имат';
     return '<div class="ask">' + tr('Колко сантиметра е обиколката на правоъгълника, който е съставен от <span class="num">' +
@@ -199,15 +197,15 @@ function drawSqcut(q){
       q.n + '</span> квадратів, якщо ' + (q.few === q.n ? 'всі квадрати мають' : UKNUM[q.few] + ' з них мають') +
       ' сторону <span class="num">' + q.side + '</span> см?') + '</div>' +
       tilesSvg(q.t) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 4 && q.mm){
+  if(q.shape === 4 && q.mm){
     return '<div class="ask">' + tr('Квадрат има дължина на страната <span class="num">' + q.mm + '</span> милиметра, а страната на равностранен триъгълник е <span class="num">' + q.t + '</span> см. Колко сантиметра е <b>разликата</b> на обиколките им?',
       'Сторона квадрата — <span class="num">' + q.mm + '</span> міліметрів, а сторона рівностороннього трикутника — <span class="num">' + q.t + '</span> см. Скільки сантиметрів становить <b>різниця</b> їхніх периметрів?') + '</div>' +
       triSqSvg({ sides:[q.t, q.t, q.t], inCm:true, dm: q.mm/10, sqLabel: q.mm + ' мм' }) +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
+      '<div class="line lg">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 4){
+  if(q.shape === 4){
     return '<div class="ask">' + tr('Триъгълник има страни', 'Трикутник має сторони') + ' <span class="num">' +
       q.sides.join('</span> см, <span class="num">') +
       '</span> см. ' + tr('Квадрат има страна', 'Квадрат має сторону') + ' <span class="num">' + q.dm +
@@ -215,9 +213,9 @@ function drawSqcut(q){
       tr('. С колко сантиметра обиколката на <b>квадрата</b> е по-голяма от обиколката на <b>триъгълника</b>?',
          '. На скільки сантиметрів периметр <b>квадрата</b> більший за периметр <b>трикутника</b>?') + '</div>' +
       triSqSvg(q) +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
+      '<div class="line lg">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut' && q.shape === 3){
+  if(q.shape === 3){
     return '<div class="ask">' + tr('Разрязах правоъгълен лист с обиколка <span class="num">' + q.P +
       '</span> см на квадрат <b>A</b> със страна <span class="num">' + q.a +
       '</span> см и правоъгълник <b>B</b>. Колко сантиметра е ' +
@@ -227,35 +225,33 @@ function drawSqcut(q){
       '</span> см і прямокутник <b>B</b>. Скільки сантиметрів становить ' +
       (q.asksSide ? '<b>менша сторона</b> прямокутника B' : '<b>периметр</b> прямокутника B') + '?') + '</div>' +
       cutRectSvg(q.a, q.extra) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'sqcut'){
-    const ask = q.shape === 0 ? tr('Колко сантиметра е сборът от страните на всеки един от тези еднакви квадрати?',
-                                   'Скільки сантиметрів становить сума сторін кожного з цих однакових квадратів?')
-              : q.shape === 1 ? tr('Колко сантиметра е обиколката на големия квадрат?',
-                                   'Скільки сантиметрів становить периметр великого квадрата?')
-              : tr('Колко сантиметра е сборът от обиколките на всички малки квадрати?',
-                   'Скільки сантиметрів становить сума периметрів усіх малих квадратів?');
-    return '<div class="ask">' + tr('Квадрат със страна <span class="num">' + q.side + '</span> см е разрязан на ' +
-      BGCOUNT[q.parts*q.parts] + ' еднакви квадрата. ',
-      'Квадрат зі стороною <span class="num">' + q.side + '</span> см розрізали на ' +
-      (q.parts === 2 ? 'чотири однакові квадрати. ' : 'дев’ять однакових квадратів. ')) + ask + '</div>' +
-      sqSvg(q.parts, q.side) +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
-  }
+  const ask = q.shape === 0 ? tr('Колко сантиметра е сборът от страните на всеки един от тези еднакви квадрати?',
+                                 'Скільки сантиметрів становить сума сторін кожного з цих однакових квадратів?')
+            : q.shape === 1 ? tr('Колко сантиметра е обиколката на големия квадрат?',
+                                 'Скільки сантиметрів становить периметр великого квадрата?')
+            : tr('Колко сантиметра е сборът от обиколките на всички малки квадрати?',
+                 'Скільки сантиметрів становить сума периметрів усіх малих квадратів?');
+  return '<div class="ask">' + tr('Квадрат със страна <span class="num">' + q.side + '</span> см е разрязан на ' +
+    BGCOUNT[q.parts*q.parts] + ' еднакви квадрата. ',
+    'Квадрат зі стороною <span class="num">' + q.side + '</span> см розрізали на ' +
+    (q.parts === 2 ? 'чотири однакові квадрати. ' : 'дев’ять однакових квадратів. ')) + ask + '</div>' +
+    sqSvg(q.parts, q.side) +
+    '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqSqcut(q){
-  if(q.kind === 'sqcut' && q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + '×' + 5*q.side + ' мм → ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
+  if(q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
+  if(q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + '×' + 5*q.side + ' мм → ' + q.ans;
+  if(q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
     q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
-  if(q.kind === 'sqcut' && q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 5) return tr(q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ',
+  if(q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
+  if(q.shape === 5) return tr(q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ',
     q.n + ' квадрати, сторона ' + q.side + ' → прямокутник ') + (q.t.w*q.s) + '×' + (q.t.h*q.s) + ' → ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 4 && q.mm) return 'квадрат ' + q.mm + ' мм → ' + q.P + tr(' см, триъгълник ', ' см, трикутник ') + '3 · ' + q.t + ' = ' + q.p + ' → ' + q.ans;
-  if(q.kind === 'sqcut' && q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + tr(', триъгълник ', ', трикутник ') +
+  if(q.shape === 4 && q.mm) return 'квадрат ' + q.mm + ' мм → ' + q.P + tr(' см, триъгълник ', ' см, трикутник ') + '3 · ' + q.t + ' = ' + q.p + ' → ' + q.ans;
+  if(q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + tr(', триъгълник ', ', трикутник ') +
     q.sides.join('+') + ' = ' + q.p + ' → ' + q.ans;
-  if(q.kind === 'sqcut') return q.shape === 3
+  return q.shape === 3
     ? tr('лист с обиколка ', 'аркуш із периметром ') + q.P + ', квадрат ' + q.a + ' → ' + q.ans
     : tr('страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ', 'сторона ' + q.side + ', на ' + sqcutQuads(q.parts*q.parts) + ' → ') + q.ans;
 }

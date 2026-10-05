@@ -1,6 +1,4 @@
 // Question kind 'eqcross': level 158 Кръстът ■ ● — Two equalities crossing at one shared box.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 4: down, 7 + ■ = 11; across, 10 − ■ = ●; ● − ■ = ? The
 // equality with only ■ in it comes first: ■ = 4, then ● = 10 − 4 = 6, and 6 − 4 = 2.
@@ -25,20 +23,16 @@ function eqCrossSvg(q){
     down.map((t, j) => j === 2 ? '' : cell(2, j, t)).join('') + across.map((t, i) => cell(i, 2, t, i === 2)).join('') + '</svg></div>';
 }
 function drawEqCross(q){
-  if(q.kind === 'eqcross'){
-    return '<div class="ask">' + tr('Колко е <span class="num">' + eqCrossAsk(q) + '</span>?', 'Скільки дорівнює <span class="num">' + eqCrossAsk(q) + '</span>?') + '</div>' +
-      eqCrossSvg(q) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + eqCrossAsk(q) + ' = ' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко е <span class="num">' + eqCrossAsk(q) + '</span>?', 'Скільки дорівнює <span class="num">' + eqCrossAsk(q) + '</span>?') + '</div>' +
+    eqCrossSvg(q) + '<div class="line md">' + eqCrossAsk(q) + ' = ' + SLOT + '</div>';
 }
 function eqEqCross(q){
-  if(q.kind === 'eqcross') return q.a + ' + ■ = ' + q.b + ', ' + q.c + ' − ■ = ● → ■ = ' + q.s + ', ● = ' + q.dot + ' → ' + q.ans;
+  return q.a + ' + ■ = ' + q.b + ', ' + q.c + ' − ■ = ● → ■ = ' + q.s + ', ● = ' + q.dot + ' → ' + q.ans;
 }
 function whyEqCross(q, full){
-  if(q.kind === 'eqcross'){
-    if(!full) return tr('Започни от равенството, в което има само ■. После ■ ще ти помогне да намериш ●.',
-      'Почни з рівності, де є лише ■. Потім ■ допоможе знайти ●.');
-    return q.a + ' + ■ = ' + q.b + ' &nbsp;→&nbsp; ■ = ' + q.b + ' − ' + q.a + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ● = ' + q.c + ' − ' + q.s + ' = <b>' + q.dot + '</b>' +
-      (q.ask === 'dot' ? '' : ' &nbsp;→&nbsp; ' + q.dot + (q.ask === 'twice' ? ' + ' + q.dot + ' − ' : q.ask === 'minus' ? ' − ' : ' + ') + q.s + ' = ' + q.ans);
-  }
+  if(!full) return tr('Започни от равенството, в което има само ■. После ■ ще ти помогне да намериш ●.',
+    'Почни з рівності, де є лише ■. Потім ■ допоможе знайти ●.');
+  return q.a + ' + ■ = ' + q.b + ' &nbsp;→&nbsp; ■ = ' + q.b + ' − ' + q.a + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ● = ' + q.c + ' − ' + q.s + ' = <b>' + q.dot + '</b>' +
+    (q.ask === 'dot' ? '' : ' &nbsp;→&nbsp; ' + q.dot + (q.ask === 'twice' ? ' + ' + q.dot + ' − ' : q.ask === 'minus' ? ' − ' : ' + ') + q.s + ' = ' + q.ans);
 }
 KIND.eqcross = { draw:drawEqCross, eq:eqEqCross, why:whyEqCross };

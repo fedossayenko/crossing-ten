@@ -1,6 +1,4 @@
 // Question kind 'scales': level 182 Везните — Two balances: swap the pears for apples, then share out the lemons.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2022, 1 клас, задача 13: an apple and two pears weigh as much as eight lemons, and two pears
 // as much as three apples. Put three apples in place of the two pears: four apples weigh eight lemons,
@@ -27,17 +25,15 @@ function scalesSvg(left, right, label, extra){
 const scalesFig = q => '<div class="fig">' + scalesSvg(['a'].concat(Array(q.p).fill('p')), Array(q.L).fill('l'), tr('първата везна', 'перші терези')) +
   scalesSvg(Array(q.p).fill('p'), Array(q.m).fill('a'), tr('втората везна', 'другі терези')) + '</div>';
 function drawScales(q){
-  if(q.kind === 'scales'){
-    return '<div class="ask">' + tr('Една ябълка и <span class="num">' + q.p + '</span> круши тежат общо колкото <span class="num">' + q.L + '</span> лимона. <span class="num">' + q.p +
-      '</span> круши тежат колкото <span class="num">' + q.m + '</span> ябълки. Колко лимона тежи <b>1 ябълка</b>?',
-      'Одне яблуко і <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' разом важать стільки, скільки <span class="num">' + ukN(q.L, 'лимон', 'лимони', 'лимонів').replace(' ', '</span> ') +
-      '. <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' важать стільки, скільки <span class="num">' + ukN(q.m, 'яблуко', 'яблука', 'яблук').replace(' ', '</span> ') +
-      '. Скільки лимонів важить <b>1 яблуко</b>?') + '</div>' + scalesFig(q) +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Една ябълка и <span class="num">' + q.p + '</span> круши тежат общо колкото <span class="num">' + q.L + '</span> лимона. <span class="num">' + q.p +
+    '</span> круши тежат колкото <span class="num">' + q.m + '</span> ябълки. Колко лимона тежи <b>1 ябълка</b>?',
+    'Одне яблуко і <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' разом важать стільки, скільки <span class="num">' + ukN(q.L, 'лимон', 'лимони', 'лимонів').replace(' ', '</span> ') +
+    '. <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' важать стільки, скільки <span class="num">' + ukN(q.m, 'яблуко', 'яблука', 'яблук').replace(' ', '</span> ') +
+    '. Скільки лимонів важить <b>1 яблуко</b>?') + '</div>' + scalesFig(q) +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqScales(q){
-  if(q.kind === 'scales') return tr(q.p + ' круши = ' + q.m + ' ябълки → ' + (1 + q.m) + ' ябълки = ' + q.L + ' лимона → ', ukN(q.p, 'груша', 'груші', 'груш') + ' = ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') + ' → ' +
+  return tr(q.p + ' круши = ' + q.m + ' ябълки → ' + (1 + q.m) + ' ябълки = ' + q.L + ' лимона → ', ukN(q.p, 'груша', 'груші', 'груш') + ' = ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') + ' → ' +
     ukN(1 + q.m, 'яблуко', 'яблука', 'яблук') + ' = ' + ukN(q.L, 'лимон', 'лимони', 'лимонів') + ' → ') + q.ans;
 }
 // The picture: the first balance again with the pears swapped for apples, and the lemons in groups, one under each apple.
@@ -54,13 +50,11 @@ function scalesSolSvg(q){
   return '<svg viewBox="0 -6 240 96" style="display:block; width:260px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('всяка ябълка с нейните лимони', 'кожне яблуко з його лимонами') + '">' + g + '</svg>';
 }
 function whyScales(q, full){
-  if(q.kind === 'scales'){
-    if(!full) return tr('Смени крушите на първата везна с ябълки — втората везна казва с колко ябълки.', 'Заміни груші на перших терезах яблуками — другі терези кажуть, скількома яблуками.');
-    return tr(q.p + ' круши тежат колкото ' + q.m + ' ябълки &nbsp;→&nbsp; на първата везна вместо крушите слагаме ' + q.m + ' ябълки &nbsp;→&nbsp; <b>' + (1 + q.m) + ' ябълки</b> тежат колкото ' + q.L +
-      ' лимона &nbsp;→&nbsp; всяка ябълка — по ' + q.a + (q.a === 1 ? ' лимон' : ' лимона'),
-      ukN(q.p, 'груша', 'груші', 'груш') + ' важать стільки, скільки ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') + ' &nbsp;→&nbsp; на перші терези замість груш кладемо ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') +
-      ' &nbsp;→&nbsp; <b>' + ukN(1 + q.m, 'яблуко', 'яблука', 'яблук') + '</b> важать стільки, скільки ' + ukN(q.L, 'лимон', 'лимони', 'лимонів') + ' &nbsp;→&nbsp; кожне яблуко — ' + ukN(q.a, 'лимон', 'лимони', 'лимонів')) +
-      scalesSolSvg(q) + tr('1 ябълка = ', '1 яблуко = ') + q.ans;
-  }
+  if(!full) return tr('Смени крушите на първата везна с ябълки — втората везна казва с колко ябълки.', 'Заміни груші на перших терезах яблуками — другі терези кажуть, скількома яблуками.');
+  return tr(q.p + ' круши тежат колкото ' + q.m + ' ябълки &nbsp;→&nbsp; на първата везна вместо крушите слагаме ' + q.m + ' ябълки &nbsp;→&nbsp; <b>' + (1 + q.m) + ' ябълки</b> тежат колкото ' + q.L +
+    ' лимона &nbsp;→&nbsp; всяка ябълка — по ' + q.a + (q.a === 1 ? ' лимон' : ' лимона'),
+    ukN(q.p, 'груша', 'груші', 'груш') + ' важать стільки, скільки ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') + ' &nbsp;→&nbsp; на перші терези замість груш кладемо ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') +
+    ' &nbsp;→&nbsp; <b>' + ukN(1 + q.m, 'яблуко', 'яблука', 'яблук') + '</b> важать стільки, скільки ' + ukN(q.L, 'лимон', 'лимони', 'лимонів') + ' &nbsp;→&nbsp; кожне яблуко — ' + ukN(q.a, 'лимон', 'лимони', 'лимонів')) +
+    scalesSolSvg(q) + tr('1 ябълка = ', '1 яблуко = ') + q.ans;
 }
 KIND.scales = { draw:drawScales, eq:eqScales, why:whyScales };

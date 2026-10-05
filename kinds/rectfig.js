@@ -1,6 +1,4 @@
 // Question kind 'rectfig': level 162 Колко правоъгълника? — Every rectangle in a figure made of pieces.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 12: three squares in a row make 6 rectangles (3 small, 2 of
 // two, 1 of three). Then three tall pieces, the last cut in two: 4 single pieces, and 4 made of
@@ -86,36 +84,30 @@ function rectFigSolSvg(q){
     tr('всички правоъгълници на картинката', 'усі прямокутники на малюнку') + '">' + g + '</svg>';
 }
 function drawRectFig(q){
-  if(q.kind === 'rectfig'){
-    const ex = [[0, 0, 1, 1], [1, 0, 1, 1], [2, 0, 1, 1]], dots = q.shape === 'rows';
-    const fig = tr('фигура от части', 'фігура з частин');
-    return dots
-      ? '<div class="ask">' + tr('Тук правоъгълниците са <span class="num">6</span>.', 'Тут прямокутників <span class="num">6</span>.') + '</div>' +
-        '<div class="fig small">' + rectFigSvg(ex, true, fig) + '</div>' +
-        '<div class="ask">' + tr('Колко са правоъгълниците тук?', 'Скільки тут прямокутників?') + '</div>' +
-        '<div class="fig">' + rectFigSvg(q.tiles, true, fig) + '</div>' +
-        '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>'
-      : '<div class="ask">' + tr('На тази картинка има <span class="num">6</span> правоъгълника:', 'На цьому малюнку <span class="num">6</span> прямокутників:') + '</div>' +
-        '<div class="fig small">' + rectFigSvg(ex, false, fig) + '</div>' +
-        '<div class="ask">' + tr('Колко са правоъгълниците на тази картинка?', 'Скільки прямокутників на цьому малюнку?') + '</div>' +
-        '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +
-        '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  const ex = [[0, 0, 1, 1], [1, 0, 1, 1], [2, 0, 1, 1]], dots = q.shape === 'rows';
+  const fig = tr('фигура от части', 'фігура з частин');
+  return dots
+    ? '<div class="ask">' + tr('Тук правоъгълниците са <span class="num">6</span>.', 'Тут прямокутників <span class="num">6</span>.') + '</div>' +
+      '<div class="fig small">' + rectFigSvg(ex, true, fig) + '</div>' +
+      '<div class="ask">' + tr('Колко са правоъгълниците тук?', 'Скільки тут прямокутників?') + '</div>' +
+      '<div class="fig">' + rectFigSvg(q.tiles, true, fig) + '</div>' +
+      '<div class="line lg">' + SLOT + '</div>'
+    : '<div class="ask">' + tr('На тази картинка има <span class="num">6</span> правоъгълника:', 'На цьому малюнку <span class="num">6</span> прямокутників:') + '</div>' +
+      '<div class="fig small">' + rectFigSvg(ex, false, fig) + '</div>' +
+      '<div class="ask">' + tr('Колко са правоъгълниците на тази картинка?', 'Скільки прямокутників на цьому малюнку?') + '</div>' +
+      '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +
+      '<div class="line lg">' + SLOT + '</div>';
 }
 function eqRectFig(q){
-  if(q.kind === 'rectfig'){
-    const all = rectFigAll(q.tiles), ns = [...new Set(all.map(r => r.n))].sort((a, b) => a - b);
-    return ns.map(n => all.filter(r => r.n === n).length).join(' + ') + ' = ' + q.ans;
-  }
+  const all = rectFigAll(q.tiles), ns = [...new Set(all.map(r => r.n))].sort((a, b) => a - b);
+  return ns.map(n => all.filter(r => r.n === n).length).join(' + ') + ' = ' + q.ans;
 }
 function whyRectFig(q, full){
-  if(q.kind === 'rectfig'){
-    if(!full) return tr('Брой не само отделните части, а и правоъгълниците от две, три и повече части заедно.',
-      'Рахуй не лише окремі частини, а й прямокутники з двох, трьох і більше частин разом.');
-    const all = rectFigAll(q.tiles), ns = [...new Set(all.map(r => r.n))].sort((a, b) => a - b);
-    const nm = n => tr(['', 'от една част', 'от две части', 'от три части', 'от четири части', 'от пет части', 'от шест части', 'от седем части', 'от осем части'][n],
-      ['', 'з однієї частини', 'з двох частин', 'з трьох частин', 'з чотирьох частин', 'з п’яти частин', 'з шести частин', 'з семи частин', 'з восьми частин'][n]);
-    return ns.map(n => nm(n) + ': <b>' + all.filter(r => r.n === n).length + '</b>').join(', ') + rectFigSolSvg(q);
-  }
+  if(!full) return tr('Брой не само отделните части, а и правоъгълниците от две, три и повече части заедно.',
+    'Рахуй не лише окремі частини, а й прямокутники з двох, трьох і більше частин разом.');
+  const all = rectFigAll(q.tiles), ns = [...new Set(all.map(r => r.n))].sort((a, b) => a - b);
+  const nm = n => tr(['', 'от една част', 'от две части', 'от три части', 'от четири части', 'от пет части', 'от шест части', 'от седем части', 'от осем части'][n],
+    ['', 'з однієї частини', 'з двох частин', 'з трьох частин', 'з чотирьох частин', 'з п’яти частин', 'з шести частин', 'з семи частин', 'з восьми частин'][n]);
+  return ns.map(n => nm(n) + ': <b>' + all.filter(r => r.n === n).length + '</b>').join(', ') + rectFigSolSvg(q);
 }
 KIND.rectfig = { draw:drawRectFig, eq:eqRectFig, why:whyRectFig };

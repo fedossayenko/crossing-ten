@@ -1,6 +1,4 @@
 // Question kind 'blind': level 189 Със затворени очи — The fewest cubes to take blind to be sure.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2021, 1 клас, задача 20: 2 blue, 3 green and 4 yellow cubes; eyes closed, how few to take to be
 // sure of two of different colours? The unluckiest hand takes all 4 yellow first — still one colour — and
@@ -28,23 +26,19 @@ function blindSvg(q){
 const blindList = q => tr(q.n.map((c, i) => c + ' ' + BLIND_COLS[q.cols[i]][0]).join(', ').replace(/, ([^,]*)$/, ' и $1'),
   q.n.map((c, i) => c + ' ' + BLIND_COLS[q.cols[i]][c < 5 ? 1 : 2]).join(', ').replace(/, ([^,]*)$/, ' і $1'));
 function drawBlind(q){
-  if(q.kind === 'blind'){
-    return '<div class="ask">' + tr('Имам <span class="num">' + q.T + '</span> еднакви по големина кубчета – ' + blindList(q) + '. Колко <b>най-малко</b> кубчета трябва да взема със затворени очи, за да имам <b>със сигурност</b> две кубчета ' + (q.diff ? 'с <b>различен</b> цвят' : 'с <b>еднакъв</b> цвят') + '?',
-      'У мене ' + ukN(q.T, 'однаковий за розміром кубик', 'однакові за розміром кубики', 'однакових за розміром кубиків').replace(/^(\d+)/, '<span class="num">$1</span>') + ' – ' + blindList(q) +
-      '. Яку <b>найменшу</b> кількість кубиків треба взяти із заплющеними очима, щоб <b>точно</b> мати два кубики ' + (q.diff ? '<b>різного</b> кольору' : '<b>однакового</b> кольору') + '?') + '</div>' +
-      blindSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Имам <span class="num">' + q.T + '</span> еднакви по големина кубчета – ' + blindList(q) + '. Колко <b>най-малко</b> кубчета трябва да взема със затворени очи, за да имам <b>със сигурност</b> две кубчета ' + (q.diff ? 'с <b>различен</b> цвят' : 'с <b>еднакъв</b> цвят') + '?',
+    'У мене ' + ukN(q.T, 'однаковий за розміром кубик', 'однакові за розміром кубики', 'однакових за розміром кубиків').replace(/^(\d+)/, '<span class="num">$1</span>') + ' – ' + blindList(q) +
+    '. Яку <b>найменшу</b> кількість кубиків треба взяти із заплющеними очима, щоб <b>точно</b> мати два кубики ' + (q.diff ? '<b>різного</b> кольору' : '<b>однакового</b> кольору') + '?') + '</div>' +
+    blindSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqBlind(q){
-  if(q.kind === 'blind') return q.diff ? Math.max(...q.n) + ' + 1 = ' + q.ans : q.n.length + ' + 1 = ' + q.ans;
+  return q.diff ? Math.max(...q.n) + ' + 1 = ' + q.ans : q.n.length + ' + 1 = ' + q.ans;
 }
 function whyBlind(q, full){
-  if(q.kind === 'blind'){
-    if(!full) return tr('Помисли за най-лошия случай: какво може да вземеш, преди да стане сигурно?', 'Подумай про найгірший випадок: що можна витягти, перш ніж стане точно відомо?');
-    const most = Math.max(...q.n), c = BLIND_COLS[q.cols[q.n.indexOf(most)]];
-    return q.diff
-      ? tr('най-лошото: първо вземаш всичките ' + most + ' ' + c[0] + ' — още са от един цвят; следващото не може да е от тях', 'найгірше: спершу береш усі ' + most + ' ' + (most < 5 ? c[1] : c[2]) + ' — вони ще одного кольору; наступний уже іншого') + ' &nbsp;→&nbsp; ' + most + ' + 1 = ' + q.ans
-      : tr('най-лошото: по едно от всеки цвят — ' + q.n.length + ' различни; следващото повтаря цвят', 'найгірше: по одному кожного кольору — ' + q.n.length + ' різні; наступний повторює колір') + ' &nbsp;→&nbsp; ' + q.n.length + ' + 1 = ' + q.ans;
-  }
+  if(!full) return tr('Помисли за най-лошия случай: какво може да вземеш, преди да стане сигурно?', 'Подумай про найгірший випадок: що можна витягти, перш ніж стане точно відомо?');
+  const most = Math.max(...q.n), c = BLIND_COLS[q.cols[q.n.indexOf(most)]];
+  return q.diff
+    ? tr('най-лошото: първо вземаш всичките ' + most + ' ' + c[0] + ' — още са от един цвят; следващото не може да е от тях', 'найгірше: спершу береш усі ' + most + ' ' + (most < 5 ? c[1] : c[2]) + ' — вони ще одного кольору; наступний уже іншого') + ' &nbsp;→&nbsp; ' + most + ' + 1 = ' + q.ans
+    : tr('най-лошото: по едно от всеки цвят — ' + q.n.length + ' различни; следващото повтаря цвят', 'найгірше: по одному кожного кольору — ' + q.n.length + ' різні; наступний повторює колір') + ' &nbsp;→&nbsp; ' + q.n.length + ' + 1 = ' + q.ans;
 }
 KIND.blind = { draw:drawBlind, eq:eqBlind, why:whyBlind };

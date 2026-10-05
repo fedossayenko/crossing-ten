@@ -175,6 +175,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .note{font-size:clamp(12px,3vw,14px); font-weight:700; font-style:italic; color:var(--muted); text-align:center}
 .given{font-family:Fredoka,sans-serif; font-size:clamp(19px,5vw,28px); color:var(--muted); letter-spacing:.03em; text-align:center}
 .line{font-family:Fredoka,sans-serif; letter-spacing:.03em; line-height:1.25; text-align:center; text-wrap:balance}
+/* the answer line's three usual sizes (a kind with an unusual line keeps its own inline size) */
+.line.xl{font-size:clamp(34px,10vw,56px)} .line.lg{font-size:clamp(30px,9vw,50px)} .line.md{font-size:clamp(28px,8vw,46px)}
 .circle{color:var(--warm)}
 .fig{display:flex; justify-content:center; width:100%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}

@@ -1,6 +1,4 @@
 // Question kind 'countx': level 132 По-малки от 50 − 10 · 2 — How many two-digit numbers fit a bound that is itself a sum to work out.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, задача 5: two-digit numbers less than 50 − 10 · 2. Multiplication first: the
 // bound is 30, and 10 to 29 are 20 numbers. Worked left to right it would be 800, which is the trap.
@@ -18,21 +16,17 @@ export function genCountX(){
 }
 const countXExpr = q => q.form === 0 ? q.a + ' − ' + q.b + ' · ' + q.c : q.form === 1 ? q.b + ' · ' + q.c + ' + ' + q.a / 10 : q.a + ' + ' + q.b + ' · ' + q.c;
 function drawCountX(q){
-  if(q.kind === 'countx'){
-    const rel = [tr('по-малки от', 'менші від'), tr('не са по-големи от', 'не більші за'), tr('по-големи от', 'більші за')][q.rel];
-    return '<div class="ask">' + tr('Колко са <b>двуцифрените</b> числа, които са ' + rel + ' числото, равно на <span class="num">' + countXExpr(q) + '</span>?',
-      'Скільки є <b>двоцифрових</b> чисел, які ' + rel + ' число, що дорівнює <span class="num">' + countXExpr(q) + '</span>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const rel = [tr('по-малки от', 'менші від'), tr('не са по-големи от', 'не більші за'), tr('по-големи от', 'більші за')][q.rel];
+  return '<div class="ask">' + tr('Колко са <b>двуцифрените</b> числа, които са ' + rel + ' числото, равно на <span class="num">' + countXExpr(q) + '</span>?',
+    'Скільки є <b>двоцифрових</b> чисел, які ' + rel + ' число, що дорівнює <span class="num">' + countXExpr(q) + '</span>?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCountX(q){
-  if(q.kind === 'countx') return countXExpr(q) + ' = ' + q.N + ' → ' + q.ans;
+  return countXExpr(q) + ' = ' + q.N + ' → ' + q.ans;
 }
 function whyCountX(q, full){
-  if(q.kind === 'countx'){
-    if(!full) return tr('Първо пресметни числото — умножението е преди събирането и изваждането.', 'Спершу обчисли число — множення виконують раніше за додавання й віднімання.');
-    const [lo, hi] = q.rel === 0 ? [10, q.N - 1] : q.rel === 1 ? [10, q.N] : [q.N + 1, 99];
-    return countXExpr(q) + ' = <b>' + q.N + '</b> &nbsp;→&nbsp; ' + tr('от ', 'від ') + lo + tr(' до ', ' до ') + hi + ' &nbsp;→&nbsp; ' + hi + ' − ' + lo + ' + 1 = ' + q.ans;
-  }
+  if(!full) return tr('Първо пресметни числото — умножението е преди събирането и изваждането.', 'Спершу обчисли число — множення виконують раніше за додавання й віднімання.');
+  const [lo, hi] = q.rel === 0 ? [10, q.N - 1] : q.rel === 1 ? [10, q.N] : [q.N + 1, 99];
+  return countXExpr(q) + ' = <b>' + q.N + '</b> &nbsp;→&nbsp; ' + tr('от ', 'від ') + lo + tr(' до ', ' до ') + hi + ' &nbsp;→&nbsp; ' + hi + ' − ' + lo + ' + 1 = ' + q.ans;
 }
 KIND.countx = { draw:drawCountX, eq:eqCountX, why:whyCountX };

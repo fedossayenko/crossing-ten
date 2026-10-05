@@ -1,6 +1,4 @@
 // Question kind 'stardig': level 184 Звездите — One-digit numbers drawn as stars, pinned down by how big they can be.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2022, 1 клас, задача 11: one-digit ✷ + 9 equals one-digit ✹ + 1, so ✹ is 8 more than ✷:
 // 0 and 8, or 1 and 9 — ✹ + ✷ is 8 or 10, both answers. МБГ Пролет 2021, задача 5: one-digit ✷ + 9 equals
@@ -28,7 +26,7 @@ export function genStarDig(){
 // 0 = ✷, 1 = ✹, 2 = ✸ in the pictures
 const starNum = (ids, txt) => txt ? ids.map(i => STAR_TXT[i]).join('') : '<span style="white-space:nowrap">' + ids.map(star).join('') + '</span>';
 function drawStarDig(q){
-  if(q.kind === 'stardig' && q.shape === 'two'){
+  if(q.shape === 'two'){
     const slots = Array.from({length: q.slots}, (_, i) => i ? '<span class="slot" id="slot' + i + '"></span>' : SLOT).join(', ');
     return '<div class="ask">' + tr('Сборът на едноцифреното число ' + star(0) + ' и <span class="num">' + q.a + '</span> е равен на сбора на едноцифреното число ' + star(1) + ' и <span class="num">' + q.b +
       '</span>. Пресметнете ' + star(1) + ' + ' + star(0) + '. Запишете <b>всички</b> възможни сборове.',
@@ -36,31 +34,27 @@ function drawStarDig(q){
       '</span>. Обчисліть ' + star(1) + ' + ' + star(0) + '. Запишіть <b>усі</b> можливі суми.') + '</div>' +
       '<div class="line" style="font-size:clamp(26px,7vw,42px)">' + slots + '</div>';
   }
-  if(q.kind === 'stardig'){
-    const want = starNum(STAR_ASK[q.ask][0]);
-    return '<div class="ask">' + tr('Сборът на едноцифреното число ' + star(0) + ' и <span class="num">' + q.a + '</span> е равен на сбора на двуцифреното число ' + starNum([2, 1]) + ' и <span class="num">' + q.b +
-      '</span>. ' + (q.ask < 3 ? 'Кое е двуцифреното число ' : 'Кое е числото ') + want + '?',
-      'Сума одноцифрового числа ' + star(0) + ' і <span class="num">' + q.a + '</span> дорівнює сумі двоцифрового числа ' + starNum([2, 1]) + ' і <span class="num">' + q.b +
-      '</span>. ' + (q.ask < 3 ? 'Яке двоцифрове число ' + want : 'Яке число ' + want) + '?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + want + ' = ' + SLOT + '</div>';
-  }
+  const want = starNum(STAR_ASK[q.ask][0]);
+  return '<div class="ask">' + tr('Сборът на едноцифреното число ' + star(0) + ' и <span class="num">' + q.a + '</span> е равен на сбора на двуцифреното число ' + starNum([2, 1]) + ' и <span class="num">' + q.b +
+    '</span>. ' + (q.ask < 3 ? 'Кое е двуцифреното число ' : 'Кое е числото ') + want + '?',
+    'Сума одноцифрового числа ' + star(0) + ' і <span class="num">' + q.a + '</span> дорівнює сумі двоцифрового числа ' + starNum([2, 1]) + ' і <span class="num">' + q.b +
+    '</span>. ' + (q.ask < 3 ? 'Яке двоцифрове число ' + want : 'Яке число ' + want) + '?') + '</div>' +
+    '<div class="line lg">' + want + ' = ' + SLOT + '</div>';
 }
 function eqStarDig(q){
-  if(q.kind === 'stardig' && q.shape === 'two') return '★ + ' + q.a + ' = ✹ + ' + q.b + ' → ' + [q.ans].concat(q.alt).join(', ');
-  if(q.kind === 'stardig') return '★ + ' + q.a + ' = ✶✹ + ' + q.b + ' → ★ = 9, ✶✹ = 10 → ' + starNum(STAR_ASK[q.ask][0], true) + ' = ' + q.ans;
+  if(q.shape === 'two') return '★ + ' + q.a + ' = ✹ + ' + q.b + ' → ' + [q.ans].concat(q.alt).join(', ');
+  return '★ + ' + q.a + ' = ✶✹ + ' + q.b + ' → ★ = 9, ✶✹ = 10 → ' + starNum(STAR_ASK[q.ask][0], true) + ' = ' + q.ans;
 }
 function whyStarDig(q, full){
-  if(q.kind === 'stardig' && q.shape === 'two'){
+  if(q.shape === 'two'){
     if(!full) return tr('Кое от двете числа е по-голямо и с колко? И двете са едноцифрени — не повече от девет.', 'Яке з двох чисел більше і на скільки? Обидва одноцифрові — не більші за дев’ять.');
     const d = q.a - q.b, pairs = []; for(let x = 0; x + d <= 9; x++) pairs.push(star(0) + ' = ' + x + ', ' + star(1) + ' = ' + (x + d));
     return star(1) + tr(' е с ', ' більше на ') + (q.a + ' − ' + q.b + ' = <b>' + d + '</b>') + tr(' по-голямо от ', ' за ') + star(0) + ' &nbsp;→&nbsp; ' + pairs.join(tr(' или ', ' або ')) +
       ' &nbsp;→&nbsp; ' + star(1) + ' + ' + star(0) + ' = ' + [q.ans].concat(q.alt).join(tr(' или ', ' або '));
   }
-  if(q.kind === 'stardig'){
-    if(!full) return tr('Колко най-много може да е лявата страна и колко най-малко — дясната?', 'Яким найбільшим може бути ліва частина, а яким найменшим — права?');
-    return tr('най-много ', 'щонайбільше ') + '9 + ' + q.a + ' = ' + (9 + q.a) + ', ' + tr('най-малко ', 'щонайменше ') + '10 + ' + q.b + ' = ' + (10 + q.b) +
-      tr(' — значи и двете страни са ', ' — отже, обидві частини дорівнюють ') + (9 + q.a) + ' &nbsp;→&nbsp; ' + star(0) + ' = <b>9</b>, ' + starNum([2, 1]) + ' = <b>10</b> &nbsp;→&nbsp; ' +
-      starNum(STAR_ASK[q.ask][0]) + ' = ' + q.ans;
-  }
+  if(!full) return tr('Колко най-много може да е лявата страна и колко най-малко — дясната?', 'Яким найбільшим може бути ліва частина, а яким найменшим — права?');
+  return tr('най-много ', 'щонайбільше ') + '9 + ' + q.a + ' = ' + (9 + q.a) + ', ' + tr('най-малко ', 'щонайменше ') + '10 + ' + q.b + ' = ' + (10 + q.b) +
+    tr(' — значи и двете страни са ', ' — отже, обидві частини дорівнюють ') + (9 + q.a) + ' &nbsp;→&nbsp; ' + star(0) + ' = <b>9</b>, ' + starNum([2, 1]) + ' = <b>10</b> &nbsp;→&nbsp; ' +
+    starNum(STAR_ASK[q.ask][0]) + ' = ' + q.ans;
 }
 KIND.stardig = { draw:drawStarDig, eq:eqStarDig, why:whyStarDig };

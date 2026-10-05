@@ -1,6 +1,4 @@
 // Question kind 'magic': level 100 Магически квадрат — One number is wrong: find what it should be.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2023, задача 12: 20 10 12 / 6 4 22 / 16 18 8 — every row, column and diagonal
 // adds to 42 except those through the 4, so the 4 must be 14. One wrong number spoils exactly
@@ -22,25 +20,21 @@ export function genMagic(){
   }
 }
 function drawMagic(q){
-  if(q.kind === 'magic'){
-    const cells = q.shown.map(v => '<td>' + v + '</td>');
-    return '<div class="ask">' + tr('Кое число трябва да поставим вместо едно от числата, за да се получи <b>магически квадрат</b>?',
-      'Яке число треба поставити замість одного з чисел, щоб вийшов <b>магічний квадрат</b>?') + '</div>' +
-      '<table class="tix magic"><tr>' + cells.slice(0, 3).join('') + '</tr><tr>' + cells.slice(3, 6).join('') + '</tr><tr>' + cells.slice(6).join('') + '</tr></table>' +
-      '<div class="note">' + tr('В магическия квадрат сборът на всеки ред, стълб и диагонал е един и същ.', 'У магічному квадраті сума кожного рядка, стовпця й діагоналі однакова.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const cells = q.shown.map(v => '<td>' + v + '</td>');
+  return '<div class="ask">' + tr('Кое число трябва да поставим вместо едно от числата, за да се получи <b>магически квадрат</b>?',
+    'Яке число треба поставити замість одного з чисел, щоб вийшов <b>магічний квадрат</b>?') + '</div>' +
+    '<table class="tix magic"><tr>' + cells.slice(0, 3).join('') + '</tr><tr>' + cells.slice(3, 6).join('') + '</tr><tr>' + cells.slice(6).join('') + '</tr></table>' +
+    '<div class="note">' + tr('В магическия квадрат сборът на всеки ред, стълб и диагонал е един и същ.', 'У магічному квадраті сума кожного рядка, стовпця й діагоналі однакова.') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqMagic(q){
-  if(q.kind === 'magic') return tr('сбор ', 'сума ') + q.S + ', ' + q.wrong + ' → ' + q.ans;
+  return tr('сбор ', 'сума ') + q.S + ', ' + q.wrong + ' → ' + q.ans;
 }
 function whyMagic(q, full){
-  if(q.kind === 'magic'){
-    if(!full) return tr('Събери всеки ред и всеки стълб. Кое число е в реда и в стълба, които не пасват?', 'Додай кожен рядок і кожен стовпець. Яке число стоїть у рядку й стовпці, що не збігаються?');
-    const r = Math.floor(q.at / 3), c = q.at % 3, row = [0, 1, 2].map(i => q.shown[3*r + i]), col = [0, 1, 2].map(i => q.shown[3*i + c]);
-    const other = MAGIC_LINES.find(l => !l.includes(q.at)).map(i => q.shown[i]);
-    return tr('сборът е ', 'сума ') + other.join(' + ') + ' = <b>' + q.S + '</b>, ' + tr('а ', 'а ') + row.join(' + ') + ' = ' + (row.reduce((x, y) => x + y) ) + tr(' и ', ' і ') + col.join(' + ') + ' = ' + col.reduce((x, y) => x + y) +
-      ' &nbsp;→&nbsp; ' + tr('сгрешено е ', 'помилкове ') + q.wrong + tr(', другите две в реда му дават ', ', два інші в його рядку дають ') + (q.S - q.g[q.at]) + ' &nbsp;→&nbsp; ' + q.S + ' − ' + (q.S - q.g[q.at]) + ' = ' + q.ans;
-  }
+  if(!full) return tr('Събери всеки ред и всеки стълб. Кое число е в реда и в стълба, които не пасват?', 'Додай кожен рядок і кожен стовпець. Яке число стоїть у рядку й стовпці, що не збігаються?');
+  const r = Math.floor(q.at / 3), c = q.at % 3, row = [0, 1, 2].map(i => q.shown[3*r + i]), col = [0, 1, 2].map(i => q.shown[3*i + c]);
+  const other = MAGIC_LINES.find(l => !l.includes(q.at)).map(i => q.shown[i]);
+  return tr('сборът е ', 'сума ') + other.join(' + ') + ' = <b>' + q.S + '</b>, ' + tr('а ', 'а ') + row.join(' + ') + ' = ' + (row.reduce((x, y) => x + y) ) + tr(' и ', ' і ') + col.join(' + ') + ' = ' + col.reduce((x, y) => x + y) +
+    ' &nbsp;→&nbsp; ' + tr('сгрешено е ', 'помилкове ') + q.wrong + tr(', другите две в реда му дават ', ', два інші в його рядку дають ') + (q.S - q.g[q.at]) + ' &nbsp;→&nbsp; ' + q.S + ' − ' + (q.S - q.g[q.at]) + ' = ' + q.ans;
 }
 KIND.magic = { draw:drawMagic, eq:eqMagic, why:whyMagic };

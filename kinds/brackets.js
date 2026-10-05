@@ -1,6 +1,4 @@
 // Question kind 'brackets': level 99 86 − (51 − 5) — Brackets first — or see what they take away.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2023, задачи 1 и 3. 86 − (51 − 5): the bracket first, 86 − 46 = 40 — taking away
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
@@ -72,42 +70,38 @@ export function genBrackets(){
 }
 export const bracketsExpr = q => q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
-  if(q.kind === 'brackets'){
-    return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
-      '<div class="line" style="font-size:clamp(24px,7vw,42px)"><span class="num">' + bracketsExpr(q) + '</span> = ' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
+    '<div class="line" style="font-size:clamp(24px,7vw,42px)"><span class="num">' + bracketsExpr(q) + '</span> = ' + SLOT + '</div>';
 }
 function eqBrackets(q){
-  if(q.kind === 'brackets') return bracketsExpr(q) + ' = ' + q.ans;
+  return bracketsExpr(q) + ' = ' + q.ans;
 }
 function whyBrackets(q, full){
-  if(q.kind === 'brackets'){
-    if(q.shape === 6){
-      if(!full) return tr('Първо сметките в скобите. Какво прави + 0?', 'Спершу обчисли в дужках. Що змінює + 0?');
-      return q.a + ' − ' + q.b + ' = <b>' + (q.a - q.b) + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + (q.c - q.d) + '</b> &nbsp;→&nbsp; ' + (q.a - q.b) + ' + 0 − ' + (q.c - q.d) + ' = ' + q.ans;
-    }
-    if(q.shape === 5){
-      if(!full) return tr('От числото се вади скоба, в която стои същото число. Какво остава от него?', 'Від числа віднімають дужку, у якій стоїть те саме число. Що від нього залишається?');
-      return q.a + ' − (' + q.a + ' − ' + q.b + ') = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + q.b + ' + ' + q.c + ' − ' + q.d + ' = ' + q.ans;
-    }
-    if(q.shape === 4){
-      if(!full) return tr('Всяка скоба поотделно — в две от тях числата се допълват до кръгли десетици.', 'Кожну дужку окремо — у двох із них числа доповнюють одне одного до круглих десятків.');
-      const x = q.a + q.b, y = q.c - q.d, z = q.e + q.f - q.g;
-      return q.a + ' + ' + q.b + ' = <b>' + x + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + y + '</b>, ' + q.e + ' + ' + q.f + ' − ' + q.g + ' = <b>' + z + '</b> &nbsp;→&nbsp; ' + x + ' + ' + y + ' − ' + z + ' = ' + q.ans;
-    }
-    if(q.shape === 3){
-      if(!full) return tr('Всяка скоба е малко число — пресметни ги поотделно.', 'Кожна дужка — маленьке число, обчисли їх окремо.');
-      const v = [q.first].concat(q.gs).map(([a, b]) => a - b);
-      return [q.first].concat(q.gs).map(([a, b], i) => a + ' − ' + b + ' = <b>' + v[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + v.join(' − ') + ' = ' + q.ans;
-    }
-    if(q.shape === 2){
-      if(!full) return tr('Сравни какво вади първата скоба с това, което събира втората.', 'Порівняй, що віднімає перша дужка, з тим, що додає друга.');
-      return tr('първата скоба вади ', 'перша дужка віднімає ') + q.down.join(' + ') + tr(', втората ги връща обратно', ', друга їх повертає') + ' &nbsp;→&nbsp; ' + q.N + ' − ' + q.down.reduce((a, b) => a + b) + ' + ' + q.down.reduce((a, b) => a + b) + ' = ' + q.ans;
-    }
-    if(!full) return q.shape === 0 ? tr('Първо сметката в скобите.', 'Спершу обчисли в дужках.')
-                                   : tr('Всяка скоба е колко не достига до 100.', 'Кожна дужка — скільки бракує до 100.');
-    if(q.shape === 0) return q.b + ' − ' + q.c + ' = <b>' + q.inner + '</b> &nbsp;→&nbsp; ' + q.a + ' − ' + q.inner + ' = ' + q.ans;
-    return q.xs.map((x, i) => '100 − ' + x + ' = <b>' + q.gaps[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.gaps.join(' − ') + ' = ' + q.ans;
+  if(q.shape === 6){
+    if(!full) return tr('Първо сметките в скобите. Какво прави + 0?', 'Спершу обчисли в дужках. Що змінює + 0?');
+    return q.a + ' − ' + q.b + ' = <b>' + (q.a - q.b) + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + (q.c - q.d) + '</b> &nbsp;→&nbsp; ' + (q.a - q.b) + ' + 0 − ' + (q.c - q.d) + ' = ' + q.ans;
   }
+  if(q.shape === 5){
+    if(!full) return tr('От числото се вади скоба, в която стои същото число. Какво остава от него?', 'Від числа віднімають дужку, у якій стоїть те саме число. Що від нього залишається?');
+    return q.a + ' − (' + q.a + ' − ' + q.b + ') = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + q.b + ' + ' + q.c + ' − ' + q.d + ' = ' + q.ans;
+  }
+  if(q.shape === 4){
+    if(!full) return tr('Всяка скоба поотделно — в две от тях числата се допълват до кръгли десетици.', 'Кожну дужку окремо — у двох із них числа доповнюють одне одного до круглих десятків.');
+    const x = q.a + q.b, y = q.c - q.d, z = q.e + q.f - q.g;
+    return q.a + ' + ' + q.b + ' = <b>' + x + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + y + '</b>, ' + q.e + ' + ' + q.f + ' − ' + q.g + ' = <b>' + z + '</b> &nbsp;→&nbsp; ' + x + ' + ' + y + ' − ' + z + ' = ' + q.ans;
+  }
+  if(q.shape === 3){
+    if(!full) return tr('Всяка скоба е малко число — пресметни ги поотделно.', 'Кожна дужка — маленьке число, обчисли їх окремо.');
+    const v = [q.first].concat(q.gs).map(([a, b]) => a - b);
+    return [q.first].concat(q.gs).map(([a, b], i) => a + ' − ' + b + ' = <b>' + v[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + v.join(' − ') + ' = ' + q.ans;
+  }
+  if(q.shape === 2){
+    if(!full) return tr('Сравни какво вади първата скоба с това, което събира втората.', 'Порівняй, що віднімає перша дужка, з тим, що додає друга.');
+    return tr('първата скоба вади ', 'перша дужка віднімає ') + q.down.join(' + ') + tr(', втората ги връща обратно', ', друга їх повертає') + ' &nbsp;→&nbsp; ' + q.N + ' − ' + q.down.reduce((a, b) => a + b) + ' + ' + q.down.reduce((a, b) => a + b) + ' = ' + q.ans;
+  }
+  if(!full) return q.shape === 0 ? tr('Първо сметката в скобите.', 'Спершу обчисли в дужках.')
+                                 : tr('Всяка скоба е колко не достига до 100.', 'Кожна дужка — скільки бракує до 100.');
+  if(q.shape === 0) return q.b + ' − ' + q.c + ' = <b>' + q.inner + '</b> &nbsp;→&nbsp; ' + q.a + ' − ' + q.inner + ' = ' + q.ans;
+  return q.xs.map((x, i) => '100 − ' + x + ' = <b>' + q.gaps[i] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.gaps.join(' − ') + ' = ' + q.ans;
 }
 KIND.brackets = { draw:drawBrackets, eq:eqBrackets, why:whyBrackets };

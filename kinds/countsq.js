@@ -1,6 +1,4 @@
 // Question kind 'countsq': level 105 Всички квадрати — Squares of every size in a figure of tiles.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2022, задача 14: a figure of 11 square tiles; 11 small squares and 3 of two by two, 14.
 // The big ones are the trap: every 2 × 2 (or 3 × 3) block of tiles is a square too. Counted here
@@ -37,19 +35,15 @@ function countSqSvg(cells){
     cells.map(([x, y]) => '<rect x="' + x*u + '" y="' + y*u + '" width="' + u + '" height="' + u + '" fill="color-mix(in srgb, var(--warm) 35%, transparent)" stroke="var(--ink)" stroke-width="1.6"/>').join('') + '</svg></div>';
 }
 function drawCountSq(q){
-  if(q.kind === 'countsq'){
-    return '<div class="ask">' + tr('Фигурата е образувана от <span class="num">' + q.cells.length + '</span> квадратни плочки. Колко <b>общо</b> са квадратите на фигурата?',
-      'Фігуру складено з <span class="num">' + q.cells.length + '</span> квадратних плиток. Скільки <b>всього</b> квадратів на фігурі?') + '</div>' +
-      countSqSvg(q.cells) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Фигурата е образувана от <span class="num">' + q.cells.length + '</span> квадратни плочки. Колко <b>общо</b> са квадратите на фигурата?',
+    'Фігуру складено з <span class="num">' + q.cells.length + '</span> квадратних плиток. Скільки <b>всього</b> квадратів на фігурі?') + '</div>' +
+    countSqSvg(q.cells) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCountSq(q){
-  if(q.kind === 'countsq') return q.sizes.join(' + ') + ' = ' + q.ans;
+  return q.sizes.join(' + ') + ' = ' + q.ans;
 }
 function whyCountSq(q, full){
-  if(q.kind === 'countsq'){
-    if(!full) return tr('Не само малките: и всяко каре от плочки два на два е квадрат.', 'Не лише маленькі: кожен блок плиток два на два — теж квадрат.');
-    return q.sizes.map((n, i) => (i + 1) + '×' + (i + 1) + ': <b>' + n + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
-  }
+  if(!full) return tr('Не само малките: и всяко каре от плочки два на два е квадрат.', 'Не лише маленькі: кожен блок плиток два на два — теж квадрат.');
+  return q.sizes.map((n, i) => (i + 1) + '×' + (i + 1) + ': <b>' + n + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
 }
 KIND.countsq = { draw:drawCountSq, eq:eqCountSq, why:whyCountSq };

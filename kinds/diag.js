@@ -1,6 +1,4 @@
 // Question kind 'diag': level 139 Диагоналите — Squares of a grid cut by a rectangle's diagonals.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, задача 15: a 9 by 6 rectangle of 1 см squares and its diagonals AC and BD. How many
 // squares are cut into two parts? Each diagonal crosses 12 squares; the two in the middle are crossed by
@@ -35,22 +33,18 @@ function diagSvg(q){
     lab(-7, H + 11, 'A') + lab(W + 7, H + 11, 'B') + lab(W + 7, -4, 'C') + lab(-7, -4, 'D') + '</svg></div>';
 }
 function drawDiag(q){
-  if(q.kind === 'diag'){
-    return '<div class="ask">' + tr('Правоъгълник ABCD е със страни <span class="num">' + q.w + '</span> см и <span class="num">' + q.h + '</span> см и е разделен на квадрати със страна 1 см. ' +
-      (q.one ? 'През колко от тези квадрати минава отсечката <b>AC</b>?' : 'Колко от тези квадрати са разделени от отсечките AC и BD <b>на две части</b>?'),
-      'Прямокутник ABCD має сторони <span class="num">' + q.w + '</span> см і <span class="num">' + q.h + '</span> см і поділений на квадрати зі стороною 1 см. ' +
-      (q.one ? 'Через скільки з цих квадратів проходить відрізок <b>AC</b>?' : 'Скільки з цих квадратів відрізки AC і BD ділять <b>на дві частини</b>?')) + '</div>' +
-      diagSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Правоъгълник ABCD е със страни <span class="num">' + q.w + '</span> см и <span class="num">' + q.h + '</span> см и е разделен на квадрати със страна 1 см. ' +
+    (q.one ? 'През колко от тези квадрати минава отсечката <b>AC</b>?' : 'Колко от тези квадрати са разделени от отсечките AC и BD <b>на две части</b>?'),
+    'Прямокутник ABCD має сторони <span class="num">' + q.w + '</span> см і <span class="num">' + q.h + '</span> см і поділений на квадрати зі стороною 1 см. ' +
+    (q.one ? 'Через скільки з цих квадратів проходить відрізок <b>AC</b>?' : 'Скільки з цих квадратів відрізки AC і BD ділять <b>на дві частини</b>?')) + '</div>' +
+    diagSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqDiag(q){
-  if(q.kind === 'diag') return q.one ? 'AC → ' + q.ans : q.ac + ' + ' + q.ac + ' − ' + q.both + ' − ' + q.both + ' = ' + q.ans;
+  return q.one ? 'AC → ' + q.ans : q.ac + ' + ' + q.ac + ' − ' + q.both + ' − ' + q.both + ' = ' + q.ans;
 }
 function whyDiag(q, full){
-  if(q.kind === 'diag'){
-    if(!full) return q.one ? tr('Следи отсечката квадрат по квадрат. Където минава през ъгъл, не пресича съседните квадрати.', 'Стеж за відрізком квадрат за квадратом. Де він проходить через кут, сусідні квадрати він не перетинає.')
-      : tr('Квадрат, през който минават и двете отсечки, е разделен на повече от две части.', 'Квадрат, через який проходять обидва відрізки, поділений більш ніж на дві частини.');
-    return tr('AC минава през <b>', 'AC проходить через <b>') + q.ac + tr('</b> квадрата', '</b> квадратів') + (q.one ? ' &nbsp;→&nbsp; ' + q.ans : tr(', BD също през <b>', ', BD теж через <b>') + q.ac + tr('</b>, и двете — през <b>', '</b>, обидва — через <b>') + q.both + '</b> &nbsp;→&nbsp; ' + q.ac + ' + ' + q.ac + ' − ' + q.both + ' − ' + q.both + ' = ' + q.ans);
-  }
+  if(!full) return q.one ? tr('Следи отсечката квадрат по квадрат. Където минава през ъгъл, не пресича съседните квадрати.', 'Стеж за відрізком квадрат за квадратом. Де він проходить через кут, сусідні квадрати він не перетинає.')
+    : tr('Квадрат, през който минават и двете отсечки, е разделен на повече от две части.', 'Квадрат, через який проходять обидва відрізки, поділений більш ніж на дві частини.');
+  return tr('AC минава през <b>', 'AC проходить через <b>') + q.ac + tr('</b> квадрата', '</b> квадратів') + (q.one ? ' &nbsp;→&nbsp; ' + q.ans : tr(', BD също през <b>', ', BD теж через <b>') + q.ac + tr('</b>, и двете — през <b>', '</b>, обидва — через <b>') + q.both + '</b> &nbsp;→&nbsp; ' + q.ac + ' + ' + q.ac + ' − ' + q.both + ' − ' + q.both + ' = ' + q.ans);
 }
 KIND.diag = { draw:drawDiag, eq:eqDiag, why:whyDiag };

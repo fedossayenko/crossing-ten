@@ -1,6 +1,4 @@
 // Question kind 'bowl': level 190 Фруктиерата — Apples and lemons, and how many of them are yellow.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2022, 1 клас, задача 17: apples and lemons in a bowl; 6 apples, 2 of them yellow; 11 yellow
 // fruit in all — how many fruit? Every lemon is yellow, so the yellow ones that are not apples are the
@@ -25,24 +23,20 @@ function bowlSvg(q){
     svgText(150, H - 6, q.A + ' + ' + L + ' = ' + q.ans, 14, 'var(--ink)', popAt(3 + (q.A + L)*0.3)) + '</svg>';
 }
 function drawBowl(q){
-  if(q.kind === 'bowl'){
-    return '<div class="ask">' + tr('Във фруктиера има ябълки и лимони. Ябълките са <span class="num">' + q.A + '</span>, от които <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'е жълта' : 'са жълти') +
-      '. Жълтите плодове са общо <span class="num">' + q.Y + '</span>. Колко <b>общо</b> са плодовете във фруктиерата?',
-      'У вазі для фруктів є яблука й лимони. Яблук <span class="num">' + q.A + '</span>, з них <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'жовте' : q.k < 5 ? 'жовті' : 'жовтих') +
-      '. Жовтих фруктів усього <span class="num">' + q.Y + '</span>. Скільки <b>всього</b> фруктів у вазі?') + '</div>' +
-      '<div class="note">' + tr('Лимоните са жълти.', 'Лимони — жовті.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Във фруктиера има ябълки и лимони. Ябълките са <span class="num">' + q.A + '</span>, от които <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'е жълта' : 'са жълти') +
+    '. Жълтите плодове са общо <span class="num">' + q.Y + '</span>. Колко <b>общо</b> са плодовете във фруктиерата?',
+    'У вазі для фруктів є яблука й лимони. Яблук <span class="num">' + q.A + '</span>, з них <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'жовте' : q.k < 5 ? 'жовті' : 'жовтих') +
+    '. Жовтих фруктів усього <span class="num">' + q.Y + '</span>. Скільки <b>всього</b> фруктів у вазі?') + '</div>' +
+    '<div class="note">' + tr('Лимоните са жълти.', 'Лимони — жовті.') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqBowl(q){
-  if(q.kind === 'bowl') return q.Y + ' − ' + q.k + ' = ' + (q.Y - q.k) + ', ' + q.A + ' + ' + (q.Y - q.k) + ' = ' + q.ans;
+  return q.Y + ' − ' + q.k + ' = ' + (q.Y - q.k) + ', ' + q.A + ' + ' + (q.Y - q.k) + ' = ' + q.ans;
 }
 function whyBowl(q, full){
-  if(q.kind === 'bowl'){
-    if(!full) return tr('Кои плодове са жълти? Не само ябълките.', 'Які фрукти жовті? Не лише яблука.');
-    const L = q.Y - q.k;
-    return tr('жълтите са жълтите ябълки и всички лимони &nbsp;→&nbsp; лимоните са ' + q.Y + ' − ' + q.k + ' = <b>' + L + '</b> &nbsp;→&nbsp; ' + q.A + ' + ' + L + ' = ' + q.ans,
-      'жовті — це жовті яблука й усі лимони &nbsp;→&nbsp; лимонів ' + q.Y + ' − ' + q.k + ' = <b>' + L + '</b> &nbsp;→&nbsp; ' + q.A + ' + ' + L + ' = ' + q.ans) + bowlSvg(q);
-  }
+  if(!full) return tr('Кои плодове са жълти? Не само ябълките.', 'Які фрукти жовті? Не лише яблука.');
+  const L = q.Y - q.k;
+  return tr('жълтите са жълтите ябълки и всички лимони &nbsp;→&nbsp; лимоните са ' + q.Y + ' − ' + q.k + ' = <b>' + L + '</b> &nbsp;→&nbsp; ' + q.A + ' + ' + L + ' = ' + q.ans,
+    'жовті — це жовті яблука й усі лимони &nbsp;→&nbsp; лимонів ' + q.Y + ' − ' + q.k + ' = <b>' + L + '</b> &nbsp;→&nbsp; ' + q.A + ' + ' + L + ' = ' + q.ans) + bowlSvg(q);
 }
 KIND.bowl = { draw:drawBowl, eq:eqBowl, why:whyBowl };

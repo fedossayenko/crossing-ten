@@ -1,6 +1,4 @@
 // Question kind 'twosigns': level 63 Два знака — Which two different signs make the equality true.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Есен, 3 клас, задача 5: (20 □ 2 + 5) □ 2 = 20 + 2 · 5, two different signs of + − · :.
 // The right side is 30; only : then · gets there. A sign pair cannot be typed, so this
@@ -39,23 +37,19 @@ export function genTwoSigns(){
 }
 export const twoRhs = q => q.rhs ? q.rhs[0] + ' + ' + q.rhs[1] + ' · ' + q.rhs[2] : '' + q.val;
 function drawTwoSigns(q){
-  if(q.kind === 'twosigns'){
-    const box = '<span class="op">□</span>';
-    return '<div class="ask">' + tr('Кои <b>два различни</b> знака от „+“, „−“, „·“ и „:“ трябва да поставим вместо □, за да получим вярно равенство?',
-      'Які <b>два різні</b> знаки з «+», «−», «·» і «:» треба поставити замість □, щоб отримати правильну рівність?') + '</div>' +
-      '<div class="given">(' + q.a + ' ' + box + ' ' + q.b + ' + ' + q.c + ') ' + box + ' ' + q.d + ' = ' + twoRhs(q) + '</div>';
-  }
+  const box = '<span class="op">□</span>';
+  return '<div class="ask">' + tr('Кои <b>два различни</b> знака от „+“, „−“, „·“ и „:“ трябва да поставим вместо □, за да получим вярно равенство?',
+    'Які <b>два різні</b> знаки з «+», «−», «·» і «:» треба поставити замість □, щоб отримати правильну рівність?') + '</div>' +
+    '<div class="given">(' + q.a + ' ' + box + ' ' + q.b + ' + ' + q.c + ') ' + box + ' ' + q.d + ' = ' + twoRhs(q) + '</div>';
 }
 function eqTwoSigns(q){
-  if(q.kind === 'twosigns') return '(' + q.a + ' ' + q.pair[0] + ' ' + q.b + ' + ' + q.c + ') ' + q.pair[1] + ' ' + q.d + ' = ' + q.val;
+  return '(' + q.a + ' ' + q.pair[0] + ' ' + q.b + ' + ' + q.c + ') ' + q.pair[1] + ' ' + q.d + ' = ' + q.val;
 }
 function whyTwoSigns(q, full){
-  if(q.kind === 'twosigns'){
-    if(!full) return tr('Пресметни първо дясната страна, после пробвай знаците един по един.',
-                        'Спершу обчисли праву частину, потім пробуй знаки по одному.');
-    const x = signCalc(q.a, q.pair[0], q.b);
-    return (q.rhs ? twoRhs(q) + ' = <b>' + q.val + '</b> &nbsp;→&nbsp; ' : '') + '(' + q.a + ' ' + q.pair[0] + ' ' + q.b + ' + ' + q.c + ') ' +
-      q.pair[1] + ' ' + q.d + ' = ' + (x + q.c) + ' ' + q.pair[1] + ' ' + q.d + ' = ' + q.val;
-  }
+  if(!full) return tr('Пресметни първо дясната страна, после пробвай знаците един по един.',
+                      'Спершу обчисли праву частину, потім пробуй знаки по одному.');
+  const x = signCalc(q.a, q.pair[0], q.b);
+  return (q.rhs ? twoRhs(q) + ' = <b>' + q.val + '</b> &nbsp;→&nbsp; ' : '') + '(' + q.a + ' ' + q.pair[0] + ' ' + q.b + ' + ' + q.c + ') ' +
+    q.pair[1] + ' ' + q.d + ' = ' + (x + q.c) + ' ' + q.pair[1] + ' ' + q.d + ' = ' + q.val;
 }
 KIND.twosigns = { draw:drawTwoSigns, eq:eqTwoSigns, why:whyTwoSigns };

@@ -1,6 +1,4 @@
 // Question kind 'fruit': level 28 Ябълки и круши — Count two groups, then add to reach a difference.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 6: count two mixed groups, then work out how many to add to reach a gap.
 import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
@@ -32,35 +30,31 @@ export function fruitSvg(row){
 const fruitUk = (n, forms) => forms[{one:0, few:1}[new Intl.PluralRules('uk').select(n)] ?? 2];
 const fruitPear = n => fruitUk(n, ['груша', 'груші', 'груш']), fruitApple = n => fruitUk(n, ['яблуко', 'яблука', 'яблук']);
 function drawFruit(q){
-  if(q.kind === 'fruit' && q.shape === 'rest'){
+  if(q.shape === 'rest'){
     return '<div class="ask">' + tr('Петьо имал <span class="num">' + q.T + '</span> ябълки, от които <span class="num">' + q.r + '</span> червени, а останалите — жълти. Изял <span class="num">' + q.e + '</span> ' + (q.e === 1 ? 'жълта ябълка' : 'жълти ябълки') + '. Колко <b>жълти</b> ябълки са му останали?',
       'У Петра було <span class="num">' + fruitApple(q.T).replace(/^/, q.T + '</span> ') + ', з них <span class="num">' + q.r + '</span> червоних, а решта — жовті. Він з’їв <span class="num">' + q.e + '</span> ' + fruitUk(q.e, ['жовте яблуко', 'жовті яблука', 'жовтих яблук']) + '. Скільки <b>жовтих</b> яблук у нього залишилося?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'fruit'){
-    return tr('<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
-      q.k + '</span> по-голям от броя на <b>крушите</b>?</div>',
-      '<div class="ask">Скільки <b>яблук</b> треба додати, щоб їх стало на <span class="num">' +
-      q.k + '</span> більше, ніж <b>груш</b>?</div>') + fruitSvg(q.row) +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  return tr('<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
+    q.k + '</span> по-голям от броя на <b>крушите</b>?</div>',
+    '<div class="ask">Скільки <b>яблук</b> треба додати, щоб їх стало на <span class="num">' +
+    q.k + '</span> більше, ніж <b>груш</b>?</div>') + fruitSvg(q.row) +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqFruit(q){
-  if(q.kind === 'fruit' && q.shape === 'rest') return q.T + ' − ' + q.r + ' = ' + q.y + ', ' + q.y + ' − ' + q.e + ' = ' + q.ans;
-  if(q.kind === 'fruit') return tr(q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ',
+  if(q.shape === 'rest') return q.T + ' − ' + q.r + ' = ' + q.y + ', ' + q.y + ' − ' + q.e + ' = ' + q.ans;
+  return tr(q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ',
     q.pears + ' ' + fruitPear(q.pears) + ', ' + q.apples + ' ' + fruitApple(q.apples) + ', на ' + q.k + ' більше → ') + q.ans;
 }
 function whyFruit(q, full){
-  if(q.kind === 'fruit' && q.shape === 'rest'){
+  if(q.shape === 'rest'){
     if(!full) return tr('Колко жълти е имал отначало?', 'Скільки жовтих було спочатку?');
     return tr('жълти: ', 'жовтих: ') + q.T + ' − ' + q.r + ' = <b>' + q.y + '</b> &nbsp;→&nbsp; ' + q.y + ' − ' + q.e + ' = ' + q.ans;
   }
-  if(q.kind === 'fruit'){
-    if(!full) return tr('Преброй първо крушите, после ябълките.', 'Спочатку порахуй груші, потім яблука.');
-    return tr('круши: <b>' + q.pears + '</b>, ябълки: <b>' + q.apples + '</b> &nbsp;→&nbsp; трябват ' +
-      (q.pears + q.k) + ' ябълки &nbsp;→&nbsp; ',
-      'груш: <b>' + q.pears + '</b>, яблук: <b>' + q.apples + '</b> &nbsp;→&nbsp; треба ' +
-      (q.pears + q.k) + ' ' + fruitApple(q.pears + q.k) + ' &nbsp;→&nbsp; ') + (q.pears + q.k) + ' − ' + q.apples + ' = ' + q.ans;
-  }
+  if(!full) return tr('Преброй първо крушите, после ябълките.', 'Спочатку порахуй груші, потім яблука.');
+  return tr('круши: <b>' + q.pears + '</b>, ябълки: <b>' + q.apples + '</b> &nbsp;→&nbsp; трябват ' +
+    (q.pears + q.k) + ' ябълки &nbsp;→&nbsp; ',
+    'груш: <b>' + q.pears + '</b>, яблук: <b>' + q.apples + '</b> &nbsp;→&nbsp; треба ' +
+    (q.pears + q.k) + ' ' + fruitApple(q.pears + q.k) + ' &nbsp;→&nbsp; ') + (q.pears + q.k) + ' − ' + q.apples + ' = ' + q.ans;
 }
 KIND.fruit = { draw:drawFruit, eq:eqFruit, why:whyFruit };

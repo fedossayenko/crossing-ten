@@ -1,6 +1,4 @@
 // Question kind 'toys': level 146 Играчките за елха — The four-part task: days of making toys, the weekday, boxes, money.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2023, задача 10, solved in full, in four parts. Ели made 3 toys on Monday and each next day one more,
 // until 63 in all: 3 + 4 + … + 11 = 63, so А) 9 days, Б) the 9th day from a Monday is a Tuesday, В) 63 : 9 = 7
@@ -34,39 +32,33 @@ export function genToys(){
 }
 const toyLv = n => tr(n + (n === 1 ? ' лев' : ' лева'), ukN(n, 'лев', 'леви', 'левів'));
 function drawToys(q){
-  if(q.kind === 'toys'){
-    const story = tr('Ели направила ' + TOY_ON[q.day0] + ' <span class="num">' + q.a + '</span> ' + (q.a === 1 ? 'играчка' : 'играчки') + ' за елха. Всеки ден след това правила с по 1 играчка повече от предишния ден, докато направила общо <span class="num">' + q.T + '</span> играчки. ',
-      'Елі зробила ' + TOY_ON_UK[q.day0] + ' <span class="num">' + ukN(q.a, 'іграшку', 'іграшки', 'іграшок').replace(' ', '</span> ') + ' на ялинку. Кожного наступного дня вона робила на 1 іграшку більше, ніж попереднього, доки не зробила всього <span class="num">' + ukN(q.T, 'іграшку', 'іграшки', 'іграшок').replace(' ', '</span> ') + '. ');
-    const box = tr('Опаковала играчките по <span class="num">' + q.m + '</span> в кутия. ', 'Вона спакувала іграшки по <span class="num">' + q.m + '</span> у коробку. ');
-    const ask = [tr('Колко дена е работила Ели?', 'Скільки днів працювала Елі?'),
-      tr('В кой ден от седмицата е спряла да работи?', 'У який день тижня вона закінчила роботу?'),
-      box + tr('Колко кутии е използвала?', 'Скільки коробок знадобилося?'),
-      box + tr('Оставила една кутия за себе си, подарила по една на ' + q.f + ' свои приятелки и останалите продала на коледния базар. За едната кутия получила ' + toyLv(q.p1) + ', а за останалите — по ' + toyLv(q.p2) + '. Колко лева общо е получила?',
-        'Одну коробку залишила собі, по одній подарувала ' + q.f + ' подругам, а решту продала на різдвяному ярмарку. За одну коробку отримала ' + toyLv(q.p1) + ', а за решту — по ' + toyLv(q.p2) + '. Скільки всього левів вона отримала?')][q.shape];
-    return '<div class="ask">' + story + ask + '</div>' + (q.shape === 1 ? '' : '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>');
-  }
+  const story = tr('Ели направила ' + TOY_ON[q.day0] + ' <span class="num">' + q.a + '</span> ' + (q.a === 1 ? 'играчка' : 'играчки') + ' за елха. Всеки ден след това правила с по 1 играчка повече от предишния ден, докато направила общо <span class="num">' + q.T + '</span> играчки. ',
+    'Елі зробила ' + TOY_ON_UK[q.day0] + ' <span class="num">' + ukN(q.a, 'іграшку', 'іграшки', 'іграшок').replace(' ', '</span> ') + ' на ялинку. Кожного наступного дня вона робила на 1 іграшку більше, ніж попереднього, доки не зробила всього <span class="num">' + ukN(q.T, 'іграшку', 'іграшки', 'іграшок').replace(' ', '</span> ') + '. ');
+  const box = tr('Опаковала играчките по <span class="num">' + q.m + '</span> в кутия. ', 'Вона спакувала іграшки по <span class="num">' + q.m + '</span> у коробку. ');
+  const ask = [tr('Колко дена е работила Ели?', 'Скільки днів працювала Елі?'),
+    tr('В кой ден от седмицата е спряла да работи?', 'У який день тижня вона закінчила роботу?'),
+    box + tr('Колко кутии е използвала?', 'Скільки коробок знадобилося?'),
+    box + tr('Оставила една кутия за себе си, подарила по една на ' + q.f + ' свои приятелки и останалите продала на коледния базар. За едната кутия получила ' + toyLv(q.p1) + ', а за останалите — по ' + toyLv(q.p2) + '. Колко лева общо е получила?',
+      'Одну коробку залишила собі, по одній подарувала ' + q.f + ' подругам, а решту продала на різдвяному ярмарку. За одну коробку отримала ' + toyLv(q.p1) + ', а за решту — по ' + toyLv(q.p2) + '. Скільки всього левів вона отримала?')][q.shape];
+  return '<div class="ask">' + story + ask + '</div>' + (q.shape === 1 ? '' : '<div class="line xl">' + SLOT + '</div>');
 }
 const toyRun = q => { const d = []; for(let i = 0; i < q.n; i++) d.push(q.a + i); return d; };
 function eqToys(q){
-  if(q.kind === 'toys'){
-    const run = toyRun(q).join(' + ') + ' = ' + q.T;
-    return [run + ' → ' + q.n, run + ' → ' + tr(DAYS[q.last].nm, weekdayUk[DAYS[q.last].nm].nm), q.T + ' : ' + q.m + ' = ' + q.boxes,
-      q.boxes + ' − 1 − ' + q.f + ' = ' + q.sold + ', ' + q.p1 + ' + ' + (q.sold - 1) + ' · ' + q.p2 + ' = ' + q.ans][q.shape];
-  }
+  const run = toyRun(q).join(' + ') + ' = ' + q.T;
+  return [run + ' → ' + q.n, run + ' → ' + tr(DAYS[q.last].nm, weekdayUk[DAYS[q.last].nm].nm), q.T + ' : ' + q.m + ' = ' + q.boxes,
+    q.boxes + ' − 1 − ' + q.f + ' = ' + q.sold + ', ' + q.p1 + ' + ' + (q.sold - 1) + ' · ' + q.p2 + ' = ' + q.ans][q.shape];
 }
 function whyToys(q, full){
-  if(q.kind === 'toys'){
-    if(!full) return [tr('Запиши колко играчки е направила всеки ден, докато сборът стане ' + q.T + '.', 'Випиши, скільки іграшок вона робила щодня, доки сума не стане ' + q.T + '.'),
-      tr('Първо колко дена е работила. Първият ден е ' + DAYS[q.day0].nm + ' — кой е последният?', 'Спершу — скільки днів вона працювала. Перший день — ' + weekdayUk[DAYS[q.day0].nm].nm + '. Який останній?'),
-      tr('По колко играчки в кутия — колко пъти се събират в ' + q.T + '?', 'По скільки іграшок у коробці — скільки разів це вміщується в ' + q.T + '?'),
-      tr('Първо колко кутии е продала. Колко от тях са по ' + q.p2 + ' лева?', 'Спершу — скільки коробок вона продала. Скільки з них по ' + q.p2 + '?')][q.shape];
-    const run = toyRun(q).join(' + ') + ' = ' + q.T;
-    if(q.shape === 0) return run + ' &nbsp;→&nbsp; ' + tr(q.n + ' дена', ukN(q.n, 'день', 'дні', 'днів'));
-    if(q.shape === 1) return run + ' &nbsp;→&nbsp; ' + tr(q.n + ' дена: ', ukN(q.n, 'день', 'дні', 'днів') + ': ') +
-      toyRun(q).map((_, i) => tr(DAYS[(q.day0 + i) % 7].nm, weekdayUk[DAYS[(q.day0 + i) % 7].nm].nm)).join(', ') + ' &nbsp;→&nbsp; <b>' + tr(DAYS[q.last].nm, weekdayUk[DAYS[q.last].nm].nm) + '</b>';
-    if(q.shape === 2) return q.T + ' : ' + q.m + ' = ' + q.boxes;
-    return tr('кутии: ', 'коробок: ') + q.T + ' : ' + q.m + ' = ' + q.boxes + ', ' + tr('продадени: ', 'продано: ') + q.boxes + ' − 1 − ' + q.f + ' = <b>' + q.sold + '</b> &nbsp;→&nbsp; ' +
-      q.p1 + ' + ' + Array(q.sold - 1).fill(q.p2).join(' + ') + ' = ' + q.ans;
-  }
+  if(!full) return [tr('Запиши колко играчки е направила всеки ден, докато сборът стане ' + q.T + '.', 'Випиши, скільки іграшок вона робила щодня, доки сума не стане ' + q.T + '.'),
+    tr('Първо колко дена е работила. Първият ден е ' + DAYS[q.day0].nm + ' — кой е последният?', 'Спершу — скільки днів вона працювала. Перший день — ' + weekdayUk[DAYS[q.day0].nm].nm + '. Який останній?'),
+    tr('По колко играчки в кутия — колко пъти се събират в ' + q.T + '?', 'По скільки іграшок у коробці — скільки разів це вміщується в ' + q.T + '?'),
+    tr('Първо колко кутии е продала. Колко от тях са по ' + q.p2 + ' лева?', 'Спершу — скільки коробок вона продала. Скільки з них по ' + q.p2 + '?')][q.shape];
+  const run = toyRun(q).join(' + ') + ' = ' + q.T;
+  if(q.shape === 0) return run + ' &nbsp;→&nbsp; ' + tr(q.n + ' дена', ukN(q.n, 'день', 'дні', 'днів'));
+  if(q.shape === 1) return run + ' &nbsp;→&nbsp; ' + tr(q.n + ' дена: ', ukN(q.n, 'день', 'дні', 'днів') + ': ') +
+    toyRun(q).map((_, i) => tr(DAYS[(q.day0 + i) % 7].nm, weekdayUk[DAYS[(q.day0 + i) % 7].nm].nm)).join(', ') + ' &nbsp;→&nbsp; <b>' + tr(DAYS[q.last].nm, weekdayUk[DAYS[q.last].nm].nm) + '</b>';
+  if(q.shape === 2) return q.T + ' : ' + q.m + ' = ' + q.boxes;
+  return tr('кутии: ', 'коробок: ') + q.T + ' : ' + q.m + ' = ' + q.boxes + ', ' + tr('продадени: ', 'продано: ') + q.boxes + ' − 1 − ' + q.f + ' = <b>' + q.sold + '</b> &nbsp;→&nbsp; ' +
+    q.p1 + ' + ' + Array(q.sold - 1).fill(q.p2).join(' + ') + ' = ' + q.ans;
 }
 KIND.toys = { draw:drawToys, eq:eqToys, why:whyToys };

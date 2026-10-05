@@ -1,6 +1,4 @@
 // Question kind 'digrule': level 188 Правилото ☺ — A rule shown on three numbers, used on a fourth.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2021, 1 клас, задача 19: 10 ⟹ 1 − 0 = 1, 12 ⟹ 2 − 1 = 1, 59 ⟹ 9 − 5 = 4 — so ☺ is the bigger
 // digit take away the smaller. For 79: 9 − 7 = 2. The examples are chosen so the rule is plain: one with
@@ -22,21 +20,17 @@ export function genDigRule(){
   }
 }
 function drawDigRule(q){
-  if(q.kind === 'digrule'){
-    const row = v => '<div class="given" style="font-size:clamp(17px,4.6vw,24px)">' + v + ' &nbsp;⟹&nbsp; ' + digRuleText(q.rule, v) + ' &nbsp;⟹&nbsp; ☺ = ' + digRuleOf(q.rule, v)[2] + '</div>';
-    return '<div class="ask">' + tr('Виж как е намерено ☺ за всяко число. Колко е ☺ за числото <span class="num">' + q.n + '</span>?',
-      'Подивись, як знайдено ☺ для кожного числа. Скільки буде ☺ для числа <span class="num">' + q.n + '</span>?') + '</div>' +
-      q.ex.map(row).join('') + '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.n + ' &nbsp;⟹&nbsp; ☺ = ' + SLOT + '</div>';
-  }
+  const row = v => '<div class="given" style="font-size:clamp(17px,4.6vw,24px)">' + v + ' &nbsp;⟹&nbsp; ' + digRuleText(q.rule, v) + ' &nbsp;⟹&nbsp; ☺ = ' + digRuleOf(q.rule, v)[2] + '</div>';
+  return '<div class="ask">' + tr('Виж как е намерено ☺ за всяко число. Колко е ☺ за числото <span class="num">' + q.n + '</span>?',
+    'Подивись, як знайдено ☺ для кожного числа. Скільки буде ☺ для числа <span class="num">' + q.n + '</span>?') + '</div>' +
+    q.ex.map(row).join('') + '<div class="line lg">' + q.n + ' &nbsp;⟹&nbsp; ☺ = ' + SLOT + '</div>';
 }
 function eqDigRule(q){
-  if(q.kind === 'digrule') return q.n + ' ⟹ ' + digRuleText(q.rule, q.n);
+  return q.n + ' ⟹ ' + digRuleText(q.rule, q.n);
 }
 function whyDigRule(q, full){
-  if(q.kind === 'digrule'){
-    if(!full) return tr('Какво става с двете цифри на всяко число? Направи същото с последното.', 'Що відбувається з двома цифрами кожного числа? Зроби те саме з останнім.');
-    return (q.rule === 'sum' ? tr('☺ е сборът на двете цифри', '☺ — сума двох цифр') : tr('☺ е по-голямата цифра минус по-малката', '☺ — більша цифра мінус менша')) +
-      ' &nbsp;→&nbsp; ' + q.n + ': <b>' + digRuleText(q.rule, q.n) + '</b>';
-  }
+  if(!full) return tr('Какво става с двете цифри на всяко число? Направи същото с последното.', 'Що відбувається з двома цифрами кожного числа? Зроби те саме з останнім.');
+  return (q.rule === 'sum' ? tr('☺ е сборът на двете цифри', '☺ — сума двох цифр') : tr('☺ е по-голямата цифра минус по-малката', '☺ — більша цифра мінус менша')) +
+    ' &nbsp;→&nbsp; ' + q.n + ': <b>' + digRuleText(q.rule, q.n) + '</b>';
 }
 KIND.digrule = { draw:drawDigRule, eq:eqDigRule, why:whyDigRule };

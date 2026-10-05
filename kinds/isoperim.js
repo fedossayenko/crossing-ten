@@ -1,6 +1,4 @@
 // Question kind 'isoperim': level 97 Бедро и основа — An isosceles triangle built from a square's side.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно състезание 2025, задача 9: a square with perimeter 36 см; the triangle's leg is 12 см
 // longer than the square's side, its base 14 см shorter than the leg. Side 9, leg 21, base 7:
@@ -63,59 +61,55 @@ export function genIsoPerim(){
   }
 }
 function drawIsoPerim(q){
-  if(q.kind === 'isoperim' && q.shape === 2){
+  if(q.shape === 2){
     const times = ['', 'веднъж', 'два пъти', 'три пъти'][q.laps], timesUk = ['', 'один раз', 'двічі', 'тричі'][q.laps];
     return '<div class="ask">' + tr('Мравка изминала ' + times + ' пътечката <b>ABCA</b> (триъгълник ABC е равностранен). Костенурка се разходила по равнобедрения триъгълник MEK по следния начин: <b>' + q.route.split('').join('') + '</b>. Колко метра повече е изминало едното животно от другото?',
       'Мурашка пройшла ' + timesUk + ' доріжкою <b>ABCA</b> (трикутник ABC рівносторонній). Черепаха пройшлася рівнобедреним трикутником MEK так: <b>' + q.route + '</b>. На скільки метрів більше пройшла одна тварина, ніж інша?') + '</div>' +
-      isoRouteSvg(q) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="unit">м</span></div>';
+      isoRouteSvg(q) + '<div class="line md">' + SLOT + ' <span class="unit">м</span></div>';
   }
-  if(q.kind === 'isoperim' && q.shape === 3){
+  if(q.shape === 3){
     return '<div class="ask">' + tr('Числата в редицата <span class="num">' + q.list.join(', ') + '</span> са обиколки в сантиметри на фигурите равностранен триъгълник, квадрат и равнобедрен триъгълник с основа <span class="num">' + q.b + '</span>. Колко сантиметра е бедрото на равнобедрения триъгълник?',
       'Числа в ряду <span class="num">' + q.list.join(', ') + '</span> — це периметри в сантиметрах фігур: рівносторонній трикутник, квадрат і рівнобедрений трикутник з основою <span class="num">' + q.b + '</span>. Скільки сантиметрів бічна сторона рівнобедреного трикутника?') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'isoperim' && q.shape === 1){
+  if(q.shape === 1){
     return '<div class="ask">' + tr('Бедрата на два равнобедрени триъгълника са по <span class="num">' + q.leg + '</span> см. Основата на единия е с <span class="num">' + q.d +
       '</span> см по-къса от основата на другия. Сборът от обиколките им е <span class="num">' + q.T / 10 + '</span> дм. Колко сантиметра е <b>' + (q.short ? 'по-късата' : 'по-дългата') + ' основа</b>?',
       'Бічні сторони двох рівнобедрених трикутників — по <span class="num">' + q.leg + '</span> см. Основа одного на <span class="num">' + q.d +
       '</span> см коротша за основу другого. Сума їхніх периметрів — <span class="num">' + q.T / 10 + '</span> дм. Скільки сантиметрів становить <b>' + (q.short ? 'коротша' : 'довша') + ' основа</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+      '<div class="line md">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'isoperim'){
-    return '<div class="ask">' + tr('Обиколката на квадрат е <span class="num">' + q.P + '</span> см. Бедрото на равнобедрен триъгълник е с <span class="num">' + q.up +
-      '</span> см по-дълго от страната на квадрата, а основата на триъгълника е с <span class="num">' + q.down + '</span> см по-къса от бедрото му. Колко сантиметра е <b>обиколката на триъгълника</b>?',
-      'Периметр квадрата — <span class="num">' + q.P + '</span> см. Бічна сторона рівнобедреного трикутника на <span class="num">' + q.up +
-      '</span> см довша за сторону квадрата, а основа трикутника на <span class="num">' + q.down + '</span> см коротша за бічну сторону. Скільки сантиметрів становить <b>периметр трикутника</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
-  }
+  return '<div class="ask">' + tr('Обиколката на квадрат е <span class="num">' + q.P + '</span> см. Бедрото на равнобедрен триъгълник е с <span class="num">' + q.up +
+    '</span> см по-дълго от страната на квадрата, а основата на триъгълника е с <span class="num">' + q.down + '</span> см по-къса от бедрото му. Колко сантиметра е <b>обиколката на триъгълника</b>?',
+    'Периметр квадрата — <span class="num">' + q.P + '</span> см. Бічна сторона рівнобедреного трикутника на <span class="num">' + q.up +
+    '</span> см довша за сторону квадрата, а основа трикутника на <span class="num">' + q.down + '</span> см коротша за бічну сторону. Скільки сантиметрів становить <b>периметр трикутника</b>?') + '</div>' +
+    '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqIsoPerim(q){
-  if(q.kind === 'isoperim' && q.shape === 2) return q.laps + ' · ' + 3*q.a + ' = ' + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
-  if(q.kind === 'isoperim' && q.shape === 3) return q.b + ' + 2 · ' + tr('бедро', 'бічна') + ' = ' + q.P + ' → ' + q.ans;
-  if(q.kind === 'isoperim' && q.shape === 1) return q.T + ' − 4 · ' + q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' → ' + q.ans;
-  if(q.kind === 'isoperim') return q.P + ' : 4 = ' + q.s + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
+  if(q.shape === 2) return q.laps + ' · ' + 3*q.a + ' = ' + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
+  if(q.shape === 3) return q.b + ' + 2 · ' + tr('бедро', 'бічна') + ' = ' + q.P + ' → ' + q.ans;
+  if(q.shape === 1) return q.T + ' − 4 · ' + q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' → ' + q.ans;
+  return q.P + ' : 4 = ' + q.s + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
 }
 function whyIsoPerim(q, full){
-  if(q.kind === 'isoperim' && q.shape === 2){
+  if(q.shape === 2){
     if(!full) return tr('Колко отсечки има всеки път и колко е дълга всяка? Внимавай кои страни на MEK са равни.', 'Скільки відрізків у кожному шляху і яка довжина кожного? Зверни увагу, які сторони MEK рівні.');
     const segs = []; for(let i = 1; i < q.route.length; i++) segs.push('ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg);
     return tr('мравката: ', 'мурашка: ') + (q.laps > 1 ? q.laps + ' · ' : '') + '(' + q.a + ' + ' + q.a + ' + ' + q.a + ') = <b>' + q.ant + '</b>, ' + tr('костенурката: ', 'черепаха: ') + segs.join(' + ') + ' = <b>' + q.tort + '</b> &nbsp;→&nbsp; ' +
       Math.max(q.ant, q.tort) + ' − ' + Math.min(q.ant, q.tort) + ' = ' + q.ans;
   }
-  if(q.kind === 'isoperim' && q.shape === 3){
+  if(q.shape === 3){
     if(!full) return tr('Обиколката на равнобедрения е основата и две равни бедра. Четно или нечетно число излиза?', 'Периметр рівнобедреного — основа й дві рівні бічні сторони. Парне чи непарне число виходить?');
     return tr('две равни бедра дават четно число, с основа ' + q.b + ' обиколката е нечетна', 'дві рівні бічні сторони дають парне число, з основою ' + q.b + ' периметр непарний') + ' &nbsp;→&nbsp; <b>' + q.P + '</b> &nbsp;→&nbsp; (' + q.P + ' − ' + q.b + ') : 2 = ' + q.ans;
   }
-  if(q.kind === 'isoperim' && q.shape === 1){
+  if(q.shape === 1){
     if(!full) return tr('Дециметрите в сантиметри. Колко бедра има общо — и колко остава за двете основи?', 'Дециметри — у сантиметри. Скільки всього бічних сторін — і скільки залишається на дві основи?');
     const B = q.T - 4*q.leg;
     return q.T / 10 + tr(' дм = ', ' дм = ') + q.T + tr(' см; четири бедра: ', ' см; чотири бічні сторони: ') + 4*q.leg + ' &nbsp;→&nbsp; ' + tr('двете основи: ', 'дві основи: ') + q.T + ' − ' + 4*q.leg + ' = <b>' + B +
       '</b> &nbsp;→&nbsp; ' + B + ' − ' + q.d + ' = ' + 2*q.b + ', ' + 2*q.b + ' : 2 = <b>' + q.b + '</b>' + (q.short ? '' : ', ' + q.b + ' + ' + q.d + ' = ' + q.ans);
   }
-  if(q.kind === 'isoperim'){
-    if(!full) return tr('Първо страната на квадрата, после бедрото, после основата. Бедрата са две.', 'Спершу сторона квадрата, потім бічна сторона, потім основа. Бічних сторін дві.');
-    return tr('страната на квадрата: ', 'сторона квадрата: ') + q.P + ' : 4 = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('бедрото: ', 'бічна сторона: ') + q.s + ' + ' + q.up + ' = <b>' + q.leg +
-      '</b> &nbsp;→&nbsp; ' + tr('основата: ', 'основа: ') + q.leg + ' − ' + q.down + ' = <b>' + q.base + '</b> &nbsp;→&nbsp; ' + q.leg + ' + ' + q.leg + ' + ' + q.base + ' = ' + q.ans;
-  }
+  if(!full) return tr('Първо страната на квадрата, после бедрото, после основата. Бедрата са две.', 'Спершу сторона квадрата, потім бічна сторона, потім основа. Бічних сторін дві.');
+  return tr('страната на квадрата: ', 'сторона квадрата: ') + q.P + ' : 4 = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('бедрото: ', 'бічна сторона: ') + q.s + ' + ' + q.up + ' = <b>' + q.leg +
+    '</b> &nbsp;→&nbsp; ' + tr('основата: ', 'основа: ') + q.leg + ' − ' + q.down + ' = <b>' + q.base + '</b> &nbsp;→&nbsp; ' + q.leg + ' + ' + q.leg + ' + ' + q.base + ' = ' + q.ans;
 }
 KIND.isoperim = { draw:drawIsoPerim, eq:eqIsoPerim, why:whyIsoPerim };

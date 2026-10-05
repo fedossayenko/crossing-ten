@@ -1,6 +1,4 @@
 // Question kind 'sudoku': level 54 Судоку — Four by four: every row, column and box holds 1 to 4 once.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 5: a four by four sudoku. Every row, every column and every bold two by two box
 // holds 1, 2, 3 and 4 exactly once. Two empty cells are named and their sum is asked.
@@ -77,30 +75,26 @@ function sudokuSvg(q){
 }
 
 function drawSudoku(q){
-  if(q.kind === 'sudoku'){
-    return tr('<div class="ask">Попълнете празните квадратчета с <span class="num">1</span>, <span class="num">2</span>, ' +
-      '<span class="num">3</span> или <span class="num">4</span> така, че във всеки <b>ред</b>, всеки <b>стълб</b> ' +
-      'и всяко <b>удебелено квадратче</b> числата от 1 до 4 да стоят точно по веднъж. ' +
-      'Колко е <b>сборът</b> на числата в <b>X</b> и <b>Y</b>?</div>',
-      '<div class="ask">Заповніть порожні клітинки числами <span class="num">1</span>, <span class="num">2</span>, ' +
-      '<span class="num">3</span> або <span class="num">4</span> так, щоб у кожному <b>рядку</b>, кожному <b>стовпці</b> ' +
-      'і кожному <b>квадраті з товстою рамкою</b> числа від 1 до 4 траплялися рівно по одному разу. ' +
-      'Чому дорівнює <b>сума</b> чисел у <b>X</b> і <b>Y</b>?</div>') +
-      sudokuSvg(q) +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return tr('<div class="ask">Попълнете празните квадратчета с <span class="num">1</span>, <span class="num">2</span>, ' +
+    '<span class="num">3</span> или <span class="num">4</span> така, че във всеки <b>ред</b>, всеки <b>стълб</b> ' +
+    'и всяко <b>удебелено квадратче</b> числата от 1 до 4 да стоят точно по веднъж. ' +
+    'Колко е <b>сборът</b> на числата в <b>X</b> и <b>Y</b>?</div>',
+    '<div class="ask">Заповніть порожні клітинки числами <span class="num">1</span>, <span class="num">2</span>, ' +
+    '<span class="num">3</span> або <span class="num">4</span> так, щоб у кожному <b>рядку</b>, кожному <b>стовпці</b> ' +
+    'і кожному <b>квадраті з товстою рамкою</b> числа від 1 до 4 траплялися рівно по одному разу. ' +
+    'Чому дорівнює <b>сума</b> чисел у <b>X</b> і <b>Y</b>?</div>') +
+    sudokuSvg(q) +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqSudoku(q){
-  if(q.kind === 'sudoku') return tr('судоку → ', 'розв’язок: ') + 'X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;
+  return tr('судоку → ', 'розв’язок: ') + 'X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;
 }
 function whySudoku(q, full){
-  if(q.kind === 'sudoku'){
-    if(!full) return tr('Търси ред, стълб или квадратче, в което липсва само едно число.',
-      'Шукай рядок, стовпець або квадрат, де бракує лише одного числа.');
-    // the whole solved grid, so she can see where her own filling went wrong
-    const rows = [0,1,2,3].map(r => q.sol.slice(r*4, r*4 + 4).join(''));
-    return tr('решението е <b>', 'розв’язок: <b>') + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
-      q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans;
-  }
+  if(!full) return tr('Търси ред, стълб или квадратче, в което липсва само едно число.',
+    'Шукай рядок, стовпець або квадрат, де бракує лише одного числа.');
+  // the whole solved grid, so she can see where her own filling went wrong
+  const rows = [0,1,2,3].map(r => q.sol.slice(r*4, r*4 + 4).join(''));
+  return tr('решението е <b>', 'розв’язок: <b>') + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
+    q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans;
 }
 KIND.sudoku = { draw:drawSudoku, eq:eqSudoku, why:whySudoku };

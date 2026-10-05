@@ -1,6 +1,4 @@
 // Question kind 'digeq': level 165 Скритата цифра — One digit hidden under every ■ of an equality.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, 1 клас, задача 7: 1■ + 2 = 20 − ■. The same digit everywhere; try them:
 // with 4, 14 + 2 = 16 and 20 − 4 = 16 — equal, so ■ = 4. Задача 15: ■0 − 1■ = 3■ — 50 − 15 = 35, ■ = 5.
@@ -30,24 +28,20 @@ export function genDigEq(){
   }
 }
 function drawDigEq(q){
-  if(q.kind === 'digeq'){
-    return '<div class="ask">' + tr('Под всяко ■ е скрита <b>една и съща</b> цифра. Коя е тя, за да е вярно равенството?',
-      'Під кожним ■ схована <b>одна й та сама</b> цифра. Яка вона, щоб рівність була правильною?') + '</div>' +
-      '<div class="line" style="font-size:clamp(26px,7.5vw,44px)">' + q.e + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">■ = ' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Под всяко ■ е скрита <b>една и съща</b> цифра. Коя е тя, за да е вярно равенството?',
+    'Під кожним ■ схована <b>одна й та сама</b> цифра. Яка вона, щоб рівність була правильною?') + '</div>' +
+    '<div class="line" style="font-size:clamp(26px,7.5vw,44px)">' + q.e + '</div>' +
+    '<div class="line lg">■ = ' + SLOT + '</div>';
 }
 // a side that is a sum shows its working, a side that is one number just the number: 14 + 2 = 16, 20 − 4 = 16
 const digEqTry = (q, d) => { const s = digEqSides(q.e, d); return q.e.split(' = ').map((t, i) => (t = t.replace(/■/g, d)).includes(' ') ? t + ' = ' + s[i] : t).join(', &nbsp;') + ' &nbsp;→&nbsp; ' + s[0] + (s[0] === s[1] ? ' = ' : ' ≠ ') + s[1]; };
 function eqDigEq(q){
-  if(q.kind === 'digeq') return q.e + ' → ■ = ' + q.ans;
+  return q.e + ' → ■ = ' + q.ans;
 }
 function whyDigEq(q, full){
-  if(q.kind === 'digeq'){
-    if(!full) return tr('Опитай цифрите една по една: сложи я под всяко ■ и пресметни двете страни.',
-      'Пробуй по черзі кожну цифру: постав її під кожне ■ і обчисли обидві сторони.');
-    return (q.near >= 0 ? tr(bgWith(q.near) + ' ', 'з ') + q.near + ': ' + digEqTry(q, q.near) + tr(' — не са равни; ', ' — не рівні; ') : '') +
-      tr(bgWith(q.ans) + ' ', 'з ') + q.ans + ': <b>' + digEqTry(q, q.ans) + '</b>' + tr(' — равни', ' — рівні') + ' &nbsp;→&nbsp; ■ = ' + q.ans;
-  }
+  if(!full) return tr('Опитай цифрите една по една: сложи я под всяко ■ и пресметни двете страни.',
+    'Пробуй по черзі кожну цифру: постав її під кожне ■ і обчисли обидві сторони.');
+  return (q.near >= 0 ? tr(bgWith(q.near) + ' ', 'з ') + q.near + ': ' + digEqTry(q, q.near) + tr(' — не са равни; ', ' — не рівні; ') : '') +
+    tr(bgWith(q.ans) + ' ', 'з ') + q.ans + ': <b>' + digEqTry(q, q.ans) + '</b>' + tr(' — равни', ' — рівні') + ' &nbsp;→&nbsp; ■ = ' + q.ans;
 }
 KIND.digeq = { draw:drawDigEq, eq:eqDigEq, why:whyDigEq };

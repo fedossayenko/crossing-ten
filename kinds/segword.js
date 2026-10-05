@@ -17,18 +17,16 @@ export function genSegWord(){
   }
 }
 function drawSegWord(q){
-  if(q.kind === 'segword'){
-    const w = SEGWORD_WHO[q.who];
-    return '<div class="ask">' + tr(w[0] + ' ' + w[2] + ' три отсечки. Първата е дълга <span class="num">' + q.a + '</span> см, втората е с <span class="num">' + q.d1 + '</span> см ' +
-      (q.short1 ? 'по-къса' : 'по-дълга') + ' от първата, а третата отсечка е ' + (q.long2 ? 'по-дълга' : 'по-къса') + ' от втората с <span class="num">' + q.d2 + '</span> см. Колко сантиметра е <b>третата</b> отсечка?',
-      w[1] + ' ' + w[3] + ' три відрізки. Перший завдовжки <span class="num">' + q.a + '</span> см, другий на <span class="num">' + q.d1 + '</span> см ' +
-      (q.short1 ? 'коротший' : 'довший') + ' за перший, а третій відрізок ' + (q.long2 ? 'довший' : 'коротший') + ' за другий на <span class="num">' + q.d2 + '</span> см. Скільки сантиметрів має <b>третій</b> відрізок?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
-  }
+  const w = SEGWORD_WHO[q.who];
+  return '<div class="ask">' + tr(w[0] + ' ' + w[2] + ' три отсечки. Първата е дълга <span class="num">' + q.a + '</span> см, втората е с <span class="num">' + q.d1 + '</span> см ' +
+    (q.short1 ? 'по-къса' : 'по-дълга') + ' от първата, а третата отсечка е ' + (q.long2 ? 'по-дълга' : 'по-къса') + ' от втората с <span class="num">' + q.d2 + '</span> см. Колко сантиметра е <b>третата</b> отсечка?',
+    w[1] + ' ' + w[3] + ' три відрізки. Перший завдовжки <span class="num">' + q.a + '</span> см, другий на <span class="num">' + q.d1 + '</span> см ' +
+    (q.short1 ? 'коротший' : 'довший') + ' за перший, а третій відрізок ' + (q.long2 ? 'довший' : 'коротший') + ' за другий на <span class="num">' + q.d2 + '</span> см. Скільки сантиметрів має <b>третій</b> відрізок?') + '</div>' +
+    '<div class="line lg">' + SLOT + CM + '</div>';
 }
 const segWordSteps = q => [q.a + (q.short1 ? ' − ' : ' + ') + q.d1 + ' = ' + q.b, q.b + (q.long2 ? ' + ' : ' − ') + q.d2 + ' = ' + q.ans];
 function eqSegWord(q){
-  if(q.kind === 'segword') return segWordSteps(q).join(', ');
+  return segWordSteps(q).join(', ');
 }
 // The picture: the three segments one under another, each with its length; the piece that one is
 // longer or shorter than the one above it is marked orange.
@@ -46,10 +44,8 @@ function segWordSvg(q){
   return '<svg viewBox="0 0 280 104" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('трите отсечки', 'три відрізки') + '">' + g + '</svg>';
 }
 function whySegWord(q, full){
-  if(q.kind === 'segword'){
-    if(!full) return tr('Първо намери втората отсечка, после — третата.', 'Спершу знайди другий відрізок, потім — третій.');
-    const s = segWordSteps(q);
-    return segWordSvg(q) + tr('втората: ', 'другий: ') + s[0] + ' см &nbsp;→&nbsp; ' + tr('третата: ', 'третій: ') + s[1];
-  }
+  if(!full) return tr('Първо намери втората отсечка, после — третата.', 'Спершу знайди другий відрізок, потім — третій.');
+  const s = segWordSteps(q);
+  return segWordSvg(q) + tr('втората: ', 'другий: ') + s[0] + ' см &nbsp;→&nbsp; ' + tr('третата: ', 'третій: ') + s[1];
 }
 KIND.segword = { draw:drawSegWord, eq:eqSegWord, why:whySegWord };

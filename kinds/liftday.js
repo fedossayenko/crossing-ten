@@ -1,6 +1,4 @@
 // Question kind 'liftday': level 154 Лифтът — The task solved in full: walking, a lift, a slope, a rest, and the clock.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2022, задача 10: Иво walks the flat 4 км from the stadium to Station 1 at 2 км in 30 minutes (1 hour),
 // rides the lift up — 30 minutes there and back, so 15 one way — rests 32 minutes, walks the 2 км slope down at
@@ -34,34 +32,30 @@ function liftSvg(q){
     lab(214, 10, tr('Станция 2', 'Станція 2'), 'end') + '</svg></div>';
 }
 function drawLiftDay(q){
-  if(q.kind === 'liftday'){
-    const t = Math.floor(q.start / 60) + '<sup>' + String(q.start % 60).padStart(2, '0') + '</sup>';
-    const story = tr('Когато се движи от лифтена Станция 1 до стадиона, Иво изминава <span class="num">' + q.fk + '</span> км за <span class="num">' + q.fm + '</span> минути. Когато слиза по наклона без лифт, изминава <span class="num">' + q.sk +
-      '</span> км за един час. Лифтената кабинка се движи от едната до другата станция и обратно общо за <span class="num">' + q.R + '</span> минути. Иво тръгнал от стадиона в ' + t + ' часа, качил се до Станция 2 с лифта, починал си <span class="num">' + q.rest + '</span> минути и се върнал пеш до стадиона. ',
-      'Від Станції 1 підйомника до стадіону Іво проходить <span class="num">' + q.fk + '</span> км за <span class="num">' + ukN(q.fm, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + '. Коли спускається схилом без підйомника, проходить <span class="num">' + q.sk +
-      '</span> км за годину. Кабінка підйомника їде від однієї станції до іншої й назад загалом <span class="num">' + ukN(q.R, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + '. Іво вийшов зі стадіону о ' + t + ', піднявся на Станцію 2 підйомником, відпочив <span class="num">' + ukN(q.rest, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + ' і повернувся пішки на стадіон. ');
-    const ask = [tr('За колко минути е стигнал пеш от стадиона до Станция 1?', 'За скільки хвилин він дійшов пішки від стадіону до Станції 1?'),
-      tr('Колко минути се е возил с лифта до Станция 2?', 'Скільки хвилин він їхав підйомником до Станції 2?'),
-      tr('Колко минути след тръгването се е върнал на стадиона?', 'Через скільки хвилин після виходу він повернувся на стадіон?'),
-      tr('В колко часа се е върнал?', 'О котрій годині він повернувся?')][q.shape];
-    return '<div class="ask">' + story + '<b>' + ask + '</b></div>' + liftSvg(q) + (q.shape === 3 ? '' : '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + ' <span class="unit">' + tr('мин', 'хв') + '</span></div>');
-  }
+  const t = Math.floor(q.start / 60) + '<sup>' + String(q.start % 60).padStart(2, '0') + '</sup>';
+  const story = tr('Когато се движи от лифтена Станция 1 до стадиона, Иво изминава <span class="num">' + q.fk + '</span> км за <span class="num">' + q.fm + '</span> минути. Когато слиза по наклона без лифт, изминава <span class="num">' + q.sk +
+    '</span> км за един час. Лифтената кабинка се движи от едната до другата станция и обратно общо за <span class="num">' + q.R + '</span> минути. Иво тръгнал от стадиона в ' + t + ' часа, качил се до Станция 2 с лифта, починал си <span class="num">' + q.rest + '</span> минути и се върнал пеш до стадиона. ',
+    'Від Станції 1 підйомника до стадіону Іво проходить <span class="num">' + q.fk + '</span> км за <span class="num">' + ukN(q.fm, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + '. Коли спускається схилом без підйомника, проходить <span class="num">' + q.sk +
+    '</span> км за годину. Кабінка підйомника їде від однієї станції до іншої й назад загалом <span class="num">' + ukN(q.R, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + '. Іво вийшов зі стадіону о ' + t + ', піднявся на Станцію 2 підйомником, відпочив <span class="num">' + ukN(q.rest, 'хвилину', 'хвилини', 'хвилин').replace(' ', '</span> ') + ' і повернувся пішки на стадіон. ');
+  const ask = [tr('За колко минути е стигнал пеш от стадиона до Станция 1?', 'За скільки хвилин він дійшов пішки від стадіону до Станції 1?'),
+    tr('Колко минути се е возил с лифта до Станция 2?', 'Скільки хвилин він їхав підйомником до Станції 2?'),
+    tr('Колко минути след тръгването се е върнал на стадиона?', 'Через скільки хвилин після виходу він повернувся на стадіон?'),
+    tr('В колко часа се е върнал?', 'О котрій годині він повернувся?')][q.shape];
+  return '<div class="ask">' + story + '<b>' + ask + '</b></div>' + liftSvg(q) + (q.shape === 3 ? '' : '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('мин', 'хв') + '</span></div>');
 }
 function eqLiftDay(q){
-  if(q.kind === 'liftday') return [q.F + ' км → ' + q.flat + tr(' мин', ' хв'), q.R + ' : 2 = ' + q.R/2, q.flat + ' + ' + q.R/2 + ' + ' + q.down + ' + ' + q.flat + ' + ' + q.rest + ' = ' + q.total,
+  return [q.F + ' км → ' + q.flat + tr(' мин', ' хв'), q.R + ' : 2 = ' + q.R/2, q.flat + ' + ' + q.R/2 + ' + ' + q.down + ' + ' + q.flat + ' + ' + q.rest + ' = ' + q.total,
     liftClock(q.start) + ' + ' + q.total + tr(' мин', ' хв') + ' = ' + liftClock(q.back)][q.shape];
 }
 function whyLiftDay(q, full){
-  if(q.kind === 'liftday'){
-    if(!full) return [tr('Колко пъти по ' + q.fk + ' км има в ' + q.F + ' км?', 'Скільки разів по ' + q.fk + ' км у ' + q.F + ' км?'),
-      tr('Тези минути са за отиване и връщане. А само нагоре?', 'Ці хвилини — туди й назад. А лише вгору?'),
-      tr('Смятай поотделно: пеш по равното, с лифта нагоре, пеш надолу, пак по равното — и почивката.', 'Рахуй окремо: пішки рівниною, підйомником угору, пішки вниз, знову рівниною — і відпочинок.'),
-      tr('Първо колко минути е бил навън. После ги добави към часа на тръгване.', 'Спершу — скільки хвилин його не було. Потім додай їх до часу виходу.')][q.shape];
-    const legs = tr('по равното ', 'рівниною ') + q.F + ' : ' + q.fk + ' · ' + q.fm + ' = <b>' + q.flat + '</b>, ' + tr('лифтът ', 'підйомник ') + q.R + ' : 2 = <b>' + q.R/2 + '</b>, ' +
-      tr('надолу ', 'униз ') + q.L + ' км = <b>' + q.down + '</b>';
-    if(q.shape === 0) return q.F + ' : ' + q.fk + ' = ' + q.F / q.fk + ' &nbsp;→&nbsp; ' + q.F / q.fk + ' · ' + q.fm + ' = ' + q.ans;
-    if(q.shape === 1) return q.R + ' : 2 = ' + q.ans;
-    return legs + ' &nbsp;→&nbsp; ' + q.flat + ' + ' + q.R/2 + ' + ' + q.down + ' + ' + q.flat + ' + ' + q.rest + ' = <b>' + q.total + '</b>' + (q.shape === 3 ? ' &nbsp;→&nbsp; ' + liftClock(q.start) + ' + ' + q.total + ' = ' + liftClock(q.back) : '');
-  }
+  if(!full) return [tr('Колко пъти по ' + q.fk + ' км има в ' + q.F + ' км?', 'Скільки разів по ' + q.fk + ' км у ' + q.F + ' км?'),
+    tr('Тези минути са за отиване и връщане. А само нагоре?', 'Ці хвилини — туди й назад. А лише вгору?'),
+    tr('Смятай поотделно: пеш по равното, с лифта нагоре, пеш надолу, пак по равното — и почивката.', 'Рахуй окремо: пішки рівниною, підйомником угору, пішки вниз, знову рівниною — і відпочинок.'),
+    tr('Първо колко минути е бил навън. После ги добави към часа на тръгване.', 'Спершу — скільки хвилин його не було. Потім додай їх до часу виходу.')][q.shape];
+  const legs = tr('по равното ', 'рівниною ') + q.F + ' : ' + q.fk + ' · ' + q.fm + ' = <b>' + q.flat + '</b>, ' + tr('лифтът ', 'підйомник ') + q.R + ' : 2 = <b>' + q.R/2 + '</b>, ' +
+    tr('надолу ', 'униз ') + q.L + ' км = <b>' + q.down + '</b>';
+  if(q.shape === 0) return q.F + ' : ' + q.fk + ' = ' + q.F / q.fk + ' &nbsp;→&nbsp; ' + q.F / q.fk + ' · ' + q.fm + ' = ' + q.ans;
+  if(q.shape === 1) return q.R + ' : 2 = ' + q.ans;
+  return legs + ' &nbsp;→&nbsp; ' + q.flat + ' + ' + q.R/2 + ' + ' + q.down + ' + ' + q.flat + ' + ' + q.rest + ' = <b>' + q.total + '</b>' + (q.shape === 3 ? ' &nbsp;→&nbsp; ' + liftClock(q.start) + ' + ' + q.total + ' = ' + liftClock(q.back) : '');
 }
 KIND.liftday = { draw:drawLiftDay, eq:eqLiftDay, why:whyLiftDay };

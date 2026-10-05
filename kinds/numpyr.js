@@ -1,6 +1,4 @@
 // Question kind 'numpyr': level 124 Пирамиди от числа — Two number pyramids that share a row, and the stars at their tips.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2024, задача 7: in the upper pyramid each box is the sum of the two below it, in the
 // lower one of the two above; the rows joined by = are the same. From 0, 1, 1 and the 3 and 6
@@ -61,37 +59,33 @@ function numPyrSvg(q){
   return '<div class="fig tall"><svg viewBox="-4 -4 ' + (6*w + 8) + ' ' + (9*h + 8) + '" role="img" aria-label="' + tr('две пирамиди от числа', 'дві піраміди з чисел') + '">' + s + '</svg></div>';
 }
 function drawNumPyr(q){
-  if(q.kind === 'numpyr' && q.shape === 'one'){
+  if(q.shape === 'one'){
     const ask = q.asks < 0 ? tr('пресметнете <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>', 'обчисліть <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>')
       : tr('кое число стои на мястото на буквата <b>' + PYR_LET[q.asks][2] + '</b>?', 'яке число стоїть на місці букви <b>' + PYR_LET[q.asks][2] + '</b>?');
     return '<div class="ask">' + tr('Всяко число в пирамидата е сборът на двете под него. След като замените буквите с числа, ', 'Кожне число в піраміді — сума двох чисел під ним. Замінивши букви числами, ') + ask + '</div>' +
-      pyrOneSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      pyrOneSvg(q) + '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'numpyr'){
-    const ask = q.asks === 2 ? tr('Колко е <b>разликата</b> от числата, които трябва да се запишат на мястото на звездичките?', 'Чому дорівнює <b>різниця</b> чисел, які треба записати замість зірочок?')
-      : tr('Кое число трябва да се запише на мястото на звездичката в <b>' + (q.asks ? 'долната' : 'горната') + '</b> пирамида?', 'Яке число треба записати замість зірочки в <b>' + (q.asks ? 'нижній' : 'верхній') + '</b> піраміді?');
-    return '<div class="ask">' + tr('В горната пирамида всяко число е сборът от двете под него, а в долната — от двете над него. Редовете, свързани с ‖, са еднакви. ',
-      'У верхній піраміді кожне число — сума двох під ним, а в нижній — двох над ним. Ряди, з’єднані знаком ‖, однакові. ') + ask + '</div>' +
-      numPyrSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const ask = q.asks === 2 ? tr('Колко е <b>разликата</b> от числата, които трябва да се запишат на мястото на звездичките?', 'Чому дорівнює <b>різниця</b> чисел, які треба записати замість зірочок?')
+    : tr('Кое число трябва да се запише на мястото на звездичката в <b>' + (q.asks ? 'долната' : 'горната') + '</b> пирамида?', 'Яке число треба записати замість зірочки в <b>' + (q.asks ? 'нижній' : 'верхній') + '</b> піраміді?');
+  return '<div class="ask">' + tr('В горната пирамида всяко число е сборът от двете под него, а в долната — от двете над него. Редовете, свързани с ‖, са еднакви. ',
+    'У верхній піраміді кожне число — сума двох під ним, а в нижній — двох над ним. Ряди, з’єднані знаком ‖, однакові. ') + ask + '</div>' +
+    numPyrSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqNumPyr(q){
-  if(q.kind === 'numpyr' && q.shape === 'one') return q.asks < 0 ? q.up + ' − ' + q.low + ' = ' + q.ans : PYR_LET[q.asks][2] + ' = ' + q.ans;
-  if(q.kind === 'numpyr') return tr('долният ред ', 'нижній ряд ') + q.b.join(', ') + ' → ★ ' + q.top + ', ★ ' + q.bot + ' → ' + q.ans;
+  if(q.shape === 'one') return q.asks < 0 ? q.up + ' − ' + q.low + ' = ' + q.ans : PYR_LET[q.asks][2] + ' = ' + q.ans;
+  return tr('долният ред ', 'нижній ряд ') + q.b.join(', ') + ' → ★ ' + q.top + ', ★ ' + q.bot + ' → ' + q.ans;
 }
 function whyNumPyr(q, full){
-  if(q.kind === 'numpyr' && q.shape === 'one'){
+  if(q.shape === 'one'){
     if(!full) return tr('Търси две съседни кутии, на които знаеш едната и тази над тях. Горе се изважда, долу се събира.', 'Шукай дві сусідні клітинки, де відома одна з них і та, що над ними. Згори віднімаєш, знизу додаєш.');
     const v = (/** @type {[number, number, string]} */ [r, i]) => q.rows[r][i];
     return PYR_LET.map(L => L[2] + ' = ' + v(L)).join(', ') + ' &nbsp;→&nbsp; ' + (q.asks < 0 ? '(' + PYR_LET.slice(0, 3).map(v).join(' + ') + ') − (' + PYR_LET.slice(3).map(v).join(' + ') + ') = ' + q.up + ' − ' + q.low + ' = ' + q.ans : q.ans);
   }
-  if(q.kind === 'numpyr'){
-    if(!full) return tr('Първо допълни най-долния ред на горната пирамида: кое число с известното до него дава числото над тях?', 'Спершу доповни найнижчий ряд верхньої піраміди: яке число разом із сусіднім дає число над ними?');
-    const [b0, b1, b2, b3, b4] = q.b;
-    const up = q.r1[2] + ' − ' + b2 + ' = <b>' + b3 + '</b>, ' + q.r2[2] + ' − ' + q.r1[2] + ' = ' + q.r1[3] + ', ' + q.r1[3] + ' − ' + b3 + ' = <b>' + b4 + '</b>';
-    const top = tr('горе: ', 'угорі: ') + q.r2.join(', ') + ' → ' + (q.r2[0] + q.r2[1]) + ', ' + (q.r2[1] + q.r2[2]) + ' → <b>' + q.top + '</b>';
-    const bot = tr('долу: ', 'унизу: ') + b3 + ', ' + b4 + ', ' + q.z + ' → ' + (b3 + b4) + ', ' + (b4 + q.z) + ' → <b>' + q.bot + '</b>';
-    return up + ' &nbsp;→&nbsp; ' + (q.asks === 1 ? bot : q.asks === 0 ? top : top + '; ' + bot + ' &nbsp;→&nbsp; ' + q.top + ' − ' + q.bot + ' = ' + q.ans);
-  }
+  if(!full) return tr('Първо допълни най-долния ред на горната пирамида: кое число с известното до него дава числото над тях?', 'Спершу доповни найнижчий ряд верхньої піраміди: яке число разом із сусіднім дає число над ними?');
+  const [b0, b1, b2, b3, b4] = q.b;
+  const up = q.r1[2] + ' − ' + b2 + ' = <b>' + b3 + '</b>, ' + q.r2[2] + ' − ' + q.r1[2] + ' = ' + q.r1[3] + ', ' + q.r1[3] + ' − ' + b3 + ' = <b>' + b4 + '</b>';
+  const top = tr('горе: ', 'угорі: ') + q.r2.join(', ') + ' → ' + (q.r2[0] + q.r2[1]) + ', ' + (q.r2[1] + q.r2[2]) + ' → <b>' + q.top + '</b>';
+  const bot = tr('долу: ', 'унизу: ') + b3 + ', ' + b4 + ', ' + q.z + ' → ' + (b3 + b4) + ', ' + (b4 + q.z) + ' → <b>' + q.bot + '</b>';
+  return up + ' &nbsp;→&nbsp; ' + (q.asks === 1 ? bot : q.asks === 0 ? top : top + '; ' + bot + ' &nbsp;→&nbsp; ' + q.top + ' − ' + q.bot + ' = ' + q.ans);
 }
 KIND.numpyr = { draw:drawNumPyr, eq:eqNumPyr, why:whyNumPyr };

@@ -1,10 +1,8 @@
 // Question kind 'pairs': level 9 1 + 9 + 2 + 8 — Chains that simplify by grouping — into tens, ± pairs, or terms that cancel.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 2: the terms pair up into tens. A pair making ten is always odd+odd or
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
-import { KIND, SLOT, exprText, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, chainLine, exprText, rnd, shuffle, tr } from '../js/core.js';
 export function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
 function genPairsTens(){
   if(Math.random() < 0.15){
@@ -172,60 +170,54 @@ export function genPairsShort(){
   return {kind:'pairs', shape:'over', k, b, cut: b + over, terms, ans: 10*k - over};
 }
 
-function drawPairs(q){
-  if(q.kind === 'chain' || q.kind === 'pairs'){
-    const e = exprText(q.terms) + ' = ';
-    return '<div class="line" style="font-size:clamp(19px,calc((100vw - 56px)/' +
-           (e.length*0.56).toFixed(2) + '),40px)">' + e + SLOT + '</div>';
-  }
-}
+function drawPairs(q){ return chainLine(q.terms); }
 function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
-  if(q.kind === 'pairs' && q.shape === 'twice'){
+  if(q.shape === 'twice'){
     if(!full) return tr('Събери първо всичко, което се добавя, после всичко, което се маха.', 'Спершу додай усе, що додається, потім усе, що віднімається.');
     return q.a + ' + ' + q.a + ' + ' + q.b + ' + ' + q.b + ' = <b>' + 2*(q.a + q.b) + '</b>, &nbsp;' + q.c + ' + ' + (q.c - q.off) + ' = <b>' + (2*q.c - q.off) + '</b> &nbsp;→&nbsp; ' + 2*(q.a + q.b) + ' − ' + (2*q.c - q.off) + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'regroup'){
+  if(q.shape === 'regroup'){
     if(!full) return tr('От първото число не може да се извади толкова. Събери първо числата с плюс, после извади.', 'Від першого числа стільки не відняти. Спершу додай числа з плюсом, потім відніми.');
     const S = q.s + q.adds.reduce((t, v) => t + v, 0);
     return q.s + ' + ' + q.adds.join(' + ') + ' − ' + q.B + ' = ' + S + ' − ' + q.B + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'upup'){
+  if(q.shape === 'upup'){
     if(!full) return tr('Кои числа първо се добавят, а после се махат? Кое остава?', 'Які числа спершу додаються, а потім віднімаються? Що залишається?');
     const back = q.terms.filter(t => t.op === '−').map(t => t.n);
     return '+' + back.join(', +') + tr(' и ', ' і ') + '−' + back.join(', −') + tr(' се махат &nbsp;→&nbsp; остава ', ' знищуються &nbsp;→&nbsp; залишається ') + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'updown'){
+  if(q.shape === 'updown'){
     if(!full) return tr('Всяко число, което после се изважда, връща обратно какво е добавено.', 'Кожне число, яке потім віднімається, забирає те, що додали.');
     const back = q.terms.filter(t => t.op === '−').map(t => t.n);
     return '+' + back.slice().reverse().join(', +') + tr(' и ', ' і ') + '−' + back.join(', −') + tr(' се махат &nbsp;→&nbsp; остава ', ' знищуються &nbsp;→&nbsp; залишається ') + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'over'){
+  if(q.shape === 'over'){
     if(!full) return tr('Групирай ги по двойки — всяка дава кръгло число. Последната двойка е друга.', 'Згрупуй їх парами — кожна дає кругле число. Остання пара інша.');
     const ts = q.terms, g = [];
     for(let i = 0; i < 2*q.k; i += 2) g.push('<b>(' + ts[i].n + ' − ' + ts[i + 1].n + ')</b>');
     return g.join(' + ') + ' = <b>' + 10*q.k + '</b> &nbsp;→&nbsp; ' + 10*q.k + ' + ' + q.b + ' − ' + q.cut + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'ones'){
+  if(q.shape === 'ones'){
     if(!full) return tr('Събери ги по двойки — всяко число със следващото.', 'Об’єднай їх парами — кожне число з наступним.');
     return q.pairs.map(([a, b]) => '(' + a + ' − ' + b + ')').join(' + ') + ' = ' + q.pairs.map(() => 1).join(' + ') + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'cancel'){
+  if(q.shape === 'cancel'){
     if(!full) return tr('Всяко число по средата се маха и веднага се връща.', 'Кожне число посередині віднімається і відразу додається назад.');
     const gone = q.terms.filter(t => t.op === '+').map(t => t.n);
     return gone.map(n => '−' + n + ' + ' + n).join(', ') + tr(' — всяко дава нула &nbsp;→&nbsp; остава <b>', ' — кожна пара дає нуль &nbsp;→&nbsp; залишається <b>') +
       q.start + ' − ' + q.last + '</b> = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'run'){
+  if(q.shape === 'run'){
     if(!full) return tr('Извади всяка двойка — числата, които получаваш, вървят надолу.', 'Обчисли кожну пару — числа, які виходять, зменшуються.');
     const vals = [];
     for(let i = q.k; i >= 0; i--) vals.push(i);
     return q.M + ' − ' + (q.M - q.k) + ' = ' + q.k + ', ' + q.M + ' − ' + (q.M - q.k + 1) + ' = ' + (q.k - 1) +
       ', … &nbsp;→&nbsp; ' + vals.join(' + ') + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs' && q.shape === 'sub'){
+  if(q.shape === 'sub'){
     if(!full) return tr('Групирай ги по двойки — всяка дава кръгло число.', 'Згрупуй їх парами — кожна дає кругле число.');
     const ts = q.terms;
     let g = '', run = 0, odd = '', rest = 0;
@@ -239,17 +231,15 @@ function whyPairs(q, full){
     return g + ' = <b>' + run + '</b>, &nbsp;' + tr('после ', 'потім ') + odd + ' &nbsp;→&nbsp; ' +
       run + ' + ' + rest + ' = ' + q.ans;
   }
-  if(q.kind === 'pairs'){
-    if(!full) return tr('Търси двойки, които заедно правят кръгло число.', 'Шукай пари, які разом дають кругле число.');
-    const ts = q.terms;
-    let g = '';
-    for(let k = 0; k < q.paired*2; k += 2) g += (g ? ' + ' : '') + '<b>(' + ts[k].n + ' + ' + ts[k+1].n + ')</b>';
-    const total = (q.sums ? q.sums.reduce((a, b) => a + b, 0) : q.paired*(q.base || 10)) + q.extra;
-    const head = g + (q.extra ? ' + ' + q.extra : '') + ' = <b>' + total + '</b>';
-    if(!q.subs.length) return head.replace(/<b>(\d+)<\/b>$/, '$1');      // nothing taken away: the pairs are the answer
-    if(q.subs.length === 1) return head + ' &nbsp;→&nbsp; ' + total + ' − ' + q.subs[0] + ' = ' + q.ans;
-    return head + ', &nbsp;а ' + q.subs[0] + ' + ' + q.subs[1] + ' = <b>' + (q.subs[0] + q.subs[1]) +
-      '</b> &nbsp;→&nbsp; ' + total + ' − ' + (q.subs[0] + q.subs[1]) + ' = ' + q.ans;
-  }
+  if(!full) return tr('Търси двойки, които заедно правят кръгло число.', 'Шукай пари, які разом дають кругле число.');
+  const ts = q.terms;
+  let g = '';
+  for(let k = 0; k < q.paired*2; k += 2) g += (g ? ' + ' : '') + '<b>(' + ts[k].n + ' + ' + ts[k+1].n + ')</b>';
+  const total = (q.sums ? q.sums.reduce((a, b) => a + b, 0) : q.paired*(q.base || 10)) + q.extra;
+  const head = g + (q.extra ? ' + ' + q.extra : '') + ' = <b>' + total + '</b>';
+  if(!q.subs.length) return head.replace(/<b>(\d+)<\/b>$/, '$1');      // nothing taken away: the pairs are the answer
+  if(q.subs.length === 1) return head + ' &nbsp;→&nbsp; ' + total + ' − ' + q.subs[0] + ' = ' + q.ans;
+  return head + ', &nbsp;а ' + q.subs[0] + ' + ' + q.subs[1] + ' = <b>' + (q.subs[0] + q.subs[1]) +
+    '</b> &nbsp;→&nbsp; ' + total + ' − ' + (q.subs[0] + q.subs[1]) + ' = ' + q.ans;
 }
 KIND.pairs = { draw:drawPairs, eq:eqPairs, why:whyPairs };

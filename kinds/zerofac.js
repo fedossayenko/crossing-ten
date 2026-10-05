@@ -1,6 +1,4 @@
 // Question kind 'zerofac': level 83 (…) · (1 + 2 + 3 − 6) — One bracket comes to 0, so the long one needs no working.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2024, задача 9: (1·2 + 2·3 + 3·4 + 5·6) · (1 + 2 + 3 − 6). The long bracket is a
 // decoy: the short one is 0, and anything times 0 is 0. Sometimes a number is added after.
@@ -17,20 +15,16 @@ export function genZeroFac(){
 const zeroFacExpr = q => { const br = x => '<span style="white-space:nowrap">(' + x + ')</span>';   // a bracket never breaks
   return (q.first ? br(q.zero) + ' · ' + br(q.long) : br(q.long) + ' · ' + br(q.zero)) + (q.add ? ' + ' + q.add : ''); };
 function drawZeroFac(q){
-  if(q.kind === 'zerofac'){
-    return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
-      '<div class="line" style="font-size:clamp(18px,5vw,30px)"><span class="num">' + zeroFacExpr(q) + '</span></div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
+    '<div class="line" style="font-size:clamp(18px,5vw,30px)"><span class="num">' + zeroFacExpr(q) + '</span></div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqZeroFac(q){
-  if(q.kind === 'zerofac') return q.zero + ' = 0 → (…) · 0' + (q.add ? ' + ' + q.add : '') + ' = ' + q.ans;
+  return q.zero + ' = 0 → (…) · 0' + (q.add ? ' + ' + q.add : '') + ' = ' + q.ans;
 }
 function whyZeroFac(q, full){
-  if(q.kind === 'zerofac'){
-    if(!full) return tr('Не започвай с дългата скоба — пресметни първо късата.', 'Не починай із довгої дужки — спочатку обчисли коротку.');
-    return q.zero + ' = <b>0</b> &nbsp;→&nbsp; ' + tr('всяко число, умножено по 0, е 0', 'будь-яке число, помножене на 0, дорівнює 0') +
-      (q.add ? ' &nbsp;→&nbsp; 0 + ' + q.add + ' = ' + q.ans : ' &nbsp;→&nbsp; 0');
-  }
+  if(!full) return tr('Не започвай с дългата скоба — пресметни първо късата.', 'Не починай із довгої дужки — спочатку обчисли коротку.');
+  return q.zero + ' = <b>0</b> &nbsp;→&nbsp; ' + tr('всяко число, умножено по 0, е 0', 'будь-яке число, помножене на 0, дорівнює 0') +
+    (q.add ? ' &nbsp;→&nbsp; 0 + ' + q.add + ' = ' + q.ans : ' &nbsp;→&nbsp; 0');
 }
 KIND.zerofac = { draw:drawZeroFac, eq:eqZeroFac, why:whyZeroFac };

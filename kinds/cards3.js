@@ -1,6 +1,4 @@
 // Question kind 'cards3': level 173 Три картички — Three digit cards make a one-digit and a two-digit number; every sum they can give.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 19: cards 1, 2, 2. One card alone, the other two side by side:
 // 1 and 22 → 23, 2 and 12 → 14, 2 and 21 → 23. The sums that can come out: 14 and 23.
@@ -23,24 +21,20 @@ export function genCards3(){
   }
 }
 function drawCards3(q){
-  if(q.kind === 'cards3'){
-    const card = (v, i) => '<rect x="' + (i*44 + 2) + '" y="2" width="38" height="48" rx="6" fill="var(--solid)" stroke="var(--ink)" stroke-width="1.6"/>' + svgText(i*44 + 21, 34, v, 22, 'var(--ink)');
-    const or = ' <span class="or">' + tr('и', 'і') + '</span> ';
-    return '<div class="ask">' + tr('На три картички са написани цифрите <span class="num">' + q.cs.join(', ').replace(/, (\d)$/, ' и $1') + '</span>. С тях са съставени <b>едно едноцифрено</b> и <b>едно двуцифрено</b> число. Получените числа са събрани. Кои са възможните сборове?',
-      'На трьох картках написано цифри <span class="num">' + q.cs.join(', ').replace(/, (\d)$/, ' і $1') + '</span>. З них склали <b>одне одноцифрове</b> і <b>одне двоцифрове</b> число. Ці числа додали. Які суми можуть вийти?') + '</div>' +
-      '<div class="fig"><svg viewBox="0 0 134 52" style="max-width:150px" role="img" aria-label="' + tr('три картички', 'три картки') + '">' + q.cs.map(card).join('') + '</svg></div>' +
-      '<div class="line" style="font-size:clamp(26px,7.5vw,44px)">' + SLOT + or + '<span class="slot" id="slot1"></span>' + (q.slots > 2 ? or + '<span class="slot" id="slot2"></span>' : '') + '</div>';
-  }
+  const card = (v, i) => '<rect x="' + (i*44 + 2) + '" y="2" width="38" height="48" rx="6" fill="var(--solid)" stroke="var(--ink)" stroke-width="1.6"/>' + svgText(i*44 + 21, 34, v, 22, 'var(--ink)');
+  const or = ' <span class="or">' + tr('и', 'і') + '</span> ';
+  return '<div class="ask">' + tr('На три картички са написани цифрите <span class="num">' + q.cs.join(', ').replace(/, (\d)$/, ' и $1') + '</span>. С тях са съставени <b>едно едноцифрено</b> и <b>едно двуцифрено</b> число. Получените числа са събрани. Кои са възможните сборове?',
+    'На трьох картках написано цифри <span class="num">' + q.cs.join(', ').replace(/, (\d)$/, ' і $1') + '</span>. З них склали <b>одне одноцифрове</b> і <b>одне двоцифрове</b> число. Ці числа додали. Які суми можуть вийти?') + '</div>' +
+    '<div class="fig"><svg viewBox="0 0 134 52" style="max-width:150px" role="img" aria-label="' + tr('три картички', 'три картки') + '">' + q.cs.map(card).join('') + '</svg></div>' +
+    '<div class="line" style="font-size:clamp(26px,7.5vw,44px)">' + SLOT + or + '<span class="slot" id="slot1"></span>' + (q.slots > 2 ? or + '<span class="slot" id="slot2"></span>' : '') + '</div>';
 }
 function eqCards3(q){
-  if(q.kind === 'cards3') return q.cs.join(', ') + ' → ' + q.sums.join(tr(' и ', ' і '));
+  return q.cs.join(', ') + ' → ' + q.sums.join(tr(' и ', ' і '));
 }
 function whyCards3(q, full){
-  if(q.kind === 'cards3'){
-    if(!full) return tr('Избери коя картичка остава сама и от другите две направи двуцифрено число — по всички възможни начини.',
-      'Вибери, яка картка лишається сама, а з двох інших склади двоцифрове число — усіма можливими способами.');
-    return cards3Ways(q.cs).map(([s, n]) => s + ' + ' + n + ' = ' + (s + n)).join(', &nbsp;') +
-      ' &nbsp;→&nbsp; ' + tr('различните сборове: ', 'різні суми: ') + q.sums.join(tr(' и ', ' і '));
-  }
+  if(!full) return tr('Избери коя картичка остава сама и от другите две направи двуцифрено число — по всички възможни начини.',
+    'Вибери, яка картка лишається сама, а з двох інших склади двоцифрове число — усіма можливими способами.');
+  return cards3Ways(q.cs).map(([s, n]) => s + ' + ' + n + ' = ' + (s + n)).join(', &nbsp;') +
+    ' &nbsp;→&nbsp; ' + tr('различните сборове: ', 'різні суми: ') + q.sums.join(tr(' и ', ' і '));
 }
 KIND.cards3 = { draw:drawCards3, eq:eqCards3, why:whyCards3 };

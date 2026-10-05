@@ -1,6 +1,4 @@
 // Question kind 'digineq': level 68 Числото A — The one three-digit number from given digits that makes an inequality true.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Есен, 3 клас, задача 10: A is made of two digits 1 and one digit 2, and 300 − A < A − 100.
 // Only three numbers can be A — 112, 121, 211 — and trying each shows that only 211 works
@@ -35,22 +33,18 @@ export function genDigIneq(){
 }
 const digIneqText = q => q.c + ' − A ' + (q.more ? '&lt;' : '&gt;') + ' A − ' + q.d;
 function drawDigIneq(q){
-  if(q.kind === 'digineq'){
-    return '<div class="ask">' + tr('Кое е трицифреното число <b>A</b>, съставено от две цифри <span class="num">' + q.a +
-      '</span> и една цифра <span class="num">' + q.b + '</span>, такова, че <span class="num">' + digIneqText(q) + '</span>?',
-      'Яке тризначне число <b>A</b>, складене з двох цифр <span class="num">' + q.a + '</span> та однієї цифри <span class="num">' + q.b +
-      '</span>, таке, що <span class="num">' + digIneqText(q) + '</span>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">A = ' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Кое е трицифреното число <b>A</b>, съставено от две цифри <span class="num">' + q.a +
+    '</span> и една цифра <span class="num">' + q.b + '</span>, такова, че <span class="num">' + digIneqText(q) + '</span>?',
+    'Яке тризначне число <b>A</b>, складене з двох цифр <span class="num">' + q.a + '</span> та однієї цифри <span class="num">' + q.b +
+    '</span>, таке, що <span class="num">' + digIneqText(q) + '</span>?') + '</div>' +
+    '<div class="line xl">A = ' + SLOT + '</div>';
 }
 function eqDigIneq(q){
-  if(q.kind === 'digineq') return 'A = ' + q.ans + ': ' + (q.c - q.ans) + (q.more ? ' &lt; ' : ' &gt; ') + (q.ans - q.d);
+  return 'A = ' + q.ans + ': ' + (q.c - q.ans) + (q.more ? ' &lt; ' : ' &gt; ') + (q.ans - q.d);
 }
 function whyDigIneq(q, full){
-  if(q.kind === 'digineq'){
-    if(!full) return tr('A може да е само едно от ' + q.cand.length + ' числа — пробвай всяко.', 'A може бути лише одним із ' + q.cand.length + ' чисел — спробуй кожне.');
-    return q.cand.map(A => A + ': ' + (q.c - A) + (q.more ? ' &lt; ' : ' &gt; ') + (A - q.d) + ' ' + (digIneqHolds(q, A) ? '✓' : '✗')).join(', &nbsp;') +
-      ' &nbsp;→&nbsp; A = ' + q.ans;
-  }
+  if(!full) return tr('A може да е само едно от ' + q.cand.length + ' числа — пробвай всяко.', 'A може бути лише одним із ' + q.cand.length + ' чисел — спробуй кожне.');
+  return q.cand.map(A => A + ': ' + (q.c - A) + (q.more ? ' &lt; ' : ' &gt; ') + (A - q.d) + ' ' + (digIneqHolds(q, A) ? '✓' : '✗')).join(', &nbsp;') +
+    ' &nbsp;→&nbsp; A = ' + q.ans;
 }
 KIND.digineq = { draw:drawDigIneq, eq:eqDigIneq, why:whyDigIneq };

@@ -1,6 +1,4 @@
 // Question kind 'cutrect': level 106 Разрязан правоъгълник — A rectangle cut in three: find the lost side.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2022, задача 13: a 4 by 5 rectangle cut into 1 by 2, 2 by 3 and X by 4. The small
 // squares are what is shared out: 20 = 2 + 6 + 4 · X, so 4 · X = 12 and X = 3. Generated from
@@ -30,24 +28,20 @@ function cutThreeSvg(q){
   return '<div class="fig wide"><svg viewBox="0 0 ' + x + ' ' + (6*u + 22) + '" role="img" aria-label="' + tr('правоъгълник и трите му части', 'прямокутник і три його частини') + '">' + out + '</svg></div>';
 }
 function drawCutRect(q){
-  if(q.kind === 'cutrect'){
-    const sides = p => p[0] + ' см, ' + p[0] + ' см, ' + p[1] + ' см ' + tr('и', 'і') + ' ' + p[1] + ' см';
-    const named = q.pieces.map((p, i) => i === q.at ? (q.side === 0 ? 'X см, X см, ' + p[1] + ' см ' + tr('и', 'і') + ' ' + p[1] + ' см' : p[0] + ' см, ' + p[0] + ' см, X см ' + tr('и', 'і') + ' X см') : sides(p));
-    return '<div class="ask">' + tr('Правоъгълник със страни ' + sides([q.W, q.H]) + ' разрязах на три правоъгълника: първият със страни ' + named[0] + '; вторият — ' + named[1] + '; третият — ' + named[2] + '. Колко е <b>X</b>?',
-      'Прямокутник зі сторонами ' + sides([q.W, q.H]) + ' розрізали на три прямокутники: перший зі сторонами ' + named[0] + '; другий — ' + named[1] + '; третій — ' + named[2] + '. Чому дорівнює <b>X</b>?') + '</div>' +
-      cutThreeSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">X = ' + SLOT + '</div>';
-  }
+  const sides = p => p[0] + ' см, ' + p[0] + ' см, ' + p[1] + ' см ' + tr('и', 'і') + ' ' + p[1] + ' см';
+  const named = q.pieces.map((p, i) => i === q.at ? (q.side === 0 ? 'X см, X см, ' + p[1] + ' см ' + tr('и', 'і') + ' ' + p[1] + ' см' : p[0] + ' см, ' + p[0] + ' см, X см ' + tr('и', 'і') + ' X см') : sides(p));
+  return '<div class="ask">' + tr('Правоъгълник със страни ' + sides([q.W, q.H]) + ' разрязах на три правоъгълника: първият със страни ' + named[0] + '; вторият — ' + named[1] + '; третият — ' + named[2] + '. Колко е <b>X</b>?',
+    'Прямокутник зі сторонами ' + sides([q.W, q.H]) + ' розрізали на три прямокутники: перший зі сторонами ' + named[0] + '; другий — ' + named[1] + '; третій — ' + named[2] + '. Чому дорівнює <b>X</b>?') + '</div>' +
+    cutThreeSvg(q) + '<div class="line xl">X = ' + SLOT + '</div>';
 }
 const cutRectRest = q => q.W*q.H - q.pieces.filter((_, i) => i !== q.at).reduce((t, p) => t + p[0]*p[1], 0);
 function eqCutRect(q){
-  if(q.kind === 'cutrect') return q.W + '·' + q.H + ' − ' + q.pieces.filter((_, i) => i !== q.at).map(p => p[0] + '·' + p[1]).join(' − ') + ' = ' + cutRectRest(q) + ' = X·' + q.other + ' → ' + q.ans;
+  return q.W + '·' + q.H + ' − ' + q.pieces.filter((_, i) => i !== q.at).map(p => p[0] + '·' + p[1]).join(' − ') + ' = ' + cutRectRest(q) + ' = X·' + q.other + ' → ' + q.ans;
 }
 function whyCutRect(q, full){
-  if(q.kind === 'cutrect'){
-    if(!full) return tr('Раздели всичко на квадратчета със страна един сантиметър. Колко са в големия? А в двете известни парчета?', 'Поділи все на квадратики зі стороною один сантиметр. Скільки їх у великому? А у двох відомих частинах?');
-    const known = q.pieces.filter((_, i) => i !== q.at), rest = cutRectRest(q);
-    return tr('квадратчета: ', 'квадратиків: ') + q.W + ' · ' + q.H + ' = <b>' + q.W*q.H + '</b>, ' + tr('в известните ', 'у відомих ') + known.map(p => p[0] + ' · ' + p[1] + ' = ' + p[0]*p[1]).join(tr(' и ', ' і ')) +
-      ' &nbsp;→&nbsp; ' + tr('остават ', 'лишається ') + rest + ' = X · ' + q.other + ' &nbsp;→&nbsp; X = ' + q.ans;
-  }
+  if(!full) return tr('Раздели всичко на квадратчета със страна един сантиметър. Колко са в големия? А в двете известни парчета?', 'Поділи все на квадратики зі стороною один сантиметр. Скільки їх у великому? А у двох відомих частинах?');
+  const known = q.pieces.filter((_, i) => i !== q.at), rest = cutRectRest(q);
+  return tr('квадратчета: ', 'квадратиків: ') + q.W + ' · ' + q.H + ' = <b>' + q.W*q.H + '</b>, ' + tr('в известните ', 'у відомих ') + known.map(p => p[0] + ' · ' + p[1] + ' = ' + p[0]*p[1]).join(tr(' и ', ' і ')) +
+    ' &nbsp;→&nbsp; ' + tr('остават ', 'лишається ') + rest + ' = X · ' + q.other + ' &nbsp;→&nbsp; X = ' + q.ans;
 }
 KIND.cutrect = { draw:drawCutRect, eq:eqCutRect, why:whyCutRect };

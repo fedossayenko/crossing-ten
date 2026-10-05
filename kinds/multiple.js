@@ -1,6 +1,4 @@
 // Question kind 'multiple': level 49 Кратни — The smallest count that splits into equal parts both ways.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { BGNUM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
@@ -27,39 +25,35 @@ const multipleUk = {'рози':['У саду','троянд','троянда','�
                     'картички':['У коробці','листівок','листівка','листівки'], 'мидички':['У торбинці','черепашок','черепашка','черепашки']};
 const multipleUkGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’яти', 6:'шести', 7:'семи'};
 function drawMultiple(q){
-  if(q.kind === 'multiple' && q.shape === 'count'){
+  if(q.shape === 'count'){
     return '<div class="ask">' + tr('Колко от числата от <span class="num">1</span> до <span class="num">' + q.N + '</span> можем да запишем и като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми, и като сбор на <b>' + BGNUM[q.r] + ' равни</b> събираеми?',
       'Скільки чисел від <span class="num">1</span> до <span class="num">' + q.N + '</span> можна записати і як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків, і як суму <b>' + multipleUkGen[q.r] + ' однакових</b> доданків?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'multiple'){
-    const uk = multipleUk[q.g[0]];
-    return '<div class="ask">' + tr('В ' + q.g[2] + ' има <b>повече от</b> <span class="num">' + q.N + '</span> ' + q.g[0] +
-      '. Техният брой можем да запишем като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми и като сбор на <b>' +
-      BGNUM[q.r] + ' равни</b> събираеми. Колко <b>най-малко</b> може да са ' + q.g[1] + '?',
-      uk[0] + ' <b>більше ніж</b> <span class="num">' + ukN(q.N, uk[2], uk[3], uk[1]).replace(' ', '</span> ') +
-      '. Їхню кількість можна записати як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків і як суму <b>' +
-      multipleUkGen[q.r] + ' однакових</b> доданків. Яка <b>найменша</b> кількість ' + uk[1] + ' може бути?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const uk = multipleUk[q.g[0]];
+  return '<div class="ask">' + tr('В ' + q.g[2] + ' има <b>повече от</b> <span class="num">' + q.N + '</span> ' + q.g[0] +
+    '. Техният брой можем да запишем като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми и като сбор на <b>' +
+    BGNUM[q.r] + ' равни</b> събираеми. Колко <b>най-малко</b> може да са ' + q.g[1] + '?',
+    uk[0] + ' <b>більше ніж</b> <span class="num">' + ukN(q.N, uk[2], uk[3], uk[1]).replace(' ', '</span> ') +
+    '. Їхню кількість можна записати як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків і як суму <b>' +
+    multipleUkGen[q.r] + ' однакових</b> доданків. Яка <b>найменша</b> кількість ' + uk[1] + ' може бути?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqMultiple(q){
-  if(q.kind === 'multiple' && q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;
-  if(q.kind === 'multiple') return tr('кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N,
+  if(q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;
+  return tr('кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N,
                                       'кратне ' + q.p + ' і ' + q.r + ', більше за ' + q.N) + ' → ' + q.ans;
 }
 function whyMultiple(q, full){
-  if(q.kind === 'multiple' && q.shape === 'count'){
+  if(q.shape === 'count'){
     if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой — и на двата.', 'Сума однакових доданків означає, що число ділиться націло на їхню кількість — на обидві.');
     return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; на <b>', 'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; на <b>') + q.L + '</b> &nbsp;→&nbsp; ' + q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'multiple'){
-    if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой.',
-                        'Сума однакових доданків означає, що число ділиться націло на їхню кількість.');
-    return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; значи се дели на <b>',
-              'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; отже, ділиться на <b>') + q.L +
-      '</b> &nbsp;→&nbsp; ' + [q.L*(q.ans/q.L - 1), q.ans].join(', ') +
-      tr(' — първото над ' + q.N + ' е ', ' — перше більше за ' + q.N + ': ') + q.ans;
-  }
+  if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой.',
+                      'Сума однакових доданків означає, що число ділиться націло на їхню кількість.');
+  return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; значи се дели на <b>',
+            'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; отже, ділиться на <b>') + q.L +
+    '</b> &nbsp;→&nbsp; ' + [q.L*(q.ans/q.L - 1), q.ans].join(', ') +
+    tr(' — първото над ' + q.N + ' е ', ' — перше більше за ' + q.N + ': ') + q.ans;
 }
 KIND.multiple = { draw:drawMultiple, eq:eqMultiple, why:whyMultiple };

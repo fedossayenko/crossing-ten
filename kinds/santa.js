@@ -1,6 +1,4 @@
 // Question kind 'santa': level 98 Градът на Дядо Коледа — A route, a ticket table, and the change counted out.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно състезание 2025, задача 10, the one solved in full, in its three parts:
 // А) houses 1 to 5 in order by the shortest roads: from 3 to 4 it is shorter back past 2
@@ -57,43 +55,37 @@ function santaTable(q){
     q.rows.map((r, i) => '<tr><td>' + (i + 2) + '</td><td>' + c(r[1]) + '</td><td>' + c(r[2]) + '</td><td>' + c(r[0]) + '</td></tr>').join('') + '</table>';
 }
 function drawSanta(q){
-  if(q.kind === 'santa'){
-    const who = tr('Близнаците Ани и Емил, майка им и дядо им разгледали града на Дядо Коледа. ', 'Близнюки Ані та Еміл, їхня мама й дідусь оглядали місто Діда Мороза. ');
-    if(q.shape === 0) return '<div class="ask">' + who + tr('Тръгнали от къща 1 и посетили подред къщи 2, 3, 4 и накрая 5 по <b>най-краткия път</b>. Колко метра са изминали?',
-      'Вони вийшли з будинку 1 і відвідали по черзі будинки 2, 3, 4 і нарешті 5 <b>найкоротшим шляхом</b>. Скільки метрів вони пройшли?') + '</div>' +
-      santaMap(q) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="unit">м</span></div>';
-    if(q.shape === 1) return '<div class="ask">' + who + tr('Близнаците плащат билет за ученици, дядото — за пенсионери, а майката — основната цена. Където няма намаление, се плаща основната цена. Колко лева са дали за билети?',
-      'Близнюки платять за учнівський квиток, дідусь — за пенсійний, а мама — повну ціну. Де знижки немає, платять повну ціну. Скільки левів вони заплатили за квитки?') + '</div>' +
-      santaTable(q) + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + ' <span class="unit">лв.</span></div>';
-    return '<div class="ask">' + who + tr('Платили <span class="num">' + q.T + '</span> лв. за билети със <span class="num">100</span> лв. Рестото получили в точно <span class="num">' + q.k +
-      '</span> банкноти и монети (без стотинки). <b>По колко начина</b> може да е било рестото?',
-      'За квитки на <span class="num">' + ukN(q.T, 'лев', 'леви', 'левів').replace(' ', '</span> ') + ' вони дали <span class="num">100</span> левів. Решту отримали рівно <span class="num">' + q.k +
-      '</span> купюрами й монетами (без стотинок). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
-      '<div class="note">' + tr('Монети: 1 и 2 лв. Банкноти: 5, 10, 20 и 50 лв.', 'Монети: 1 і 2 леви. Купюри: 5, 10, 20 і 50 левів.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const who = tr('Близнаците Ани и Емил, майка им и дядо им разгледали града на Дядо Коледа. ', 'Близнюки Ані та Еміл, їхня мама й дідусь оглядали місто Діда Мороза. ');
+  if(q.shape === 0) return '<div class="ask">' + who + tr('Тръгнали от къща 1 и посетили подред къщи 2, 3, 4 и накрая 5 по <b>най-краткия път</b>. Колко метра са изминали?',
+    'Вони вийшли з будинку 1 і відвідали по черзі будинки 2, 3, 4 і нарешті 5 <b>найкоротшим шляхом</b>. Скільки метрів вони пройшли?') + '</div>' +
+    santaMap(q) + '<div class="line md">' + SLOT + ' <span class="unit">м</span></div>';
+  if(q.shape === 1) return '<div class="ask">' + who + tr('Близнаците плащат билет за ученици, дядото — за пенсионери, а майката — основната цена. Където няма намаление, се плаща основната цена. Колко лева са дали за билети?',
+    'Близнюки платять за учнівський квиток, дідусь — за пенсійний, а мама — повну ціну. Де знижки немає, платять повну ціну. Скільки левів вони заплатили за квитки?') + '</div>' +
+    santaTable(q) + '<div class="line md">' + SLOT + ' <span class="unit">лв.</span></div>';
+  return '<div class="ask">' + who + tr('Платили <span class="num">' + q.T + '</span> лв. за билети със <span class="num">100</span> лв. Рестото получили в точно <span class="num">' + q.k +
+    '</span> банкноти и монети (без стотинки). <b>По колко начина</b> може да е било рестото?',
+    'За квитки на <span class="num">' + ukN(q.T, 'лев', 'леви', 'левів').replace(' ', '</span> ') + ' вони дали <span class="num">100</span> левів. Решту отримали рівно <span class="num">' + q.k +
+    '</span> купюрами й монетами (без стотинок). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
+    '<div class="note">' + tr('Монети: 1 и 2 лв. Банкноти: 5, 10, 20 и 50 лв.', 'Монети: 1 і 2 леви. Купюри: 5, 10, 20 і 50 левів.') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqSanta(q){
-  if(q.kind === 'santa'){
-    if(q.shape === 0) return tr('път: ', 'шлях: ') + q.a + ' + ' + q.b + ' + ' + Math.min(q.back, q.on) + ' + ' + q.e + ' = ' + q.ans;
-    if(q.shape === 1) return tr('билети: ', 'квитки: ') + q.per.join(' + ') + ' = ' + q.ans;
-    return '100 − ' + q.T + ' = ' + q.R + tr(', ' + q.k + ' броя → ', ', ' + q.k + ' шт. → ') + q.ans;
-  }
+  if(q.shape === 0) return tr('път: ', 'шлях: ') + q.a + ' + ' + q.b + ' + ' + Math.min(q.back, q.on) + ' + ' + q.e + ' = ' + q.ans;
+  if(q.shape === 1) return tr('билети: ', 'квитки: ') + q.per.join(' + ') + ' = ' + q.ans;
+  return '100 − ' + q.T + ' = ' + q.R + tr(', ' + q.k + ' броя → ', ', ' + q.k + ' шт. → ') + q.ans;
 }
 function whySanta(q, full){
-  if(q.kind === 'santa'){
-    if(q.shape === 0){
-      if(!full) return tr('От къща 3 до къща 4 има два пътя — сравни ги.', 'Від будинку 3 до будинку 4 є дві дороги — порівняй їх.');
-      return tr('от 3 до 4: назад през 2 — ', 'від 3 до 4: назад через 2 — ') + q.b + ' + ' + q.c + ' = ' + q.back + tr(', напред през 5 — ', ', далі через 5 — ') + q.f + ' + ' + q.e + ' = ' + q.on +
-        ' &nbsp;→&nbsp; <b>' + Math.min(q.back, q.on) + '</b> &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' + ' + Math.min(q.back, q.on) + ' + ' + q.e + ' = ' + q.ans;
-    }
-    if(q.shape === 1){
-      if(!full) return tr('Пресметни всяка къща поотделно: двамата ученици, дядото и майката.', 'Порахуй кожен будинок окремо: двоє учнів, дідусь і мама.');
-      return q.rows.map(([F, s, p], i) => tr('къща ', 'будинок ') + (i + 2) + ': ' + (s || F) + ' + ' + (s || F) + ' + ' + (p || F) + ' + ' + F + ' = ' + q.per[i]).join('; ') +
-        ' &nbsp;→&nbsp; ' + q.per.join(' + ') + ' = ' + q.ans;
-    }
-    if(!full) return tr('Първо рестото. После подреди броенето — от най-големите банкноти към монетите.', 'Спершу решта. Потім рахуй по порядку — від найбільших купюр до монет.');
-    return tr('рестото е ', 'решта: ') + '100 − ' + q.T + ' = <b>' + q.R + '</b> &nbsp;→&nbsp; ' + q.ways.map(w => w.join(' + ')).join('; ') + ' &nbsp;→&nbsp; ' + q.ans;
+  if(q.shape === 0){
+    if(!full) return tr('От къща 3 до къща 4 има два пътя — сравни ги.', 'Від будинку 3 до будинку 4 є дві дороги — порівняй їх.');
+    return tr('от 3 до 4: назад през 2 — ', 'від 3 до 4: назад через 2 — ') + q.b + ' + ' + q.c + ' = ' + q.back + tr(', напред през 5 — ', ', далі через 5 — ') + q.f + ' + ' + q.e + ' = ' + q.on +
+      ' &nbsp;→&nbsp; <b>' + Math.min(q.back, q.on) + '</b> &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' + ' + Math.min(q.back, q.on) + ' + ' + q.e + ' = ' + q.ans;
   }
+  if(q.shape === 1){
+    if(!full) return tr('Пресметни всяка къща поотделно: двамата ученици, дядото и майката.', 'Порахуй кожен будинок окремо: двоє учнів, дідусь і мама.');
+    return q.rows.map(([F, s, p], i) => tr('къща ', 'будинок ') + (i + 2) + ': ' + (s || F) + ' + ' + (s || F) + ' + ' + (p || F) + ' + ' + F + ' = ' + q.per[i]).join('; ') +
+      ' &nbsp;→&nbsp; ' + q.per.join(' + ') + ' = ' + q.ans;
+  }
+  if(!full) return tr('Първо рестото. После подреди броенето — от най-големите банкноти към монетите.', 'Спершу решта. Потім рахуй по порядку — від найбільших купюр до монет.');
+  return tr('рестото е ', 'решта: ') + '100 − ' + q.T + ' = <b>' + q.R + '</b> &nbsp;→&nbsp; ' + q.ways.map(w => w.join(' + ')).join('; ') + ' &nbsp;→&nbsp; ' + q.ans;
 }
 KIND.santa = { draw:drawSanta, eq:eqSanta, why:whySanta };

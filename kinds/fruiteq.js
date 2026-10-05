@@ -1,6 +1,4 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
 export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
@@ -48,13 +46,13 @@ export function genFruitEq(){
 }
 
 function drawFruiteq(q){
-  if(q.kind === 'fruiteq' && q.tri){
+  if(q.tri){
     const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
     return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="fig"><svg viewBox="0 0 160 100" style="max-width:220px" role="img" aria-label="' + tr('три равенства с фигури', 'три рівності з фігурами') + '">' +
       row(26, '● + ○ = ' + q.s1) + row(58, '○ + ■ = ' + q.s2) + row(90, '■ + ● = ' + q.s3) + '</svg></div>' +
-      '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div><div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'fruiteq' && q.grid){
+  if(q.grid){
     const F = q.f.map(ic);
     const head = F.map((g, i) => (i ? (q.signs[i] > 0 ? ' + ' : ' − ') : (q.signs[i] > 0 ? '' : '− ')) + g).join('');
     const cell = t => '<span>' + t + '</span>';
@@ -69,28 +67,26 @@ function drawFruiteq(q){
         cell('=') + blank + cell('=') + blank + blank +
         cell(q.C1) + blank + cell(q.C2) + blank + blank +
       '</div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
+      '<div class="line md">' + SLOT + '</div>';
   }
-  if(q.kind === 'fruiteq'){
-    const F = q.f.map(ic);
-    return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + F[q.askd[0]] + ' − ' + F[q.askd[1]] + tr(', ако:', ', якщо:') + '</div>' +
-      '<div class="eqs"><span>' + F[1] + ' + ' + F[0] + ' = ' + q.s1 + '</span>' +
-      '<span>' + F[0] + ' + ' + F[2] + ' = ' + q.s2 + '</span>' +
-      '<span>' + F[2] + ' + ' + F[0] + ' + ' + F[1] + ' = ' + q.s3 + '</span></div>' +
-      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + '</div>';
-  }
+  const F = q.f.map(ic);
+  return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + F[q.askd[0]] + ' − ' + F[q.askd[1]] + tr(', ако:', ', якщо:') + '</div>' +
+    '<div class="eqs"><span>' + F[1] + ' + ' + F[0] + ' = ' + q.s1 + '</span>' +
+    '<span>' + F[0] + ' + ' + F[2] + ' = ' + q.s2 + '</span>' +
+    '<span>' + F[2] + ' + ' + F[0] + ' + ' + F[1] + ' = ' + q.s3 + '</span></div>' +
+    '<div class="line md">' + SLOT + '</div>';
 }
 function eqFruiteq(q){
-  if(q.kind === 'fruiteq' && q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
-  if(q.kind === 'fruiteq' && q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
-  if(q.kind === 'fruiteq') return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
+  if(q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
+  if(q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
+  return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
 }
 function whyFruiteq(q, full){
-  if(q.kind === 'fruiteq' && q.tri){
+  if(q.tri){
     if(!full) return tr('Събери трите реда. Колко пъти е вътре всяка фигура?', 'Додай три рядки. Скільки разів у них кожна фігура?');
     return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + (q.s1 + q.s2 + q.s3) + tr(' — всяка фигура по два пъти', ' — кожна фігура двічі') + ' &nbsp;→&nbsp; ' + (q.s1 + q.s2 + q.s3) + ' : 2 = ' + q.ans;
   }
-  if(q.kind === 'fruiteq' && q.grid){
+  if(q.grid){
     if(!full) return tr('Двата стълба заедно съдържат всичките четири плода.', 'Два стовпці разом містять усі чотири фрукти.');
     const F = q.f.map(ic), v = [q.A, q.B, q.C, q.D];
     const both = q.C1 + q.C2, low = both - q.R1;
@@ -102,14 +98,12 @@ function whyFruiteq(q, full){
       '</b>, ' + F[1] + ' = ' + q.R1 + ' − ' + q.A + ' = <b>' + q.B + '</b> &nbsp;→&nbsp; ' +
       bits.join('') + ' = ' + q.ans;
   }
-  if(q.kind === 'fruiteq'){
-    if(!full) return tr('Третото равенство съдържа първото — започни оттам.', 'Третя рівність містить першу — почни звідти.');
-    const F = q.f.map(ic);
-    const v = [q.a, q.b, q.c];
-    return F[2] + ' = ' + q.s3 + ' − ' + q.s1 + ' = <b>' + q.c + '</b> &nbsp;→&nbsp; ' +
-      F[0] + ' = ' + q.s2 + ' − ' + q.c + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' +
-      F[1] + ' = ' + q.s1 + ' − ' + q.a + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' +
-      v[q.askd[0]] + ' − ' + v[q.askd[1]] + ' = ' + q.ans;
-  }
+  if(!full) return tr('Третото равенство съдържа първото — започни оттам.', 'Третя рівність містить першу — почни звідти.');
+  const F = q.f.map(ic);
+  const v = [q.a, q.b, q.c];
+  return F[2] + ' = ' + q.s3 + ' − ' + q.s1 + ' = <b>' + q.c + '</b> &nbsp;→&nbsp; ' +
+    F[0] + ' = ' + q.s2 + ' − ' + q.c + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' +
+    F[1] + ' = ' + q.s1 + ' − ' + q.a + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' +
+    v[q.askd[0]] + ' − ' + v[q.askd[1]] + ' = ' + q.ans;
 }
 KIND.fruiteq = { draw:drawFruiteq, eq:eqFruiteq, why:whyFruiteq };

@@ -1,6 +1,4 @@
 // Question kind 'stepdig': level 82 0, 3, 6, …, x — The last number of a run, from how many digits it takes.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2024, задача 8: 0, 3, 6, 9, …, x written with 24 digits. The one-digit numbers
 // take one digit each, every two-digit one takes two — count the first lot, halve the rest.
@@ -24,25 +22,21 @@ export function genStepDig(){
   }
 }
 function drawStepDig(q){
-  if(q.kind === 'stepdig'){
-    return '<div class="ask">' + tr('Кое е числото, означено с буквата <b>x</b>, ако числата <span class="num">' + q.first.join(', ') + ', …, x</span> са записани с <b>' + q.digits + ' цифри</b>?',
-      'Яке число позначене буквою <b>x</b>, якщо числа <span class="num">' + q.first.join(', ') + ', …, x</span> записані за допомогою <b>' + q.digits + ' цифр</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">x = ' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Кое е числото, означено с буквата <b>x</b>, ако числата <span class="num">' + q.first.join(', ') + ', …, x</span> са записани с <b>' + q.digits + ' цифри</b>?',
+    'Яке число позначене буквою <b>x</b>, якщо числа <span class="num">' + q.first.join(', ') + ', …, x</span> записані за допомогою <b>' + q.digits + ' цифр</b>?') + '</div>' +
+    '<div class="line xl">x = ' + SLOT + '</div>';
 }
 function eqStepDig(q){
-  if(q.kind === 'stepdig') return q.first.join(', ') + tr(', … с ', ', … з ') + q.digits + tr(' цифри → ', ' цифр → ') + q.ans;
+  return q.first.join(', ') + tr(', … с ', ', … з ') + q.digits + tr(' цифри → ', ' цифр → ') + q.ans;
 }
 function whyStepDig(q, full){
-  if(q.kind === 'stepdig'){
-    if(!full) return tr('Колко цифри отиват за едноцифрените числа? А за всяко двуцифрено?',
-                        'Скільки цифр ідуть на одноцифрові числа? А на кожне двоцифрове?');
-    const m = q.twos.length, t = q.twos;
-    return tr('едноцифрени: ', 'одноцифрові: ') + q.ones + tr(' числа — ', ' — ') + tr(q.ones + ' цифри', ukN(q.ones, 'цифра', 'цифри', 'цифр')) +
-      (q.three ? '' : ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число', ' цифр, по дві на число')) +
-      (q.three ? ' &nbsp;→&nbsp; ' + tr('всички двуцифрени ', 'усі двоцифрові ') + t[0] + ', …, ' + t[m - 1] + ': ' + m + ' · 2 = ' + 2*m + tr(' цифри, остават ', ' цифр, лишається ') +
-        (q.digits - q.ones - 2*m) + tr(' — едно трицифрено: <b>', ' — одне трицифрове: <b>') + q.ans + '</b> &nbsp;→&nbsp; x = ' + q.ans
-      : ' &nbsp;→&nbsp; ' + tr(m + ' двуцифрени: ', ukN(m, 'двоцифрове', 'двоцифрові', 'двоцифрових') + ': ') + t[0] + ', ' + t[1] + ', …, <b>' + q.ans + '</b>' + ' &nbsp;→&nbsp; x = ' + q.ans);
-  }
+  if(!full) return tr('Колко цифри отиват за едноцифрените числа? А за всяко двуцифрено?',
+                      'Скільки цифр ідуть на одноцифрові числа? А на кожне двоцифрове?');
+  const m = q.twos.length, t = q.twos;
+  return tr('едноцифрени: ', 'одноцифрові: ') + q.ones + tr(' числа — ', ' — ') + tr(q.ones + ' цифри', ukN(q.ones, 'цифра', 'цифри', 'цифр')) +
+    (q.three ? '' : ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число', ' цифр, по дві на число')) +
+    (q.three ? ' &nbsp;→&nbsp; ' + tr('всички двуцифрени ', 'усі двоцифрові ') + t[0] + ', …, ' + t[m - 1] + ': ' + m + ' · 2 = ' + 2*m + tr(' цифри, остават ', ' цифр, лишається ') +
+      (q.digits - q.ones - 2*m) + tr(' — едно трицифрено: <b>', ' — одне трицифрове: <b>') + q.ans + '</b> &nbsp;→&nbsp; x = ' + q.ans
+    : ' &nbsp;→&nbsp; ' + tr(m + ' двуцифрени: ', ukN(m, 'двоцифрове', 'двоцифрові', 'двоцифрових') + ': ') + t[0] + ', ' + t[1] + ', …, <b>' + q.ans + '</b>' + ' &nbsp;→&nbsp; x = ' + q.ans);
 }
 KIND.stepdig = { draw:drawStepDig, eq:eqStepDig, why:whyStepDig };

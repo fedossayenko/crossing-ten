@@ -22,21 +22,17 @@ export function genWhoMore(){
 }
 const wmMore = q => q.base.slice(0, q.at).concat(q.e, q.base.slice(q.at));
 function drawWhoMore(q){
-  if(q.kind === 'whomore'){
-    const G = WM_GIRLS[q.g], B = WM_BOYS[q.b], gs = (q.boy ? q.base : wmMore(q)).join(' + '), bs = (q.boy ? wmMore(q) : q.base).join(' + ');
-    return '<div class="ask">' + tr(G[0] + ' пресметнала вярно <span class="num">' + gs + '</span>, а ' + B[0] + ' пресметнал вярно <span class="num">' + bs + '</span>. Кой е получил <b>по-голям</b> сбор и с колко?',
-      G[1] + ' правильно обчислила <span class="num">' + gs + '</span>, а ' + B[1] + ' правильно обчислив <span class="num">' + bs + '</span>. Хто отримав <b>більшу</b> суму і на скільки?') + '</div>';
-  }
+  const G = WM_GIRLS[q.g], B = WM_BOYS[q.b], gs = (q.boy ? q.base : wmMore(q)).join(' + '), bs = (q.boy ? wmMore(q) : q.base).join(' + ');
+  return '<div class="ask">' + tr(G[0] + ' пресметнала вярно <span class="num">' + gs + '</span>, а ' + B[0] + ' пресметнал вярно <span class="num">' + bs + '</span>. Кой е получил <b>по-голям</b> сбор и с колко?',
+    G[1] + ' правильно обчислила <span class="num">' + gs + '</span>, а ' + B[1] + ' правильно обчислив <span class="num">' + bs + '</span>. Хто отримав <b>більшу</b> суму і на скільки?') + '</div>';
 }
 function eqWhoMore(q){
-  if(q.kind === 'whomore'){ const w = q.boy ? WM_BOYS[q.b] : WM_GIRLS[q.g]; return tr(w[0], w[1]) + ': ' + q.S + ' + ' + q.e + ' = ' + (q.S + q.e) + ' → +' + q.e; }
+  const w = q.boy ? WM_BOYS[q.b] : WM_GIRLS[q.g]; return tr(w[0], w[1]) + ': ' + q.S + ' + ' + q.e + ' = ' + (q.S + q.e) + ' → +' + q.e; 
 }
 function whyWhoMore(q, full){
-  if(q.kind === 'whomore'){
-    if(!full) return tr('Сравни двата сбора число по число — не е нужно да ги пресмяташ.', 'Порівняй дві суми число за числом — обчислювати їх не треба.');
-    const w = q.boy ? WM_BOYS[q.b] : WM_GIRLS[q.g], o = q.boy ? WM_GIRLS[q.g] : WM_BOYS[q.b];
-    return tr(w[0] + ' събира същите числа като ' + o[0] + ' и още <b>' + q.e + '</b> &nbsp;→&nbsp; ' + q.S + ' и ' + (q.S + q.e) + ' &nbsp;→&nbsp; сборът на ' + w[0] + ' е по-голям ' + bgWith(q.e) + ' ' + q.e,
-      w[1] + ' додає ті самі числа, що й ' + o[1] + ', і ще <b>' + q.e + '</b> &nbsp;→&nbsp; ' + q.S + ' і ' + (q.S + q.e) + ' &nbsp;→&nbsp; сума в ' + w[1] + ' більша на ' + q.e);
-  }
+  if(!full) return tr('Сравни двата сбора число по число — не е нужно да ги пресмяташ.', 'Порівняй дві суми число за числом — обчислювати їх не треба.');
+  const w = q.boy ? WM_BOYS[q.b] : WM_GIRLS[q.g], o = q.boy ? WM_GIRLS[q.g] : WM_BOYS[q.b];
+  return tr(w[0] + ' събира същите числа като ' + o[0] + ' и още <b>' + q.e + '</b> &nbsp;→&nbsp; ' + q.S + ' и ' + (q.S + q.e) + ' &nbsp;→&nbsp; сборът на ' + w[0] + ' е по-голям ' + bgWith(q.e) + ' ' + q.e,
+    w[1] + ' додає ті самі числа, що й ' + o[1] + ', і ще <b>' + q.e + '</b> &nbsp;→&nbsp; ' + q.S + ' і ' + (q.S + q.e) + ' &nbsp;→&nbsp; сума в ' + w[1] + ' більша на ' + q.e);
 }
 KIND.whomore = { draw:drawWhoMore, eq:eqWhoMore, why:whyWhoMore };

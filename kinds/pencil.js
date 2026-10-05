@@ -1,6 +1,4 @@
 // Question kind 'pencil': level 161 Моливите — Two pencils on two rulers; how long is the longer, or the shorter.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 10 (and Пролет 2025, задача 11, the shorter one): a pencil lies
 // over a ruler from 7 to 14, another from 3 to 11. Neither starts at 0, so the length is not
@@ -50,23 +48,19 @@ function pencilSvg(q, full){
     tr('два молива върху две линийки', 'два олівці на двох лінійках') + '">' + g + '</svg>';
 }
 function drawPencil(q){
-  if(q.kind === 'pencil'){
-    return '<div class="ask">' + tr('Колко сантиметра е <b>' + (q.long ? 'по-дългият' : 'по-късият') + '</b> молив?',
-      'Скільки сантиметрів завдовжки <b>' + (q.long ? 'довший' : 'коротший') + '</b> олівець?') + '</div>' +
-      '<div class="fig wide">' + pencilSvg(q, false) + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + CM + '</div>';
-  }
+  return '<div class="ask">' + tr('Колко сантиметра е <b>' + (q.long ? 'по-дългият' : 'по-късият') + '</b> молив?',
+    'Скільки сантиметрів завдовжки <b>' + (q.long ? 'довший' : 'коротший') + '</b> олівець?') + '</div>' +
+    '<div class="fig wide">' + pencilSvg(q, false) + '</div>' +
+    '<div class="line lg">' + SLOT + CM + '</div>';
 }
 function eqPencil(q){
-  if(q.kind === 'pencil') return q.a + '→' + q.b + ', ' + q.c + '→' + q.d + ' → ' + q.ans;
+  return q.a + '→' + q.b + ', ' + q.c + '→' + q.d + ' → ' + q.ans;
 }
 function whyPencil(q, full){
-  if(q.kind === 'pencil'){
-    if(!full) return tr('Моливите не започват от нулата — виж откъде тръгва всеки и докъде стига.',
-      'Олівці не починаються з нуля — подивись, звідки починається кожен і докуди доходить.');
-    return tr('горният: от ' + q.a + ' до ' + q.b + ' → <b>' + (q.b - q.a) + '</b> см, долният: от ' + q.c + ' до ' + q.d + ' → <b>' + (q.d - q.c) + '</b> см',
-      'верхній: від ' + q.a + ' до ' + q.b + ' → <b>' + (q.b - q.a) + '</b> см, нижній: від ' + q.c + ' до ' + q.d + ' → <b>' + (q.d - q.c) + '</b> см') + pencilSvg(q, true) +
-      tr(q.long ? 'по-дългият е ' : 'по-късият е ', q.long ? 'довший — ' : 'коротший — ') + q.ans + ' см';
-  }
+  if(!full) return tr('Моливите не започват от нулата — виж откъде тръгва всеки и докъде стига.',
+    'Олівці не починаються з нуля — подивись, звідки починається кожен і докуди доходить.');
+  return tr('горният: от ' + q.a + ' до ' + q.b + ' → <b>' + (q.b - q.a) + '</b> см, долният: от ' + q.c + ' до ' + q.d + ' → <b>' + (q.d - q.c) + '</b> см',
+    'верхній: від ' + q.a + ' до ' + q.b + ' → <b>' + (q.b - q.a) + '</b> см, нижній: від ' + q.c + ' до ' + q.d + ' → <b>' + (q.d - q.c) + '</b> см') + pencilSvg(q, true) +
+    tr(q.long ? 'по-дългият е ' : 'по-късият е ', q.long ? 'довший — ' : 'коротший — ') + q.ans + ' см';
 }
 KIND.pencil = { draw:drawPencil, eq:eqPencil, why:whyPencil };

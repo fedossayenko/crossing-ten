@@ -1,6 +1,4 @@
 // Question kind 'segcount': level 102 Точки и отсечки — Points on a line and the segments between them.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2020, задача 15: 4 points on a line make 6 segments; Зима 2022, задача 16 the other
 // way round — how many points for exactly 6. From the first point 3 segments start, from the
@@ -28,28 +26,26 @@ function segCountSvg(n){
     '<line x1="4" y1="20" x2="' + (W - 4) + '" y2="20" stroke="var(--ink)" stroke-width="2"/>' + pts + labs + '</svg></div>';
 }
 function drawSegCount(q){
-  if(q.kind === 'segcount' && q.shape === 'dots'){
+  if(q.shape === 'dots'){
     const ask = q.asks === 0 ? tr('Колко <b>общо</b> са отбелязаните жълти, сини и червени точки?', 'Скільки <b>всього</b> позначено жовтих, синіх і червоних точок?')
       : q.asks === 1 ? tr('Колко са <b>червените</b> точки?', 'Скільки <b>червоних</b> точок?') : tr('Колко са <b>сините</b> точки?', 'Скільки <b>синіх</b> точок?');
     return '<div class="ask">' + tr('Краищата на отсечка с дължина <span class="num">' + q.L + '</span> см са оцветени в жълто. С оцветени в червено точки тази отсечка е разделена на <span class="num">' + q.n +
       '</span> отсечки, всяка с дължина <span class="num">' + q.d + '</span> см. След това между всеки две оцветени точки, които са на разстояние <span class="num">' + q.d + '</span> см, е отбелязана синя точка. ',
       'Кінці відрізка завдовжки <span class="num">' + q.L + '</span> см зафарбовано жовтим. Червоними точками цей відрізок поділено на <span class="num">' + q.n +
       '</span> відрізків, кожен завдовжки <span class="num">' + q.d + '</span> см. Потім між кожними двома зафарбованими точками, що стоять на відстані <span class="num">' + q.d + '</span> см, позначили синю точку. ') + ask + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'segcount'){
-    if(q.rev) return '<div class="ask">' + tr('Колко точки трябва да отбележим на една права, за да се получат <b>точно <span class="num">' + q.S + '</span> отсечки</b>?',
-      'Скільки точок треба позначити на прямій, щоб утворилося <b>рівно <span class="num">' + ukN(q.S, 'відрізок', 'відрізки', 'відрізків').replace(' ', '</span> ') + '</b>?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-    return '<div class="ask">' + tr('На една права са отбелязани <span class="num">' + q.n + '</span> точки. Колко <b>отсечки</b> се получават с краища тези точки?',
-      'На прямій позначено <span class="num">' + q.n + '</span> ' + (q.n < 5 ? 'точки' : 'точок') + '. Скільки <b>відрізків</b> з кінцями в цих точках утворилося?') + '</div>' +
-      segCountSvg(q.n) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  if(q.rev) return '<div class="ask">' + tr('Колко точки трябва да отбележим на една права, за да се получат <b>точно <span class="num">' + q.S + '</span> отсечки</b>?',
+    'Скільки точок треба позначити на прямій, щоб утворилося <b>рівно <span class="num">' + ukN(q.S, 'відрізок', 'відрізки', 'відрізків').replace(' ', '</span> ') + '</b>?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + tr('На една права са отбелязани <span class="num">' + q.n + '</span> точки. Колко <b>отсечки</b> се получават с краища тези точки?',
+    'На прямій позначено <span class="num">' + q.n + '</span> ' + (q.n < 5 ? 'точки' : 'точок') + '. Скільки <b>відрізків</b> з кінцями в цих точках утворилося?') + '</div>' +
+    segCountSvg(q.n) + '<div class="line xl">' + SLOT + '</div>';
 }
 const segCountSum = n => Array.from({length: n - 1}, (_, i) => n - 1 - i).join(' + ');
 function eqSegCount(q){
-  if(q.kind === 'segcount' && q.shape === 'dots') return tr('жълти 2, червени ', 'жовтих 2, червоних ') + (q.n - 1) + tr(', сини ', ', синіх ') + q.n + ' → ' + q.ans;
-  if(q.kind === 'segcount') return q.n + ' • → ' + segCountSum(q.n) + ' = ' + q.S + (q.rev ? ' → ' + q.ans : '');
+  if(q.shape === 'dots') return tr('жълти 2, червени ', 'жовтих 2, червоних ') + (q.n - 1) + tr(', сини ', ', синіх ') + q.n + ' → ' + q.ans;
+  return q.n + ' • → ' + segCountSum(q.n) + ' = ' + q.S + (q.rev ? ' → ' + q.ans : '');
 }
 // The segments as arcs over the points, a colour for each point they start from: the hint draws only those
 // from the first point; the solution adds each point's new ones in turn, and the count under each colour.
@@ -82,19 +78,17 @@ function segDots(n, full){
   return '<svg viewBox="0 -14 220 ' + (full ? 54 : 30) + '" style="display:block; width:220px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('точките върху отсечката', 'точки на відрізку') + '">' + g + '</svg>';
 }
 function whySegCount(q, full){
-  if(q.kind === 'segcount' && q.shape === 'dots'){
+  if(q.shape === 'dots'){
     if(!full) return tr('Начертай по-къса отсечка на няколко части и преброй: разделящите точки са с една по-малко от частите.', 'Намалюй коротший відрізок на кілька частин і порахуй: точок поділу на одну менше, ніж частин.') + segDots(3, false);
     return tr('жълти: 2 (краищата), червени: ', 'жовтих: 2 (кінці), червоних: ') + q.n + ' − 1 = <b>' + (q.n - 1) + '</b>' + tr(', сини: по една във всяка част, <b>', ', синіх: по одній у кожній частині, <b>') + q.n + '</b>' +
       ' &nbsp;→&nbsp; ' + (q.asks === 0 ? '2 + ' + (q.n - 1) + ' + ' + q.n + ' = ' : '') + q.ans + (q.asks === 0 ? segDots(q.n, true) : '');
   }
-  if(q.kind === 'segcount'){
-    if(!full) return q.rev ? tr('Опитай с малко точки и брой отсечките, после добавяй по една точка.', 'Спробуй з кількома точками й рахуй відрізки, потім додавай по одній точці.')
-                           : tr('Започни от първата точка: колко отсечки тръгват от нея? После от втората — само новите.', 'Почни з першої точки: скільки відрізків від неї виходить? Потім від другої — лише нові.') + segArcs(q.n, false);
-    if(q.rev){
-      const rows = []; for(let k = 2; k <= q.n; k++) rows.push(k + ' • → ' + k*(k - 1)/2);
-      return rows.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
-    }
-    return tr('от първата ', 'від першої ') + (q.n - 1) + tr(', от втората още ', ', від другої ще ') + (q.n - 2) + ', … &nbsp;→&nbsp; ' + segCountSum(q.n) + ' = ' + q.ans + segArcs(q.n, true);
+  if(!full) return q.rev ? tr('Опитай с малко точки и брой отсечките, после добавяй по една точка.', 'Спробуй з кількома точками й рахуй відрізки, потім додавай по одній точці.')
+                         : tr('Започни от първата точка: колко отсечки тръгват от нея? После от втората — само новите.', 'Почни з першої точки: скільки відрізків від неї виходить? Потім від другої — лише нові.') + segArcs(q.n, false);
+  if(q.rev){
+    const rows = []; for(let k = 2; k <= q.n; k++) rows.push(k + ' • → ' + k*(k - 1)/2);
+    return rows.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
+  return tr('от първата ', 'від першої ') + (q.n - 1) + tr(', от втората още ', ', від другої ще ') + (q.n - 2) + ', … &nbsp;→&nbsp; ' + segCountSum(q.n) + ' = ' + q.ans + segArcs(q.n, true);
 }
 KIND.segcount = { draw:drawSegCount, eq:eqSegCount, why:whySegCount };

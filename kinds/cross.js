@@ -1,6 +1,4 @@
 // Question kind 'cross': level 44 Зачеркни — Cross out one digit to make it true.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 19: one digit struck out makes the equation true. Built backwards, then every
 // possible deletion is tried so the digit to cross is never in doubt.
@@ -50,38 +48,34 @@ export function genCrossTwo(){
 }
 const crossTwoText = (s, op) => s[0] + ' ' + op + ' ' + s[1] + ' = ' + s[2];
 function drawCross(q){
-  if(q.kind === 'cross' && q.shape === 'two'){
+  if(q.shape === 'two'){
     const ex = e => { const s = [e[0], e[2], e[3]], l = s.slice(); l[e[4]] = e[5]; return '<div class="given" style="font-size:clamp(15px,4vw,21px)">' + crossTwoText(s, e[1]) + ' &nbsp;⟹&nbsp; ' + crossTwoText(l, e[1]) + ' &nbsp;⟹&nbsp; ☹ = ' + e[6] + '</div>'; };
     return '<div class="ask">' + tr('Във всеки ред е зачеркната една цифра, за да стане равенството вярно. ☹ е зачеркнатата цифра.', 'У кожному рядку закреслено одну цифру, щоб рівність стала правильною. ☹ — це закреслена цифра.') + '</div>' +
       CROSS_TWO_EX.map(ex).join('') + '<div class="line" style="font-size:clamp(26px,7vw,42px)">' + crossTwoText(q.shown, q.op) + ' &nbsp;⟹&nbsp; ☹ = ' + SLOT + '</div>';
   }
-  if(q.kind === 'cross'){
-    return '<div class="ask">' + tr('Коя цифра трябва да се зачеркне, за да се получи вярно равенство?', 'Яку цифру треба закреслити, щоб вийшла правильна рівність?') + '</div>' +
-      '<div class="given">' + q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Коя цифра трябва да се зачеркне, за да се получи вярно равенство?', 'Яку цифру треба закреслити, щоб вийшла правильна рівність?') + '</div>' +
+    '<div class="given">' + q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCross(q){
-  if(q.kind === 'cross' && q.shape === 'two'){ const l = q.shown.slice(); l[q.hit.t] = q.hit.left; return crossTwoText(q.shown, q.op) + ' → ' + crossTwoText(l, q.op) + ' → ' + q.ans; }
-  if(q.kind === 'cross') return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + tr(' → зачерква се ', ' → закреслюємо ') + q.ans;
+  if(q.shape === 'two'){ const l = q.shown.slice(); l[q.hit.t] = q.hit.left; return crossTwoText(q.shown, q.op) + ' → ' + crossTwoText(l, q.op) + ' → ' + q.ans; }
+  return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + tr(' → зачерква се ', ' → закреслюємо ') + q.ans;
 }
 function whyCross(q, full){
-  if(q.kind === 'cross' && q.shape === 'two'){
+  if(q.shape === 'two'){
     if(!full) return tr('Пресметни лявата страна — вярно ли е? Опитай да махнеш по една цифра.', 'Обчисли ліву частину — чи правильно? Спробуй прибрати по одній цифрі.');
     const l = q.shown.slice(), v = q.op === '+' ? q.shown[0] + q.shown[1] : q.shown[0] - q.shown[1];
     l[q.hit.t] = q.hit.left;
     return q.shown[0] + ' ' + q.op + ' ' + q.shown[1] + ' = ' + v + tr(', а не ', ', а не ') + q.shown[2] + ' &nbsp;→&nbsp; ' + tr('без цифрата ', 'без цифри ') + q.ans + ': <b>' + crossTwoText(l, q.op) + '</b> &nbsp;→&nbsp; ☹ = ' + q.ans;
   }
-  if(q.kind === 'cross'){
-    const names = ['първото число', 'второто число', 'третото число', 'сбора'];
-    const after = [q.A, q.B, q.C, q.D];
-    after[q.hit.t] = q.hit.left;
-    const ukIn = ['у першому числі', 'у другому числі', 'у третьому числі', 'у сумі'];
-    return !full ? tr('Пресметни лявата страна — с колко се разминава?', 'Обчисли ліву сторону — на скільки вона відрізняється від правої?')
-      : q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + (q.A + q.B + q.C) + tr(', а трябва ', ', а має бути ') + q.D +
-        ' &nbsp;→&nbsp; ' + tr((/^[вф]/.test(names[q.hit.t]) ? 'във ' : 'в ') + names[q.hit.t] + ' зачеркваме <b>',
-                               ukIn[q.hit.t] + ' закреслюємо <b>') + q.ans + '</b>: ' +
-        after[0] + ' + ' + after[1] + ' + ' + after[2] + ' = ' + after[3] + tr(' &nbsp;→&nbsp; цифрата е ', ' &nbsp;→&nbsp; це цифра ') + q.ans;
-  }
+  const names = ['първото число', 'второто число', 'третото число', 'сбора'];
+  const after = [q.A, q.B, q.C, q.D];
+  after[q.hit.t] = q.hit.left;
+  const ukIn = ['у першому числі', 'у другому числі', 'у третьому числі', 'у сумі'];
+  return !full ? tr('Пресметни лявата страна — с колко се разминава?', 'Обчисли ліву сторону — на скільки вона відрізняється від правої?')
+    : q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + (q.A + q.B + q.C) + tr(', а трябва ', ', а має бути ') + q.D +
+      ' &nbsp;→&nbsp; ' + tr((/^[вф]/.test(names[q.hit.t]) ? 'във ' : 'в ') + names[q.hit.t] + ' зачеркваме <b>',
+                             ukIn[q.hit.t] + ' закреслюємо <b>') + q.ans + '</b>: ' +
+      after[0] + ' + ' + after[1] + ' + ' + after[2] + ' = ' + after[3] + tr(' &nbsp;→&nbsp; цифрата е ', ' &nbsp;→&nbsp; це цифра ') + q.ans;
 }
 KIND.cross = { draw:drawCross, eq:eqCross, why:whyCross };

@@ -1,6 +1,4 @@
 // Question kind 'pinwheel': level 85 Четири правоъгълника — A figure of four equal rectangles, from its perimeter.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2024, задача 12: four equal rectangles, each twice as long as it is wide, make
 // the figure. Going round it: 4 long sides and 8 short ones, and two short make a long —
@@ -20,25 +18,21 @@ function pinwheelSvg(){
     '<polygon points="' + pts + '" fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round"/></svg></div>';
 }
 function drawPinwheel(q){
-  if(q.kind === 'pinwheel'){
-    const P = q.dm ? q.P/10 + ' дм' : q.P + ' см';
-    return '<div class="ask">' + tr('Фигура с обиколка <span class="num">' + P + '</span> се състои от <b>4 еднакви правоъгълника</b>. Колко сантиметра е дължината на ' +
-      (q.long ? '<b>по-голямата</b>' : '<b>по-малката</b>') + ' страна на един от тези правоъгълници?',
-      'Фігура з периметром <span class="num">' + P + '</span> складається з <b>4 однакових прямокутників</b>. Скільки сантиметрів становить довжина ' +
-      (q.long ? '<b>більшої</b>' : '<b>меншої</b>') + ' сторони одного з цих прямокутників?') + '</div>' +
-      pinwheelSvg() + '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
-  }
+  const P = q.dm ? q.P/10 + ' дм' : q.P + ' см';
+  return '<div class="ask">' + tr('Фигура с обиколка <span class="num">' + P + '</span> се състои от <b>4 еднакви правоъгълника</b>. Колко сантиметра е дължината на ' +
+    (q.long ? '<b>по-голямата</b>' : '<b>по-малката</b>') + ' страна на един от тези правоъгълници?',
+    'Фігура з периметром <span class="num">' + P + '</span> складається з <b>4 однакових прямокутників</b>. Скільки сантиметрів становить довжина ' +
+    (q.long ? '<b>більшої</b>' : '<b>меншої</b>') + ' сторони одного з цих прямокутників?') + '</div>' +
+    pinwheelSvg() + '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqPinwheel(q){
-  if(q.kind === 'pinwheel') return q.P + ' : 8 = ' + q.L + (q.long ? '' : ', ' + q.L + ' : 2 = ' + q.ans) + ' → ' + q.ans;
+  return q.P + ' : 8 = ' + q.L + (q.long ? '' : ', ' + q.L + ' : 2 = ' + q.ans) + ' → ' + q.ans;
 }
 function whyPinwheel(q, full){
-  if(q.kind === 'pinwheel'){
-    if(!full) return tr('Обиколи фигурата и преброй дългите и късите страни. Колко къси правят една дълга?',
-                        'Обійди фігуру й порахуй довгі й короткі сторони. Скільки коротких дорівнюють одній довгій?');
-    return (q.dm ? q.P/10 + ' дм = ' + q.P + tr(' см; ', ' см; ') : '') +
-      tr('наоколо има 4 дълги и 8 къси страни, а 2 къси са колкото 1 дълга → 8 дълги', 'навколо 4 довгі й 8 коротких сторін, а 2 короткі — як 1 довга → 8 довгих') +
-      ' &nbsp;→&nbsp; ' + q.P + ' : 8 = <b>' + q.L + '</b> ' + 'см' + (q.long ? '' : ' &nbsp;→&nbsp; ' + q.L + ' : 2 = ' + q.ans);
-  }
+  if(!full) return tr('Обиколи фигурата и преброй дългите и късите страни. Колко къси правят една дълга?',
+                      'Обійди фігуру й порахуй довгі й короткі сторони. Скільки коротких дорівнюють одній довгій?');
+  return (q.dm ? q.P/10 + ' дм = ' + q.P + tr(' см; ', ' см; ') : '') +
+    tr('наоколо има 4 дълги и 8 къси страни, а 2 къси са колкото 1 дълга → 8 дълги', 'навколо 4 довгі й 8 коротких сторін, а 2 короткі — як 1 довга → 8 довгих') +
+    ' &nbsp;→&nbsp; ' + q.P + ' : 8 = <b>' + q.L + '</b> ' + 'см' + (q.long ? '' : ' &nbsp;→&nbsp; ' + q.L + ' : 2 = ' + q.ans);
 }
 KIND.pinwheel = { draw:drawPinwheel, eq:eqPinwheel, why:whyPinwheel };

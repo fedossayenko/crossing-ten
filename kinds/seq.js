@@ -1,6 +1,4 @@
 // Question kind 'seq': level 26 Редица — Smaller on the left, bigger on the right.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 20: near-sorted, so a few numbers sit with everything smaller to their left
 // and everything bigger to their right. Counted directly, never inferred.
@@ -21,22 +19,18 @@ export function genSeq(){
 }
 
 function drawSeq(q){
-  if(q.kind === 'seq'){
-    return tr('<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>',
-      '<div class="ask">Скільки чисел у ряду мають ліворуч лише менші числа, а праворуч — лише більші?</div>') +
-      '<div class="seq">' + q.a.join(', ') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  return tr('<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>',
+    '<div class="ask">Скільки чисел у ряду мають ліворуч лише менші числа, а праворуч — лише більші?</div>') +
+    '<div class="seq">' + q.a.join(', ') + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqSeq(q){
-  if(q.kind === 'seq') return q.a.join(', ') + ' → ' + bgList(q.hits) + ' → ' + q.ans;
+  return q.a.join(', ') + ' → ' + bgList(q.hits) + ' → ' + q.ans;
 }
 function whySeq(q, full){
-  if(q.kind === 'seq'){
-    if(!full) return tr('Провери всяко число: всички отляво по-малки, всички отдясно по-големи.',
-      'Перевір кожне число: усі ліворуч менші, усі праворуч більші.');
-    return (q.hits.length === 1 ? tr('това е само числото <b>', 'це лише число <b>') + q.hits[0] + '</b>'
-                                : tr('това са <b>', 'це <b>') + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
-  }
+  if(!full) return tr('Провери всяко число: всички отляво по-малки, всички отдясно по-големи.',
+    'Перевір кожне число: усі ліворуч менші, усі праворуч більші.');
+  return (q.hits.length === 1 ? tr('това е само числото <b>', 'це лише число <b>') + q.hits[0] + '</b>'
+                              : tr('това са <b>', 'це <b>') + bgList(q.hits) + '</b>') + ' &nbsp;→&nbsp; ' + q.ans;
 }
 KIND.seq = { draw:drawSeq, eq:eqSeq, why:whySeq };

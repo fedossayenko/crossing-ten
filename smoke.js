@@ -254,6 +254,13 @@ const server = http.createServer((req, res) => {
     expect(kept === '400' && arc.n === had.n + 450 && arc.five, 'the archive did not bring the whole log back: ' + JSON.stringify({ kept, had, arc }));
     await run(`(async () => { await ARCHIVE.drop(PLAYER.id, 1e12 + 450*1000); LOCAL.rounds = LOCAL.rounds.filter(r => !r.id.startsWith('old')); saveLocal(); return ''; })()`);
   }
+  // The answer line's size comes from its class (.line.xl in app.css): clamp(34px, 10vw, 56px) of this window
+  {
+    const ln = await page(`(() => { S.level = 190; newRound(); const l = document.querySelector('#stage .line.xl');
+      return { size: l && getComputedStyle(l).fontSize, want: Math.min(56, Math.max(34, innerWidth / 10)) + 'px' }; })()`);
+    expect(ln.size && ln.size === ln.want, 'the answer line is not sized by its class: ' + JSON.stringify(ln));
+    await run(`localStorage.removeItem(RS); newRound(); 1`);
+  }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){

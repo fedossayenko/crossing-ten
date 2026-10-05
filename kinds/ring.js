@@ -1,6 +1,4 @@
 // Question kind 'ring': level 115 Децата в кръг — Children in a circle, counted from both sides.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Зима 2020, задача 19: to Петър's left, between him and Иван, 4 children; to his right 6. The
 // two groups fill the circle between the two boys — and the boys themselves count: 4 + 6 + 2 = 12.
@@ -10,14 +8,12 @@ export function genRing(){
   return {kind:'ring', l, r, ans: l + r + 2};
 }
 function drawRing(q){
-  if(q.kind === 'ring'){
-    return '<div class="ask">' + tr('Няколко деца са наредени в кръг. Отляво на Петър, между Петър и Иван, има <span class="num">' + q.l + '</span> ' + (q.l === 1 ? 'дете' : 'деца') + '. Отдясно на Петър, между Петър и Иван, има <span class="num">' + q.r + '</span> ' + (q.r === 1 ? 'дете' : 'деца') + '. Колко общо са децата в кръга?',
-      'Кілька дітей стоять у колі. Ліворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.l, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Праворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.r, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Скільки всього дітей у колі?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Няколко деца са наредени в кръг. Отляво на Петър, между Петър и Иван, има <span class="num">' + q.l + '</span> ' + (q.l === 1 ? 'дете' : 'деца') + '. Отдясно на Петър, между Петър и Иван, има <span class="num">' + q.r + '</span> ' + (q.r === 1 ? 'дете' : 'деца') + '. Колко общо са децата в кръга?',
+    'Кілька дітей стоять у колі. Ліворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.l, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Праворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.r, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Скільки всього дітей у колі?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqRing(q){
-  if(q.kind === 'ring') return q.l + ' + ' + q.r + ' + 2 = ' + q.ans;
+  return q.l + ' + ' + q.r + ' + 2 = ' + q.ans;
 }
 // The circle, drawn for the hint and the solution. Петър at the bottom, the children to his left
 // going one way round to Иван, those to his right the other way. The hint shows only the two boys
@@ -50,9 +46,7 @@ export function ringSvg(q, full){
   return '<svg viewBox="-12 -12 224 224" style="display:block; width:170px; max-width:100%; margin:4px auto 0" role="img" aria-label="' + tr('децата в кръга', 'діти в колі') + '">' + g + '</svg>';
 }
 function whyRing(q, full){
-  if(q.kind === 'ring'){
-    if(!full) return tr('Кой още е в кръга, освен децата между двете момчета?', 'Хто ще в колі, крім дітей між двома хлопцями?') + ringSvg(q, false);
-    return q.l + tr(' отляво и ', ' ліворуч і ') + q.r + tr(' отдясно, и самите Петър и Иван', ' праворуч, і самі Петро та Іван') + ' &nbsp;→&nbsp; ' + q.l + ' + ' + q.r + ' + 2 = ' + q.ans + ringSvg(q, true);
-  }
+  if(!full) return tr('Кой още е в кръга, освен децата между двете момчета?', 'Хто ще в колі, крім дітей між двома хлопцями?') + ringSvg(q, false);
+  return q.l + tr(' отляво и ', ' ліворуч і ') + q.r + tr(' отдясно, и самите Петър и Иван', ' праворуч, і самі Петро та Іван') + ' &nbsp;→&nbsp; ' + q.l + ' + ' + q.r + ' + 2 = ' + q.ans + ringSvg(q, true);
 }
 KIND.ring = { draw:drawRing, eq:eqRing, why:whyRing };

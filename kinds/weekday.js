@@ -1,6 +1,4 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
@@ -96,36 +94,36 @@ const weekdayPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').
 const weekdayDays = n => n + ' ' + weekdayPl(n, 'день', 'дні', 'днів');
 
 function drawWeekday(q){
-  if(q.kind === 'weekday' && q.shape === 'shift'){
+  if(q.shape === 'shift'){
     const [a, b] = SHIFT_WHO[q.who];
     return '<div class="ask">' + tr('Рожденият ден на ' + a[0] + ' е ' + shiftIn(q.d0) + ', а рожденият ден на ' + b[0] + ' е <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'ден' : 'дни') + ' по-късно – ' + shiftIn(q.d1) +
       '. Моят рожден ден ще бъде <span class="num">' + q.m + '</span> дни след рождения ден на ' + b[0] + '. <b>В кой ден от седмицата</b> ще е моят рожден ден?',
       'День народження ' + a[1] + ' — ' + shiftInUk(q.d0) + ', а день народження мого ' + b[1] + ' — на <span class="num">' + q.k + '</span> ' + weekdayPl(q.k, 'день', 'дні', 'днів') + ' пізніше, ' + shiftInUk(q.d1) +
       '. Мій день народження буде через <span class="num">' + q.m + '</span> ' + weekdayPl(q.m, 'день', 'дні', 'днів') + ' після дня народження ' + b[1] + '. <b>Яким днем тижня</b> буде мій день народження?') + '</div>';
   }
-  if(q.kind === 'weekday' && q.shape === 'bound'){
+  if(q.shape === 'bound'){
     return '<div class="ask">' + tr('Колко <b>най-' + (q.most ? 'много' : 'малко') + '</b> ' + q.day.cnt +
       ' може да има сред <span class="num">' + q.n + '</span> последователни дни от календара?',
       'Скільки <b>' + (q.most ? 'найбільше' : 'найменше') + '</b> ' + weekdayUk[q.day.nm].many +
       ' може бути за <span class="num">' + q.n + '</span> ' + weekdayPl(q.n, 'день', 'дні', 'днів') + ' календаря поспіль?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'weekday' && q.shape === 'which'){
+  if(q.shape === 'which'){
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
       '</b>. Кой ден от седмицата ще бъде <b>' + q.n + '-ият</b> ден на същия месец?',
       'Перший день <b>' + weekdayMonUk[q.mon[0]][1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm +
       '</b>. Яким днем тижня буде <b>' + q.n + '-й</b> день цього місяця?') + '</div>' +
       '<div class="note">' + DAYS.map((d, i) => (i + 1) + ' ' + tr(d.nm, weekdayUk[d.nm].nm)).join(' · ') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'weekday' && q.shape === 'after'){
+  if(q.shape === 'after'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm + '</b>. Колко <b>' + q.day.cnt + '</b> има през ' + q.mon[0] + ' <b>след</b> първия ден?',
       'Перший день <b>' + m[1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm + '</b>. Скільки <b>' + u.many + '</b> у ' + m[2] + ' <b>після</b> першого дня?') + '</div>' +
       '<div class="note">' + tr('Месец ' + q.mon[0] + ' има ' + q.mon[1] + ' дни.', 'У ' + m[2] + ' ' + weekdayDays(q.mon[1]) + '.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'weekday' && q.shape === 'last'){
+  if(q.shape === 'last'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
       '</b>. На коя дата ще е <b>' + (q.day.f ? 'последната ' : 'последният ') + q.day.nm +
@@ -134,32 +132,30 @@ function drawWeekday(q){
       '</b>. Якого числа буде <b>' + (u.f ? 'остання ' : 'останній ') + u.nm + '</b> ' + m[1] + '?') + '</div>' +
       '<div class="note">' + tr('Месец ' + q.mon[0] + ' има ' + q.mon[1] + ' дни.',
       'У ' + m[2] + ' ' + weekdayDays(q.mon[1]) + '.') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+      '<div class="line xl">' + SLOT + '</div>';
   }
-  if(q.kind === 'weekday'){
-    return '<div class="ask">' + tr('Колко <b>' + q.day.cnt + '</b> може да има сред <span class="num">' + q.n +
-      '</span> последователни дни?',
-      'Скільки <b>' + weekdayUk[q.day.nm].many + '</b> може бути за <span class="num">' + q.n +
-      '</span> ' + weekdayPl(q.n, 'день', 'дні', 'днів') + ' поспіль?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT +
-      ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
-  }
+  return '<div class="ask">' + tr('Колко <b>' + q.day.cnt + '</b> може да има сред <span class="num">' + q.n +
+    '</span> последователни дни?',
+    'Скільки <b>' + weekdayUk[q.day.nm].many + '</b> може бути за <span class="num">' + q.n +
+    '</span> ' + weekdayPl(q.n, 'день', 'дні', 'днів') + ' поспіль?') + '</div>' +
+    '<div class="line lg">' + SLOT +
+    ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
 }
 const afterDates = q => { const r = []; for(let d = q.first; d <= q.mon[1]; d += 7) r.push(d); return r; };
 function eqWeekday(q){
-  if(q.kind === 'weekday' && q.shape === 'after') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + afterDates(q).join(', ') + ' → ' + q.ans;
-  if(q.kind === 'weekday' && q.shape === 'shift') return tr(DAYS[q.d1].nm, weekdayUk[DAYS[q.d1].nm].nm) + ' + ' + q.m + ' → ' + tr(DAYS[q.at].nm, weekdayUk[DAYS[q.at].nm].nm);
-  if(q.kind === 'weekday' && q.shape === 'bound') return tr(q.n + ' дни → най-' + (q.most ? 'много ' : 'малко ') + q.ans,
+  if(q.shape === 'after') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + afterDates(q).join(', ') + ' → ' + q.ans;
+  if(q.shape === 'shift') return tr(DAYS[q.d1].nm, weekdayUk[DAYS[q.d1].nm].nm) + ' + ' + q.m + ' → ' + tr(DAYS[q.at].nm, weekdayUk[DAYS[q.at].nm].nm);
+  if(q.shape === 'bound') return tr(q.n + ' дни → най-' + (q.most ? 'много ' : 'малко ') + q.ans,
     weekdayDays(q.n) + ' → ' + (q.most ? 'найбільше ' : 'найменше ') + q.ans);
-  if(q.kind === 'weekday' && q.shape === 'which') return tr(q.mon[0] + ', 1-ви е ' + q.d1.nm + ', ден ' +
+  if(q.shape === 'which') return tr(q.mon[0] + ', 1-ви е ' + q.d1.nm + ', ден ' +
     q.n + ' → ' + DAYS[q.ans - 1].nm + ' (' + q.ans + ')',
     '1 ' + weekdayMonUk[q.mon[0]][1] + ' — ' + weekdayUk[q.d1.nm].nm + ', ' + q.n + '-й день → ' +
     weekdayUk[DAYS[q.ans - 1].nm].nm + ' (' + q.ans + ')');
-  if(q.kind === 'weekday' && q.shape === 'last') return tr(q.mon[0] + ', 1-ви е ' + q.d1.nm + ' → ' +
+  if(q.shape === 'last') return tr(q.mon[0] + ', 1-ви е ' + q.d1.nm + ' → ' +
     q.day.nm + ' от ' + q.first + ' нататък → ' + q.ans,
     '1 ' + weekdayMonUk[q.mon[0]][1] + ' — ' + weekdayUk[q.d1.nm].nm + ' → ' +
     weekdayUk[q.day.nm].nm + ' з ' + q.first + '-го і далі → ' + q.ans);
-  if(q.kind === 'weekday') return tr(q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt,
+  return tr(q.n + ' дни → ' + q.q + ' или ' + (q.q + 1) + ' ' + q.day.cnt,
     weekdayDays(q.n) + ' → ' + q.q + ' або ' + (q.q + 1) + ' ' +
     weekdayPl(q.q + 1, '', weekdayUk[q.day.nm].few, weekdayUk[q.day.nm].many));
 }
@@ -202,7 +198,7 @@ function weekdaySvg(q){
   return svg(196, rows * C + 32, g);
 }
 function whyWeekday(q, full){
-  if(q.kind === 'weekday' && q.shape === 'shift'){
+  if(q.shape === 'shift'){
     if(!full) return tr('Тръгни от деня на ' + SHIFT_WHO[q.who][1][0] + ' и брой дните напред по пръсти.', 'Почни від дня ' + SHIFT_WHO[q.who][1][1] + ' і рахуй дні вперед на пальцях.');
     const nm = i => tr(DAYS[i].nm, weekdayUk[DAYS[i].nm].nm), walk = [];
     for(let j = 1; j <= q.m; j++) walk.push(nm((q.d1 + j) % 7) + ' ' + j);

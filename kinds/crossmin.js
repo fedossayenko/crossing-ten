@@ -1,6 +1,4 @@
 // Question kind 'crossmin': level 166 Зачеркни за най-малко — One digit crossed out of a sum, for the smallest or largest total.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2023, 1 клас, задача 14: which digit of 19 + 23 to cross out for the smallest sum?
 // Every try: 9 + 23 = 32, 1 + 23 = 24, 19 + 3 = 22, 19 + 2 = 21 — the smallest is 21, so the 3.
@@ -45,33 +43,29 @@ export function genCrossMin(){
 }
 const crossSum = q => q.shape === 'three' ? q.ns.join(' + ') : q.x + ' + ' + q.y;
 function drawCrossMin(q){
-  if(q.kind === 'crossmin' && q.shape === 'three'){
+  if(q.shape === 'three'){
     return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + crossSum(q) + '</span>, така че да се получи <b>' + (q.least ? 'най-малък' : 'най-голям') + '</b> сбор?',
       'Яку цифру треба закреслити в <span class="num">' + crossSum(q) + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
+      '<div class="line lg">' + SLOT + '</div>';
   }
-  if(q.kind === 'crossmin'){
-    return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + q.x + ' + ' + q.y + '</span>, така че да се получи <b>' + (q.least ? 'най-малкият' : 'най-големият') + '</b> сбор?',
-      'Яку цифру треба закреслити в <span class="num">' + q.x + ' + ' + q.y + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + q.x + ' + ' + q.y + '</span>, така че да се получи <b>' + (q.least ? 'най-малкият' : 'най-големият') + '</b> сбор?',
+    'Яку цифру треба закреслити в <span class="num">' + q.x + ' + ' + q.y + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
 }
 function eqCrossMin(q){
-  if(q.kind === 'crossmin') return crossSum(q) + ', ' + tr(q.least ? 'най-малък ' : 'най-голям ', q.least ? 'найменша ' : 'найбільша ') + q.best + ' → ' + q.ans;
+  return crossSum(q) + ', ' + tr(q.least ? 'най-малък ' : 'най-голям ', q.least ? 'найменша ' : 'найбільша ') + q.best + ' → ' + q.ans;
 }
 function whyCrossMin(q, full){
-  if(q.kind === 'crossmin'){
-    if(!full) return tr('Зачеркни всяка цифра поред и пресметни сбора, който остава. После сравни.',
-      'Закресли по черзі кожну цифру й обчисли суму, що лишається. Потім порівняй.');
-    if(q.shape === 'three'){
-      // every try written out, the crossed digit struck through where it stands
-      const one = t => q.ns.map((n, k) => k === t[0] ? String(n).split('').map((d, j) => j === t[1] ? '<s>' + d + '</s>' : d).join('') : n).join(' + ');
-      return crossThreeTries(q.ns).map(t => one(t) + ' = ' + (t[3] === q.best ? '<b>' + t[3] + '</b>' : t[3])).join(', &nbsp;') +
-        ' &nbsp;→&nbsp; ' + tr(q.least ? 'най-малкият е ' : 'най-големият е ', q.least ? 'найменша — ' : 'найбільша — ') + q.best + tr(', зачеркваме ', ', закреслюємо ') + q.ans;
-    }
-    const [x, y] = [String(q.x), String(q.y)], rest = [x[1] + ' + ' + y, x[0] + ' + ' + y, x + ' + ' + y[1], x + ' + ' + y[0]];
-    return crossTries(q.x, q.y).map((t, i) => '<s>' + t[0] + '</s>: ' + rest[i] + ' = ' + (t[1] === q.best ? '<b>' + t[1] + '</b>' : t[1])).join(', &nbsp;') +
+  if(!full) return tr('Зачеркни всяка цифра поред и пресметни сбора, който остава. После сравни.',
+    'Закресли по черзі кожну цифру й обчисли суму, що лишається. Потім порівняй.');
+  if(q.shape === 'three'){
+    // every try written out, the crossed digit struck through where it stands
+    const one = t => q.ns.map((n, k) => k === t[0] ? String(n).split('').map((d, j) => j === t[1] ? '<s>' + d + '</s>' : d).join('') : n).join(' + ');
+    return crossThreeTries(q.ns).map(t => one(t) + ' = ' + (t[3] === q.best ? '<b>' + t[3] + '</b>' : t[3])).join(', &nbsp;') +
       ' &nbsp;→&nbsp; ' + tr(q.least ? 'най-малкият е ' : 'най-големият е ', q.least ? 'найменша — ' : 'найбільша — ') + q.best + tr(', зачеркваме ', ', закреслюємо ') + q.ans;
   }
+  const [x, y] = [String(q.x), String(q.y)], rest = [x[1] + ' + ' + y, x[0] + ' + ' + y, x + ' + ' + y[1], x + ' + ' + y[0]];
+  return crossTries(q.x, q.y).map((t, i) => '<s>' + t[0] + '</s>: ' + rest[i] + ' = ' + (t[1] === q.best ? '<b>' + t[1] + '</b>' : t[1])).join(', &nbsp;') +
+    ' &nbsp;→&nbsp; ' + tr(q.least ? 'най-малкият е ' : 'най-големият е ', q.least ? 'найменша — ' : 'найбільша — ') + q.best + tr(', зачеркваме ', ', закреслюємо ') + q.ans;
 }
 KIND.crossmin = { draw:drawCrossMin, eq:eqCrossMin, why:whyCrossMin };

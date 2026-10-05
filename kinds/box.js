@@ -1,6 +1,4 @@
 // Question kind 'box': level 11 6 − ◯ — Find the hidden number — or two of them — then use it.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 2 and 4: the two sides say the same thing. One side can be worked out, and the
 // unknown is then read off the other — which way round the box sits decides the last step.
@@ -70,13 +68,13 @@ export function genBox(){
 }
 
 function drawBox(q){
-  if(q.kind === 'box' && q.shape === 'sym'){
+  if(q.shape === 'sym'){
     const c = x => '<span class="circle">' + x + '</span>';
     return '<div class="ask">' + (q.most ? tr('Колко <b>най-много</b> може да е ', 'Яким <b>найбільшим</b> може бути ') : tr('На колко е равно ', 'Чому дорівнює ')) + c('☺') + tr(', ако', ', якщо') + '</div>' +
       '<div class="given">' + q.a + ' + ' + q.b + ' = ' + c('●') + ', &nbsp;' + c('●') + ' − ' + q.c + ' = ' + c('■') + ', &nbsp;' + c('■') + ' + ' + c('☺') + ' &lt; ' + q.T + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + c('☺') + ' = ' + SLOT + '</div>';
+      '<div class="line lg">' + c('☺') + ' = ' + SLOT + '</div>';
   }
-  if(q.kind === 'box' && q.shape === 'bal'){
+  if(q.shape === 'bal'){
     const B = '<span class="circle">□</span>';
     const left = q.x + (q.plus ? ' + ' : ' − ') + q.y;
     const right = (q.form === 0 || q.form === 3) ? q.N + ' − ' + B
@@ -85,35 +83,35 @@ function drawBox(q){
       ', така че да е вярно равенството?', 'Яке число треба поставити замість ' + B +
       ', щоб рівність була правильною?') + '</div>' +
       '<div class="given">' + left + ' = ' + right + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + B + ' = ' + SLOT + '</div>';
+      '<div class="line xl">' + B + ' = ' + SLOT + '</div>';
   }
-  if(q.kind === 'box' && q.shape === 'plus'){
+  if(q.shape === 'plus'){
     const sq = '<span class="circle">■</span>';
     return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + sq + ' − <span class="num">' + q.p + '</span>' + tr(', ако', ', якщо') + '</div>' +
       '<div class="given">' + q.g + ' + ' + sq + ' = ' + q.S + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + sq + ' − ' + q.p +
+      '<div class="line lg">' + sq + ' − ' + q.p +
       ' = ' + SLOT + '</div>';
   }
-  if(q.kind === 'box' && q.shape === 'two'){
+  if(q.shape === 'two'){
     const sym = c => '<span class="circle">' + c + '</span>';
     return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + sym('■') + ' + ' + sym('□') + tr(', ако', ', якщо') + '</div>' +
       '<div class="given">' + q.p + ' + ' + sym('□') + ' = ' + (q.p + q.tri) + ' &nbsp;' + tr('и', 'і') + '&nbsp; ' +
       q.r + ' + ' + sym('■') + ' = ' + (q.r + q.sq) + '</div>' +
-      '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + sym('■') + ' + ' + sym('□') +
+      '<div class="line lg">' + sym('■') + ' + ' + sym('□') +
       ' = ' + SLOT + '</div>';
   }
   return '<div class="ask">' + tr('Пресметни, ако', 'Обчисли, якщо') + '</div>' +
     '<div class="given">' + q.b + ' − <span class="circle">◯</span> = ' + q.x + ' − ' + q.y + '</div>' +
-    '<div class="line" style="font-size:clamp(30px,9vw,50px)">' + q.a +
+    '<div class="line lg">' + q.a +
     ' − <span class="circle">◯</span> = ' + SLOT + '</div>';
 }
 function eqBox(q){
-  if(q.kind === 'box' && q.shape === 'sym') return '● = ' + q.X + ', ■ = ' + q.Y + ', ' + q.Y + ' + ☺ < ' + q.T + ' → ' + q.ans;
-  if(q.kind === 'box' && q.shape === 'bal') return q.x + (q.plus ? '+' : '−') + q.y + ' = ' + q.L +
+  if(q.shape === 'sym') return '● = ' + q.X + ', ■ = ' + q.Y + ', ' + q.Y + ' + ☺ < ' + q.T + ' → ' + q.ans;
+  if(q.shape === 'bal') return q.x + (q.plus ? '+' : '−') + q.y + ' = ' + q.L +
     ' → □ = ' + q.ans;
-  if(q.kind === 'box' && q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
-  if(q.kind === 'box' && q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
-  if(q.kind === 'box') return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
+  if(q.shape === 'plus') return '■ = ' + q.S + ' − ' + q.g + ' = ' + q.box + ' → ' + q.ans;
+  if(q.shape === 'two') return '□ = ' + q.tri + ', ■ = ' + q.sq + ' → ' + q.ans;
+  return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
 }
 function whyBox(q, full){
   if(q.shape === 'sym'){

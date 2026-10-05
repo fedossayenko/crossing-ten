@@ -1,6 +1,4 @@
 // Question kind 'datespan': level 151 От дата до дата — Days from one date to another, both counted, and so many each day.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно 2022, задача 5: on 23 March Дончо watched episodes 1 and 2, and every day up to 5 May inclusive two new
 // ones. March 23–31 is 9 days, April 30, May 1–5 is 5: 44 days, 88 episodes. The first day is one of the
@@ -26,16 +24,14 @@ export function genDateSpan(){
 }
 const SPAN_K = [['', ''], ['първа серия', 'першу серію'], ['първа и втора серия', 'першу й другу серії'], ['първите три серии', 'перші три серії']];
 function drawDateSpan(q){
-  if(q.kind === 'datespan'){
-    const [m1, u1] = SPAN_MONTHS[q.i], [m2, u2] = SPAN_MONTHS[q.j], per = [['', ''], ['по една нова серия', 'по одній новій серії'], ['по две нови серии', 'по дві нові серії'], ['по три нови серии', 'по три нові серії']][q.k];
-    return '<div class="ask">' + tr('На <span class="num">' + q.d1 + '</span> ' + m1 + ' Дончо гледал ' + SPAN_K[q.k][0] + ' на любимия си филм. Всеки ден до <span class="num">' + q.d2 + '</span> ' + m2 +
-      ' <b>включително</b> продължил да гледа ' + per[0] + '. ' + (q.asksDays ? 'Колко дни е гледал Дончо филма?' : 'Колко серии е гледал Дончо?'),
-      '<span class="num">' + q.d1 + '</span> ' + u1 + ' Дончо подивився ' + SPAN_K[q.k][1] + ' улюбленого фільму. Щодня до <span class="num">' + q.d2 + '</span> ' + u2 +
-      ' <b>включно</b> він дивився ' + per[1] + '. ' + (q.asksDays ? 'Скільки днів Дончо дивився фільм?' : 'Скільки серій подивився Дончо?')) + '</div>' +
-      // the months she has to count through in full: their lengths are given, as a calendar would show them
-      '<div class="note">' + SPAN_MONTHS.slice(q.i, q.j).map(M => tr(M[0] + ' има ' + M[2] + ' дни', M[3] + ' — ' + ukN(M[2], 'день', 'дні', 'днів'))).join('; ') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  const [m1, u1] = SPAN_MONTHS[q.i], [m2, u2] = SPAN_MONTHS[q.j], per = [['', ''], ['по една нова серия', 'по одній новій серії'], ['по две нови серии', 'по дві нові серії'], ['по три нови серии', 'по три нові серії']][q.k];
+  return '<div class="ask">' + tr('На <span class="num">' + q.d1 + '</span> ' + m1 + ' Дончо гледал ' + SPAN_K[q.k][0] + ' на любимия си филм. Всеки ден до <span class="num">' + q.d2 + '</span> ' + m2 +
+    ' <b>включително</b> продължил да гледа ' + per[0] + '. ' + (q.asksDays ? 'Колко дни е гледал Дончо филма?' : 'Колко серии е гледал Дончо?'),
+    '<span class="num">' + q.d1 + '</span> ' + u1 + ' Дончо подивився ' + SPAN_K[q.k][1] + ' улюбленого фільму. Щодня до <span class="num">' + q.d2 + '</span> ' + u2 +
+    ' <b>включно</b> він дивився ' + per[1] + '. ' + (q.asksDays ? 'Скільки днів Дончо дивився фільм?' : 'Скільки серій подивився Дончо?')) + '</div>' +
+    // the months she has to count through in full: their lengths are given, as a calendar would show them
+    '<div class="note">' + SPAN_MONTHS.slice(q.i, q.j).map(M => tr(M[0] + ' има ' + M[2] + ' дни', M[3] + ' — ' + ukN(M[2], 'день', 'дні', 'днів'))).join('; ') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function spanParts(q){
   const parts = [SPAN_MONTHS[q.i][2] - q.d1 + 1];
@@ -43,15 +39,13 @@ function spanParts(q){
   return parts.concat(q.d2);
 }
 function eqDateSpan(q){
-  if(q.kind === 'datespan') return spanParts(q).join(' + ') + ' = ' + q.days + (q.asksDays ? '' : ', ' + q.days + ' · ' + q.k + ' = ' + q.ans);
+  return spanParts(q).join(' + ') + ' = ' + q.days + (q.asksDays ? '' : ', ' + q.days + ' · ' + q.k + ' = ' + q.ans);
 }
 function whyDateSpan(q, full){
-  if(q.kind === 'datespan'){
-    if(!full) return tr('Брой дните по месеци: колко остават от първия, колко са целите месеци, колко от последния. И първият, и последният ден се броят.',
-                        'Рахуй дні за місяцями: скільки лишається від першого, скільки в цілих місяцях, скільки в останньому. І перший, і останній день рахуються.');
-    const p = spanParts(q), L = SPAN_MONTHS[q.i][2];
-    return L + ' − ' + q.d1 + ' + 1 = ' + p[0] + ', ' + (p.length > 2 ? p.slice(1, -1).join(', ') + ', ' : '') + q.d2 + ' &nbsp;→&nbsp; ' + p.join(' + ') + ' = <b>' + q.days + '</b>' +
-      (q.asksDays ? '' : ' &nbsp;→&nbsp; ' + (q.k === 1 ? q.ans : Array(Math.min(q.k, 3)).fill(q.days).join(' + ') + ' = ' + q.ans));
-  }
+  if(!full) return tr('Брой дните по месеци: колко остават от първия, колко са целите месеци, колко от последния. И първият, и последният ден се броят.',
+                      'Рахуй дні за місяцями: скільки лишається від першого, скільки в цілих місяцях, скільки в останньому. І перший, і останній день рахуються.');
+  const p = spanParts(q), L = SPAN_MONTHS[q.i][2];
+  return L + ' − ' + q.d1 + ' + 1 = ' + p[0] + ', ' + (p.length > 2 ? p.slice(1, -1).join(', ') + ', ' : '') + q.d2 + ' &nbsp;→&nbsp; ' + p.join(' + ') + ' = <b>' + q.days + '</b>' +
+    (q.asksDays ? '' : ' &nbsp;→&nbsp; ' + (q.k === 1 ? q.ans : Array(Math.min(q.k, 3)).fill(q.days).join(' + ') + ' = ' + q.ans));
 }
 KIND.datespan = { draw:drawDateSpan, eq:eqDateSpan, why:whyDateSpan };

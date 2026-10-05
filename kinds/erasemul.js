@@ -1,6 +1,4 @@
 // Question kind 'erasemul': level 64 Изтрий цифри — Erase digits from a product so that it makes the number asked for.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Есен, 3 клас, задача 6: erase three digits in 12 · 31 · 41 so the result is 24; the sum
 // of the erased digits. With the three 1s gone it is 2 · 3 · 4 = 24, so 3. Each number keeps a
@@ -36,21 +34,17 @@ export function genEraseMul(){
   }
 }
 function drawEraseMul(q){
-  if(q.kind === 'erasemul'){
-    return '<div class="ask">' + tr('Изтрийте <b>три</b> цифри в израза', 'Зітріть <b>три</b> цифри у виразі') + '</div>' +
-      '<div class="given">' + q.nums.join(' · ') + '</div>' +
-      '<div class="ask">' + tr('така че резултатът да бъде <span class="num">' + q.T + '</span>. Колко е сборът от изтритите цифри?',
-        'так, щоб результат дорівнював <span class="num">' + q.T + '</span>. Чому дорівнює сума зітертих цифр?') + '</div>' +
-      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + tr('Изтрийте <b>три</b> цифри в израза', 'Зітріть <b>три</b> цифри у виразі') + '</div>' +
+    '<div class="given">' + q.nums.join(' · ') + '</div>' +
+    '<div class="ask">' + tr('така че резултатът да бъде <span class="num">' + q.T + '</span>. Колко е сборът от изтритите цифри?',
+      'так, щоб результат дорівнював <span class="num">' + q.T + '</span>. Чому дорівнює сума зітертих цифр?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
 }
 function eqEraseMul(q){
-  if(q.kind === 'erasemul') return q.kept.join(' · ') + ' = ' + q.T + ' → ' + q.gone.join(' + ') + ' = ' + q.ans;
+  return q.kept.join(' · ') + ' = ' + q.T + ' → ' + q.gone.join(' + ') + ' = ' + q.ans;
 }
 function whyEraseMul(q, full){
-  if(q.kind === 'erasemul'){
-    if(!full) return tr('Кои три множителя, останали от числата, дават ' + q.T + '?', 'Які три множники, що залишаться від чисел, дають ' + q.T + '?');
-    return q.kept.join(' · ') + ' = ' + q.T + ' &nbsp;→&nbsp; ' + tr('изтрити: ', 'зітерто: ') + q.gone.join(' + ') + ' = ' + q.ans;
-  }
+  if(!full) return tr('Кои три множителя, останали от числата, дават ' + q.T + '?', 'Які три множники, що залишаться від чисел, дають ' + q.T + '?');
+  return q.kept.join(' · ') + ' = ' + q.T + ' &nbsp;→&nbsp; ' + tr('изтрити: ', 'зітерто: ') + q.gone.join(' + ') + ' = ' + q.ans;
 }
 KIND.erasemul = { draw:drawEraseMul, eq:eqEraseMul, why:whyEraseMul };

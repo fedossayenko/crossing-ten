@@ -1,6 +1,4 @@
 // Question kind 'isotri': level 90 Равнобедрени — Triangles on a grid: which have two equal sides.
-// Generator, drawing, summary line and hints for this kind all live here; the level
-// itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Коледно състезание 2025, задача 1: seven triangles on squared paper, how many are NOT
 // isosceles (4). On a grid the tell is the apex: straight over the middle of a flat side,
@@ -54,22 +52,18 @@ function isoTriSvg(q){
     '<g stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3">' + grid + '</g>' + shapes + nums + '</svg></div>';
 }
 function drawIsoTri(q){
-  if(q.kind === 'isotri'){
-    return '<div class="ask">' + (q.asksNot ? tr('Колко от триъгълниците на чертежа <b>не са</b> равнобедрени?', 'Скільки трикутників на рисунку <b>не є</b> рівнобедреними?')
-                                            : tr('Колко от триъгълниците на чертежа са <b>равнобедрени</b>?', 'Скільки трикутників на рисунку є <b>рівнобедреними</b>?')) + '</div>' +
-      isoTriSvg(q) + '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
-  }
+  return '<div class="ask">' + (q.asksNot ? tr('Колко от триъгълниците на чертежа <b>не са</b> равнобедрени?', 'Скільки трикутників на рисунку <b>не є</b> рівнобедреними?')
+                                          : tr('Колко от триъгълниците на чертежа са <b>равнобедрени</b>?', 'Скільки трикутників на рисунку є <b>рівнобедреними</b>?')) + '</div>' +
+    isoTriSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqIsoTri(q){
-  if(q.kind === 'isotri') return tr('равнобедрени: ', 'рівнобедрені: ') + q.iso.map((v, i) => v ? i + 1 : 0).filter(Boolean).join(', ') + ' → ' + q.ans;
+  return tr('равнобедрени: ', 'рівнобедрені: ') + q.iso.map((v, i) => v ? i + 1 : 0).filter(Boolean).join(', ') + ' → ' + q.ans;
 }
 function whyIsoTri(q, full){
-  if(q.kind === 'isotri'){
-    if(!full) return tr('Равнобедрен е, когато две от страните му са равни: върхът е точно над средата, или двата катета са еднакво дълги.',
-                        'Рівнобедрений — коли дві його сторони рівні: вершина точно над серединою або два катети однакові.');
-    const yes = q.iso.map((v, i) => v ? i + 1 : 0).filter(Boolean), no = q.iso.map((v, i) => v ? 0 : i + 1).filter(Boolean);
-    return tr('равнобедрени са ', 'рівнобедрені: ') + yes.join(', ') + tr('; не са ', '; ні: ') + no.join(', ') +
-      ' &nbsp;→&nbsp; ' + (q.asksNot ? no.length : yes.length);
-  }
+  if(!full) return tr('Равнобедрен е, когато две от страните му са равни: върхът е точно над средата, или двата катета са еднакво дълги.',
+                      'Рівнобедрений — коли дві його сторони рівні: вершина точно над серединою або два катети однакові.');
+  const yes = q.iso.map((v, i) => v ? i + 1 : 0).filter(Boolean), no = q.iso.map((v, i) => v ? 0 : i + 1).filter(Boolean);
+  return tr('равнобедрени са ', 'рівнобедрені: ') + yes.join(', ') + tr('; не са ', '; ні: ') + no.join(', ') +
+    ' &nbsp;→&nbsp; ' + (q.asksNot ? no.length : yes.length);
 }
 KIND.isotri = { draw:drawIsoTri, eq:eqIsoTri, why:whyIsoTri };
