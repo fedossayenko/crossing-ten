@@ -111,16 +111,20 @@ plain view functions with one `render()` per view. Decided by R0 on one real scr
 Not one batch: a data change and a structure change must fail separately. Phase A makes every later step
 provably safe: after it, any change to what a child sees fails unless re-recorded on purpose.
 
-### Phase A — safety net (first)
-- **A1. Seeded generator, seeded pins, paper files** (#5, #6, merge 5): one seeded PRNG in `js/core.js`
-  (mulberry32) used by the app and the checks; capture the real `Math.random` once in the harness;
-  `pin(…, seed)` replays one draw, a miss searches and fails "seed stale, now at seed N", `--repin`
-  rewrites; papers become `papers/<id>.js` (names ×3 languages, date, tasks → level, seed, key); the 39
-  never-exact pins get exact instances.
-- **A2. Golden output**: `draw`/`eq`/`why` for every level × 50 seeds, both languages → `check/golden.json`.
-- **A3. Registries derived** (#3, #4, #11): `IDS` from `LEVELS` with a commented skip list (triage the 18
-  failing levels), check files by `readdir`, the level-table check on the loaded `LEVELS`, kinds ↔ script
-  list agree.
+### Phase A — safety net — DONE 2026-10-05 (ce91529, 9d5ce51)
+- **A1.** Printed tasks replay from seeds in `check/seeds.json` (356 pins); a stale seed fails naming the
+  new one, `--repin` records; one real `Math.random` under the harness. check.js 165 s → ~60 s CPU.
+  Corrections to the plan: the 39 papers.js pins that never matched exactly are *meant* to accept the same
+  question with other numbers (long chains) — they now replay a seed for that match. The seeded generator
+  lives in check.js for now; it moves to `js/core.js` with B1, when the app stores a seed per task.
+  Paper data files (names, dates, tasks) move to R5, where the countdown needs them.
+- **A2.** `check/golden.json`: a hash of everything every level shows (30 seeds, bg + uk, hint, solution,
+  options); `--golden` records. Proven to catch a one-word hint change.
+- **A3.** All 195 levels get the per-level rules (37 were skipped); exemptions per rule and level with
+  reasons (`NOT` in check/levels.js); the level table read as the app loads it (unique ids, d, groups,
+  prerequisites exist, no loops, all reachable — the two ordering rules stay with the 57 autumn rows, as
+  other papers' groundwork may be harder than what it unlocks); check files and kind files found by name.
+  Fixed on the way: Ukrainian hints of 146 and 150.
 
 ### Phase B — her data, one migration (before ~2026-11-01)
 - **B1. Rounds in IndexedDB, no cap, new round format** (#1, #2, #10, merges 1–2): per-task records with
