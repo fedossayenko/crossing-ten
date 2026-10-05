@@ -1,37 +1,45 @@
-/* The look follows the design canvas ("Десетка – редизайн на Crossing Ten"): a toned
-   ground with soft colour washes behind glass cards, capsule buttons with one tinted main
-   action per screen, and big targets for a seven-year-old - 56px buttons, 60px keys. */
+/* The look follows the design canvas "Десетка 2026 — Crossing Ten в стила на Apple": a light, flat ground
+   with two faint washes; content on solid white surfaces (a hairline and a soft shadow); glass only for the
+   chrome above it — the level pill and the round buttons; one tinted main action per screen; the system
+   font for the interface and Fredoka for numbers; big targets for a seven-year-old. */
 :root{
-  --ground:#E3ECF2; --ink:#16232E; --muted:#3F5462; --line:#D3DEE4; --well:rgba(22,35,46,.06);
-  --accent:#2F6F8F; --accent-ink:#255B76; --warm:#E8A33D; --good:#23795A; --bad:#C0463C;
-  --goodbg:#DCEFE5; --goodline:#A9D6BF; --badbg:#F8E0DD; --warmbg:#FBEBCF; --warmink:#7A4A2B;
-  --glass:rgba(255,255,255,.64); --glass-edge:rgba(255,255,255,.85); --solid:#FFFFFF;
-  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.95), inset 0 -1px 0 rgba(22,35,46,.05), 0 0 0 1px rgba(22,35,46,.06), 0 8px 24px rgba(22,35,46,.10);
-  --tint:rgba(38,96,126,.92); --tint-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 8px 20px rgba(38,96,126,.3);
-  --wash1:rgba(143,195,218,.9); --wash2:rgba(243,207,138,.8); --wash3:rgba(230,183,194,.75); --wash4:rgba(191,217,230,.9);
-  --card:var(--glass); --key:var(--glass); --dotoff:rgba(22,35,46,.15);
+  --ui-font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", system-ui, sans-serif;
+  --ground:#F0F4F7; --ink:#0F171F; --muted:#555F69; --line:#DCE2E8; --well:rgba(15,23,31,.06);
+  --accent:#006AC0; --accent-ink:#00569F; --accentbg:#D9EAFC; --warm:#F5AE39; --good:#14874E; --bad:#CC3E35;
+  --goodbg:#DAF7E3; --goodline:#A3DDB8; --badbg:#FFE7E3; --warmbg:#FDECD1; --warmink:#894C06;
+  --glass:rgba(255,255,255,.66); --glass-edge:rgba(255,255,255,.9); --solid:#FFFFFF; --key:#FFFFFF;
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(15,23,31,.07), 0 0 0 .5px rgba(15,23,31,.14), 0 10px 28px rgba(15,23,31,.10);
+  --surface-shadow:0 0 0 .5px rgba(15,23,31,.07), 0 2px 10px rgba(15,23,31,.05);
+  --key-shadow:inset 0 1px 0 #fff, 0 0 0 .5px rgba(15,23,31,.09), 0 2px 6px rgba(15,23,31,.06);
+  --tint:#006AC0; --tint-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 6px 18px rgba(0,106,192,.28);
+  --wash1:rgba(0,106,192,.10); --wash2:rgba(245,174,57,.14); --wash3:transparent; --wash4:transparent;
+  --card:var(--solid); --dotoff:rgba(15,23,31,.14);
   --fur:#8D93A0; --fur-light:#B8BEC9; --fur-dark:#5F6675; --rose:#C4878A; --eye:#DD9F2E; --ant:#7A4A2B; --pear:#E9B838; --apple:#93B84C; --lemon:#E8CE41; --grape:#9769C2;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --ground:#0F181E; --ink:#E8EFF3; --muted:#9DB1BC; --line:#2B3A44; --well:rgba(255,255,255,.07);
-    --accent:#6FB3D2; --accent-ink:#8FC6E0; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
-    --goodbg:#1B3A30; --goodline:#2E5E4B; --badbg:#3A211E; --warmbg:#3B2F1B; --warmink:#F3D3A0;
-    --glass:rgba(30,43,52,.62); --glass-edge:rgba(255,255,255,.09); --solid:#1A252C; --dotoff:rgba(255,255,255,.2);
-    --glass-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.35);
-    --tint:rgba(47,111,143,.95); --tint-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 8px 20px rgba(0,0,0,.35);
-    --wash1:rgba(31,74,94,.85); --wash2:rgba(90,74,34,.6); --wash3:rgba(78,47,58,.6); --wash4:rgba(34,64,78,.8);
+    --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
+    --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
+    --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --warmbg:#3A2C17; --warmink:#F6D39C;
+    --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
+    --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
+    --surface-shadow:0 0 0 .5px rgba(0,0,0,.5), 0 2px 10px rgba(0,0,0,.25);
+    --key-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.25);
+    --tint:#1A7FD4; --tint-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 18px rgba(26,127,212,.35);
+    --wash1:rgba(75,174,237,.14); --wash2:rgba(249,182,79,.10); --wash3:transparent; --wash4:transparent;
     --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68; --lemon:#EFDC73; --grape:#B491D6;
   }
 }
 :root[data-theme="dark"]{
-  --ground:#0F181E; --ink:#E8EFF3; --muted:#9DB1BC; --line:#2B3A44; --well:rgba(255,255,255,.07);
-  --accent:#6FB3D2; --accent-ink:#8FC6E0; --warm:#F0B860; --good:#5CC79A; --bad:#EE8A7E;
-  --goodbg:#1B3A30; --goodline:#2E5E4B; --badbg:#3A211E; --warmbg:#3B2F1B; --warmink:#F3D3A0;
-  --glass:rgba(30,43,52,.62); --glass-edge:rgba(255,255,255,.09); --solid:#1A252C; --dotoff:rgba(255,255,255,.2);
-  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 0 0 1px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.35);
-  --tint:rgba(47,111,143,.95); --tint-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 8px 20px rgba(0,0,0,.35);
-  --wash1:rgba(31,74,94,.85); --wash2:rgba(90,74,34,.6); --wash3:rgba(78,47,58,.6); --wash4:rgba(34,64,78,.8);
+  --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
+  --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
+  --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --warmbg:#3A2C17; --warmink:#F6D39C;
+  --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
+  --surface-shadow:0 0 0 .5px rgba(0,0,0,.5), 0 2px 10px rgba(0,0,0,.25);
+  --key-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 .5px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.25);
+  --tint:#1A7FD4; --tint-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 18px rgba(26,127,212,.35);
+  --wash1:rgba(75,174,237,.14); --wash2:rgba(249,182,79,.10); --wash3:transparent; --wash4:transparent;
   --fur:#6C7382; --fur-light:#8E95A4; --fur-dark:#454C5B; --rose:#B87A7D; --eye:#F0BB57; --ant:#C08E63; --pear:#EFC862; --apple:#A9CA68; --lemon:#EFDC73; --grape:#B491D6;
 }
 html,body{height:100%; overscroll-behavior:none}   /* no rubber-band, no pull-to-refresh */
@@ -50,34 +58,48 @@ body, .sheet{
     radial-gradient(230px 230px at 100% -4%, var(--wash4), transparent 70%),
     var(--ground);
 }
-body{color:var(--ink); font-family:Nunito,system-ui,sans-serif; font-size:16px; -webkit-text-size-adjust:100%}
+/* Fredoka for numbers, kept with the app (works offline); its Latin subset holds the digits, × · − and the like */
+@font-face{font-family:Fredoka; src:url(fonts/fredoka-latin.woff2) format('woff2'); font-weight:300 700; font-display:swap;
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+/* "locl" off: with lang="bg" the system font would switch to the Bulgarian letter shapes (д like g, т like m);
+   the app keeps the shapes she has been reading in it. Turn it on to have the Bulgarian ones. */
+body{color:var(--ink); font-family:var(--ui-font); font-size:16px; -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased; font-feature-settings:"locl" 0}
+svg text{font-family:var(--ui-font)}   /* the figures' labels name a font of their own (Nunito); the interface's wins */
 .app{height:100%; max-width:640px; margin:0 auto; padding-inline:16px; padding-block:8px 14px; display:flex; flex-direction:column; gap:10px}
 button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-select:none; user-select:none; cursor:pointer}
 :focus-visible{outline:3px solid var(--accent); outline-offset:2px}
-h1{margin:0; font-size:24px; font-weight:900; line-height:1.15}
-.num{font-family:Fredoka,Nunito,sans-serif; font-variant-numeric:tabular-nums}
+h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
+.num{font-family:Fredoka,var(--ui-font); font-variant-numeric:tabular-nums}
 
-/* Glass: one layer per card, never per row inside it, so an older iPad keeps up. */
-.card,.key,.icon,.levelpill,.gcard,.tile,.btn.ghost,.pchoose,.who,.read,.chips.filt button,.seg,.ptile .pedit{
-  background:var(--glass); -webkit-backdrop-filter:blur(22px) saturate(170%); backdrop-filter:blur(22px) saturate(170%);
-  box-shadow:var(--glass-shadow); border:1px solid var(--glass-edge);
+/* Materials. Content sits on solid surfaces: a hairline and a soft shadow. Glass is only for the chrome over
+   it — the level pill and the round buttons — a few elements a screen, never animated, so an older iPad keeps
+   up. Recessed controls (filters, segmented choices) are a 6% well. "Solid, no glass" (the grown-ups' setting,
+   data-solid) and the system's reduce-transparency make the chrome solid too; Safari reports the latter to no
+   page, hence the setting. */
+.card,.gcard,.tile,.pchoose,.ptile .pedit{background:var(--card); box-shadow:var(--surface-shadow); border:0}
+.key{background:var(--key); box-shadow:var(--key-shadow); border:0}
+.icon,.levelpill,.who,.read{
+  background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
+  box-shadow:var(--glass-shadow); border:0;
 }
+.btn.ghost{background:color-mix(in srgb, var(--accent) 11%, transparent); color:var(--accent-ink); box-shadow:none; border:0}
+.chips.filt button,.seg{background:var(--well); box-shadow:none; border:0}
+:root[data-solid] :is(.icon,.levelpill,.who,.read){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 @media (prefers-reduced-transparency:reduce){
-  .card,.key,.icon,.levelpill,.gcard,.tile,.btn.ghost,.pchoose,.who,.read,.chips.filt button,.seg,.ptile .pedit{
-    background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+  .icon,.levelpill,.who,.read{background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 }
 .gcard{border-radius:20px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
 .gcard.list{padding:0; gap:0; overflow:hidden}
 .gtitle{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
-.gtitle b{font-size:14px; font-weight:900}
-.gtitle span{font-size:11.5px; font-weight:800; color:var(--muted)}
-.lab{font-size:12px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.gtitle b{font-size:14px; font-weight:700}
+.gtitle span{font-size:11.5px; font-weight:600; color:var(--muted)}
+.lab{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
 
 /* buttons: capsules, one tinted main action, glass for the rest */
 .btn{
   display:flex; align-items:center; justify-content:center; gap:8px; min-height:56px; padding:0 22px;
   border-radius:999px; border:1px solid rgba(255,255,255,.35); background:var(--tint); color:#fff;
-  box-shadow:var(--tint-shadow); font-weight:900; font-size:16px; flex:1 1 140px; text-align:center;
+  box-shadow:var(--tint-shadow); font-weight:700; font-size:16px; flex:1 1 140px; text-align:center;
   transition:transform 90ms ease;
 }
 .btn.ghost{color:var(--accent-ink); min-height:48px; font-size:14px}
@@ -97,7 +119,7 @@ h1{margin:0; font-size:24px; font-weight:900; line-height:1.15}
 .icon[aria-pressed="true"]{color:var(--accent)}
 .icon.back{width:44px; height:44px}
 .chips{display:flex; gap:8px; flex-wrap:wrap}
-.chips.filt button{min-height:38px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:800; color:var(--ink)}
+.chips.filt button{min-height:38px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:600; color:var(--ink)}
 .chips.filt button[aria-pressed="true"]{background:color-mix(in srgb, var(--accent) 16%, transparent); border-color:var(--accent); color:var(--accent-ink)}
 .chips[hidden]{display:none}
 /* a competition's own papers: one step in, under the competition that holds them */
@@ -105,14 +127,14 @@ h1{margin:0; font-size:24px; font-weight:900; line-height:1.15}
 .chips.filt.sub button{min-height:32px; padding:0 11px; font-size:13px}
 .chips.filt.sub2{margin-left:12px}
 .seg{display:inline-flex; gap:3px; padding:3px; border-radius:999px; flex-wrap:wrap}
-.seg button{border:0; background:transparent; color:var(--muted); border-radius:999px; padding:0 15px; min-height:40px; min-width:48px; font-weight:800; font-size:14px}
+.seg button{border:0; background:transparent; color:var(--muted); border-radius:999px; padding:0 15px; min-height:40px; min-width:48px; font-weight:600; font-size:14px}
 .seg button[aria-pressed="true"]{background:var(--tint); color:#fff}
 .setrow{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
-.setrow b{font-size:14.5px; font-weight:800}
-.warnline{background:var(--badbg); color:var(--bad); font-weight:800; font-size:14px; border-radius:14px; padding:10px 13px}
+.setrow b{font-size:14.5px; font-weight:600}
+.warnline{background:var(--badbg); color:var(--bad); font-weight:600; font-size:14px; border-radius:14px; padding:10px 13px}
 .empty,.footnote{color:var(--muted); font-weight:700; font-size:14px; text-align:center; margin:0}
 .synced{font-size:12px; font-weight:700; color:var(--muted)}
-.code{font-family:Fredoka,Nunito,sans-serif; font-weight:500; letter-spacing:.06em; -webkit-user-select:text; user-select:text}
+.code{font-family:Fredoka,var(--ui-font); font-weight:500; letter-spacing:.06em; -webkit-user-select:text; user-select:text}
 
 /* header */
 /* the pill and the two buttons share one row; the line under the pill has a row of its own */
@@ -124,12 +146,12 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .top .sub{grid-column:2; grid-row:2; align-self:start}
 .levelpill{
   display:flex; align-items:center; justify-content:space-between; gap:8px; height:44px; padding:0 14px; border-radius:999px;
-  color:var(--ink); font-family:Fredoka,Nunito,sans-serif; font-size:clamp(16px,5vw,20px); font-weight:500; min-width:0;
+  color:var(--ink); font-family:Fredoka,var(--ui-font); font-size:clamp(16px,5vw,20px); font-weight:500; min-width:0;
   font-variant-numeric:tabular-nums;
 }
 .levelpill span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .levelpill svg{width:18px; height:18px; flex:0 0 auto; color:var(--muted)}
-.sub{font-size:12px; font-weight:800; color:var(--muted); padding-left:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.sub{font-size:12px; font-weight:600; color:var(--muted); padding-left:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .icons{display:flex; gap:6px; grid-column:3; grid-row:1; align-self:end; align-items:center; height:44px}
 .dots{display:flex; gap:7px; flex-wrap:wrap; justify-content:center}
 .dot{width:12px; height:12px; border-radius:50%; background:rgba(22,35,46,.15); box-sizing:border-box}
@@ -142,8 +164,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   padding:14px 18px 16px; position:relative; overflow:hidden;
 }
 .cardtop{display:flex; align-items:center; justify-content:space-between; gap:10px; flex:0 0 auto}
-.qnum{font-size:12px; font-weight:800; color:var(--muted)}
-.read{height:36px; padding:0 12px; border-radius:999px; color:var(--accent-ink); display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:800}
+.qnum{font-size:12px; font-weight:600; color:var(--muted)}
+.read{height:36px; padding:0 12px; border-radius:999px; color:var(--accent-ink); display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600}
 .read svg{width:18px; height:18px}
 /* The card centres this; when a long question outgrows it, this scrolls rather than
    letting the card clip it. */
@@ -162,7 +184,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .slot{
   display:inline-flex; align-items:center; justify-content:flex-start; min-width:2.1em; height:1.5em; padding:0 .25em;
   border-radius:.3em; background:var(--well); border:2px solid var(--accent); box-sizing:border-box;
-  color:var(--accent-ink); vertical-align:middle; font-family:Fredoka,Nunito,sans-serif; font-variant-numeric:tabular-nums;
+  color:var(--accent-ink); vertical-align:middle; font-family:Fredoka,var(--ui-font); font-variant-numeric:tabular-nums;
 }
 .slot .caret{display:inline-block; width:3px; height:.8em; margin-left:2px; border-radius:2px; background:var(--accent); animation:blink 1.1s steps(1,end) infinite}
 .line .slot,.given .slot{min-width:1.9em}
@@ -276,15 +298,15 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .hint:empty{display:none}
 .fb{border-radius:14px; padding:10px 12px; display:flex; flex-direction:column; gap:5px; text-align:left;
   font-size:clamp(13.5px,3.8vw,15px); font-weight:700; line-height:1.4; color:var(--ink)}
-.fb .fbhead{display:flex; align-items:center; gap:10px; font-weight:900}
+.fb .fbhead{display:flex; align-items:center; gap:10px; font-weight:700}
 .fb .fbhead .v{margin-left:auto; font-size:13.5px}
 .fb .mark{width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; flex:0 0 auto; font-size:14px}
 .fb.no{background:var(--badbg); border:2px solid var(--bad)} .fb.no .mark{background:var(--bad)} .fb.no .v{color:var(--bad)}
 .fb.ok{background:var(--goodbg); border:2px solid var(--goodline)} .fb.ok .mark{background:var(--good)} .fb.ok .v{color:var(--good)}
-.fb.tip{background:var(--warmbg)} .fb.tip .tiplab{font-size:11px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color:var(--warmink)}
+.fb.tip{background:var(--warmbg)} .fb.tip .tiplab{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--warmink)}
 .fb b{color:inherit}
 .fb.tip b,.fb.ok b{color:var(--warmink)}
-.fb .typed{font-family:Fredoka,Nunito,sans-serif; font-size:20px; font-weight:500}
+.fb .typed{font-family:Fredoka,var(--ui-font); font-size:20px; font-weight:500}
 .reveal{align-self:center; min-height:44px; padding:0 18px; font-size:14px}
 .verdict{font-family:Fredoka,sans-serif; font-size:clamp(16px,2.5vh,20px); min-height:0; text-align:center}
 .verdict:empty{display:none}
@@ -297,7 +319,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 /* keypad: rounded tiles, ⌫ always bottom left, ✓ always bottom right */
 .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; flex:0 0 auto}
 .key{
-  border-radius:20px; font-family:Fredoka,Nunito,sans-serif; font-size:28px; font-weight:500; color:var(--ink);
+  border-radius:20px; font-family:Fredoka,var(--ui-font); font-size:28px; font-weight:500; color:var(--ink);
   padding:0; height:clamp(50px,7.4vh,64px); display:flex; align-items:center; justify-content:center; transition:transform 90ms ease;
 }
 .key.del{background:var(--well); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:none; color:var(--muted)}
@@ -338,7 +360,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .sheet-in{max-width:540px; margin:0 auto; display:flex; flex-direction:column; gap:14px}
 .bar{display:flex; align-items:center; gap:10px}
 .bar h1{flex:1 1 auto; min-width:0}
-.who{display:inline-flex; align-items:center; gap:7px; height:40px; padding:0 13px 0 5px; border-radius:999px; font-size:14px; font-weight:800; white-space:nowrap}
+.who{display:inline-flex; align-items:center; gap:7px; height:40px; padding:0 13px 0 5px; border-radius:999px; font-size:14px; font-weight:600; white-space:nowrap}
 .who .cat{width:30px; height:30px}
 .who.num{padding:0 14px; font-size:16px}
 .sheetcat{width:clamp(120px,34vw,160px); margin:0 auto}
@@ -348,8 +370,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .pickside{display:flex; flex-direction:column; gap:12px}
 #pickAll{display:flex; flex-direction:column; gap:8px}
 .grouphead{display:flex; align-items:baseline; justify-content:space-between; padding:6px 4px 0}
-.grouphead b{font-size:15px; font-weight:900}
-.grouphead span{font-size:12px; font-weight:800; color:var(--muted)}
+.grouphead b{font-size:15px; font-weight:700}
+.grouphead span{font-size:12px; font-weight:600; color:var(--muted)}
 .pick{
   display:flex; align-items:center; gap:12px; background:transparent; border:0; border-bottom:1px solid rgba(22,35,46,.06);
   padding:8px 14px; width:100%; text-align:left; min-height:52px; color:var(--ink); transition:transform 90ms ease;
@@ -357,73 +379,73 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .gcard.list > :last-child{border-bottom:0}
 .pick[aria-pressed="true"]{background:color-mix(in srgb, var(--accent) 10%, transparent)}
 .pick .nm{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px}
-.pick .eq{font-size:16px; font-weight:800}
-.pick .eq.sym{font-family:Fredoka,Nunito,sans-serif; font-size:17px; font-weight:500; font-variant-numeric:tabular-nums}
+.pick .eq{font-size:16px; font-weight:600}
+.pick .eq.sym{font-family:Fredoka,var(--ui-font); font-size:17px; font-weight:500; font-variant-numeric:tabular-nums}
 .pick .desc{display:none; font-size:12.5px; font-weight:700; color:var(--muted)}
 .dots5{display:inline-flex; gap:3px; flex:0 0 auto}
 .dots5 i{width:7px; height:7px; border-radius:50%; background:rgba(22,35,46,.15)}
 .dots5 i.on{background:var(--accent)}
 .stat{flex:0 0 auto; min-width:34px; text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:1px; font-variant-numeric:tabular-nums}
-.stat b{font-family:Fredoka,Nunito,sans-serif; font-size:14px; font-weight:500}
+.stat b{font-family:Fredoka,var(--ui-font); font-size:14px; font-weight:500}
 .stat i{font-size:10.5px; font-weight:700; font-style:normal; color:var(--muted); white-space:nowrap}
 .tick{width:26px; height:26px; border-radius:50%; background:var(--goodbg); color:var(--good); display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto}
 .tick svg{width:16px; height:16px}
-.isnew{font-size:11px; font-weight:900; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent-ink)}
+.isnew{font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent-ink)}
 .nextcard{
   display:flex; align-items:center; gap:14px; width:100%; text-align:left; padding:12px 16px; border-radius:18px;
   border:2px solid var(--accent) !important; color:var(--ink);
 }
 .nextcard .nm{flex:1; display:flex; flex-direction:column; gap:4px; min-width:0}
 .nextcard .lab{color:var(--accent-ink); font-size:11px}
-.nextcard .eq{font-size:19px; font-weight:900}
+.nextcard .eq{font-size:19px; font-weight:700}
 .nextcard .meta{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; color:var(--muted)}
 .nextcard > svg{width:24px; height:24px; color:var(--accent); flex:0 0 auto}
-.progress{display:flex; align-items:center; gap:9px; font-size:12.5px; font-weight:800; color:var(--muted)}
+.progress{display:flex; align-items:center; gap:9px; font-size:12.5px; font-weight:600; color:var(--muted)}
 .progress .track{flex:1; height:8px; border-radius:99px; background:rgba(22,35,46,.08); overflow:hidden}
 .progress .track i{display:block; height:100%; background:var(--good); border-radius:99px}
 
 /* end of a round */
 .result{display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center}
-.result .big{font-family:Fredoka,Nunito,sans-serif; font-size:clamp(42px,13vw,56px); font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
-.result .rsub{font-size:15px; font-weight:800; color:var(--muted)}
+.result .big{font-family:Fredoka,var(--ui-font); font-size:clamp(42px,13vw,56px); font-weight:600; line-height:1; font-variant-numeric:tabular-nums}
+.result .rsub{font-size:15px; font-weight:600; color:var(--muted)}
 .stars{display:flex; gap:6px; margin-top:4px}
 .stars svg{width:34px; height:34px}
 .banner{display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:16px}
 .banner.good{background:var(--goodbg); border:1px solid var(--goodline)}
 .banner .bicon{width:40px; height:40px; border-radius:12px; background:var(--good); color:#fff; display:flex; align-items:center; justify-content:center; flex:0 0 auto}
 .banner .bicon svg{width:22px; height:22px}
-.banner b{display:block; font-size:15px; font-weight:900}
+.banner b{display:block; font-size:15px; font-weight:700}
 .banner span{display:block; font-size:13px; font-weight:700; color:var(--muted)}
 #missWrap{display:flex; flex-direction:column; gap:8px}
 .miss{display:flex; flex-direction:column; gap:6px; padding:10px 14px; border-bottom:1px solid rgba(22,35,46,.06)}
 .miss .mrow{display:flex; align-items:center; gap:12px}
 .miss .mdot{width:10px; height:10px; border-radius:50%; background:var(--bad); flex:0 0 auto}
 .miss .mtext{flex:1; display:flex; flex-direction:column; gap:2px; min-width:0}
-.miss .eq{font-family:Fredoka,Nunito,sans-serif; font-size:19px; font-variant-numeric:tabular-nums; line-height:1.3}
+.miss .eq{font-family:Fredoka,var(--ui-font); font-size:19px; font-variant-numeric:tabular-nums; line-height:1.3}
 .miss .wrote{font-size:12.5px; font-weight:700; color:var(--muted)}
-.miss .whyb{font-size:13px; font-weight:900; color:var(--accent-ink); padding:8px 11px; border-radius:10px; border:0;
+.miss .whyb{font-size:13px; font-weight:700; color:var(--accent-ink); padding:8px 11px; border-radius:10px; border:0;
   background:color-mix(in srgb, var(--accent) 16%, transparent); flex:0 0 auto; min-height:36px}
 .miss .why{font-size:13.5px; font-weight:700; color:var(--muted); font-variant-numeric:tabular-nums; padding-left:22px}
 .miss .why b{color:var(--warm)}
 .newbadge{display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:16px; background:var(--warmbg)}
 .newbadge svg{width:48px; height:auto; flex:0 0 auto}
-.newbadge b{font-size:15px; font-weight:900}
+.newbadge b{font-size:15px; font-weight:700}
 .newbadge span{display:block; font-size:12.5px; font-weight:700; color:var(--muted)}
 
 /* badges: medals, a ribbon when earned, a padlock when not yet */
 .badges{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px 6px}
 .badge{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; border:0; background:transparent; color:var(--ink); border-radius:12px}
 .badge svg{width:min(66px,100%); height:auto}
-.badge .nm{font-size:11.5px; font-weight:800; line-height:1.2; text-align:center}
+.badge .nm{font-size:11.5px; font-weight:600; line-height:1.2; text-align:center}
 .badge[aria-pressed="true"]{background:var(--well)}
-.badgeneed{font-size:13px; font-weight:800; color:var(--muted); text-align:center; min-height:1.2em}
+.badgeneed{font-size:13px; font-weight:600; color:var(--muted); text-align:center; min-height:1.2em}
 .nextbadge{flex-direction:row; align-items:center; gap:14px}
 .nextbadge svg{width:64px; height:auto; flex:0 0 auto}
 .nextbadge .nb{flex:1; display:flex; flex-direction:column; gap:6px; min-width:0}
 .nextbadge .lab{color:var(--warmink)}
-.nextbadge .nbname{font-size:17px; font-weight:900}
+.nextbadge .nbname{font-size:17px; font-weight:700}
 .nextbadge .nbname span{font-size:13px; font-weight:700; color:var(--muted)}
-.meter{display:flex; align-items:center; gap:8px; font-family:Fredoka,Nunito,sans-serif; font-size:14px; font-variant-numeric:tabular-nums}
+.meter{display:flex; align-items:center; gap:8px; font-family:Fredoka,var(--ui-font); font-size:14px; font-variant-numeric:tabular-nums}
 .meter .track{flex:1; height:8px; border-radius:999px; background:rgba(22,35,46,.08); overflow:hidden}
 .meter .track i{display:block; height:100%; border-radius:999px; background:var(--rose)}
 
@@ -431,36 +453,36 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .bigstat{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
 .ptiles{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
 .tile{border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; gap:3px}
-.tile .n{font-family:Fredoka,Nunito,sans-serif; font-size:28px; font-weight:500; line-height:1; font-variant-numeric:tabular-nums}
-.tile .t{font-size:12px; font-weight:800; color:var(--muted)}
+.tile .n{font-family:Fredoka,var(--ui-font); font-size:28px; font-weight:500; line-height:1; font-variant-numeric:tabular-nums}
+.tile .t{font-size:12px; font-weight:600; color:var(--muted)}
 .trend svg{display:block; width:100%; height:auto}
 .bars{display:flex; flex-direction:column; gap:8px}
 .lvlrow{display:flex; align-items:center; gap:10px; font-size:12.5px; font-weight:700}
 .lvlrow .nm{width:118px; flex:0 0 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .lvlrow .track{flex:1; height:10px; border-radius:0 4px 4px 0; background:var(--well); overflow:hidden}
 .lvlrow .track i{display:block; height:100%; background:var(--accent); border-radius:0 4px 4px 0}
-.lvlrow .pc{min-width:40px; text-align:right; font-family:Fredoka,Nunito,sans-serif; font-size:13px; font-variant-numeric:tabular-nums; flex:0 0 auto}
+.lvlrow .pc{min-width:40px; text-align:right; font-family:Fredoka,var(--ui-font); font-size:13px; font-variant-numeric:tabular-nums; flex:0 0 auto}
 .sliplist{display:flex; flex-direction:column; gap:10px}
 .sliprow{display:flex; align-items:center; gap:10px; font-size:13px; font-weight:700; line-height:1.3}
 .sliprow i{width:8px; height:8px; border-radius:50%; background:var(--bad); flex:0 0 auto}
 .sliprow span{flex:1}
-.sliprow b{font-family:Fredoka,Nunito,sans-serif; font-weight:500; font-size:14px; color:var(--muted)}
+.sliprow b{font-family:Fredoka,var(--ui-font); font-weight:500; font-size:14px; color:var(--muted)}
 .chip{background:var(--well); border-radius:12px; padding:9px 12px; display:flex; flex-direction:column; gap:2px; min-width:74px}
-.chip .eq{font-family:Fredoka,Nunito,sans-serif; font-size:19px; font-variant-numeric:tabular-nums}
-.chip .r{font-size:11.5px; font-weight:800; color:var(--bad); font-variant-numeric:tabular-nums}
+.chip .eq{font-family:Fredoka,var(--ui-font); font-size:19px; font-variant-numeric:tabular-nums}
+.chip .r{font-size:11.5px; font-weight:600; color:var(--bad); font-variant-numeric:tabular-nums}
 .advice{font-size:14px; font-weight:700; line-height:1.5; text-wrap:pretty}
 .family .famhead{display:flex; align-items:center; gap:12px}
 .famicon{width:40px; height:40px; border-radius:12px; background:var(--goodbg); color:var(--good); display:flex; align-items:center; justify-content:center; flex:0 0 auto}
 .famicon svg{width:24px; height:24px}
 .famtext{display:flex; flex-direction:column; gap:2px; min-width:0}
-.famtext b{font-size:14.5px; font-weight:900}
+.famtext b{font-size:14.5px; font-weight:700}
 .parentcols{display:flex; flex-direction:column; gap:12px}
 .parentside,.parentmain{display:flex; flex-direction:column; gap:12px}
 
 /* who is playing */
 .brand .logo{width:40px; height:40px; border-radius:12px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center;
-  font-family:Fredoka,Nunito,sans-serif; font-weight:600; font-size:20px; flex:0 0 auto}
-.brand .appname{flex:1; font-size:22px; font-weight:900; letter-spacing:-.01em}
+  font-family:Fredoka,var(--ui-font); font-weight:600; font-size:20px; flex:0 0 auto}
+.brand .appname{flex:1; font-size:22px; font-weight:700; letter-spacing:-.01em}
 .headline{display:flex; flex-direction:column; gap:6px}
 .headline h1{font-size:30px}
 .headline p{margin:0; font-size:15px; font-weight:700; color:var(--muted)}
@@ -469,22 +491,22 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .pchoose{width:100%; display:flex; flex-direction:column; align-items:center; gap:7px; border-radius:22px; padding:16px 10px; color:var(--ink); transition:transform 90ms ease}
 .pchoose[aria-pressed="true"]{border:2px solid var(--accent)}
 .pchoose .cat{height:112px; width:auto}
-.pchoose b{font-size:20px; font-weight:900}
+.pchoose b{font-size:20px; font-weight:700}
 .pchoose .pmeta{font-size:13px; font-weight:700; color:var(--muted); text-align:center; line-height:1.3}
-.pill{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:800}
+.pill{display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:600}
 .pill.warm{background:var(--warmbg); color:var(--warmink)}
 .pill.cool{background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent-ink)}
 .pill svg{width:14px; height:14px}
 .ptile .pedit{position:absolute; top:8px; right:8px; width:36px; height:36px}
 .padd{grid-column:1 / -1; display:flex; align-items:center; justify-content:center; gap:10px; min-height:60px; border:2px dashed var(--line);
-  border-radius:18px; background:transparent; color:var(--accent-ink); font-weight:800; font-size:16px}
+  border-radius:18px; background:transparent; color:var(--accent-ink); font-weight:600; font-size:16px}
 .padd svg{width:22px; height:22px}
 
 /* a player's profile */
 .namerow{display:flex; align-items:center; gap:14px}
 .avatar{width:72px; flex:0 0 auto}
 .field{display:flex; flex-direction:column; gap:6px; flex:1; min-width:0}
-.field input{font:inherit; font-size:18px; font-weight:800; color:var(--ink); background:var(--well); border:1px solid var(--glass-edge);
+.field input{font:inherit; font-size:18px; font-weight:600; color:var(--ink); background:var(--well); border:1px solid var(--glass-edge);
   border-radius:12px; padding:0 14px; height:48px; box-sizing:border-box; width:100%; -webkit-user-select:text; user-select:text}
 .field input:focus{border-color:var(--accent); outline:none}
 .mascots{display:flex; gap:10px; flex-wrap:wrap}
@@ -492,7 +514,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .mchoice[aria-checked="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 16%, transparent)}
 .mchoice .cat{width:52px; height:52px; margin-top:6px}
 .radios{display:flex; flex-direction:column}
-.radios label,.toggle{display:flex; align-items:center; gap:12px; min-height:44px; font-size:16px; font-weight:800; cursor:pointer}
+.radios label,.toggle{display:flex; align-items:center; gap:12px; min-height:44px; font-size:16px; font-weight:600; cursor:pointer}
 .radios input{width:22px; height:22px; margin:0; accent-color:var(--accent); flex:0 0 auto}
 .toggle{justify-content:space-between}
 .toggle input{width:44px; height:26px; margin:0; accent-color:var(--accent)}
@@ -605,8 +627,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .ch{display:flex; align-items:center; gap:12px; min-height:64px; padding:0 14px; border-radius:22px; border:2px solid var(--glass-edge);
   background:var(--glass); color:var(--ink); font:inherit; text-align:left; cursor:pointer}
 .ch .lt{width:32px; height:32px; border-radius:50%; background:rgba(47,111,143,.16); color:var(--accent-ink); display:inline-flex;
-  align-items:center; justify-content:center; font-size:15px; font-weight:900; flex:0 0 auto}
-.ch .v{font-family:Fredoka,Nunito,sans-serif; font-size:26px; font-weight:500; font-variant-numeric:tabular-nums}
+  align-items:center; justify-content:center; font-size:15px; font-weight:700; flex:0 0 auto}
+.ch .v{font-family:Fredoka,var(--ui-font); font-size:26px; font-weight:500; font-variant-numeric:tabular-nums}
 .ch[aria-pressed="true"]{border-color:var(--accent)}
 .ch.ok{border-color:var(--good); background:var(--goodbg)} .ch.ok .lt{background:var(--good); color:#fff}
 .ch.no{opacity:.5} .ch.no .v{text-decoration:line-through}
@@ -615,17 +637,17 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 /* competition: how far through the paper, and the clock, in place of the dots */
 .dots .ctrack{flex:1; height:10px; border-radius:999px; background:rgba(22,35,46,.15); overflow:hidden; align-self:center}
 .dots .ctrack i{display:block; height:100%; border-radius:999px; background:var(--accent)}
-.dots .cnum,.dots .clock{font-family:Fredoka,Nunito,sans-serif; font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums}
+.dots .cnum,.dots .clock{font-family:Fredoka,var(--ui-font); font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums}
 .dots .clock{padding:3px 10px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-edge); color:var(--ink)}
 .compcard{flex-direction:row; align-items:center; gap:12px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; flex:none}
 .compcard .nm{flex:1; display:flex; flex-direction:column; gap:3px; min-width:0}
 .compcard .lab{color:var(--accent-ink); font-size:11px}
-.compcard b{font-size:16px; font-weight:900}
+.compcard b{font-size:16px; font-weight:700}
 .compcard .meta{font-size:13px; font-weight:700; color:var(--muted)}
 .compcard > svg{width:24px; height:24px; color:var(--accent); flex:0 0 auto}
 .compicon{width:40px; height:40px; border-radius:12px; background:rgba(47,111,143,.16); color:var(--accent-ink); display:flex; align-items:center; justify-content:center; flex:0 0 auto}
 .compicon svg{width:24px; height:24px}
-.gtag{font-size:11px; font-weight:900; color:var(--accent-ink); background:rgba(47,111,143,.16); border-radius:999px; padding:2px 8px; vertical-align:middle; white-space:nowrap}
+.gtag{font-size:11px; font-weight:700; color:var(--accent-ink); background:rgba(47,111,143,.16); border-radius:999px; padding:2px 8px; vertical-align:middle; white-space:nowrap}
 .gtag.g3{color:var(--warmink); background:var(--warmbg)}
 #nextUp{display:flex; flex-direction:column; gap:10px}   /* the progress bar a step clear of the card above it */
 /* Landscape with А/Б/В/Г: the options (and Skip) sit beside the question, not under it, so a
@@ -710,7 +732,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 }
 .card-in{scrollbar-width:none} .card-in::-webkit-scrollbar{display:none}
 .tix.magic{margin:6px auto}
-.tix.magic td{min-width:2.6em; text-align:center; font-size:clamp(18px,5vw,24px); font-weight:800}
+.tix.magic td{min-width:2.6em; text-align:center; font-size:clamp(18px,5vw,24px); font-weight:600}
 /* front legs: one waves hello and cheers a right answer, both go up for a party or a dance, one holds the chin to think */
 .cat .arm{display:none}
 .cat .arm-up-l{transform-origin:100% 100%} .cat .arm-up-r{transform-origin:0% 100%} .cat .arm-chin{transform-origin:0% 100%}

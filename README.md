@@ -143,7 +143,8 @@ as her focus, a 1st-grader climbs grade by grade, and competitions are drawn fro
 | Path | What it holds |
 |---|---|
 | `index.html` | the markup, and the scripts in the order they load |
-| `app.css` | all styling: the glass look of the design canvas, light and dark |
+| `app.css` | all styling, light and dark: the Десетка 2026 look — solid content, glass only for the chrome, the system font, Fredoka for numbers |
+| `fonts/` | Fredoka (Latin subset, SIL Open Font License, `OFL.txt`), kept with the app so numbers look the same offline |
 | `kinds/<kind>.js` | one question kind each: its generator, how it is drawn, its summary line and its hints |
 | `js/levels.js` | the level table: difficulty, group, prerequisites, and which generator makes it |
 | `js/core.js` | what more than one kind shares (`rnd`, the answer box, a few drawing helpers) |

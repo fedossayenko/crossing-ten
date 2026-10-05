@@ -168,9 +168,15 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   (the service worker caches every href), vendor files `@ts-nocheck`. Code: about the same length for this
   static screen, but no ids, no hand-wired handlers, no `aria-pressed` bookkeeping — the selected badge is
   state. The gain grows with screens that share state (R2: decide @preact/signals there).
-- **R1. Look** (merge 6): tokens light/dark, system font + self-hosted Fredoka, solid surfaces + glass on
-  chrome only, an in-app "solid, no glass" setting, a theme switch, versioned SW cache (E4); progress
-  segments get a class that isn't `.seg` (taken by the settings control).
+- **R1. Look — DONE.** The redesign's tokens light and dark (ground #F0F4F7 / #0E1318, accent #006AC0 /
+  #4BAEED, …); content solid (hairline + soft shadow), glass only on the chrome (level pill, round buttons);
+  filters and segmented choices a 6% well; the system font for the interface, Fredoka (self-hosted, Latin
+  subset, OFL) for numbers; weights down a step (900→700, 800→600); a theme switch (auto/light/dark) and
+  "solid, no glass" in the grown-ups' settings, kept per device and applied before the first paint; service
+  worker cache versioned (crossing-ten-v2), old caches deleted, no Google Fonts. The Bulgarian letter shapes the
+  system font offers (д like g, т like m) are off ("locl" 0) to keep the shapes she has read so far — one CSS
+  line to turn on. Verified: before/after screenshots of five screens × iPhone/iPad × light/dark; smoke checks
+  the settings survive a reload and the font loads offline.
 - **R2. Navigation**: hash router (`#/today`, `#/levels`, `#/badges`, `#/parents`, `#/parents/more`,
   `#/notebook`, `#/play`); tabs via `replaceState`, drill-downs push; tab bar < 900 px, sidebar ≥ 900 px;
   launch → saved round if any, else Today; `location.reload()` keeps the hash; tabs hidden in a

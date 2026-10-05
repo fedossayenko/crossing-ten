@@ -737,6 +737,21 @@ $('practise').onclick = () => {
   if(set.length) newRound(shuffle(set));
 };
 
+// The look on this device (not per player, not synced): the theme, and glass or solid chrome. index.html
+// applies it before the first paint; here it is chosen and kept.
+const LOOK_KEY = 'crossingten.look';
+const lookNow = () => { try { return JSON.parse(localStorage.getItem(LOOK_KEY)) || {}; } catch(e){ return {}; } };
+function paintLook(){
+  const l = lookNow(), root = document.documentElement;
+  if(l.theme) root.dataset.theme = l.theme; else delete root.dataset.theme;
+  if(l.solid) root.dataset.solid = '1'; else delete root.dataset.solid;
+  document.querySelectorAll('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (l.theme || ''))));
+  document.querySelectorAll('#glassSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === (l.solid ? '1' : ''))));
+}
+const setLook = change => { try { localStorage.setItem(LOOK_KEY, JSON.stringify(Object.assign(lookNow(), change))); } catch(e){} paintLook(); };
+document.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => setLook({ theme: b.dataset.v || undefined }));
+document.querySelectorAll('#glassSeg button').forEach(b => b.onclick = () => setLook({ solid: b.dataset.v === '1' || undefined }));
+paintLook();
 document.querySelectorAll('#ansSeg button').forEach(b => b.onclick = () => {
   LOCAL.choice = b.dataset.c === '1'; saveLocal();
   document.querySelectorAll('#ansSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));

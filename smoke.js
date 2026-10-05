@@ -266,6 +266,17 @@ const server = http.createServer((req, res) => {
     expect(ln.size && ln.size === ln.want, 'the answer line is not sized by its class: ' + JSON.stringify(ln));
     await run(`localStorage.removeItem(RS); newRound(); 1`);
   }
+  // The look on this device: dark and solid chosen in the grown-ups' settings take effect at once, and come
+  // back after a reload before anything is drawn (index.html's data-look script)
+  {
+    const l1 = await page(`(() => { document.querySelector('#themeSeg [data-v="dark"]').click(); document.querySelector('#glassSeg [data-v="1"]').click();
+      return { theme: document.documentElement.dataset.theme, solid: document.documentElement.dataset.solid, ground: getComputedStyle(document.documentElement).getPropertyValue('--ground').trim() }; })()`);
+    await cmd('Page.reload'); await settle();
+    const l2 = await page(`({ theme: document.documentElement.dataset.theme, solid: document.documentElement.dataset.solid, pressed: document.querySelector('#themeSeg [aria-pressed="true"]').dataset.v })`);
+    expect(l1.theme === 'dark' && l1.solid === '1' && l1.ground === '#0E1318' && l2.theme === 'dark' && l2.solid === '1' && l2.pressed === 'dark',
+      'the theme and glass settings did not take or did not stay: ' + JSON.stringify({ l1, l2 }));
+    await run(`document.querySelector('#themeSeg [data-v=""]').click(); document.querySelector('#glassSeg [data-v=""]').click(); 1`);
+  }
   // R0, the framework trial: with ?ui=next the badges screen is a Preact component (js/ui/badges.js); it must
   // show what the hand-built screen shows for the same rounds, and answer a tapped badge the same way
   {
@@ -341,8 +352,8 @@ const server = http.createServer((req, res) => {
     server.close(); server.closeAllConnections();
     await cmd('Page.navigate', { url: url.split('?')[0] + '?offline=' + Date.now() }); await settle();
     const off = await page(`(() => { $('levelPill').click(); const b = document.querySelector('#pickAll .pick'); b.click();
-      return { keys: document.querySelectorAll('.key').length, levels: LEVELS.length, q: !!S.qs.length, font: getComputedStyle(document.body).fontFamily.includes('Nunito') }; })()`);
-    expect(off.keys >= 10 && off.levels > 100 && off.q, 'offline, the app does not start from its copy: ' + JSON.stringify(off));
+      return { keys: document.querySelectorAll('.key').length, levels: LEVELS.length, q: !!S.qs.length, fredoka: document.fonts.check('500 20px Fredoka') }; })()`);
+    expect(off.keys >= 10 && off.levels > 100 && off.q && off.fredoka, 'offline, the app does not start from its copy (or without its number font): ' + JSON.stringify(off));
     if(bad.length + errors.length === 0) console.log('smoke: offline (server stopped) the app starts and a round begins from the service worker copy');
   }
   bad.unshift(...errors);
