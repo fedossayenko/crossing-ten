@@ -52,7 +52,13 @@ function genCount(){
 }
 // МБГ Пролет 2023 and 2025, 1 клас: how many numbers are not greater than 14 (15, with the 0), and the sum of
 // all one-digit numbers that are NOT less than 7 (7 + 8 + 9 = 24) — the one-digit numbers stop at 9.
+// Пролет 2022 and 2021: how many one-digit numbers are not greater than 7 (0 … 7: 8), how many one-digit
+// numbers there are (10, with the 0), how many two-digit numbers are less than 15 (10 … 14: 5).
 function genCountShort(){
+  const more = rnd(4);
+  if(more === 0 && Math.random() < 0.25) return {kind:'count', shape:7, one:true, sum:false, natural:false, two:false, lo:0, hi:9, ans:10};
+  if(more <= 1){ const shape = rnd(2), n = 3 + rnd(7); return {kind:'count', shape, one:true, sum:false, natural:false, two:false, n, lo:0, hi: shape ? n - 1 : n, ans: shape ? n : n + 1}; }
+  if(more === 2){ const n = 12 + rnd(9); return {kind:'count', shape:1, sum:false, natural:false, two:true, n, lo:10, hi:n - 1, ans:n - 10}; }
   const sum = Math.random() < 0.5;
   if(Math.random() < 0.5){
     const a = 3 + rnd(6);
@@ -68,6 +74,10 @@ function drawCount(q){
     return '<div class="ask">' + tr('Колко ' + (q.asksSum ? 'е <b>сборът</b> на' : 'са') +
       ' <b>различните</b> цифри?', q.asksSum ? 'Чому дорівнює <b>сума</b> <b>різних</b> цифр?' : 'Скільки <b>різних</b> цифр?') + '</div>' +
       '<div class="seq">' + q.list.join(', ') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
+  if(q.kind === 'count' && q.shape === 7){
+    return '<div class="ask">' + tr('<b>Колко са</b> едноцифрените числа?', '<b>Скільки всього</b> одноцифрових чисел?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'count'){
@@ -121,7 +131,7 @@ function countLine(q, full){
   const svg = (h, g, label) => '<svg viewBox="0 -24 240 ' + h + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
   const label = tr('числата, които се броят', 'числа, які рахуються');
   if(!full){
-    const inLo = q.shape <= 2 || q.shape === 6, inHi = q.shape === 0 || q.shape === 2 || q.shape === 6;   // whether each end itself counts
+    const inLo = q.shape <= 2 || q.shape >= 6, inHi = q.shape === 0 || q.shape === 2 || q.shape >= 6;   // whether each end itself counts
     const end = (x, fill) => '<circle cx="' + x + '" cy="0" r="7" fill="' + (fill ? 'var(--good)' : 'none') + '" stroke="' + (fill ? 'var(--good)' : 'var(--bad)') + '" stroke-width="3"/>';
     return svg(40, '<line x1="10" y1="0" x2="230" y2="0" stroke="var(--line)" stroke-width="2"/><line x1="40" y1="0" x2="200" y2="0" stroke="var(--good)" stroke-width="6" stroke-linecap="round"/>' +
       end(40, inLo) + end(200, inHi), label);
@@ -183,7 +193,10 @@ function whyCount(q, full){
       ' &nbsp;→&nbsp; <b>' + q.lo + '</b> ' + tr('и', 'і') + ' <b>' + q.hi + '</b>';
   }
   if(q.kind === 'count'){
-    if(!full) return (q.one ? tr('Едноцифрените числа стигат до девет. Числото от условието също се брои.', 'Одноцифрові числа закінчуються дев’яткою. Число з умови теж рахується.')
+    if(!full && q.shape === 7) return tr('Едноцифрените числа са от нулата до най-голямата цифра — не забравяй нулата.', 'Одноцифрові числа — від нуля до найбільшої цифри; не забудь про нуль.') + countLine(q, false);
+    if(!full) return (q.one && q.shape === 1 ? tr('Едноцифрените числа започват от нулата. Числото от условието не се брои.', 'Одноцифрові числа починаються з нуля. Число з умови не рахується.')
+            : q.one && q.shape === 0 ? tr('Едноцифрените числа започват от нулата. Числото от условието също се брои.', 'Одноцифрові числа починаються з нуля. Число з умови теж рахується.')
+            : q.one ? tr('Едноцифрените числа стигат до девет. Числото от условието също се брои.', 'Одноцифрові числа закінчуються дев’яткою. Число з умови теж рахується.')
             : q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
             : q.natural ? tr('Естествените числа започват от едно.', 'Натуральні числа починаються з одиниці.')
             : q.sum ? tr('Събирай ги по двойки от двата края.', 'Додавай їх парами з обох кінців.')
@@ -201,7 +214,8 @@ function whyCount(q, full){
       for(let v = q.lo; v <= q.hi; v++) list.push(v);
       return list.join(' + ') + ' = ' + q.ans + countLine(q, true);
     }
-    const edge = q.shape === 6 ? tr('до 9 — само едноцифрените', 'до 9 — лише одноцифрові')
+    const edge = q.shape === 7 ? tr('всички едноцифрени', 'усі одноцифрові')
+               : q.shape === 6 ? tr('до 9 — само едноцифрените', 'до 9 — лише одноцифрові')
                : q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
                : q.shape === 1 ? q.n + tr(' не се брои', ' не рахується')
                : q.shape === 2 ? tr('с двата края', 'з обома кінцями')

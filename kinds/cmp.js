@@ -22,6 +22,12 @@ function genRuns(){
             big: sa > sb ? 0 : 1, ans: Math.abs(sa - sb)};
   }
 }
+// МБГ Пролет 2021, 1 клас, задача 16: 11 + 12 + 13 + 14 + 15 against 10 + 11 + 12 + 13 + 14 — each term one more, 5.
+function genNearShort(){
+  const m = 3 + rnd(3), st = 10 + rnd(11), R = [], L = [];
+  for(let i = 0; i < m; i++){ R.push(st + i); L.push(st + i + 1); }
+  return {kind:'cmp', shape:3, shift:1, L, R, ans: m, flip: Math.random() < 0.6};
+}
 function genNear(){
   if(Math.random() < 0.15){
     // Зима 2020: six terms, four the same on both sides — 11 + 22 + 33 + 67 + 78 + 89 against

@@ -39,11 +39,25 @@ function genIneqWide(){
 // МБГ Пролет 2025, 1 клас, задача 6: how many numbers fit 10 + ■ < 12? ■ is 0 or 1 — 2, because 0 counts.
 // The box added (on either side of the plus) or taken away, all within 20.
 function genIneqSmall(){
+  if(Math.random() < 0.4) return genIneqDigit();
   const form = rnd(3), k = 1 + rnd(6);
   if(form === 2){ const L = rnd(10), A = L + k; return {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k}; }   // A − ■ > L: ■ = 0 … k − 1
   const A = 2 + rnd(13), L = A + k;
   return L > 20 ? genIneqSmall() : {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k};
 }
+// МБГ Пролет 2022, задача 8: how many digits fit 100 − 10 − 20 < □0? 70 < □0 leaves 8 and 9 — 2.
+// Пролет 2021, задача 9: which digit fits 31 − 9 − 1 > 2□? 21 > 2□ leaves only 20, so 0.
+function genIneqDigit(){
+  if(Math.random() < 0.65){
+    const less = Math.random() < 0.6, V = 10*(less ? 5 + rnd(3) : 3 + rnd(3)), start = Math.random() < 0.6 ? 100 : 90;
+    const b = 10*(1 + rnd(3)), c = start - V - b;
+    if(c < 10 || c > 40) return genIneqDigit();
+    return {kind:'ineq', shape:7, ask:'count', terms:[{op:'', n:start}, {op:'−', n:b}, {op:'−', n:c}], V, less, traps:[less ? 10 - V / 10 : V / 10], ans: less ? 9 - V / 10 : V / 10 - 1};
+  }
+  const more = Math.random() < 0.6, T = 1 + rnd(3), V = 10*T + (more ? 1 : 8), b = 1 + rnd(9), c = 1 + rnd(9);   // V > T□ only for □ = 0, V < T□ only for □ = 9
+  return {kind:'ineq', shape:7, ask:'which', terms:[{op:'', n:V + b + c}, {op:'−', n:b}, {op:'−', n:c}], V, more, T, traps: more ? [1, 2, 8] : [8, 7, 0], ans: more ? 0 : 9};
+}
+const ineqDigitText = q => exprText(q.terms) + (q.ask === 'count' ? (q.less ? ' &lt; □0' : ' &gt; □0') : (q.more ? ' &gt; ' : ' &lt; ') + q.T + '□');
 const ineqSmallText = q => ['A + ■ &lt; L', '■ + A &lt; L', 'A − ■ &gt; L'][q.form].replace('A', q.A).replace('L', q.L);
 function genIneq(){
   for(;;){
@@ -65,6 +79,11 @@ function genIneq(){
 }
 
 function drawIneq(q){
+  if(q.kind === 'ineq' && q.shape === 7){
+    return '<div class="ask">' + (q.ask === 'count' ? tr('Колко е броят на различните цифри, които можем да поставим вместо □, за да е вярно:', 'Скільки різних цифр можна поставити замість □, щоб було правильно:')
+      : tr('Коя е цифрата, която трябва да поставим вместо □, за да е вярно:', 'Яку цифру треба поставити замість □, щоб було правильно:')) + '</div>' +
+      '<div class="given">' + ineqDigitText(q) + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'ineq' && q.shape === 6){
     return '<div class="ask">' + tr('Колко числа можем да поставим вместо ■, за да е вярно?', 'Скільки чисел можна поставити замість ■, щоб було правильно?') + '</div>' +
       '<div class="given">' + ineqSmallText(q) + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
@@ -100,6 +119,7 @@ function drawIneq(q){
   }
 }
 function eqIneq(q){
+  if(q.kind === 'ineq' && q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;
   if(q.kind === 'ineq' && q.shape === 6) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
   if(q.kind === 'ineq' && q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
   if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
@@ -109,6 +129,13 @@ function eqIneq(q){
     (q.asksSum ? tr(', сборът', ', сума') : '') + ' → ' + q.ans;
 }
 function whyIneq(q, full){
+  if(q.kind === 'ineq' && q.shape === 7){
+    if(!full) return tr('Първо пресметни лявата страна. После опитай цифрите на мястото на □.', 'Спершу обчисли ліву частину. Потім пробуй цифри замість □.');
+    const head = exprText(q.terms) + ' = <b>' + q.V + '</b> &nbsp;→&nbsp; ';
+    if(q.ask === 'which') return head + q.V + (q.more ? ' &gt; ' : ' &lt; ') + q.T + '□ ' + tr('само за ', 'лише для ') + q.T + q.ans + ' &nbsp;→&nbsp; □ = ' + q.ans;
+    const fit = []; for(let d = 1; d <= 9; d++) if(q.less ? 10*d > q.V : 10*d < q.V) fit.push(d);
+    return head + q.V + (q.less ? ' &lt; □0' : ' &gt; □0') + ' &nbsp;→&nbsp; □ = ' + fit.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'ineq' && q.shape === 6){
     if(!full) return tr('Опитвай числата подред, като започнеш от нулата — докога е вярно?', 'Пробуй числа по черзі, починаючи з нуля, — доки правильно?');
     const fit = [...Array(q.ans).keys()];

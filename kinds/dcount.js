@@ -33,7 +33,22 @@ function genDigitRun(){
   }
 }
 
+// МБГ Пролет 2021, 1 клас, задача 13: I wrote all the numbers below 25 — 24, 23, 22, …, 3, 2, 1. How many
+// times did I write the digit 2? 2, 12, 20, 21, 22 (twice), 23, 24: 8. The same count as from 1 to 24.
+function genDigitBelow(){
+  for(;;){
+    const d = 1 + rnd(3), N = 12 + rnd(19);
+    let n = 0; for(let v = 1; v < N; v++) n += String(v).split(String(d)).length - 1;
+    if(n >= 2) return {kind:'dcount', shape:0, below:true, d, from:1, to:N - 1, N, ans:n};
+  }
+}
 function drawDcount(q){
+  if(q.kind === 'dcount' && q.below){
+    return '<div class="ask">' + tr('Записах всички числа, по-малки от <span class="num">' + q.N + '</span>: ', 'Я записав усі числа, менші за <span class="num">' + q.N + '</span>: ') +
+      '<span class="num">' + [q.N - 1, q.N - 2, q.N - 3].join(', ') + ', …, 3, 2, 1</span>. ' +
+      tr('<b>Колко пъти</b> съм записал цифрата <span class="num">' + q.d + '</span>?', '<b>Скільки разів</b> я записав цифру <span class="num">' + q.d + '</span>?') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'dcount' && q.shape === 2){
     return '<div class="ask">' + tr('С колко <b>цифри</b> са записани числата <span class="num">' + bgList(q.list.map(String)) + '</span>?', 'Скільки <b>цифр</b> потрібно, щоб записати числа <span class="num">' + bgList(q.list.map(String)) + '</span>?') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
@@ -97,11 +112,13 @@ function whyDcount(q, full){
     return q.list.map(v => v + ' → ' + String(v).length).join(', ') + ' &nbsp;→&nbsp; ' + q.list.map(v => String(v).length).join(' + ') + ' = ' + q.ans;
   }
   if(q.kind === 'dcount'){
-    if(!full) return tr('Числата с две еднакви цифри се броят два пъти.', 'Числа з двома однаковими цифрами рахуй двічі.');
+    // below a bound with no number like 22 in it, that hint would send her looking for one
+    if(!full) return q.below && 11*q.d >= q.N ? tr('Търси цифрата и в единиците, и в десетиците.', 'Шукай цифру і в одиницях, і в десятках.')
+      : tr('Числата с две еднакви цифри се броят два пъти.', 'Числа з двома однаковими цифрами рахуй двічі.');
     const top = q.shape === 0 ? q.to : q.ans, hits = [];
-    for(let v = q.from; v <= top && hits.length < 12; v++)
+    for(let v = q.from; v <= top; v++)
       if(String(v).indexOf(String(q.d)) >= 0) hits.push(v);
-    const list = hits.join(', ') + (hits.length >= 12 ? ', …' : '');
+    const list = hits.slice(0, 12).join(', ') + (hits.length > 12 ? ', …' : '');   // the dots only when the list goes on
     if(q.shape === 0) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans + dcountSvg(q);
     return tr('до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
       ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ',

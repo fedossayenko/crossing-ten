@@ -120,6 +120,12 @@ who has more and by how much (А/Б/В/Г), three segments, the diagonal squares
 Older kinds grew short versions for them (genChainShort, genPairsShort, genCountShort, genIneqSmall,
 genSegShort, genNamedSum, genShift, genBoundShort); the rest are new kinds.
 
+The **spring round, 1st grade, 2022 and 2021** (tags `mbg-spring-2022-1` and `mbg-spring-2021-1`) are in
+whole too, pinned in check/grade1b.js and grade1b-A/B/C.js. Half their tasks are tags on 155–179, some
+widened (sides, symeq, eqcross, crossmin, digperm, pairs, ineq, count, weekday, cmp, cross, dcount,
+twodig); 16 new levels, 180–195, hold the rest: the middle digit, children and sums, scales, a dice tower,
+the star digit, prices, hops, who is which colour (А/Б/В/Г), the digit rule, the blindfold and the bowl.
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper

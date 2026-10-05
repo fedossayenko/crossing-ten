@@ -115,8 +115,31 @@ function genPairsSub(){
 // МБГ Пролет 2023 and 2025, 1 клас: 1 − 0 + 2 − 1 + 3 − 2 (each pair is 1), 1 + 2 + … + 6 − 5 − … − 1 (the
 // way down takes back the way up but the top), 1 + 19 + 2 + 18 + … − 80 (pairs of twenty), and
 // 11 − 1 + 12 − 2 + 13 − 3 + 14 − 24 (three tens, then 30 + 14 − 24).
+// Пролет 2022 and 2021: 1 + 1 + 2 + 2 − 3 − 3 (two equal halves taken back: 0), 1 − 10 + 2 + 3 + 4 + 5 (too
+// little to take 10 from at first, so the plus terms go first: 15 − 10 = 5), and 1 + 2 + 3 + 4 − 2 − 3 − 4
+// (everything but the first comes off again: 1).
 function genPairsShort(){
-  const pick = rnd(4);
+  const pick = rnd(7);
+  if(pick === 4){
+    const a = 1 + rnd(4), b = a + rnd(3), c = a + b, off = rnd(3), terms = [];
+    [a, a, b, b].forEach((n, i) => terms.push({op: i ? '+' : '', n}));
+    terms.push({op:'−', n:c}, {op:'−', n:c - off});
+    return {kind:'pairs', shape:'twice', a, b, c, off, terms, ans: off};
+  }
+  if(pick === 5){
+    const s = 1 + rnd(3), k = 3 + rnd(3), first = 2 + rnd(2), adds = [];
+    for(let i = 0; i < k; i++) adds.push(first + i);
+    const S = adds.reduce((t, v) => t + v, 0), B = s + 4 + rnd(9);   // more than the first number, never more than all of it
+    if(B > s + S || B <= s) return genPairsShort();
+    const terms = [{op:'', n:s}, {op:'−', n:B}].concat(adds.map(n => ({op:'+', n})));
+    return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
+  }
+  if(pick === 6){
+    const n = 3 + rnd(4), first = 1 + rnd(3), terms = [];
+    for(let i = 0; i < n; i++) terms.push({op: i ? '+' : '', n:first + i});
+    for(let i = 1; i < n; i++) terms.push({op:'−', n:first + i});
+    return {kind:'pairs', shape:'upup', n, first, terms, ans: first};
+  }
   if(pick === 0){
     const k = 3 + rnd(3), pairs = [];
     for(let i = 1; i <= k; i++) pairs.push([i, i - 1]);
@@ -155,6 +178,20 @@ function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
+  if(q.kind === 'pairs' && q.shape === 'twice'){
+    if(!full) return tr('Събери първо всичко, което се добавя, после всичко, което се маха.', 'Спершу додай усе, що додається, потім усе, що віднімається.');
+    return q.a + ' + ' + q.a + ' + ' + q.b + ' + ' + q.b + ' = <b>' + 2*(q.a + q.b) + '</b>, &nbsp;' + q.c + ' + ' + (q.c - q.off) + ' = <b>' + (2*q.c - q.off) + '</b> &nbsp;→&nbsp; ' + 2*(q.a + q.b) + ' − ' + (2*q.c - q.off) + ' = ' + q.ans;
+  }
+  if(q.kind === 'pairs' && q.shape === 'regroup'){
+    if(!full) return tr('От първото число не може да се извади толкова. Събери първо числата с плюс, после извади.', 'Від першого числа стільки не відняти. Спершу додай числа з плюсом, потім відніми.');
+    const S = q.s + q.adds.reduce((t, v) => t + v, 0);
+    return q.s + ' + ' + q.adds.join(' + ') + ' − ' + q.B + ' = ' + S + ' − ' + q.B + ' = ' + q.ans;
+  }
+  if(q.kind === 'pairs' && q.shape === 'upup'){
+    if(!full) return tr('Кои числа първо се добавят, а после се махат? Кое остава?', 'Які числа спершу додаються, а потім віднімаються? Що залишається?');
+    const back = q.terms.filter(t => t.op === '−').map(t => t.n);
+    return '+' + back.join(', +') + tr(' и ', ' і ') + '−' + back.join(', −') + tr(' се махат &nbsp;→&nbsp; остава ', ' знищуються &nbsp;→&nbsp; залишається ') + q.ans;
+  }
   if(q.kind === 'pairs' && q.shape === 'updown'){
     if(!full) return tr('Всяко число, което после се изважда, връща обратно какво е добавено.', 'Кожне число, яке потім віднімається, забирає те, що додали.');
     const back = q.terms.filter(t => t.op === '−').map(t => t.n);

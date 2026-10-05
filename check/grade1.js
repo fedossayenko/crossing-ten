@@ -30,23 +30,26 @@
   const walk = ts => ts.reduce((v, t) => t.op === '−' ? v - t.n : v + t.n, 0);
   for(let i = 0; i < 3000; i++){
     // 157: every box value tried against the two sides
-    const s = Q.raw(157), L = walk(s.left), R = walk(s.right), fits = [];
+    // (the shapes 'one' and 'tens', from Пролет 2022 and 2021, are worked out in check/grade1b-C.js)
+    const s = Q.raw(157), L = s.left && walk(s.left), R = s.right && walk(s.right), fits = [];
     for(let v = 0; v <= 30; v++) if(L === (s.minus ? R - v : R + v)) fits.push(v);
-    if(fits.length !== 1 || fits[0] !== s.ans || s.ans > 9 || R > 20) fail('sides:', s);
+    if((s.shape === 'same' || s.shape === 'diff') && (fits.length !== 1 || fits[0] !== s.ans || s.ans > 9 || R > 20)) fail('sides:', s);
     // 158: ■ and ● searched for in the two equalities
     const c = Q.raw(158); let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
     let dot = -1; for(let v = 0; v <= 20; v++) if(c.c - sq === v) dot = v;
-    if([dot - sq, dot + sq, dot][['minus', 'plus', 'dot'].indexOf(c.ask)] !== c.ans || c.ans < 0 || c.b > 20) fail('eqcross:', c);
+    if([dot - sq, dot + sq, dot, dot + dot - sq][['minus', 'plus', 'dot', 'twice'].indexOf(c.ask)] !== c.ans || c.ans < 0 || c.b > 20) fail('eqcross:', c);
     // 165: every digit put in by text and the equality evaluated
     const d = Q.raw(165), ok = [];
     for(let v = 0; v <= 9; v++){ const e = d.e.replace(/■/g, v); if(/(^| )0\d/.test(e)) continue; const [l, r] = e.split(' = ').map(x => eval(x.replace(/−/g, '-'))); if(l === r) ok.push(v); }
     if(ok.length !== 1 || ok[0] !== d.ans) fail('digeq: ' + ok, d);
     // 166: every digit crossed out of the written sum
-    const x = Q.raw(166), w = String(x.x) + String(x.y), sums = [...w].map((_, k) => { const t = w.slice(0, k) + w.slice(k + 1); return k < 2 ? +t.slice(0, 1) + +t.slice(1) : +t.slice(0, 2) + +t.slice(2); });
+    let x = Q.raw(166); while(x.shape === 'three') x = Q.raw(166);   // three numbers: check/grade1b-C.js
+    const w = String(x.x) + String(x.y), sums = [...w].map((_, k) => { const t = w.slice(0, k) + w.slice(k + 1); return k < 2 ? +t.slice(0, 1) + +t.slice(1) : +t.slice(0, 2) + +t.slice(2); });
     const best = x.least ? Math.min(...sums) : Math.max(...sums);
     if(sums.filter(v => v === best).length !== 1 || +w[sums.indexOf(best)] !== x.ans || new Set(w).size !== 4) fail('crossmin:', x);
     // 167: every two-digit number tested for its digits
-    const p = Q.raw(167); let S = 0; for(let v = 10; v <= 99; v++){ const a = Math.floor(v / 10), b = v % 10; if(a !== b && p.ds.includes(a) && p.ds.includes(b)) S += v; }
+    let p = Q.raw(167); while(p.shape === 'count') p = Q.raw(167);   // the count: check/grade1b-C.js
+    let S = 0; for(let v = 10; v <= 99; v++){ const a = Math.floor(v / 10), b = v % 10; if(a !== b && p.ds.includes(a) && p.ds.includes(b)) S += v; }
     if(S !== p.ans) fail('digperm:', p);
     // 173: every order of the three cards, split after the first or the second
     const k = Q.raw(173), seen = new Set(), perms = [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
@@ -61,19 +64,19 @@
   const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, DAYS }; })()');
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), ex = s => s.split(' ').reduce((a, w, i, ws) => i % 2 ? a : a.concat(T(i ? ws[i - 1] : '', +w)), []);
-  const pin = (name, id, q, key, shows) => {
+  const pin = (name, id, q, key, shows, tries = 300000) => {   // a short chain is one of very many, and cheap: it gets more tries
     const got = Q.answers(q).slice().sort((x, y) => x - y);
     if(got.join() !== key.join()) throw new Error(name + ': gives ' + got + ', the key says ' + key);
     if(!Q.accepts(q, key.map(String))) throw new Error(name + ': the key is not accepted');
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(name.includes('2023') ? 'mbg-spring-2023-1' : 'mbg-spring-2025-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const want = JSON.stringify(q);
-    for(let n = 0; n < 300000; n++) if(JSON.stringify(Q.raw(id)) === want) return;
+    for(let n = 0; n < tries; n++) if(JSON.stringify(Q.raw(id)) === want) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
-  pin('Пролет 2025 task 1', 155, {kind:'chain', terms: ex('2 − 0 − 2 + 5'), paired:0, ans:5}, [5], '2 − 0 − 2 + 5');
-  pin('Пролет 2025 task 2', 155, {kind:'chain', terms: ex('20 − 2 − 5'), paired:0, ans:13}, [13], '20 − 2 − 5');
-  pin('Пролет 2023 task 1', 155, {kind:'chain', terms: ex('2 − 0 − 2 + 3'), paired:0, ans:3}, [3], '2 − 0 − 2 + 3');
+  pin('Пролет 2025 task 1', 155, {kind:'chain', terms: ex('2 − 0 − 2 + 5'), paired:0, ans:5}, [5], '2 − 0 − 2 + 5', 3e6);
+  pin('Пролет 2025 task 2', 155, {kind:'chain', terms: ex('20 − 2 − 5'), paired:0, ans:13}, [13], '20 − 2 − 5', 3e6);
+  pin('Пролет 2023 task 1', 155, {kind:'chain', terms: ex('2 − 0 − 2 + 3'), paired:0, ans:3}, [3], '2 − 0 − 2 + 3', 3e6);
   pin('Пролет 2023 task 2', 156, {kind:'pairs', shape:'ones', pairs:[[1,0],[2,1],[3,2]], terms: ex('1 − 0 + 2 − 1 + 3 − 2'), ans:3}, [3], '1 − 0 + 2 − 1 + 3 − 2');
   pin('Пролет 2023 task 5', 156, {kind:'pairs', shape:'over', k:3, b:14, cut:24, terms: ex('11 − 1 + 12 − 2 + 13 − 3 + 14 − 24'), ans:20}, [20], '11 − 1 + 12 − 2 + 13 − 3 + 14 − 24');
   pin('Пролет 2023 task 7', 156, {kind:'pairs', shape:'tens', base:20, terms: ex('1 + 19 + 2 + 18 + 3 + 17 + 4 + 16 − 80'), paired:4, extra:0, subs:[80], ans:0}, [0], '1 + 19 + 2 + 18 + 3 + 17 + 4 + 16 − 80');
@@ -198,7 +201,8 @@
 
   for(let i = 0; i < 2000; i++){
     // symeq: every value of each figure from 0 to 20 tried against the three lines
-    const s = Q.raw(160), fits = [];
+    let s = Q.raw(160); while(s.shape === 'def' || s.shape === 'part') s = Q.raw(160);   // those two: check/grade1b-C.js
+    const fits = [];
     for(let x = 0; x <= 20; x++) for(let y = 0; y <= 20; y++) for(let z = 0; z <= 20; z++){
       const ok = s.shape === 'chain' ? s.k*x === s.s1 && x + 2*y === s.s2 && 2*y + z === s.s3 : x + y === s.s1 && y + z === s.s2 && x + z === s.s3;
       if(ok) fits.push(s.shape === 'chain' ? z : [x, y, z][s.ask]);

@@ -24,4 +24,4 @@ scripts.filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f)).f
 
 // The rest run beside the app, in this file's scope (they use read, head, body, scripts and js);
 // sourceURL names the file in an error.
-for(const f of ['check/app.js', 'check/grade3.js', 'check/papers.js', 'check/grade1.js']) eval(read(f) + '\n//# sourceURL=' + f);
+for(const f of ['check/app.js', 'check/grade3.js', 'check/papers.js', 'check/grade1.js', 'check/grade1b.js', 'check/grade1b-C.js', 'check/grade1b-B.js', 'check/grade1b-A.js']) eval(read(f) + '\n//# sourceURL=' + f);

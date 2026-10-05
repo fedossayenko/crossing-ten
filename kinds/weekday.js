@@ -54,6 +54,14 @@ function genShift(){
 }
 const shiftIn = i => (/^[вф]/.test(DAYS[i].nm) ? 'във ' : 'в ') + DAYS[i].nm;
 const shiftInUk = i => 'у ' + (weekdayUk[DAYS[i].nm].f ? weekdayUk[DAYS[i].nm].nm.replace(/а$/, 'у').replace(/я$/, 'ю') : weekdayUk[DAYS[i].nm].nm);
+// МБГ Пролет 2022, 1 клас, задача 15: 1 април is a Friday; how many Fridays are there in April after it? 8, 15,
+// 22 and 29 — 4. Or another weekday of the month, counted from its first date.
+function genAfter(){
+  const mon = MONTHS[rnd(MONTHS.length)], first1 = rnd(7), want = Math.random() < 0.6 ? first1 : rnd(7);
+  let first = 1 + (want - first1 + 7) % 7;
+  if(first === 1) first = 8;                      // the 1st itself is not after the 1st
+  return {kind:'weekday', shape:'after', mon, d1: DAYS[first1], day: DAYS[want], first, ans: 1 + Math.floor((mon[1] - first) / 7)};
+}
 function genWeekday(){
   if(Math.random() < 0.25) return genBound();
   if(Math.random() < 0.3) return genWhichDay();
@@ -108,6 +116,13 @@ function drawWeekday(q){
       '<div class="note">' + DAYS.map((d, i) => (i + 1) + ' ' + tr(d.nm, weekdayUk[d.nm].nm)).join(' · ') + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
+  if(q.kind === 'weekday' && q.shape === 'after'){
+    const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
+    return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm + '</b>. Колко <b>' + q.day.cnt + '</b> има през ' + q.mon[0] + ' <b>след</b> първия ден?',
+      'Перший день <b>' + m[1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm + '</b>. Скільки <b>' + u.many + '</b> у ' + m[2] + ' <b>після</b> першого дня?') + '</div>' +
+      '<div class="note">' + tr('Месец ' + q.mon[0] + ' има ' + q.mon[1] + ' дни.', 'У ' + m[2] + ' ' + weekdayDays(q.mon[1]) + '.') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'weekday' && q.shape === 'last'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
@@ -128,7 +143,9 @@ function drawWeekday(q){
       ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
   }
 }
+const afterDates = q => { const r = []; for(let d = q.first; d <= q.mon[1]; d += 7) r.push(d); return r; };
 function eqWeekday(q){
+  if(q.kind === 'weekday' && q.shape === 'after') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + afterDates(q).join(', ') + ' → ' + q.ans;
   if(q.kind === 'weekday' && q.shape === 'shift') return tr(DAYS[q.d1].nm, weekdayUk[DAYS[q.d1].nm].nm) + ' + ' + q.m + ' → ' + tr(DAYS[q.at].nm, weekdayUk[DAYS[q.at].nm].nm);
   if(q.kind === 'weekday' && q.shape === 'bound') return tr(q.n + ' дни → най-' + (q.most ? 'много ' : 'малко ') + q.ans,
     weekdayDays(q.n) + ' → ' + (q.most ? 'найбільше ' : 'найменше ') + q.ans);
@@ -154,7 +171,7 @@ function weekdaySvg(q){
   const cell = (c, r, fill, stroke, extra) => '<rect' + (extra || '') + ' x="' + (c * C + 1) + '" y="' + (r * C + 1) + '" width="' + (C - 2) + '" height="' + (C - 2) + '" rx="4" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
   const svg = (w, h, g) => '<svg viewBox="-2 -' + (q.mon || q.shape === 'which' ? 22 : 2) + ' ' + w + ' ' + h + '" style="display:block; width:' + Math.round(w * 1.25) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('календар', 'календар') + '">' + g + '</svg>';
-  if(q.shape === 'which' || q.shape === 'last'){
+  if(q.shape === 'which' || q.shape === 'last' || q.shape === 'after'){
     const c0 = DAYS.indexOf(q.d1), len = q.shape === 'which' ? q.n : q.mon[1], col = q.shape === 'which' ? (c0 + q.n - 1) % 7 : DAYS.indexOf(q.day);
     const pos = d => [(c0 + d - 1) % 7, Math.floor((c0 + d - 1) / 7)], rows = pos(len)[1] + 1;
     let g = short.map((nm, c) => svgText(c * C + C / 2, -7, nm, 10, 'var(--muted)')).join('');
@@ -168,6 +185,7 @@ function weekdaySvg(q){
       return svg(172, rows * C + 52, g);
     }
     let k = 1; for(let d = q.first; d <= len; d += 7) g += ring(d, k++);
+    if(q.shape === 'after'){ g += svgText(84, rows * C + 22, afterDates(q).join(', ') + ' → ' + q.ans, 15, 'var(--ink)', popAt(t0 + k)); return svg(172, rows * C + 52, g); }
     return svg(172, rows * C + 26, g);
   }
   // a run of n days: whole weeks, then what is left
@@ -192,6 +210,10 @@ function whyWeekday(q, full){
   return full && text ? text + weekdaySvg(q) : text;
 }
 function whyWeekdayText(q, full){
+  if(q.kind === 'weekday' && q.shape === 'after'){
+    if(!full) return tr('Един и същи ден от седмицата се повтаря през всеки седем дни. Първият ден не се брои.', 'Той самий день тижня повторюється кожні сім днів. Перший день не рахується.');
+    return tr(q.day.nm + ' е на ', weekdayUk[q.day.nm].nm + ' — ') + afterDates(q).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'weekday' && q.shape === 'bound'){
     if(!full) return tr('Колко цели седмици се събират, и какво остава след тях?',
       'Скільки цілих тижнів уміщається і що лишається після них?');
@@ -199,7 +221,7 @@ function whyWeekdayText(q, full){
     return tr(head + ' &nbsp;→&nbsp; <b>' + w + '</b> ' + (w === 1 ? 'е сигурен' : 'са сигурни') + ', а ' +
       (r === 1 ? 'оставащият 1 ден може ' : 'останалите ' + r + ' дни могат ') + (q.most ? 'да хванат още един' : 'и да не хванат нито един') +
       ' &nbsp;→&nbsp; ' + q.ans,
-      head + ' &nbsp;→&nbsp; <b>' + w + '</b> — напевно, а ' +
+      head + ' &nbsp;→&nbsp; <b>' + w + '</b> — точно, а ' +
       (r === 1 ? '1 день, що лишився, може ' : weekdayDays(r) + ', що лишилися, можуть ') +
       (q.most ? 'дати ще один такий день' : 'не дати жодного') + ' &nbsp;→&nbsp; ' + q.ans);
   }
