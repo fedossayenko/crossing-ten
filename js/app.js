@@ -782,8 +782,9 @@ const dueReview = (m, id, now) => { const x = m[id];
 // outside it does not hold them back.
 function nextUp(m, lastGrp, lastDone, now = Date.now(), pool){
   const done = id => m[id] && m[id].done;
-  // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
-  const met = id => { const l = LEVELS.find(x => x.id === id); return done(id) || l.grade < myGrade() || (pool && !pool(l)); };
+  // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade;
+  // inside a focus, only groundwork outside it is — a 2nd-grader going over the 1st grade takes it in order
+  const met = id => { const l = LEVELS.find(x => x.id === id); return done(id) || (pool ? !pool(l) : l.grade < myGrade()); };
   // and a lower grade's own levels are not suggested to her at all, unless she picked them as her focus
   const all = LEVELS.filter(l => (pool ? pool(l) : l.grade >= myGrade()) && !done(l.id) && (l.needs || []).every(met));
   // her own grade first (the profile's, 2nd by default), then the next grade up once those are learned
@@ -897,7 +898,7 @@ function buildPicker(){
   const nx = suggest(m, grp(lastLvl), !!(lastLvl && done(lastLvl)));
   const review = nx && dueReview(m, nx.id, Date.now());
   const after = nx && suggest(Object.assign({}, m, { [nx.id]: { done:true, rate:1, lastRate:1, n:15, f:15, rounds:1, at:Date.now(), streak:3 } }), grp(nx), true);
-  const scope = PICK_COMP ? LEVELS.filter(shown) : LEVELS;   // with a focus, the bar counts what is in it
+  const scope = focused() ? LEVELS.filter(shown) : LEVELS;   // with a focus, the bar counts what is in it
   const learned = scope.filter(done).length, met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = (nx ? '<button class="gcard nextcard" data-lvl="' + nx.id + '"><span class="nm">' +
       '<span class="lab">' + t(review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
@@ -911,7 +912,7 @@ function buildPicker(){
 
   // a competition picked is something to train for: one path through its levels, easiest first,
   // in the order the suggestion takes them
-  const path = PICK_COMP && LEVELS.filter(l => shown(l) && (PICK_TOPIC === -1 || PICK_GROUPS[PICK_TOPIC].has(l))).sort((a, b) => a.d - b.d || b.freq - a.freq);
+  const path = focused() && LEVELS.filter(l => shown(l) && (PICK_TOPIC === -1 || PICK_GROUPS[PICK_TOPIC].has(l))).sort((a, b) => a.d - b.d || b.freq - a.freq);
   $('pickAll').innerHTML = path ? '<div class="grouphead"><b>' + t('byDifficulty') + '</b><span>' + t('learnedGroup', path.filter(done).length, path.length) + '</span></div>' +
     '<div class="gcard list">' + path.map(row).join('') + '</div>' :
     groups.filter(g => PICK_TOPIC === -1 || g.k === PICK_TOPIC).map(g =>
@@ -936,8 +937,10 @@ function loadFocus(){
 const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
 const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&
   (!PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND)) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
-// the suggestion keeps to the focus while a competition is picked; once that is all learned, the whole grade again
-const suggest = (m, lastGrp, lastDone) => (PICK_COMP && nextUp(m, lastGrp, lastDone, Date.now(), inFocus)) || nextUp(m, lastGrp, lastDone);
+// a focus is a competition picked, or a grade other than hers (a 2nd-grader going over the 1st grade first)
+const focused = () => !!(PICK_COMP || (PICK_GRADE && PICK_GRADE !== myGrade()));
+// the suggestion keeps to the focus; once that is all learned, the whole grade again
+const suggest = (m, lastGrp, lastDone) => (focused() && nextUp(m, lastGrp, lastDone, Date.now(), inFocus)) || nextUp(m, lastGrp, lastDone);
 const roundOf = p => compOf(p) === 'mbg' ? paperSrc(p).split('-')[1] : '';
 const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
 // the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year

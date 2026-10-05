@@ -114,8 +114,12 @@ const server = http.createServer((req, res) => {
     document.querySelector('#pickRounds [data-v="autumn"]').click(); PICK_FOR = null; buildPicker();
     const ds = ids().map(id => LEVELS.find(l => l.id === id).d), nx = LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl);
     r.focus = PICK_COMP === 'mbg' && PICK_ROUND === 'autumn' && ds.every((d, i) => !i || d >= ds[i-1]) && inFocus(nx);
-    document.querySelector('#pickComps [data-v=""]').click(); r.back = $('pickPapers').hidden; return r; })()`);
-  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus, 'the picker filters are wrong: ' + JSON.stringify(filt));
+    document.querySelector('#pickComps [data-v=""]').click(); r.back = $('pickPapers').hidden;
+    // another grade picked on its own is a focus too: the suggestion stays in that grade
+    document.querySelector('#pickGrades [data-v="1"]').click(); PICK_FOR = null; buildPicker();
+    r.grade1 = PICK_GRADE === 1 && LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl).grade === 1;
+    document.querySelector('#pickGrades [data-v="2"]').click(); return r; })()`);
+  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus && filt.grade1, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };

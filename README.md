@@ -268,6 +268,8 @@ showing how many of the levels are learned.
   recommendation keeps inside it — groundwork outside it holds nothing back — and the bar counts
   only its levels. The filters are kept on the device, so the focus survives a relaunch, until they
   are changed or her grade changes; once the focus is all learned, the whole grade is suggested again.
+  A grade other than her own, picked on its own, is a focus too: a 2nd-grader can go over the
+  1st grade first, its levels in order of their own groundwork.
 - **Prerequisites** are declared only where a level genuinely builds on another
   (`42 − 17` after `42 − 7`, `Оцветени` after `Правоъгълници`, `Плодове` after `6 − ◯`).
   Difficulty handles the rest of the ordering.

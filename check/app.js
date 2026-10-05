@@ -130,7 +130,16 @@
     })()`);
     if(fo.order.some(x => !x[2]) || fo.order.length !== fo.want || fo.order.some((x, i) => i && x[1] < fo.order[i-1][1] - 1))
       throw new Error('a focused path went wrong: ' + JSON.stringify(fo));
-    console.log('focus: a picked competition keeps the suggestion inside it, all ' + fo.want + ' of its levels, easiest first');
+    // a 2nd-grader focused on the 1st grade: every 1st-grade level, each after its own groundwork
+    const f1 = eval('(function(){ const PLAYER = { grade:2 };' + levelsSrc + nextSrc + `;
+      const pool = l => l.grade === 1, m = {}, order = [];
+      for(let step = 0; step < 200; step++){ const nx = nextUp(m, null, false, 0, pool); if(!nx) break;
+        if(!(nx.needs || []).every(n => m[n] && m[n].done)) return { early: nx.id };
+        order.push(nx); m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2, at:0, streak:2 }; }
+      return { n: order.length, want: LEVELS.filter(pool).length, all: order.every(pool) };
+    })()`);
+    if(f1.early || f1.n !== f1.want || !f1.all) throw new Error('a 2nd-grader focused on the 1st grade went wrong: ' + JSON.stringify(f1));
+    console.log('focus: a picked competition keeps the suggestion inside it, all ' + fo.want + ' of its levels, easiest first; a 2nd-grader on the 1st grade gets all ' + f1.want + ', groundwork first');
   }
 }
 
