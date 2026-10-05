@@ -12,7 +12,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-spring-' + name.match(/20\d\d/)[0] + '-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const want = JSON.stringify(q);
-    for(let n = 0; n < tries; n++) if(JSON.stringify(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => JSON.stringify(g) === want ? 2 : 0, tries)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   const run = (a, b) => Array.from({length: b - a + 1}, (_, i) => a + i);

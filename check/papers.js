@@ -258,8 +258,8 @@
     // the same question with its numbers masked: the same wording, the same signs in the same places
     const sig = g => Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
     const want = sig(q);
-    let exact = false, like = false;
-    for(let n = 0; n < 100000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind) continue; const s = sig(g); exact = s === want; like = like || mask(s) === mask(want); }
+    const hit = pinSeed('Есен 2025 task ' + task, () => Q.raw(id), g => { if(g.kind !== q.kind) return 0; const s = sig(g); return s === want ? 2 : mask(s) === mask(want) ? 1 : 0; }, 100000);
+    const exact = !!hit && hit.exact, like = !!hit;
     if(!exact && !like) throw new Error('Есен 2025 task ' + task + ': level ' + id + ' never asks a question of that form');
     (exact ? metExact : metLike).push(task);
   });
@@ -309,9 +309,9 @@
     // who planted the trees and the order of the fruit or shapes in the row are the level's to choose; the rest must be met exactly
     const sig = g => (Q.eqText(g) + '|' + strip(Q.drawQ(g))).replace(/^[^|]*\|[А-Яа-я]+посадила?/, 'X').replace(/<svg[\s\S]*?<\/svg>/g, ''), mask = t => t.replace(/\d+/g, '#');
     const want = sig(q), fields = g => q.kind === 'fruit' ? [g.pears, g.apples, g.k].join() : q.kind === 'shapes' ? [g.wo, g.ws, g.bs, g.bc].join() : null;
-    let exact = false, like = false;
-    for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind) continue; const s = sig(g);
-      exact = fields(q) ? fields(g) === fields(q) : s === want; like = like || mask(s) === mask(want); }
+    const hit = pinSeed('Есен 2024 task ' + task, () => Q.raw(id), g => { if(g.kind !== q.kind) return 0; const s = sig(g);
+      return (fields(q) ? fields(g) === fields(q) : s === want) ? 2 : mask(s) === mask(want) ? 1 : 0; });
+    const exact = !!hit && hit.exact, like = !!hit;
     if(!exact && !like) throw new Error('Есен 2024 task ' + task + ': level ' + id + ' never asks a question of that form');
     (exact ? metExact : metLike).push(task);
   });
@@ -357,8 +357,8 @@
     if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2023-2')) throw new Error('level ' + id + ' is not tagged Есен 2023');
     const sig = g => fields ? fields.map(f => g[f]).join() : Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
     const want = sig(q);
-    let exact = false, like = false;
-    for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind || g.shape !== q.shape) continue; const s = sig(g); exact = s === want; like = like || fields || mask(s) === mask(want); }
+    const hit = pinSeed('Есен 2023 task ' + task, () => Q.raw(id), g => { if(g.kind !== q.kind || g.shape !== q.shape) return 0; const s = sig(g); return s === want ? 2 : fields || mask(s) === mask(want) ? 1 : 0; });
+    const exact = !!hit && hit.exact, like = !!hit;
     if(!exact && !like) throw new Error('Есен 2023 task ' + task + ': level ' + id + ' never asks a question of that form');
     (exact ? metExact : metLike).push(task);
   });
@@ -384,8 +384,8 @@
       if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + name);
       const sig = g => fields ? fields.map(f => JSON.stringify(g[f])).join() : Q.eqText(g) + '|' + strip(Q.drawQ(g)), mask = t => t.replace(/\d+/g, '#');
       const want = sig(q);
-      let exact = false, like = false;
-      for(let n = 0; n < 300000 && !exact; n++){ const g = Q.raw(id); if(g.kind !== q.kind || g.shape !== q.shape || g.runs !== q.runs) continue; const s = sig(g); exact = s === want; like = like || fields || mask(s) === mask(want); }
+      const hit = pinSeed(name + ' task ' + task, () => Q.raw(id), g => { if(g.kind !== q.kind || g.shape !== q.shape || g.runs !== q.runs) return 0; const s = sig(g); return s === want ? 2 : fields || mask(s) === mask(want) ? 1 : 0; });
+      const exact = !!hit && hit.exact, like = !!hit;
       if(!exact && !like) throw new Error(name + ' task ' + task + ': level ' + id + ' never asks a question of that form');
       (exact ? metExact : metLike).push(task);
     });

@@ -12,7 +12,7 @@
     if(!Q.accepts(q, key.map(String))) throw new Error(name + ': the key is not accepted');
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     const want = JSON.stringify(q);
-    for(let n = 0; n < 300000; n++) if(JSON.stringify(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => JSON.stringify(g) === want ? 2 : 0)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Пролет 2023 task 3', 157, {kind:'sides', shape:'diff', sym:'□', left:chain(2, 0, 2, 3), right:chain(2, 2, 2, 2), minus:true, VL:7, VR:8, ans:1}, [1], '2 + 0 + 2 + 3 = 2 + 2 + 2 + 2 − □');
@@ -71,7 +71,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(name.includes('2023') ? 'mbg-spring-2023-1' : 'mbg-spring-2025-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const want = JSON.stringify(q);
-    for(let n = 0; n < tries; n++) if(JSON.stringify(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => JSON.stringify(g) === want ? 2 : 0, tries)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Пролет 2025 task 1', 155, {kind:'chain', terms: ex('2 − 0 − 2 + 5'), paired:0, ans:5}, [5], '2 − 0 − 2 + 5', 3e6);
@@ -91,8 +91,7 @@
   pin('Пролет 2025 task 18', 178, {kind:'dice', S:6, x:4, y:2, more:true, n:5, traps:[2], ans:4}, [4], 'числото 4 , а на другия — 2');
   pin('Пролет 2025 task 20', 171, {kind:'weekday', shape:'bound', n:20, most:false, day:Q.DAYS[1], ans:2, short:true}, [2], 'най-малко вторника може да има сред 20 последователни дни');
   // Пролет 2023 task 17 answers with a day, from its own four: mum on Sunday, dad 3 days on (Wednesday), mine 5 after his
-  let shift = null;
-  for(let n = 0; n < 300000 && !shift; n++){ const g = Q.raw(170); if(g.who === 0 && g.d0 === 6 && g.k === 3 && g.m === 5) shift = g; }
+  const shiftHit = pinSeed('Пролет 2023 task 17', () => Q.raw(170), g => g.who === 0 && g.d0 === 6 && g.k === 3 && g.m === 5 ? 2 : 0), shift = shiftHit && shiftHit.q;
   if(!shift) throw new Error('Пролет 2023 task 17: level 170 never asks the printed question');
   if(shift.options[shift.pick].text[0] !== 'понеделник' || shift.ans !== shift.pick) throw new Error('Пролет 2023 task 17: the key says понеделник, the level ' + JSON.stringify(shift));
   if(strip(Q.drawQ(shift)).indexOf(strip('Рожденият ден на мама е в неделя, а рожденият ден на баща ми е 3 дни по-късно – в сряда. Моят рожден ден ще бъде 5 дни след')) < 0) throw new Error('Пролет 2023 task 17 is not drawn as printed: ' + strip(Q.drawQ(shift)));
@@ -151,8 +150,7 @@
     if(q.kind === 'arrows'){ const ok = perms.filter(v => q.edges.every(([x, y]) => v[x] > v[y])); if(ok.some(v => q.ask.reduce((t, x) => t + v[x], 0) !== 12)) throw new Error(name + ': A + F + E is not always 12'); }
     // the generator reaches this very figure (the arrows: these very arrows, whatever the example and the order asked)
     const sig = g => q.kind === 'arrows' ? JSON.stringify(g.edges) + [...g.ask].sort() : JSON.stringify([g.a, g.b, g.c, g.d, g.long, g.tiles, g.n, g.s, g.side]);
-    let met = false, n = 0;
-    for(; n < 300000 && !met; n++) met = sig(Q.raw(id)) === sig(q);
+    const met = pinSeed(name, () => Q.raw(id), g => sig(g) === sig(q) ? 2 : 0);
     if(!met) throw new Error(name + ': level ' + id + ' never asks the printed question');
   });
   console.log('1 клас (pencils, rectangles in a figure, the diagonal squares, the arrows): brute force agrees; the printed tasks match the key and their levels ask them');
@@ -184,14 +182,12 @@
     const tag = 'mbg-spring-' + paper.slice(-4) + '-1';
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) fail('level ' + id + ' is not tagged ' + tag, q);
     const sig = g => fields.map(f => JSON.stringify(g[f])).join();
-    let hit = false;
-    for(let n = 0; n < 300000 && !hit; n++){ const g = Q.raw(id); hit = g.kind === q.kind && sig(g) === sig(q); }
+    const hit = pinSeed(name, () => Q.raw(id), g => g.kind === q.kind && sig(g) === sig(q) ? 2 : 0);
     if(!hit) fail(name + ': level ' + id + ' never asks the printed question', q);
   });
   { // Пролет 2025 task 17 answers with a name and a number, from its own А/Б/В/Г
-    let q = null;
     // the names are drawn at random: the numbers are matched, and the paper's names put in their place
-    for(let n = 0; n < 300000 && !q; n++){ const g = Q.raw(177); if(g.boy && g.e === 3 && g.at === 0 && g.base.join() === '1,2,28') q = g; }
+    const hit = pinSeed('Пролет 2025 1 клас task 17', () => Q.raw(177), g => g.boy && g.e === 3 && g.at === 0 && g.base.join() === '1,2,28' ? 2 : 0), q = hit && hit.q;
     if(!q) throw new Error('Пролет 2025 1 клас task 17: level 177 never asks the printed question');
     const named = t => t.split(Q.WM_GIRLS[q.g][0]).join('Лили').split(Q.WM_BOYS[q.b][0]).join('Ники');
     if(named(strip(Q.drawQ(q))).indexOf(strip('Лили пресметнала вярно 1 + 2 + 28, а Ники пресметнал вярно 3 + 1 + 2 + 28. Кой е получил по-голям сбор и с колко?')) < 0) fail('task 17 is not drawn as printed', q);

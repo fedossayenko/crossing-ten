@@ -13,7 +13,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(name.includes('2022') ? 'mbg-spring-2022-1' : 'mbg-spring-2021-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const want = JSON.stringify(q);
-    for(let n = 0; n < 300000; n++) if(JSON.stringify(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => JSON.stringify(g) === want ? 2 : 0)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Пролет 2022 task 2', 157, {kind:'sides', shape:'one', sym:'□', terms: ex('10 − 2 − 6'), at:2, R:2, ans:6}, [6], '10 − 2 − □ = 2');

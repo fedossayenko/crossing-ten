@@ -18,7 +18,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag(name))) throw new Error('level ' + id + ' is not tagged ' + name);
     const sig = g => fields ? JSON.stringify(fields.map(f => g[f])) : JSON.stringify(g), want = sig(q);
-    for(let n = 0; n < 300000; n++) if(sig(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => sig(g) === want ? 2 : 0)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Пролет 2021 task 14', 185, {kind:'prices', it:[0, 1, 2], x:20, y:30, z:40, A:50, B:60, traps:[10], ans:30}, [30], 'Колко стотинки струва гумата');

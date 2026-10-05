@@ -14,7 +14,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(name.includes('2021') ? 'mbg-spring-2021-1' : 'mbg-spring-2022-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const s = sig || JSON.stringify, want = s(q);
-    for(let n = 0; n < 300000; n++) if(s(Q.raw(id)) === want) return;
+    if(pinSeed(name, () => Q.raw(id), g => s(g) === want ? 2 : 0)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   const sorted = q => q.shape + ':' + q.nums.slice().sort((a, b) => a - b).join();
