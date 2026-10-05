@@ -5,6 +5,7 @@
 // МБГ Зима 2022, задача 14: a figure of 11 square tiles; 11 small squares and 3 of two by two, 14.
 // The big ones are the trap: every 2 × 2 (or 3 × 3) block of tiles is a square too. Counted here
 // by looking at every block, never by a rule.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function countSquares(cells){
   const has = (x, y) => cells.some(c => c[0] === x && c[1] === y), sizes = [];
   for(let k = 1; k <= 4; k++){
@@ -14,7 +15,7 @@ function countSquares(cells){
   }
   return sizes;
 }
-function genCountSq(){
+export function genCountSq(){
   for(;;){
     const W = 3 + rnd(3), H = 2 + rnd(3), cells = [];
     for(let x = 0; x < W; x++) for(let y = 0; y < H; y++) cells.push([x, y]);

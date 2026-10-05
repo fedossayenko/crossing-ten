@@ -4,8 +4,9 @@
 
 // МБГ Пролет 2025, задача 19: a + b + c = 12 and a > 5 > b > c, c odd. If c were 3, b would be 4 and
 // a 5, which is not bigger than 5; so c = 1 (and b may be 2, 3 or 4). Every triple is tried here.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function ineqSols(S, k){ const out = []; for(let c = 0; c < k; c++) for(let b = c + 1; b < k; b++){ const a = S - b - c; if(a > k) out.push([a, b, c]); } return out; }
-function genIneqSum(){
+export function genIneqSum(){
   for(;;){
     const S = 9 + rnd(12), k = 3 + rnd(5), odd = Math.random() < 0.6, sols = ineqSols(S, k).filter(([, , c]) => (c % 2 === 1) === odd);
     const cs = [...new Set(sols.map(t => t[2]))];

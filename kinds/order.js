@@ -7,7 +7,8 @@
 // Задача 9: three numbers to drop into three boxes so a chain of inequalities holds.
 // Exactly one arrangement fits, so it is found by trying, not by computing — and what
 // is asked is read off the arrangement, not off the numbers.
-function genOrder(){
+import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+export function genOrder(){
   for(;;){
     const base = 2 + rnd(8), step = 2 + rnd(3);
     const nums = [base, base + step, base + 2*step];

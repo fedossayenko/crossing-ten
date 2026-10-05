@@ -6,8 +6,9 @@
 // numbers bigger than 3, and one side is the sum of two other sides. The sides go a, b, a, b, and a = a + b
 // cannot be, so the long side is two short ones: b = 4, a = 8 (b = 5 would make 10). P = 24, the square's side 6.
 // Every b is tried; a question is asked only when exactly one fits.
+import { CM, KIND, SLOT, rnd, tr } from '../js/core.js';
 function sqRectFits(lo, hi){ const out = []; for(let b = lo + 1; 2*b <= hi; b++) out.push(b); return out; }
-function genSqRect(){
+export function genSqRect(){
   for(;;){
     const one = Math.random() < 0.6, hi = one ? 9 : 10 + rnd(15), lo = 1 + rnd(hi - 2), fits = sqRectFits(lo, hi);
     if(fits.length !== 1) continue;

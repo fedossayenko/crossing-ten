@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 13: the clock's cuckoo calls 3 times every 4 seconds; in 16 seconds that is
 // four lots of 4 seconds, so 4 · 3 = 12 calls.
-function genCuckoo(){
+import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+export function genCuckoo(){
   const k = 2 + rnd(4), s = 2 + rnd(5), m = 2 + rnd(4);
   return {kind:'cuckoo', k, s, m, t: s*m, ans: k*m};
 }

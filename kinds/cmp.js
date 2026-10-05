@@ -1,6 +1,7 @@
 // Question kind 'cmp': level 10 С колко? — How much bigger one sum is than the other.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 
 const spread = n => String(n).split('').join(' + ');
 
@@ -23,7 +24,7 @@ function genRuns(){
   }
 }
 // МБГ Пролет 2021, 1 клас, задача 16: 11 + 12 + 13 + 14 + 15 against 10 + 11 + 12 + 13 + 14 — each term one more, 5.
-function genNearShort(){
+export function genNearShort(){
   const m = 3 + rnd(3), st = 10 + rnd(11), R = [], L = [];
   for(let i = 0; i < m; i++){ R.push(st + i); L.push(st + i + 1); }
   return {kind:'cmp', shape:3, shift:1, L, R, ans: m, flip: Math.random() < 0.6};
@@ -89,7 +90,7 @@ function genNear(){
     if(ok && tot > 0) return {kind:'cmp', shape:3, L, R, ans: tot, flip: Math.random() < 0.4};
   }
 }
-function genCmp(){
+export function genCmp(){
   if(Math.random() < 0.16) return genRuns();
   const pickShape = Math.random();
   if(pickShape < 0.22) return genNear();

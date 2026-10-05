@@ -4,7 +4,8 @@
 
 // МБГ Зима 2024, задача 16: 21 balloons, 3 children with three each, every other child
 // with one. The 3 children are counted as well as the ones with a single balloon: 3 + 12 = 15.
-function genBalloons(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genBalloons(){
   const k = 2 + rnd(4), m = 2 + rnd(4), rest = 2 + rnd(Math.random() < 0.3 ? 30 : 14);   // Зима 2023: 3 by 3 and 31 more
   return {kind:'balloons', k, m, rest, T: k*m + rest, ans: k + rest};
 }

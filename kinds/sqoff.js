@@ -4,12 +4,13 @@
 
 // МБГ Зима 2024, задача 11: a 10 by 6 sheet, each cut takes off the largest square there
 // is. The square's side is always the shorter side of what is left: 6, 4, 2, 2 → 4 squares.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function sqOffCuts(W, H){
   const cuts = [];
   while(W && H){ const s = Math.min(W, H); cuts.push(s); if(W > H) W -= s; else H -= s; }
   return cuts;
 }
-function genSqOff(){
+export function genSqOff(){
   for(;;){
     const W = 5 + rnd(10), H = 2 + rnd(W - 2), cuts = sqOffCuts(W, H);
     if(cuts.length >= 3 && cuts.length <= 6) return {kind:'sqoff', W, H, cuts, ans: cuts.length};

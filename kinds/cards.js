@@ -3,7 +3,8 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 20: four cards into two two-digit numbers. Every arrangement is tried.
-function genCards(){
+import { KIND, SLOT, bgList, shuffle, tr } from '../js/core.js';
+export function genCards(){
   const digits = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 4);
   const smallest = Math.random() < 0.7;
   let best = null, wit = null;

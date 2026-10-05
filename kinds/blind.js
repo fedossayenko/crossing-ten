@@ -8,8 +8,9 @@
 // colour first, 3 cubes, and the 4th must repeat one.
 // [Bulgarian plural, Ukrainian plural for 2–4, Ukrainian plural for 5 and more, colour]
 /** @type {[string, string, string, string][]} */
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 const BLIND_COLS = [['сини', 'сині', 'синіх', 'var(--accent)'], ['зелени', 'зелені', 'зелених', 'var(--good)'], ['жълти', 'жовті', 'жовтих', 'var(--lemon)'], ['червени', 'червоні', 'червоних', 'var(--rose)']];
-function genBlind(){
+export function genBlind(){
   for(;;){
     const k = 2 + rnd(2), cols = shuffle([0, 1, 2, 3]).slice(0, k), n = cols.map(() => 2 + rnd(5)), T = n.reduce((t, v) => t + v, 0);
     if(T > 12 || new Set(n).size !== k) continue;

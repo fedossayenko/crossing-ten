@@ -6,7 +6,8 @@
 // «между», where the two ends are NOT counted — so the condition has to be read.
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
-function genCount(){
+import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+export function genCount(){
   if(Math.random() < 0.14){
     // Задача 3: a list with repeats. What is asked is about the set behind it, not the
     // list — so the repeats have to be noticed and set aside.
@@ -54,7 +55,7 @@ function genCount(){
 // all one-digit numbers that are NOT less than 7 (7 + 8 + 9 = 24) — the one-digit numbers stop at 9.
 // Пролет 2022 and 2021: how many one-digit numbers are not greater than 7 (0 … 7: 8), how many one-digit
 // numbers there are (10, with the 0), how many two-digit numbers are less than 15 (10 … 14: 5).
-function genCountShort(){
+export function genCountShort(){
   const more = rnd(4);
   if(more === 0 && Math.random() < 0.25) return {kind:'count', shape:7, one:true, sum:false, natural:false, two:false, lo:0, hi:9, ans:10};
   if(more <= 1){ const shape = rnd(2), n = 3 + rnd(7); return {kind:'count', shape, one:true, sum:false, natural:false, two:false, n, lo:0, hi: shape ? n - 1 : n, ans: shape ? n : n + 1}; }

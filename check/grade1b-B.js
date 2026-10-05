@@ -3,7 +3,7 @@
    task against the official key, drawn as printed and met by its level's own generator, then each kind's
    answers found again another way. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const tag = name => name.includes('2022') ? 'mbg-spring-2022-1' : 'mbg-spring-2021-1';

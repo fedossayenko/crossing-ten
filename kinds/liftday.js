@@ -6,8 +6,9 @@
 // rides the lift up — 30 minutes there and back, so 15 one way — rests 32 minutes, walks the 2 км slope down at
 // 6 км an hour (20 minutes) and the flat back (1 hour). Off at 8:54: 2 h 35 travel + 32 rest = 3 h 07, home at 12:01.
 // Asked part by part, like the paper's marking; the clock time cannot be typed, so that part brings А/Б/В/Г.
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 const liftClock = t => Math.floor(t / 60) % 24 + ':' + String(t % 60).padStart(2, '0');
-function genLiftDay(){
+export function genLiftDay(){
   const shape = rnd(4);
   for(;;){
     const fk = 1 + rnd(2), fm = [10, 15, 20, 30][rnd(4)], F = fk*(1 + rnd(4)), sk = [3, 4, 6, 12][rnd(4)], L = 1 + rnd(3), R = [20, 30, 40][rnd(3)], rest = 10 + rnd(40);

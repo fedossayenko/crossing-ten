@@ -4,6 +4,8 @@
 
 // МБГ Пролет 2023, 1 клас, задача 18: 15 − 3 = [P][R] and 22 − 4 = [P][Y], so [R][Y] − [P] = ? The two
 // differences are 12 and 18: P is 1, R is 2 and Y is 8 — then 28 − 1 = 27.
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { ic } from './fruiteq.js';
 function genPicSub(){
   for(;;){
     const P = 1 + rnd(2), R = 1 + rnd(9), Y = rnd(10), k1 = 1 + rnd(9), k2 = 1 + rnd(9);
@@ -23,7 +25,7 @@ function genPicTable(){
 // the asked pair and the picture taken away: [b][a] − [c], [c][b] − [a], [a][c] − [b]
 const picTurned = (turn, d) => { const i = [1, 2, 0][turn], j = [0, 1, 2][turn], k = [2, 0, 1][turn];
   return [10*d[i] + d[j] - d[k], i, j, k]; };
-function genPicDig(){ return Math.random() < 0.5 ? genPicSub() : genPicTable(); }
+export function genPicDig(){ return Math.random() < 0.5 ? genPicSub() : genPicTable(); }
 
 const picTwo = (f, x, y) => '<span style="white-space:nowrap">' + ic(f[x]) + ic(f[y]) + '</span>';
 function drawPicDig(q){

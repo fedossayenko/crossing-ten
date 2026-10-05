@@ -4,6 +4,7 @@
 
 // МБГ Зима 2021, задача 17: from 7, 9, 10, 11, 13 put four in □ + □ = □ + □. 7 + 13 = 9 + 11 = 20,
 // so 10 is left. Generated so that exactly one number can be left out, checked on every choice.
+import { KIND, SLOT, bgList, shuffle, tr } from '../js/core.js';
 function pairSumLeft(nums){
   const out = [];
   nums.forEach((skip, i) => {
@@ -12,7 +13,7 @@ function pairSumLeft(nums){
   });
   return out;
 }
-function genPairSum(){
+export function genPairSum(){
   for(;;){
     const nums = shuffle([...Array(20).keys()].map(v => v + 2)).slice(0, 5).sort((x, y) => x - y), left = pairSumLeft(nums);
     if(left.length !== 1) continue;

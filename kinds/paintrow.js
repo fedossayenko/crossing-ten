@@ -4,6 +4,7 @@
 
 // МБГ Зима 2023, задача 19: three squares in a row, white, green or red, no two neighbours
 // alike. The first has 3 choices, each next one 2 (anything but its neighbour's): 3 · 2 · 2 = 12.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const PAINT_COL = [['бяло','біле'], ['зелено','зелене'], ['червено','червоне'], ['синьо','синє']];
 // МБГ Пролет 2025, задача 14: three rectangles in a figure where each touches both others, white, green
 // or red, neighbours different. The first has 3 choices, the second 2, the third only 1: 3 · 2 · 1 = 6.
@@ -11,7 +12,7 @@ function genPaintFig(){
   const c = 3 + rnd(2);
   return {kind:'paintrow', fig:1, c, traps:[c*(c - 1)*(c - 1)], ans: c*(c - 1)*(c - 2)};
 }
-function genPaintRow(){
+export function genPaintRow(){
   if(Math.random() < 0.3) return genPaintFig();
   for(;;){
     const n = 2 + rnd(3), c = 2 + rnd(3), ans = c * Math.pow(c - 1, n - 1);

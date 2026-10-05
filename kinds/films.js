@@ -5,7 +5,8 @@
 // Коледно 2023, задача 6: the father is in 2 films; the mother in one of those and 2 more; the brother in one
 // with both parents, 2 alone and one with one parent. Films with at least one of them: 2 + 2 + 2 = 6 — the
 // shared films were counted already. Adding up every part (2 + 3 + 4 = 9) is the trap.
-function genFilms(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genFilms(){
   const f = 2 + rnd(3), m = 1 + rnd(3), x = 1 + rnd(3);
   return {kind:'films', f, m, x, traps:[f + (1 + m) + (2 + x), f + m + x + 1], ans: f + m + x};
 }

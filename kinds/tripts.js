@@ -5,6 +5,8 @@
 // МБГ Зима 2020, задача 17: five points in a plus. Any three make a triangle unless they lie on one
 // line — and the plus has two such lines of three: 10 threes − 2 = 8. Counted over every three.
 /** @type {[number, number][][]} */
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+/** @type {any[]} */
 const TRIPTS = [
   [[1,0],[0,1],[1,1],[2,1],[1,2]],             // the paper's plus
   [[0,1],[1,1],[2,1],[1,0]],                   // a row of three and one above
@@ -13,7 +15,7 @@ const TRIPTS = [
   [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]]        // two rows of three
 ];
 const triCollinear = ([a, b], [c, d], [e, f]) => (c - a)*(f - b) === (d - b)*(e - a);
-function genTriPts(){
+export function genTriPts(){
   const pts = TRIPTS[rnd(TRIPTS.length)];
   let all = 0, flat = 0;
   for(let i = 0; i < pts.length; i++) for(let j = i + 1; j < pts.length; j++) for(let k = j + 1; k < pts.length; k++){ all++; if(triCollinear(pts[i], pts[j], pts[k])) flat++; }

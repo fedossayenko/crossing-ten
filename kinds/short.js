@@ -1,11 +1,12 @@
 // Question kind 'short': level 39 Не достигат — Short by so many — so how many are there now?.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 
 const SWEETS = ['бонбона', 'стикера', 'ябълки', 'монети'];
 
 // Задача 10: being short of a total tells you how many there are now.
-function genShort(){
+export function genShort(){
   const item = SWEETS[rnd(SWEETS.length)];
   const have = 2 + rnd(18);
   const T1 = have + 2 + rnd(18);

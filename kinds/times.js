@@ -5,7 +5,8 @@
 // The table up to 10 · 10, which the 2nd grade learns during the year, and dividing by reading it
 // backwards: 42 : 6 is the number that times 6 makes 42. Every level that multiplies or divides
 // needs this one, so the spring papers wait until she knows the table.
-function genTimes(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genTimes(){
   const a = 2 + rnd(9), b = 2 + rnd(9), div = Math.random() < 0.4;
   return {kind:'times', a, b, div, traps:[div ? a*b - a : a + b], ans: div ? b : a*b};
 }

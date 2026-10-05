@@ -5,7 +5,8 @@
 // МБГ Пролет 2022, 1 клас, задача 16: two dice one on the other; the top one shows 1 on top, 5 and 4 at the
 // sides, the bottom one 6 and 3. A die has 1 + 2 + 3 + 4 + 5 + 6 = 21 dots, two have 42; 19 can be seen,
 // so 42 − 19 = 23 cannot. Faces seen together on one die are never opposite (opposite faces make 7).
-function genDiceStack(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genDiceStack(){
   for(;;){
     const t = 1 + rnd(6), l = 1 + rnd(6), r = 1 + rnd(6), bl = 1 + rnd(6), br = 1 + rnd(6);
     const apart = (x, y) => x !== y && x + y !== 7;                   // two faces that meet at an edge

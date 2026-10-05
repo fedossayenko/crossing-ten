@@ -1,8 +1,9 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
-const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
+export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
 
 // Задача 9: three totals, three fruit. The third equation contains the first, which
 // is the way in — no guessing, just substitution.
@@ -30,7 +31,7 @@ function genPairTotals(){
     return {kind:'fruiteq', tri:1, x, y, z, s1: x + y, s2: y + z, s3: z + x, ans: x + y + z};
   }
 }
-function genFruitEq(){
+export function genFruitEq(){
   if(Math.random() < 0.2) return genPairTotals();
   if(Math.random() < 0.35) return genGrid();
   for(;;){

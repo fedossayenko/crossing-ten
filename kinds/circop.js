@@ -4,12 +4,13 @@
 
 // МБГ Есен, 3 клас, задача 16: a ◎ b is the sum divided by the bigger minus the smaller;
 // 8 ◎ 4 = 12 : 4 = 3, so 12 ◎ 4 = 16 : 8 = 2. Sometimes the smaller number comes first.
-function circPairs(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function circPairs(){
   const out = [];
   for(let a = 2; a <= 40; a++) for(let b = 1; b < a; b++) if((a + b) % (a - b) === 0 && (a + b) / (a - b) > 1) out.push([a, b]);
   return out;
 }
-function genCircOp(){
+export function genCircOp(){
   const all = circPairs();
   for(;;){
     const ex = all[rnd(all.length)], q = all[rnd(all.length)];

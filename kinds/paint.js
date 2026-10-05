@@ -1,12 +1,13 @@
 // Question kind 'paint': level 34 Оцветени — Paint whole rows and columns — what is left.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, gridSvg, rnd, tr } from '../js/core.js';
 
 const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
 
 // Задача 14: whole rows and columns painted. What survives is the leftover rows
 // times the leftover columns — the crossings are counted twice the other way.
-function genPaint(){
+export function genPaint(){
   const R = 3 + rnd(3), C = 4 + rnd(4);
   const r = 1 + rnd(Math.min(3, R - 1)), c = 1 + rnd(Math.min(3, C - 1));
   const left = (R - r) * (C - c);

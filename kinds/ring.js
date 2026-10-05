@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 19: to Петър's left, between him and Иван, 4 children; to his right 6. The
 // two groups fill the circle between the two boys — and the boys themselves count: 4 + 6 + 2 = 12.
-function genRing(){
+import { KIND, SLOT, popAt, rnd, tr, ukN } from '../js/core.js';
+export function genRing(){
   const l = 1 + rnd(9), r = 1 + rnd(9);
   return {kind:'ring', l, r, ans: l + r + 2};
 }
@@ -22,7 +23,7 @@ function eqRing(q){
 // going one way round to Иван, those to his right the other way. The hint shows only the two boys
 // and the two groups as arcs with their counts; the solution draws every child, one after another
 // round the ring, and the two boys last — the step she missed.
-function ringSvg(q, full){
+export function ringSvg(q, full){
   const N = q.l + q.r + 2, R = 75, at = k => { const a = Math.PI/2 + k*2*Math.PI/N; return [100 + R*Math.cos(a), 100 + R*Math.sin(a)]; };
   const f = v => v.toFixed(1), col = k => k <= q.l ? 'var(--accent)' : 'var(--warm)';
   const boy = (k, name, d) => { const [x, y] = at(k);

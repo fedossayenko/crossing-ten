@@ -5,12 +5,13 @@
 // МБГ Зима 2022, задача 17: weights of 1, 2 and x kg weigh every packet from 1 to 10 kg. The
 // heaviest packet needs all three: 1 + 2 + x = 10, so x = 7 — and then 4, 5, 6 come from putting
 // a small weight on the packet's pan (7 − 3, 7 − 2, 7 − 1). Checked by trying every placing.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function weighable(ws){
   const got = new Set();
   (function walk(i, s){ if(i === ws.length){ if(s > 0) got.add(s); return; } walk(i + 1, s); walk(i + 1, s + ws[i]); walk(i + 1, s - ws[i]); })(0, 0);
   return got;
 }
-function genWeights(){
+export function genWeights(){
   for(;;){
     const pairs = [[1, 2], [1, 3], [2, 3], [1, 4]], [a, b] = pairs[rnd(pairs.length)];
     const x = b + 1 + rnd(10), N = a + b + x, all = weighable([a, b, x]);

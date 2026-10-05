@@ -5,7 +5,8 @@
 // Коледно 2024, задача 8: Ани is 4 years older than her brother and 20 years younger than her
 // mother; her father is 31 and 3 years older than the mother. Only the father's age is given, so
 // the chain is read from him: mother 28, Ани 8, brother 4.
-function genAges(){
+import { KIND, SLOT, bgWith, rnd, tr, ukN } from '../js/core.js';
+export function genAges(){
   for(;;){
     const F = 26 + rnd(20), m = 2 + rnd(6), older = Math.random() < 0.75, M = older ? F - m : F + m;
     const g = 18 + rnd(13), A = M - g, b = 2 + rnd(5), B = A - b, asksAni = Math.random() < 0.25;

@@ -10,10 +10,11 @@
 // 55, 22, 22 and 11 are shown; the letters are found row by row, from wherever only one box is missing:
 // A = 99 − 55 = 44, Б = 33, В = 22, then down to the base. (A+Б+В) − (Г+Д+Е+Ж+З+И+К) = 99 − 55 = 44 (here A … M).
 // rows[r][i]: row r from the top. Shown are the paper's five places; every other box has a letter.
-const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
 /** @type {[number, number, string][]} */
-const PYR_LET = [[1, 1, 'A'], [2, 0, 'B'], [2, 2, 'C'], [3, 1, 'D'], [3, 2, 'E'], [3, 3, 'F'], [4, 0, 'G'], [4, 1, 'H'], [4, 2, 'K'], [4, 4, 'M']];
+export const PYR_LET = [[1, 1, 'A'], [2, 0, 'B'], [2, 2, 'C'], [3, 1, 'D'], [3, 2, 'E'], [3, 3, 'F'], [4, 0, 'G'], [4, 1, 'H'], [4, 2, 'K'], [4, 4, 'M']];
 function pyrRows(base){ const rows = [base]; while(rows[0].length > 1) rows.unshift(rows[0].slice(1).map((v, i) => rows[0][i] + v)); return rows; }
 function genPyrOne(){
   for(;;){
@@ -36,7 +37,7 @@ function pyrOneSvg(q){
   return '<div class="fig"><svg viewBox="-3 -3 ' + (5*w + 6) + ' ' + (5*h + 6) + '" style="height:clamp(110px,19vh,170px)" role="img" aria-label="' + tr('пирамида от числа', 'піраміда з чисел') + '">' + s + '</svg></div>';
 }
 const pyrLetSum = (from, to) => PYR_LET.slice(from, to).map(x => x[2]).join('+');
-function genNumPyr(){
+export function genNumPyr(){
   if(Math.random() < 0.3) return genPyrOne();
   for(;;){
     const b = [rnd(4), rnd(5), 1 + rnd(4), 1 + rnd(5), rnd(6)], z = 5 + rnd(16);

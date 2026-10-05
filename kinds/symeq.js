@@ -4,6 +4,7 @@
 
 // МБГ Пролет 2023, 1 клас, задача 9: ■ + ■ + ■ = 21, ■ + ∆ + ∆ = 17, ∆ + ○ + ∆ = 16 — ○? Each line
 // brings in one new figure: ■ is 7 (7 + 7 + 7), then ∆ + ∆ = 10 so ∆ is 5, then ○ = 16 − 10 = 6.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function genSymChain(){
   for(;;){
     const k = 2 + rnd(2), x = 2 + rnd(k === 3 ? 6 : 9), y = 1 + rnd(9), z = 1 + rnd(9);
@@ -42,7 +43,7 @@ function genSymPart(){
     return {kind:'symeq', shape:'part', rel, o, f, s, T: o + f + s, a: o + f, b: f + s, d: s - o, ans: f};
   }
 }
-function genSymEq(){ const r = Math.random(); return r < 0.3 ? genSymChain() : r < 0.55 ? genSymTri() : r < 0.8 ? genSymDef() : genSymPart(); }
+export function genSymEq(){ const r = Math.random(); return r < 0.3 ? genSymChain() : r < 0.55 ? genSymTri() : r < 0.8 ? genSymDef() : genSymPart(); }
 
 const SYMS = ['■', '∆', '○'];
 const symDefOf = q => ['□ + □ − ' + q.j, '□ − ' + q.j, '□ + ' + q.j][q.df].replace(' − 0', '');

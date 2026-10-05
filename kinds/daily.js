@@ -5,8 +5,9 @@
 // Коледно състезание 2025, задача 8: Ivo rode 3 km, then on each of the next 4 days 9 km more
 // than the day before: 3, 12, 21, 30, 39, so the last two days make 69. "The next 4 days"
 // come after the first one — five days in all, which is the trap.
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 const DAILY_KIDS = [['Иво', 'Іво', 0], ['Мая', 'Мая', 1], ['Асен', 'Асен', 0], ['Ния', 'Нія', 1]];
-function genDaily(){
+export function genDaily(){
   for(;;){
     const [bg, uk, she] = DAILY_KIDS[rnd(DAILY_KIDS.length)];
     const a = 1 + rnd(9), d = 2 + rnd(9), k = 3 + rnd(3), days = [a];

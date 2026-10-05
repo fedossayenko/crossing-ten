@@ -5,7 +5,8 @@
 // Коледно състезание 2025, задача 4: the difference of two numbers is 4 — the smallest possible
 // minuend? 4, since 4 − 0 = 4: the 0 is allowed and is the whole trick. When the numbers
 // have to be two-digit it is 10 more, and when neither may be 0 it is one more.
-function genMinuend(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genMinuend(){
   const d = 2 + rnd(15), kind = [0, 0, 1, 2][rnd(4)], asks = rnd(2);        // asks: the minuend, or the sum of the two
   const sub = kind === 0 ? 0 : kind === 1 ? 10 : 1;
   return {kind:'minuend', d, which: kind, asks, sub, ans: asks === 0 ? sub + d : 2*sub + d};

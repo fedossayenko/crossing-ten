@@ -1,8 +1,10 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, NAMES, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { LANG } from '../js/i18n.js';
 
-function genTrees(){
+export function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
   // a row can run to two dozen, and the gap may be a single metre — which is the purest
   // form of the lesson, since then the length is just the number of gaps

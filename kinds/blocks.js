@@ -5,6 +5,7 @@
 // МБГ Зима 2020, задача 7: 1, 2, 3, 4 in a row with 1 next to 2 and 3 next to 4. Glue each pair into
 // a block: two blocks go 2 ways, and each block can be turned: 2 · 2 · 2 = 8. Counted here by
 // listing every order.
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 function blocksCount(n, pairs){
   let c = 0;
   (function walk(cur, left){
@@ -14,7 +15,7 @@ function blocksCount(n, pairs){
   return c;
 }
 const BLOCKS = [[3, [[1, 2]]], [4, [[1, 2]]], [4, [[1, 2], [3, 4]]], [5, [[1, 2], [3, 4]]], [4, [[1, 2], [2, 3]]]];
-function genBlocks(){
+export function genBlocks(){
   const [n, pairs] = BLOCKS[rnd(BLOCKS.length)];
   return {kind:'blocks', n, pairs, ans: blocksCount(n, pairs)};
 }

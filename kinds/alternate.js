@@ -4,7 +4,8 @@
 
 // МБГ Зима 2021, задача 14: △ and □ take turns, 15 figures in all; at most how many □? Start
 // with □ and end with □: 8 of them and 7 △. With an even count it is half either way.
-function genAlternate(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genAlternate(){
   const n = 7 + rnd(16), most = Math.random() < 0.65;
   return {kind:'alternate', n, most, ans: most ? Math.ceil(n/2) : Math.floor(n/2)};
 }

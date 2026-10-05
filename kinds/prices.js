@@ -7,9 +7,10 @@
 // 60 − 40 = 20 for the ruler, and then 50 − 20 = 30 for the eraser.
 // [Bulgarian, Bulgarian with the article, Ukrainian]
 /** @type {[string, string, string][]} */
+import { KIND, SLOT, rnd, shuffle, svgText, tr } from '../js/core.js';
 const PRICE_THINGS = [['линийка', 'линийката', 'лінійка'], ['гума', 'гумата', 'гумка'], ['триъгълник', 'триъгълникът', 'трикутник'],
                       ['молив', 'моливът', 'олівець'], ['острилка', 'острилката', 'стругачка']];
-function genPrices(){
+export function genPrices(){
   for(;;){
     // x the thing in both pairs, y the one asked, z the one priced alone; prices in round tens
     const it = shuffle([0, 1, 2, 3, 4]).slice(0, 3), x = 10*(1 + rnd(5)), y = 10*(1 + rnd(5)), z = 10*(1 + rnd(5));

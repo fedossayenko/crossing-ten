@@ -1,12 +1,12 @@
 // Runs beside the app (in check.js's own scope, through eval): each block loads its own copy of
-// the app with eval(head + body) and checks it from outside. Run all checks with: node check.js
+// the app's modules (APP, from check.js) and checks them from outside. Run all checks with: node check.js
 // Every 2nd-grade paper, task by task against its official key, and its new kinds by brute force.
 
 /* МБГ Зима 2024, 2 клас: the whole paper. Tasks 6, 7, 10, 14, 15, 19 and 20 are levels the
    autumn papers already had (also:['mbg-winter-2024-2']); the rest are levels 79–89. Each
    printed task is solved as printed against the official key, and the new kinds by brute force. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, LEVELS, PINWHEEL, lettersSolve }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
   const text = q => strip(Q.drawQ(q)).replace(/&gt;/g, '>').replace(/&lt;/g, '<');
   const printed = (task, q, want, shows) => {
@@ -102,7 +102,7 @@
    is level 18 (also:['kms-2025-2']); tasks 1 and 3–10 are levels 90–98. Each printed task is
    solved as printed against the official key, and every new kind is checked by brute force. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, TEXT, isoTriIs, santaWays, WORDPOS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ');
   const text = q => strip(Q.drawQ(q)).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/\s+/g, '');
   const printed = (task, q, want, shows) => {
@@ -222,7 +222,7 @@
    against the official key, drawn as printed — and the level's own generator is sampled until it
    asks exactly that question, so the printed task is one she can really meet. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
@@ -274,7 +274,7 @@
    tagged also:['mbg-autumn-2024-2']). As for Есен 2025: each printed task against the official key, drawn
    as printed, and met by its level's own generator. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
@@ -323,7 +323,7 @@
    21 and 27, all tagged also:['mbg-autumn-2023-2']. As for Есен 2025 and 2024. Where the level picks
    a name, a colour or a thing to count, the numbers alone are matched (the listed fields). */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
@@ -370,7 +370,7 @@
    task against the official key, drawn as printed, and met by its level's own generator. Where the
    level picks a name, a colour or a thing to count, the listed fields alone are matched. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, answers, accepts, LEVELS, DAYS, TERMS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const D = nm => Q.DAYS.find(d => d.nm === nm), run = (a, b, s) => { const r = []; for(let v = a; s > 0 ? v <= b : v >= b; v += s) r.push(v); return r; };
@@ -669,7 +669,7 @@
     [20, 136, {kind:'prodof', shape:1, N:24, sum:false, traps:[12], ans:4}, [4], 'Произведението на 3 различни естествени числа е 24. Колко най-малко може да бъде най-голямото сред тези числа']
   ]);
   { // the Пролет 2025 kinds, each worked out another way
-    const Q3 = eval('(function(){' + head + body + '; return { raw }; })()');
+    const Q3 = APP;
     for(let i = 0; i < 400; i++){
       const t = Q3.raw(141); if(t.ans !== (t.div ? t.a*t.b / t.a : t.a*t.b) || t.a < 2 || t.a > 10 || t.b < 2 || t.b > 10) throw new Error('times: ' + JSON.stringify(t));
       const r = Q3.raw(129);
@@ -704,7 +704,7 @@
     console.log('Пролет 2025 kinds: the table, products, brackets, bounds, shares, runs, threads and the diagonals worked out again by brute force');
   }
   { // the Коледно 2024 and Есен 2019 kinds, each worked out another way
-    const Q2 = eval('(function(){' + head + body + '; return { raw, VTRI }; })()');
+    const Q2 = APP;
     for(let i = 0; i < 400; i++){
       const v = Q2.raw(123), F = Q2.VTRI[v.f], P = F.pts, segs = F.lines.map(l => [P[l[0]], P[l[l.length - 1]]]);
       const onSeg = (p, [a, b]) => (b[0] - a[0])*(p[1] - a[1]) === (b[1] - a[1])*(p[0] - a[0]) && Math.min(a[0], b[0]) <= p[0] && p[0] <= Math.max(a[0], b[0]) && Math.min(a[1], b[1]) <= p[1] && p[1] <= Math.max(a[1], b[1]);
@@ -744,7 +744,7 @@
     console.log('Коледно 2024 and Есен 2019 kinds: triangles at a corner against the drawn segments, pyramids and ages found again by search, garlands, dice and two triangles recounted');
   }
   { // the Коледно 2023 and 2022 kinds, each worked out another way
-    const Q3 = eval('(function(){' + head + body + '; return { raw, FIGS, PYR_SHOWN, PYR_LET, SPAN_MONTHS, CORNER_FIGS, bracketsExpr }; })()');
+    const Q3 = APP;
     const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
     for(let i = 0; i < 300; i++){
       // 142: triangles and squares found again from the drawn segments and the coordinates alone

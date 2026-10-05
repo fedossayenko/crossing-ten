@@ -5,7 +5,8 @@
 // МБГ Пролет 2025, задача 2: 3 + 3 + 3 + 3 − 3 · 4 + 5 + 5 + 5 + 5 + 5 − 5 · 4. Four threes are 3 · 4,
 // so the first part is 0; five fives less four fives leaves one five: 5.
 // Задача 17: eight 2s = 1 + how many 3s? 16 = 1 + 15, and 15 is five 3s.
-function genRepAdd(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genRepAdd(){
   if(Math.random() < 0.4){
     for(;;){
       const a = 2 + rnd(4), b = 2 + rnd(4), r = rnd(5), star = 2 + rnd(6), T = r + star*b;

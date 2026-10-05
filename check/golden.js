@@ -6,7 +6,7 @@
 // new is recorded on purpose with `node check.js --golden`, and the diff of golden.json shows which
 // levels it touched.
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, why, answers, withChoices, choiceHtml, LEVELS, lang: l => { LANG = l; } }; })()');
+  const Q = Object.assign(Object.create(APP), { lang: l => { APP.LANG = l; } });
   const crypto = require('crypto'), file = __dirname + '/check/golden.json', SEEDS_PER_LEVEL = 30;
   const shown = q => ['bg', 'uk'].map(l => { Q.lang(l); return [Q.drawQ(q), Q.eqText(q), Q.why(q, true), Q.why(q, false), q.options ? Q.choiceHtml(q) : ''].join('\u0001'); }).join('\u0002') + '\u0002' + Q.answers(q).join();
   const now = {};

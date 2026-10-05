@@ -4,7 +4,8 @@
 
 // Задача 15: both numbers are at least ten and different, which for these sums
 // leaves exactly one pair — at the bottom of the range or at the top.
-function genTwoDig(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genTwoDig(){
   const three = Math.random() < 0.25;
   const M = three ? 100 : 10, X = three ? 999 : 99;
   const bottom = three ? true : Math.random() < 0.5;
@@ -16,7 +17,7 @@ function genTwoDig(){
 }
 // МБГ Пролет 2022, 1 клас, задача 14: two different two-digit numbers add to less than 23; the bigger minus the
 // smaller? Only 10 + 11 and 10 + 12 are small enough, so 1 or 2 — both are written. Or the bigger one asked.
-function genTwoDigUnder(){
+export function genTwoDigUnder(){
   const B = 23 + rnd(4), ask = rnd(2), pairs = [];
   for(let lo = 10; lo < 99; lo++) for(let hi = lo + 1; lo + hi < B; hi++) pairs.push([lo, hi]);
   const vals = [...new Set(pairs.map(([lo, hi]) => ask ? hi : hi - lo))].sort((a, b) => a - b);

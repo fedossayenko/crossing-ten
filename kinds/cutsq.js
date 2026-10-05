@@ -4,7 +4,8 @@
 
 // МБГ Пролет 2025, задача 12: squares of side 4 см cut from a square of side 20 см: 5 along each side,
 // 5 rows of 5, 25. On a rectangle whose sides do not divide exactly, the leftover strip is wasted.
-function genCutSq(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genCutSq(){
   for(;;){
     const s = 2 + rnd(4), sq = Math.random() < 0.5, exact = Math.random() < 0.7;
     const m = 2 + rnd(5), n = sq ? m : 2 + rnd(5);

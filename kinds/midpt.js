@@ -4,7 +4,8 @@
 
 // МБГ Есен, 3 клас, задача 13: A to B is 32 km, M is halfway, N lies between A and M with MN = 4 km;
 // N to B is 16 + 4 = 20 km. Sometimes it asks for A to N instead: 16 − 4.
-function genMidPt(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genMidPt(){
   const half = 8 + rnd(23), m = 1 + rnd(half - 2), toB = Math.random() < 0.65;
   return {kind:'midpt', AB: 2*half, half, m, toB, ans: toB ? half + m : half - m,
           traps: [toB ? half - m : half + m, 2*half - m, half].filter((v, i, a) => a.indexOf(v) === i)};

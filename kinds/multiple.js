@@ -1,6 +1,7 @@
 // Question kind 'multiple': level 49 Кратни — The smallest count that splits into equal parts both ways.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { BGNUM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
@@ -8,7 +9,7 @@ const GARDEN = [['рози','розите','градината'], ['ябълки
 // Задача 17: "a sum of p equal addends" is another way of saying "divides by p". Wanted
 // both ways at once, so the count divides by both — and the smallest one past the bound.
 const PAIRS = [[2,3,6], [2,4,4], [2,5,10], [3,4,12], [2,6,6], [2,7,14], [3,2,6], [4,3,12]];
-function genMultiple(){
+export function genMultiple(){
   if(Math.random() < 0.25){
     // Зима 2021: how many of 1 … 20 can be written both ways — the multiples of 6: 6, 12, 18
     const [p, r, L] = PAIRS[rnd(PAIRS.length)], N = L*(2 + rnd(3)) + rnd(L);

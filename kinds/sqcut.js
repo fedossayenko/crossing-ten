@@ -1,6 +1,7 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { CM, KIND, SLOT, UKNUM, diffBars, popAt, rnd, svgText, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -96,7 +97,7 @@ function triSqSvg(q){
     t((ax + L)*u/2 + 9, H - ay*u/2, p + ' см') +
     t(sx + S*u/2, H + 15, q.sqLabel || q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
 }
-function genSqCut(){
+export function genSqCut(){
   if(Math.random() < 0.2){
     // Задача 15: strips, and the answer wanted in милиметри — ten to the centimetre.
     const k = 2 + rnd(3);                      // 2, 3 or 4 strips
@@ -261,7 +262,7 @@ function eqSqcut(q){
 // The picture walks round the figure: drawn in grey with its cuts, the piece that matters tinted,
 // then one side at a time lights up orange with its length beside it, and the total comes last.
 // Sizes are in units of the figure; sides is [x1, y1, x2, y2, label], each pushed out from the middle.
-function sqWalkSvg(W, H, cuts, tint, sides, foot){
+export function sqWalkSvg(W, H, cuts, tint, sides, foot){
   const u = Math.min(150 / W, 100 / H), f = v => (v * u).toFixed(1);
   // labels go outwards from the middle of the sides being walked, not of the whole figure
   const cx = sides.reduce((t, r) => t + r[0] + r[2], 0) / (2 * sides.length), cy = sides.reduce((t, r) => t + r[1] + r[3], 0) / (2 * sides.length);

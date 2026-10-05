@@ -4,9 +4,10 @@
 
 // МБГ Есен, 3 клас, задача 2: the product of the digits of the smallest three-digit number
 // written with different digits. That number is 102, and its 0 makes the product 0.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const digMul = n => [...String(n)].reduce((a, b) => a * +b, 1);
 /** @type {[string, string, (n: number) => boolean][]} */
-const DIG_COND = [
+export const DIG_COND = [
   ['записано с различни цифри', 'записаного різними цифрами', n => new Set(String(n)).size === 3],
   ['записано само с четни цифри', 'записаного лише парними цифрами', n => [...String(n)].every(c => +c % 2 === 0)],
   ['записано само с нечетни цифри', 'записаного лише непарними цифрами', n => [...String(n)].every(c => +c % 2 === 1)],
@@ -19,7 +20,7 @@ const DIG_COND = [
   ['чието произведение на цифрите е 18', 'добуток цифр якого дорівнює 18', n => digMul(n) === 18],
   ['чието произведение на цифрите е 24', 'добуток цифр якого дорівнює 24', n => digMul(n) === 24]
 ];
-function genDigSum(){
+export function genDigSum(){
   const c = DIG_BASIC + rnd(DIG_COND.length - DIG_BASIC), big = Math.random() < 0.75;
   const fit = [];
   for(let n = 100; n <= 999; n++) if(DIG_COND[c][2](n)) fit.push(n);
@@ -31,7 +32,7 @@ function genDigSum(){
 }
 // The first five ask for the product or the sum; the rest, set by the digits' product, only for the sum.
 const DIG_BASIC = 5;
-function genDigProd(){
+export function genDigProd(){
   const c = rnd(DIG_BASIC), big = Math.random() < 0.35, prod = Math.random() < 0.7;
   const fit = [];
   for(let n = 100; n <= 999; n++) if(DIG_COND[c][2](n)) fit.push(n);

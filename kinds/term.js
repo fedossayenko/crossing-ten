@@ -3,13 +3,14 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 10: the parts of a sum and a difference have names, and the name is the task.
-const TERMS = [
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export const TERMS = [
   { sub:'умаляемото',        obj:'умаляемото',        of:'разликата', at:0, op:'−' },
   { sub:'умалителят',        obj:'умалителя',         of:'разликата', at:1, op:'−' },
   { sub:'първото събираемо', obj:'първото събираемо', of:'сбора',     at:0, op:'+' },
   { sub:'второто събираемо', obj:'второто събираемо', of:'сбора',     at:1, op:'+' }
 ];
-function genTerm(){
+export function genTerm(){
   if(Math.random() < 0.2){
     // Коледно 2024, задача 3: how many of the subtrahends in 12 − 9, 8 − 4, 11 + 34, 31 − 7, 27 − 0
     // are bigger than 6. 11 + 34 has no subtrahend at all, so its 34 is the trap: 9 and 7, so 2.

@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 11: four squirrels share 16 nuts, each more than 2. For one to get as many
 // as possible the other three get as few as allowed — 3 each, 9 — and she gets 16 − 9 = 7.
-function genNuts(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genNuts(){
   for(;;){
     const k = 3 + rnd(3), m = 1 + rnd(4), T = k*(m + 1) + 2 + rnd(12);
     if(T > 40) continue;

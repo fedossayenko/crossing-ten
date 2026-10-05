@@ -4,7 +4,8 @@
 
 // Задача 13: flowers of three kinds. Generated so that every way of reaching the
 // total with at least one of each kind gives the SAME number of flowers.
-function genFlowers(){
+import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+export function genFlowers(){
   for(;;){
     const p0 = 3 + rnd(4);
     const p = [p0, p0 + 1, p0 + 2];

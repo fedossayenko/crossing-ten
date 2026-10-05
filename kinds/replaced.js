@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 6: 20 numbers, several rubbed out and their sum written, 10 numbers now.
 // Rubbing out k and writing one takes the count down by k − 1: 20 − 10 = 10 = k − 1, so k = 11.
-function genReplaced(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genReplaced(){
   const N = 8 + rnd(23), M = 2 + rnd(N - 3);
   return {kind:'replaced', N, M, ans: N - M + 1};
 }

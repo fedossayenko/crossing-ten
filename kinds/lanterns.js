@@ -5,7 +5,8 @@
 // МБГ Есен 2021, задача 18: all 33 lanterns in the castle were lit, and 11 were put out. How many
 // lanterns are left? All 33 — a lantern that is out is still there. Asked the other way too: how
 // many are still burning (33 − 11), so the question has to be read, not just the numbers.
-function genLanterns(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genLanterns(){
   const N = 10 + rnd(40), K = 2 + rnd(N - 4), burning = Math.random() < 0.3;
   return {kind:'lanterns', N, K, burning, ans: burning ? N - K : N};
 }

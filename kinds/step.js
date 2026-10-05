@@ -6,7 +6,8 @@
 // Задача 15: a corner cut out of a rectangle. Two of the six sides are never labelled,
 // so they have to be worked out — and the outline is the same length as the uncut
 // rectangle's, which is the surprise.
-function genStep(){
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+export function genStep(){
   for(;;){
     const W = 5 + rnd(5), H = 4 + rnd(5);
     const w = 1 + rnd(W - 2), h = 1 + rnd(H - 2);

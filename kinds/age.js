@@ -5,8 +5,9 @@
 // МБГ Зима 2024, задача 17: in 10 years Claire will be 3 times as old as now. The 10 years
 // are the two "nows" added on top of the first, so she is 5 now — and the question asks
 // about 5 years on, which is 10.
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 const AGE_KIDS = [['Клеър', 'Клер', 1], ['Мая', 'Мая', 1], ['Ния', 'Нія', 1], ['Асен', 'Асен', 0], ['Борис', 'Борис', 0]];
-function genAge(){
+export function genAge(){
   const [bg, uk, she] = AGE_KIDS[rnd(AGE_KIDS.length)];
   const m = 2 + rnd(3), now = 2 + rnd(m === 2 ? 9 : 5), a = now*(m - 1);
   const b = 1 + rnd(9), shape = Math.random() < 0.25 ? 0 : 1;

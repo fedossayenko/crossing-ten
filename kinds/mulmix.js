@@ -4,7 +4,8 @@
 
 // МБГ Есен, 3 клас, задача 1: 20 − 2 · 5 + 20 − 2 · 6. Worked straight through from the left
 // it comes out wrong: the two products go first. traps: what the left-to-right slip gives.
-function genMulMix(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genMulMix(){
   for(;;){
     const a = 10 + rnd(31), b = 2 + rnd(4), c = 2 + rnd(8), d = 2 + rnd(8);
     const e = Math.random() < 0.6 ? a : 10 + rnd(31);      // the paper's shape repeats the first number
@@ -13,7 +14,7 @@ function genMulMix(){
     return {kind:'mulmix', a, b, c, d, e, ans, traps: ltr >= 0 && ltr < 1000 && ltr !== ans ? [ltr] : []};
   }
 }
-const mulMixExpr = q => q.a + ' − ' + q.b + ' · ' + q.c + ' + ' + q.e + ' − ' + q.b + ' · ' + q.d;
+export const mulMixExpr = q => q.a + ' − ' + q.b + ' · ' + q.c + ' + ' + q.e + ' − ' + q.b + ' · ' + q.d;
 function drawMulMix(q){
   if(q.kind === 'mulmix'){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +

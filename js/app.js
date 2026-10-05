@@ -1,27 +1,37 @@
-const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
+import { $, rnd, seeded, shuffle } from './core.js';
+import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, raw, setW, slipOf, why } from './questions.js';
+import { LEVELS, PICK_GROUPS } from './levels.js';
+import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
+import { ARCHIVE, unionRounds } from './archive.js';
+import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
+import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
+import { choiceHtml, withChoices } from './choice.js';
+import { compAnswer, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
+export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, results:[], skipped:[], t0:0, timers:[], touched:false };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false };
+export let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false };
 // a competition under way (js/compete.js), and its clock
-let COMP = null, compTick = null;
-function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
+export let COMP = null, compTick = null;
+export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
 // localStorage holds the settings and the last 400 rounds; the archive (js/archive.js) holds them all.
 // Full storage keeps fewer recent rounds here rather than losing the settings.
-function saveStore(key, store){
+export function saveStore(key, store){
   for(const keep of [400, 100, 0]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: keep ? store.rounds.slice(-keep) : [] }))); return; } catch(e){}
 }
-function saveLocal(){ saveStore(LS, LOCAL); }
-const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
+export function saveLocal(){ saveStore(LS, LOCAL); }
+export const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
 // Every player's whole log: the archive and the last 400 in localStorage, merged before the first question
 // (the current player's lands in LOCAL.rounds, the others' in ARCH). A database that does not answer in
 // 2 s does not hold up the first question; its rounds still merge in when it does.
-const ARCH = {};
-const ARCHIVE_READY = Promise.race([
+export const ARCH = {};
+export const ARCHIVE_READY = Promise.race([
   Promise.all(PLAYERS.list.map(p => ARCHIVE.all(p.id).then(rs => {
     const here = p.id === PLAYER.id ? LOCAL.rounds : lsRounds(p), known = new Set(rs.map(r => r.id));
     ARCHIVE.put(p.id, here.filter(r => !known.has(r.id)));          // rounds from before the archive
@@ -62,7 +72,7 @@ function tone(freq, at, dur, peak, type){
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.02);
 }
-const sfx = {
+export const sfx = {
   good(){ if(LOCAL.muted) return; tone(660,0,.13,.18); tone(990,.1,.22,.15); },
   ok(){ if(LOCAL.muted) return; tone(560,0,.2,.14); },
   bad(){ if(LOCAL.muted) return; tone(233,0,.17,.13,'sine'); tone(196,.1,.24,.11,'sine'); },
@@ -110,7 +120,7 @@ function factLabel(key){
   const o = pair[0], bo = pair[1];
   return parts[0] === '-' ? (o < bo ? (o+10) : o) + ' − ' + bo : o + ' + ' + bo;
 }
-function weightsFrom(rounds){
+export function weightsFrom(rounds){
   const seen = {}, miss = {};
   rounds.slice(-140).forEach(r => {
     (r.seen||[]).forEach(k => seen[k] = (seen[k]||0)+1);
@@ -173,7 +183,7 @@ const FAM = {
   green:['#23795A', '#DCEFE5', '#1E5C45', '#1B5F47'], grape:['#9769C2', '#EEE4F7', '#5E3B87', '#7B52A6'],
   rose:['#C4878A', '#F8E4E5', '#7E4A4D', '#A66A6D'], lock:['#B8BEC9', '#E9ECF1', '#8D93A0', '#9DA4B1']
 };                                               // ring, disc, ink, ribbon
-const GLYPH = {
+export const GLYPH = {
   paw:['fill', 'M7 9m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0-4.8 0M12 6.6m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0-4.8 0M17 9m-2.4 0a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0-4.8 0M12 12.4c-3.2 0-5.4 2.2-5.4 4.3 0 1.9 2.2 3 5.4 3s5.4-1.1 5.4-3c0-2.1-2.2-4.3-5.4-4.3z'],
   fish:['fill', 'M2.6 12c3.2-4.4 8.6-5.4 12.8-3.2 2.2 1.1 3.2 2.2 3.2 3.2s-1 2.1-3.2 3.2C11.2 17.4 5.8 16.4 2.6 12zM19.4 12l3.4-3.4v6.8z'],
   star:['fill', 'M12 2.6l2.8 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2 6.3 20.4l1.2-6.5L2.7 9.4l6.5-.8z'],
@@ -246,7 +256,7 @@ function fidget(kind){
     life();
   }, 7000 + rnd(7000));
 })();
-function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
+export function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
 function catFor(score, total){ return score >= total - 2 ? 'happy' : score >= total/2 ? 'idle' : 'sad'; }
 
 // How a round ends. The bottom tier is encouraging, not sad: the child who scores
@@ -286,7 +296,7 @@ function putCat(slot, m){
 /* ---------- round flow ---------- */
 const plainQ = q => q.own ? q : (({ options, pick, pts, lvl, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г
 // comp: a competition's own tasks, which come with their options and points already
-function newRound(qs, comp){
+export function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
@@ -308,7 +318,7 @@ function wake(){
     setTimeout(() => { if($('cat').dataset.mood === 'yawn') mood('idle'); }, 2400);
   }, 30000);
 }
-function show(){
+export function show(){
   const q = S.qs[S.i];
   S.parts = Array(q.slots || 1).fill(''); S.at = 0;
   S.tries = 0; S.revealed = false; S.settled = false;
@@ -471,7 +481,7 @@ function next(){
 
 const STAR = on => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2 6.3 20.4l1.2-6.5L2.7 9.4l6.5-.8z" fill="' +
   (on ? 'var(--warm)' : 'none') + '" stroke="' + (on ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>';
-function finish(){
+export function finish(){
   clearTimers();
   try { localStorage.removeItem(RS); } catch(e){}
   const n = S.qs.length, got = S.results.filter(Boolean).length;
@@ -593,7 +603,7 @@ const tile = (n, label) => '<div class="tile"><span class="n">' + n + '</span><s
 const bar = (name, p, tail) => '<div class="lvlrow"><span class="nm">' + name + '</span><span class="track"><i style="width:' + p +
   '%"></i></span><span class="pc">' + p + '%' + (tail ? ' · ' + tail : '') + '</span></div>';
 // For her: the badges, what the next one needs, and how the last rounds went.
-function renderStats(){
+export function renderStats(){
   const st = statsFrom(LOCAL.rounds);
   const any = st.rounds > 0;
   $('statsEmpty').hidden = any;
@@ -636,7 +646,7 @@ function renderStats(){
 }
 // For the grown-ups: the numbers, how each group is going this month, the slips that keep
 // coming back, the crossing steps that cost most, every level, and the settings.
-function renderParent(){
+export function renderParent(){
   const st = statsFrom(LOCAL.rounds), m = mastery(LOCAL.rounds);
   const pc = st.sums ? Math.round(100*st.first/st.sums) : 0;
   const hints = st.sums ? (LOCAL.rounds.reduce((x, r) => x + (r.missed || []).length, 0) / st.sums) : 0;
@@ -979,7 +989,7 @@ const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '
 const playerName = p => p.name || t('playerN', PLAYERS.list.indexOf(p) + 1);
 const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
 const FLAME = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 .5-3-1-5 1-9.5z"/></svg>';
-function chose(){ try { sessionStorage.setItem('crossingten.chosen', '1'); } catch(e){} }
+export function chose(){ try { sessionStorage.setItem('crossingten.chosen', '1'); } catch(e){} }
 function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); location.reload(); }
 // A player's saved log and settings (the current player's are LOCAL).
 function storeOf(p){
@@ -1100,15 +1110,15 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- shared mirror ---------- */
-const builtOn = () => {
+export const builtOn = () => {
   try { return t('build') + new Date(document.lastModified)
     .toLocaleString(LANG_TAG[LANG], { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
   catch(e){ return ''; }
 };
-const heldHere = () => t('heldHere', LOCAL.rounds.length);
+export const heldHere = () => t('heldHere', LOCAL.rounds.length);
 $('synced').textContent = heldHere() + builtOn();   // sync.js takes this line over when sync is on
 
-const say = t => { $('synced').textContent = t + builtOn(); };
+export const say = t => { $('synced').textContent = t + builtOn(); };
 
 // Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
 // an accidental pinch just breaks the layout, so the gesture is turned off here. It is
@@ -1156,3 +1166,16 @@ document.addEventListener('visibilitychange', newerBuild);
 // Offline play, and the same build everywhere.
 if('serviceWorker' in navigator && window.isSecureContext)
   navigator.serviceWorker.register('sw.js').catch(() => {});
+
+startCompete();
+startSync();
+
+// The page's internals by name on window, as they were while every script shared one scope: for
+// smoke.js, and for a look from the browser console. Getters, so a value reassigned later reads as it is now.
+Object.defineProperties(window, Object.fromEntries(Object.entries({
+  $: () => $, ARCHIVE: () => ARCHIVE, BADGES: () => BADGES, COMP: () => COMP, IN: () => IN, LEVELS: () => LEVELS, LOCAL: () => LOCAL, LS: () => LS,
+  PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
+  answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
+  finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
+  raw: () => raw, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+}).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

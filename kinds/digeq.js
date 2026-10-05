@@ -5,6 +5,7 @@
 // МБГ Пролет 2025, 1 клас, задача 7: 1■ + 2 = 20 − ■. The same digit everywhere; try them:
 // with 4, 14 + 2 = 16 and 20 − 4 = 16 — equal, so ■ = 4. Задача 15: ■0 − 1■ = 3■ — 50 − 15 = 35, ■ = 5.
 // A and B are the constants each form takes; a form is kept only when exactly one digit fits.
+import { KIND, SLOT, bgWith, rnd, tr } from '../js/core.js';
 const DIGEQ = ['1■ + A = B − ■', '■0 − 1■ = A■', '■ + ■ + A = 1■', '■ + 1■ = B', 'A■ + ■ = B', '2■ − ■ − ■ = B', '■■ − B = 1■'];
 // every side worked left to right, and every number on the way a whole number from 0 to 99;
 // a ■ leading a two-digit number cannot be 0. null when the digit does not make sense there.
@@ -16,7 +17,7 @@ function digEqSides(e, d){
   return L === null || R === null ? null : [L, R];
 }
 const digEqFits = e => [0,1,2,3,4,5,6,7,8,9].filter(d => { const s = digEqSides(e, d); return s && s[0] === s[1]; });
-function genDigEq(){
+export function genDigEq(){
   for(;;){
     const f = rnd(DIGEQ.length), A = 1 + rnd(9), B = 10 + rnd(21);
     const e = DIGEQ[f].replace('A', String(A)).replace('B', String(B));

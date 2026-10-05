@@ -5,7 +5,8 @@
 // МБГ Пролет 2023, 1 клас, задача 10 (and Пролет 2025, задача 11, the shorter one): a pencil lies
 // over a ruler from 7 to 14, another from 3 to 11. Neither starts at 0, so the length is not
 // the mark the tip reaches but the marks between: 14 − 7 = 7 and 11 − 3 = 8.
-function genPencil(){
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+export function genPencil(){
   for(;;){
     const a = 1 + rnd(7), la = 3 + rnd(8), c = 1 + rnd(7), lc = 3 + rnd(8);   // never from 0: reading the start is the task
     if(a + la > 15 || c + lc > 15 || la === lc) continue;

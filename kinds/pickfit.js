@@ -5,7 +5,8 @@
 // МБГ Зима 2024, задача 4: which of 9, 10 and 11 make □ + 1 > 11 true. The candidates
 // are listed, so it is three tries rather than a search — the trap is the edge, where
 // □ + 1 comes out equal and "greater" is not true.
-function genPickFit(){
+import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+export function genPickFit(){
   const four = Math.random() < 0.3;              // Зима 2021: 15, 16, 17, 18 in □ + 17 < 34
   const lo = four ? 10 + rnd(10) : 3 + rnd(15), nums = four ? [lo, lo + 1, lo + 2, lo + 3] : [lo, lo + 1, lo + 2], add = four ? 11 + rnd(10) : 1 + rnd(9);
   const more = Math.random() < 0.6;

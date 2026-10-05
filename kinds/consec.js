@@ -7,7 +7,8 @@
 // numbers in a row are a number and one more: take the one away, halve what is left.
 // Зима 2020: how many of 4 … 18 are the sum of two consecutive numbers? n + (n + 1) is always
 // odd, and every odd number from 3 up is one: 5, 7, …, 17 — seven of them
-function genConsec(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genConsec(){
   if(Math.random() < 0.3){
     const a = 2 + rnd(10), b = a + 8 + rnd(15), list = [];
     for(let v = a; v <= b; v++) if(v % 2 && v >= 3) list.push(v);

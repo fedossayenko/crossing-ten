@@ -4,7 +4,8 @@
 
 // Задача 9: writing out a run of numbers and counting how often one digit turns up. The
 // run is walked rather than reasoned about, so the count is never a guess.
-function genDigitRun(){
+import { KIND, SLOT, bgList, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+export function genDigitRun(){
   if(Math.random() < 0.15){
     // Есен 2019, задача 3: how many digits it takes to write 12, 34, 60 and 79 — two each, 8. Here a
     // one- or three-digit number may be among them, so each is counted, not just the numbers.
@@ -35,7 +36,7 @@ function genDigitRun(){
 
 // МБГ Пролет 2021, 1 клас, задача 13: I wrote all the numbers below 25 — 24, 23, 22, …, 3, 2, 1. How many
 // times did I write the digit 2? 2, 12, 20, 21, 22 (twice), 23, 24: 8. The same count as from 1 to 24.
-function genDigitBelow(){
+export function genDigitBelow(){
   for(;;){
     const d = 1 + rnd(3), N = 12 + rnd(19);
     let n = 0; for(let v = 1; v < N; v++) n += String(v).split(String(d)).length - 1;

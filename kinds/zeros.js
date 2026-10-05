@@ -4,7 +4,8 @@
 
 // МБГ Есен, 3 клас, задача 3: (2 · 0 + 2 · 5) · (2 + 0 · 2 · 6) − 2 · 0 · 2 · 5. It looks long,
 // but every product with a 0 in it is 0, and what is left is (p · q) · p.
-function genZeros(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genZeros(){
   for(;;){
     const p = 2 + rnd(4), q = 2 + rnd(8), r = 2 + rnd(8);
     const ans = p*q*p;
@@ -15,7 +16,7 @@ function genZeros(){
             traps: [noZero, p*q].filter(v => v >= 0 && v < 1000 && v !== ans)};
   }
 }
-function zerosExpr(q){
+export function zerosExpr(q){
   const b1 = q.f1 ? q.p + ' · ' + q.q + ' + ' + q.p + ' · 0' : q.p + ' · 0 + ' + q.p + ' · ' + q.q;
   const b2 = q.f2 ? '0 · ' + q.p + ' · ' + q.r + ' + ' + q.p : q.p + ' + 0 · ' + q.p + ' · ' + q.r;
   const last = q.f3 ? q.p + ' · ' + q.q + ' · 0 · ' + q.p : q.p + ' · 0 · ' + q.p + ' · ' + q.q;

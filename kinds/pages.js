@@ -5,7 +5,8 @@
 // МБГ Зима 2021, задача 15: how many leaves lie between page 14 and page 25? Each leaf holds an odd
 // page and the next even one: 14 is on the leaf with 13, 25 on the leaf with 26, and between them
 // sit 15–16, 17–18, …, 23–24 — five leaves.
-function genPages(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genPages(){
   for(;;){
     const a = 2 + rnd(40), b = a + 5 + rnd(25), la = Math.ceil(a/2), lb = Math.ceil(b/2);
     if(lb - la - 1 < 2) continue;

@@ -1,7 +1,10 @@
 // Turning a level into a question, and a question into what the page shows. The
 // worksheet kinds do their own drawing in kinds/*.js; the plain sums are drawn here.
+import { KIND, SLOT, rnd, seeded } from './core.js';
+import { LEVELS } from './levels.js';
+import { t } from './i18n.js';
 
-function raw(level){
+export function raw(level){
   for(;;){
     let a, b;
     if(level === 1){ a = 20 + rnd(80); b = 2 + rnd(8); if(a%10 >= b) continue; return {a,b,op:'-'}; }
@@ -17,13 +20,13 @@ function raw(level){
 }
 // The fact a question practises (its kind, or a sum's crossing step), and how much weight each fact has
 // now: a step she keeps missing comes up more often. app.js sets W from her rounds (setW).
-function factKey(q){ return q.kind ? 'w:' + q.kind : q.op + ':' + (q.a%10) + '-' + (q.b%10); }
-let W = { max:1, m:{} };
-function setW(w){ W = w; }
+export function factKey(q){ return q.kind ? 'w:' + q.kind : q.op + ':' + (q.a%10) + '-' + (q.b%10); }
+export let W = { max:1, m:{} };
+export function setW(w){ W = w; }
 // A question with the seed that drew it: seeded(q.seed, () => raw(level)) draws it again.
-function seededRaw(level){ const seed = 1 + Math.floor(Math.random() * 2147483646); return Object.assign(seeded(seed, () => raw(level)), { seed }); }
+export function seededRaw(level){ const seed = 1 + Math.floor(Math.random() * 2147483646); return Object.assign(seeded(seed, () => raw(level)), { seed }); }
 // Weighted rejection sampling: a crossing step she keeps missing is likelier to come up.
-function gen(level){
+export function gen(level){
   let best = null;
   for(let i = 0; i < 36; i++){
     const q = seededRaw(level);
@@ -36,7 +39,7 @@ function gen(level){
 }
 // A sum whose crossing step is exactly this fact, built from the digits rather than
 // sampled: the borrow-only levels cannot produce a no-borrow fact at all.
-function genForFact(key){
+export function genForFact(key){
   const op = key[0], pr = key.slice(2).split('-').map(Number), o = pr[0], bo = pr[1];
   if(op === '-'){
     const bt = 1 + rnd(7);
@@ -48,11 +51,11 @@ function genForFact(key){
   const bt = 1 + rnd(cap - t);
   return { a:t*10 + o, b:bt*10 + bo, op:'+' };
 }
-const answer = q => q.kind ? q.ans : (q.op === '-' ? q.a - q.b : q.a + q.b);
-const answers = q => [answer(q)].concat(q.alt || []);
+export const answer = q => q.kind ? q.ans : (q.op === '-' ? q.a - q.b : q.a + q.b);
+export const answers = q => [answer(q)].concat(q.alt || []);
 // One box: any accepted answer will do. Several: every answer, once each, in any
 // order — and the count is taken from the question, never from what was typed.
-function accepts(q, parts){
+export function accepts(q, parts){
   if(parts.some(p => p === '')) return false;   // an empty box is not a zero
   const want = answers(q), got = parts.map(Number), n = q.slots || 1;
   if(got.length !== n) return false;
@@ -60,7 +63,7 @@ function accepts(q, parts){
   return want.length === n && got.every((v, i) => want.indexOf(v) >= 0 && got.indexOf(v) === i);
 }
 
-function drawQ(q){
+export function drawQ(q){
   if(!q.kind){
     return '<div class="sum"><span>' + q.a + '</span><span class="op">' + (q.op === '-' ? '−' : '+') + '</span><span>' + q.b +
       '</span><span class="op">=</span>' + SLOT + '</div>';
@@ -68,14 +71,14 @@ function drawQ(q){
   return KIND[q.kind].draw(q);
 }
 
-function eqText(q){
+export function eqText(q){
   if(!q.kind) return q.a + ' ' + (q.op === '-' ? '−' : '+') + ' ' + q.b + ' = ' + answer(q);
   return KIND[q.kind].eq(q);
 }
 
 // On a first miss she gets the method, not the answer; the worked line comes after. For a
 // plain sum that crosses a ten, the method comes with a picture of it (tenFrame).
-function why(q, full){
+export function why(q, full){
   if(q.kind) return KIND[q.kind].why(q, full);
   return full ? whySum(q, true) : '<span>' + whySum(q, false) + '</span>' + tenFrame(q);
 }
@@ -106,7 +109,7 @@ function whySum(q, full){
 // The crossing step on the ones, drawn as two ten-frames. Adding fills the first ten and
 // spills into the second; taking away borrows a whole ten and crosses the ones out of it
 // - the ones first, then the rest from the ten. Nothing to draw when no ten is crossed.
-function tenFrame(q){
+export function tenFrame(q){
   const o = q.a % 10, bo = q.b % 10, cells = [];      // 20 cells: the first ten, then the second
   let label;
   if(q.op === '+'){
@@ -139,7 +142,7 @@ function tenFrame(q){
 // What a wrong answer to a plain sum most likely was. The first three are the mistakes
 // worth naming to her: a ten taken but not paid back, the small ones digit taken from the
 // big one, a carried ten dropped, or the wrong sign. Worksheet tasks are not guessed at.
-function slipOf(q, parts){
+export function slipOf(q, parts){
   if(q.kind || parts.length !== 1 || parts[0] === '') return null;
   const v = +parts[0], ans = answer(q), o = q.a % 10, bo = q.b % 10;
   if(q.op === '-'){

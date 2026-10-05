@@ -8,6 +8,7 @@
 // МБГ Пролет 2022, 1 клас, задача 2: 10 − 2 − □ = 2 — 10 − 2 = 8, and 8 − □ = 2 leaves □ = 6. Пролет 2021,
 // задача 2: 21 − □ = 9, □ = 12. A short chain whose last number is the box, equal to a plain number;
 // or, with two numbers, the box first: □ − 3 = 9. terms holds the box's own number at index at.
+import { KIND, SLOT, exprText, rnd, tr } from '../js/core.js';
 function genSidesOne(){
   for(;;){
     const len = 2 + rnd(2), terms = [{op:'', n: 2 + rnd(29)}];
@@ -28,7 +29,7 @@ function genSidesTens(){
     return {kind:'sides', shape:'tens', sym:'□', left, right, VL, VR, ans: VR - VL};
   }
 }
-function genSides(){
+export function genSides(){
   const r = Math.random();
   if(r < 0.25) return genSidesOne();
   if(r < 0.4) return genSidesTens();

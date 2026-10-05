@@ -4,8 +4,11 @@
    slips she is likely to make (a ten lost or gained at the crossing, flipped digits, the other
    operation, one off). q.options is [{id, v}] in order of size, as on a paper, and q.pick is
    the id of the right one; how many there are comes from the data, not from the screen. */
+import { shuffle, tr } from './core.js';
+import { accepts, answer } from './questions.js';
+import { LANG } from './i18n.js';
 const LETTERS = { bg:'АБВГДЕ', uk:'АБВГДЕ', en:'ABCDEF' };
-function withChoices(q, n = 4){
+export function withChoices(q, n = 4){
   if(q.own) return q;                                        // a kind that brings its own options
   if((q.slots || 1) > 1 || !Number.isInteger(answer(q))) return q;
   const x = answer(q), cand = [];
@@ -23,7 +26,7 @@ function withChoices(q, n = 4){
   return Object.assign({}, q, { options: vals.map((v, id) => ({ id, v })), pick: vals.indexOf(x) });
 }
 // crossed: the ids already tried and wrong; right: show which one it was
-function choiceHtml(q, crossed, right, picked){
+export function choiceHtml(q, crossed, right, picked){
   return q.options.map(o => {
     const cls = right && o.id === q.pick ? ' ok' : crossed && crossed.indexOf(o.id) >= 0 ? ' no' : '';
     return '<button class="ch' + cls + '" data-o="' + o.id + '"' + (cls === ' no' ? ' disabled' : '') +

@@ -1,12 +1,13 @@
 // Question kind 'tens': level 51 Десетици — A number said in tens, ones and hundreds.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 
 const PLACE = {1:['единица','единици'], 10:['десетица','десетици'], 100:['стотица','стотици']};
-const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
+export const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
 // Задача 1 and 5: a number said in tens, ones and hundreds instead of digits. Ten ones
 // make a десетица and ten десетици a стотица, so the same amount has many spellings.
-function genTens(){
+export function genTens(){
   const shape = rnd(5);
   if(shape === 4){
     // Задача 1: the count of ones runs past nine, so it carries into the tens — and the

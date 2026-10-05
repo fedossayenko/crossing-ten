@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 8: two odd one-digit numbers differ by 2 and their product has two
 // digits. The pairs are 3 · 5 = 15, 5 · 7 = 35, 7 · 9 = 63 (1 · 3 = 3 has one digit), so the
 // units digit is 5 or 3. Every pair is listed; the answers are the different digits, in any order.
-function genOddProd(){
+import { KIND, SLOT, tr } from '../js/core.js';
+export function genOddProd(){
   for(;;){
     const odd = Math.random() < 0.7, d = Math.random() < 0.6 ? 2 : 4, tens = Math.random() < 0.3;
     const pairs = [];

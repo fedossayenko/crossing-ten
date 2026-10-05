@@ -3,7 +3,8 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 6: count two mixed groups, then work out how many to add to reach a gap.
-function genFruit(){
+import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
+export function genFruit(){
   if(Math.random() < 0.3){
     // Есен 2019, задача 6: 11 apples, 5 of them red and the rest yellow; 2 yellow ones eaten. The
     // yellow ones first (11 − 5 = 6), and only then the eaten ones: 4 left.
@@ -17,7 +18,7 @@ function genFruit(){
   return {kind:'fruit', pears, apples, k, row, ans: pears + k - apples};
 }
 
-function fruitSvg(row){
+export function fruitSvg(row){
   const cols = Math.min(6, row.length), u = 30;
   const rows = Math.ceil(row.length / cols);
   const g = row.map((t, i) => {

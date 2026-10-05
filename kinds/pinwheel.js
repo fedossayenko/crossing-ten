@@ -6,8 +6,9 @@
 // the figure. Going round it: 4 long sides and 8 short ones, and two short make a long —
 // so the perimeter is 8 long sides. 8 дм = 80 см → 10 см.
 // The outline in short sides, clockwise from the top of the upright arm.
-const PINWHEEL = [[2,0],[3,0],[3,2],[4,2],[4,3],[2,3],[2,4],[1,4],[1,2],[0,2],[0,1],[2,1]];
-function genPinwheel(){
+import { CM, KIND, SLOT, rnd, tr } from '../js/core.js';
+export const PINWHEEL = [[2,0],[3,0],[3,2],[4,2],[4,3],[2,3],[2,4],[1,4],[1,2],[0,2],[0,1],[2,1]];
+export function genPinwheel(){
   const L = 2*(2 + rnd(5)), P = 8*L;                 // the long side, 4 to 12 см
   const dm = P % 10 === 0 && Math.random() < 0.7, long = Math.random() < 0.65;
   return {kind:'pinwheel', L, P, dm, long, ans: long ? L : L/2};

@@ -5,12 +5,13 @@
 // МБГ Пролет 2023, 1 клас, задача 19: cards 1, 2, 2. One card alone, the other two side by side:
 // 1 and 22 → 23, 2 and 12 → 14, 2 and 21 → 23. The sums that can come out: 14 and 23.
 // [the card alone, the two-digit number] for every way, 0 never in front
+import { KIND, SLOT, rnd, svgText, tr } from '../js/core.js';
 function cards3Ways(cs){
   const w = [];
   cs.forEach((s, i) => { const o = cs.filter((_, j) => j !== i); [[o[0], o[1]], [o[1], o[0]]].forEach(([t, u]) => { if(t) w.push([s, 10*t + u]); }); });
   return w.filter((x, i) => w.findIndex(y => y[0] === x[0] && y[1] === x[1]) === i);
 }
-function genCards3(){
+export function genCards3(){
   for(;;){
     // two equal cards and another, or three different (one may be 0)
     const a = rnd(7), b = 1 + rnd(6), c = rnd(7);

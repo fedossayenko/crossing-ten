@@ -4,7 +4,8 @@
 
 // Задача 2: the terms pair up into tens. A pair making ten is always odd+odd or
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
-function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
+import { KIND, SLOT, exprText, rnd, shuffle, tr } from '../js/core.js';
+export function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
 function genPairsTens(){
   if(Math.random() < 0.15){
     // Зима 2022: pairs that make different round numbers (2 + 8 = 10, 12 + 18 = 30), then two
@@ -120,7 +121,7 @@ function genPairsSub(){
 // (everything but the first comes off again: 1).
 // Level 196, Пролет 2022 task 20 (the paper's last): 1 − 10 can't be worked left to right in 1st grade, so the
 // plus terms go first. A level of its own: it undoes the left-to-right habit 155 and 156 build.
-function genPairsRegroup(){
+export function genPairsRegroup(){
   for(;;){
     const s = 1 + rnd(3), k = 3 + rnd(3), first = 2 + rnd(2), adds = [];
     for(let i = 0; i < k; i++) adds.push(first + i);
@@ -130,7 +131,7 @@ function genPairsRegroup(){
     return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
   }
 }
-function genPairsShort(){
+export function genPairsShort(){
   const pick = rnd(6);
   if(pick === 4){
     const a = 1 + rnd(4), b = a + rnd(3), c = a + b, off = rnd(3), terms = [];

@@ -6,6 +6,7 @@
 // with the smaller number: F → E, A → D, E → D, D → C, B → A, B → F. Nothing points at B, so B is
 // 6; C points at nothing, so C is 1; D is above only C, so 2. A, E and F share 3, 4 and 5 in some
 // order — which order is not known, but their sum is: A + F + E = 3 + 4 + 5 = 12.
+import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const ARROW_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 // where each letter stands, as on the paper: E top left, A top, F right, D left low, C right low, B at the bottom
 const ARROW_AT = {A:[132, 8], B:[118, 112], C:[178, 86], D:[18, 88], E:[60, 22], F:[178, 42]};
@@ -30,7 +31,7 @@ function arrowOrders(edges){
   })([], {});
   return out;
 }
-function genArrows(){
+export function genArrows(){
   for(;;){
     const vals = shuffle([1, 2, 3, 4, 5, 6]);
     const m = 5 + rnd(3);

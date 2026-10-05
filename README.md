@@ -158,8 +158,9 @@ as her focus, a 1st-grader climbs grade by grade, and competitions are drawn fro
 | `worker/` | the sync server: a Cloudflare Worker (`index.js`) and its D1 tables (`schema.sql`) |
 | `sw.js` | serves the latest build, falls back to the cache offline |
 
-Everything is a classic script sharing one global scope, loaded in the order the
-`<script>` tags list them, so a kind can use anything in `js/core.js`. To add a level:
+Every file is a native ES module (no bundler, no build): it imports what it uses and exports what others
+need, and the rest stays private to it. `index.html` lists every module with `<script type="module">`
+(the service worker caches what it lists). To add a level:
 write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row
 to `js/levels.js`, and add a check to `check/kinds.js` (a paper's printed tasks are pinned in `check/papers.js`).
 

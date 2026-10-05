@@ -5,6 +5,7 @@
 // Задача 18: how many different results are reachable — find the two ends, count between.
 // МБГ Зима 2023: two different numbers picked from a short list, at least one of them two-digit;
 // how many different sums. Listing the pairs is the method, and a repeated sum counts once.
+import { BGNUM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 function genSumsList(){
   for(;;){
     const nums = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 2).concat(shuffle([10,11,12,13,20,21,22,30,31]).slice(0, 2 + rnd(2))).sort((a, b) => a - b);
@@ -14,7 +15,7 @@ function genSumsList(){
     return {kind:'sums', shape:4, nums, two, pairs, ans: sums.length};
   }
 }
-function genSums(){
+export function genSums(){
   if(Math.random() < 0.25) return genSumsList();
   const shape = rnd(3);
   if(shape === 0){ const k = 2 + rnd(3); return {kind:'sums', shape, k, top: 9*k, ans: 9*k + 1}; }
@@ -25,13 +26,13 @@ function genSums(){
 // МБГ Есен, 3 клас, задача 7: how many different two-digit numbers the sum of two two-digit
 // numbers can be — from 10 + 10 = 20 up to 99, so 80. Counted by brute force over every pair.
 /** @type {[string, string, (x: number, y: number) => number, (v: number) => boolean][]} */
-const SUMS_TWO = [
+export const SUMS_TWO = [
   ['двуцифрени числа можем да получим при събирането на две двуцифрени числа', 'двоцифрових чисел можна отримати, додаючи два двоцифрові числа', (x, y) => x + y, v => v <= 99],
   ['трицифрени числа можем да получим при събирането на две двуцифрени числа', 'трицифрових чисел можна отримати, додаючи два двоцифрові числа', (x, y) => x + y, v => v >= 100],
   ['двуцифрени числа можем да получим като разлика на две двуцифрени числа', 'двоцифрових чисел можна отримати як різницю двох двоцифрових чисел', (x, y) => x - y, v => v >= 10],
   ['двуцифрени числа можем да получим при събирането на две <b>различни</b> двуцифрени числа', 'двоцифрових чисел можна отримати, додаючи два <b>різні</b> двоцифрові числа', (x, y) => x === y ? -1 : x + y, v => v >= 10 && v <= 99]
 ];
-function genSumsTwo(){
+export function genSumsTwo(){
   const v = rnd(SUMS_TWO.length), got = new Set();
   for(let x = 10; x <= 99; x++) for(let y = 10; y <= 99; y++){ const r = SUMS_TWO[v][2](x, y); if(r >= 0 && SUMS_TWO[v][3](r)) got.add(r); }
   const all = [...got].sort((a, b) => a - b);

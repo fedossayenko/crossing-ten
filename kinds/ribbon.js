@@ -3,6 +3,7 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 12: centimetres against decimetres and metres.
+import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 // МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
 // 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
@@ -56,7 +57,7 @@ function genRibbonBoxes(){
     return {kind:'ribbon', shape:7, list, cms: list.map(ribCm), traps:[list.length, new Set(list.map(r => r.c ? 'c' + r.c : 'd' + (r.d || r.m))).size].filter(v => v !== vals.length), ans: vals.length};
   }
 }
-function genRibbon(){
+export function genRibbon(){
   if(Math.random() < 0.12) return genRibbonOver();
   if(Math.random() < 0.12) return genRibbonBoxes();
   if(Math.random() < 0.15) return genRibbonDiff();

@@ -6,6 +6,7 @@
 // Every try: 9 + 23 = 32, 1 + 23 = 24, 19 + 3 = 22, 19 + 2 = 21 — the smallest is 21, so the 3.
 // The four digits are all different, so the digit names the try.
 // [the digit crossed, the sum then] for each of the four digits of x + y
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const crossTries = (x, y) => [[Math.floor(x / 10), x % 10 + y], [x % 10, Math.floor(x / 10) + y], [Math.floor(y / 10), x + y % 10], [y % 10, x + Math.floor(y / 10)]];
 // МБГ Пролет 2022, 1 клас, задача 18: three numbers with zeros, 10 + 20 + 30. Crossing the 3 leaves
 // 10 + 20 + 0 = 30, the smallest; a crossed 0 turns 10 into 1. Only a digit written once can be the answer,
@@ -30,7 +31,7 @@ function genCrossThree(){
     return {kind:'crossmin', shape:'three', ns, least, best, traps: [...new Set(digits)].filter(d => d !== ans).slice(0, 3), ans};
   }
 }
-function genCrossMin(){
+export function genCrossMin(){
   if(Math.random() < 0.35) return genCrossThree();
   for(;;){
     const x = 11 + rnd(89), y = 11 + rnd(89), ds = String(x) + y;

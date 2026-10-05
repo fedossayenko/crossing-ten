@@ -4,6 +4,7 @@
 
 // Задача 2 and 4: the two sides say the same thing. One side can be worked out, and the
 // unknown is then read off the other — which way round the box sits decides the last step.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function genBalance(){
   for(;;){
     // 0: x+y = N−□   1: x−y = □+N   2: x+y = □+N   3: x−y = N−□   4: x+y = □−N   5: x−y = □−N
@@ -52,7 +53,7 @@ function genSymBox(){
   }
 }
 // Задача 4: an unknown inside a subtraction, where the other side is itself a sum.
-function genBox(){
+export function genBox(){
   if(Math.random() < 0.15) return genSymBox();
   const pick = Math.random();
   if(pick < 0.26) return genTwoBox();

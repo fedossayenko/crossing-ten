@@ -5,14 +5,15 @@
 // Задача 5: a four by four sudoku. Every row, every column and every bold two by two box
 // holds 1, 2, 3 and 4 exactly once. Two empty cells are named and their sum is asked.
 // Cells are counted 0..15, reading across.
-function sudokuFits(g, at, v){
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export function sudokuFits(g, at, v){
   const r = (at / 4) | 0, c = at % 4, br = r - r % 2, bc = c - c % 2;
   for(let i = 0; i < 4; i++) if(g[r*4 + i] === v || g[i*4 + c] === v) return false;
   for(let i = 0; i < 2; i++) for(let j = 0; j < 2; j++) if(g[(br+i)*4 + bc + j] === v) return false;
   return true;
 }
 // Stops at two, since all we ever ask is whether the puzzle has one answer or more.
-function sudokuCount(g){
+export function sudokuCount(g){
   const at = g.indexOf(0);
   if(at < 0) return 1;
   let n = 0;
@@ -39,7 +40,7 @@ function sudokuGrid(){
   if(Math.random() < 0.5) m = m[0].map((_, c) => m.map(r => r[c]));
   return [].concat.apply([], m);
 }
-function genSudoku(){
+export function genSudoku(){
   for(;;){
     const sol = sudokuGrid(), g = sol.slice();
     const want = 6 + rnd(3);

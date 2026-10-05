@@ -9,6 +9,7 @@
 // perimeters add to 9 дм. Four legs are 60, so the two bases are 90 − 60 = 30: 14 and 16.
 // Коледно 2023, задача 4: an ant walks ABCA twice (equilateral, side 4 м), a tortoise walks MEKME round an
 // isosceles MEK (base ME 3 м, legs 5 м) — four sides, not five. 24 against 16: 8 м more.
+import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 const ISO_ROUTES = ['MEKM', 'MEKME', 'MKEM', 'MKEMK', 'EKMEK', 'KMEKM'];
 function isoRouteLen(q){ let t = 0; for(let i = 1; i < q.route.length; i++) t += 'ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg; return t; }
 function genIsoRoute(){
@@ -44,7 +45,7 @@ function isoRouteSvg(q){
     pt(mx, y0 + 13, 'M', -6) + pt(mx + mb, y0 + 13, 'E', 6) + pt(mx + mb/2, y0 - kh - 5, 'K') + lab(mx + mb/2, y0 + 13, q.base + ' м') +
     lab(mx + mb*0.75 + 16, y0 - kh/2, q.leg + ' м') + '</svg></div>';
 }
-function genTwoIso(){
+export function genTwoIso(){
   if(Math.random() < 0.3) return genIsoOdd();
   for(;;){
     const leg = 5 + rnd(16), d = 1 + rnd(6), b = 2 + rnd(20), T = 4*leg + 2*b + d;
@@ -53,7 +54,7 @@ function genTwoIso(){
     return {kind:'isoperim', shape:1, leg, d, b, T, short, traps:[(T - 4*leg) / 2], ans: short ? b : b + d};
   }
 }
-function genIsoPerim(){
+export function genIsoPerim(){
   if(Math.random() < 0.3) return genIsoRoute();
   for(;;){
     const s = 3 + rnd(10), up = 3 + rnd(12), leg = s + up, down = 2 + rnd(leg - 3), base = leg - down;

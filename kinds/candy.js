@@ -4,12 +4,13 @@
 
 // Задача 16: identical sweets, every child gets at least one. Small enough that the
 // ways can be listed rather than reasoned about abstractly.
-function genCandy(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genCandy(){
   const kids = 2 + rnd(2);
   const n = kids === 2 ? 3 + rnd(6) : 4 + rnd(3);
   return {kind:'candy', kids, n, ans: kids === 2 ? n - 1 : (n-1)*(n-2)/2};
 }
-function candyWays(n, kids){
+export function candyWays(n, kids){
   const out = [];
   if(kids === 2){ for(let a = 1; a < n; a++) out.push(a + ' + ' + (n - a)); return out; }
   for(let a = 1; a <= n - 2; a++)

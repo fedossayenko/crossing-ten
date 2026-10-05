@@ -5,6 +5,12 @@
    not had from the server: rounds are a set union by id, players are last-edit-wins on
    `updated`, a player's resetAt drops her older rounds, and a deleted player travels as a
    tombstone in PLAYERS.gone. */
+import { $ } from './core.js';
+import { setW } from './questions.js';
+import { PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
+import { ARCHIVE, unionRounds } from './archive.js';
+import { LANG, LANG_TAG, t } from './i18n.js';
+import { ARCH, ARCHIVE_READY, LOCAL, builtOn, chose, heldHere, lsRounds, renderParent, renderStats, saveLocal, saveStore, say, weightsFrom } from './app.js';
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
   || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
 // Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
@@ -15,8 +21,8 @@ const FKEY = 'crossingten.family';
 let FAMILY = null;
 try { FAMILY = JSON.parse(localStorage.getItem(FKEY)); } catch(e){}
 const saveFamily = () => { try { FAMILY ? localStorage.setItem(FKEY, JSON.stringify(FAMILY)) : localStorage.removeItem(FKEY); } catch(e){} };
-const SYNC_ON = !!SYNC_URL && typeof fetch === 'function';
-const IN = () => !!(FAMILY && FAMILY.token);
+export const SYNC_ON = !!SYNC_URL && typeof fetch === 'function';
+export const IN = () => !!(FAMILY && FAMILY.token);
 
 // Every player's whole log (the current player's is LOCAL.rounds; see ARCH in app.js).
 function roundsOf(p){
@@ -83,8 +89,8 @@ async function account(path, body){
   return { status: res.status, body: await res.json().catch(() => ({})) };
 }
 
-let syncing = null;
-function syncNow(){
+export let syncing = null;
+export function syncNow(){
   if(!SYNC_ON || !IN()) return Promise.resolve(false);
   if(syncing) return syncing;
   syncing = (async () => {
@@ -128,7 +134,7 @@ function syncNow(){
   return syncing;
 }
 
-function paintSync(){
+export function paintSync(){
   $('playersSync').hidden = !SYNC_ON || !IN();
   if(!SYNC_ON){ $('syncRow').hidden = true; return; }
   $('syncOff').hidden = $('syncOffTitle').hidden = IN();
@@ -228,7 +234,8 @@ async function googleIn(credential){
 
 // Sync on launch, whenever the app comes back to the screen, and soon after a round.
 let syncTimer = null;
-const syncSoon = () => { clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 800); };
+export const syncSoon = () => { clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 800); };
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') syncSoon(); });
-paintSync();
-syncNow();
+// The first paint and sync, once app.js has set the page up: as a module this file runs before app.js
+// (app.js imports it), and paintSync reads what app.js defines.
+export function startSync(){ paintSync(); syncNow(); }

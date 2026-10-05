@@ -5,9 +5,10 @@
 // МБГ Зима 2023, задача 12: 20 10 12 / 6 4 22 / 16 18 8 — every row, column and diagonal
 // adds to 42 except those through the 4, so the 4 must be 14. One wrong number spoils exactly
 // its own row, column and diagonals, and where they cross is the culprit.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const LO_SHU = [8, 1, 6, 3, 5, 7, 4, 9, 2];
 const MAGIC_LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-function genMagic(){
+export function genMagic(){
   for(;;){
     const a = 1 + rnd(6), k = 1 + rnd(3), turn = rnd(8);
     let g = LO_SHU.map(v => a + k*(v - 1));

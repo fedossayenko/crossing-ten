@@ -5,6 +5,7 @@
 // Задача 11: four points in a row, measured in overlapping pieces.
 // МБГ Пролет 2025, задача 11: AB = 41 мм, BC = 2 см, CD = 39 мм, and AD asked in дециметри. All in
 // millimetres first: 41 + 20 + 39 = 100 мм, which is 1 дм.
+import { CM, KIND, SLOT, lineSvg, rnd, tr } from '../js/core.js';
 function genSegUnits(){
   for(;;){
     const cm = 1 + rnd(5), ab = 11 + rnd(60), cd = 100*(1 + rnd(2)) - ab - 10*cm;
@@ -12,7 +13,7 @@ function genSegUnits(){
     return {kind:'seg', shape:'units', ab, cm, cd, traps:[ab + cm + cd], ans: (ab + 10*cm + cd) / 100};
   }
 }
-function genSeg(){
+export function genSeg(){
   if(Math.random() < 0.2) return genSegUnits();
   if(Math.random() < 0.4) return genRuler();
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
@@ -21,7 +22,7 @@ function genSeg(){
 // МБГ Пролет 2023 and 2025, 1 клас: the same four points. 2023 asks AD from AB = 6 мм, CD = 9 мм, CB = 2 мм
 // (13 мм); 2025 gives the whole AD = 15 см and the two outer pieces AC = 5 см, BD = 7 см, and asks the middle
 // CB: 15 − 5 − 7 = 3.
-function genSegShort(){
+export function genSegShort(){
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
   if(Math.random() < 0.5) return {kind:'seg', mm: Math.random() < 0.5, p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
   return {kind:'seg', shape:'cb', p, q, r, AD: p + q + r, traps:[p + q + r - p, p + r], ans: q};

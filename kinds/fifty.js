@@ -6,6 +6,7 @@
 // round number away, count the tens, or say how much bigger it is than 11 + 22 + 33.
 // МБГ Зима 2021, 2023: a longer chain whose pairs make different round numbers (1 + 9, 2 + 18,
 // 13 + 87) and one more number; then how many tens the sum has, or how far it is short of 100.
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 function genFiftyLong(){
   for(;;){
     const k = 3 + rnd(2), smalls = shuffle([1,2,3,4,5,6,7,8,9,11,12,13]).slice(0, k), pairs = [];
@@ -29,7 +30,7 @@ function genFiftyTens(){
   const T = tens.reduce((a, b) => a + b, 0) - ones.reduce((a, b) => a + b, 0);
   return {kind:'fifty', shape:4, tens, ones, T, ans: Math.floor(T/10)};
 }
-function genFifty(){
+export function genFifty(){
   if(Math.random() < 0.15) return genFiftyTens();
   if(Math.random() < 0.3) return genFiftyLong();
   const base = [30, 40, 50][rnd(3)];

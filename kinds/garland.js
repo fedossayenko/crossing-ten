@@ -8,8 +8,9 @@
 // 2) the green make a square: 60 : 4 = 15 дм. 3) the red make the roof's two sides: 12 м : 2 = 6 м.
 // 4) all of them make a tree of two equal-sided triangles, the lower one's side 4 м: 21 − 12 = 9 м
 // for the upper, 3 м a side.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const GARLAND_LEN = [[8, 10, 12, 14, 16, 20], [10, 15, 20, 25, 30], [20, 30, 40, 50]];
-function genGarland(){
+export function genGarland(){
   const shape = rnd(4);
   for(;;){
     const len = GARLAND_LEN.map(a => a[rnd(a.length)]), price = [10 + 5*rnd(4), 30 + 10*rnd(3), 20 + 5*rnd(3)];

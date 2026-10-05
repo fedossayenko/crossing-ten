@@ -3,7 +3,7 @@
 // printed and met by its level's own generator, and the new kinds worked out again by brute force.
 
 { // the kinds sides, eqcross, digeq, crossmin, digperm, cards3
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const pin = (name, id, q, key, shows) => {
@@ -61,7 +61,7 @@
 }
 
 { // the 1st-grade levels on older kinds: each printed task, its answer, its drawing, and its level asking it exactly
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, DAYS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), ex = s => s.split(' ').reduce((a, w, i, ws) => i % 2 ? a : a.concat(T(i ? ws[i - 1] : '', +w)), []);
   const pin = (name, id, q, key, shows, tries = 300000) => {   // a short chain is one of very many, and cheap: it gets more tries
@@ -104,7 +104,7 @@
 }
 
 { // grade 1, the kinds pencil 161, rectfig 162, diagsq 168, arrows 174 — each worked out another way
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // a rectangle of the figure, counted cell by cell: unit cells are labelled by the piece they belong to,
@@ -160,7 +160,7 @@
    printed task against the official key, drawn as printed and met by its level's own generator, then each
    kind's answers found again another way. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, WM_GIRLS, WM_BOYS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // [paper, task, level, the printed question, the key, a piece of the printed text, the fields that must match]

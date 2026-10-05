@@ -6,9 +6,11 @@
 // until 63 in all: 3 + 4 + … + 11 = 63, so А) 9 days, Б) the 9th day from a Monday is a Tuesday, В) 63 : 9 = 7
 // boxes, Г) 7 − 1 − 3 = 3 boxes sold, one for 11 лв. and the rest for 14 лв. each: 11 + 14 + 14 = 39.
 // The weekday cannot be typed, so part Б brings its own А/Б/В/Г, with the days on either side as the traps.
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+import { DAYS, weekdayUk } from './weekday.js';
 const TOY_ON = ['в понеделник', 'във вторник', 'в сряда', 'в четвъртък', 'в петък', 'в събота', 'в неделя'];
 const TOY_ON_UK = ['у понеділок', 'у вівторок', 'у середу', 'у четвер', 'у п’ятницю', 'у суботу', 'у неділю'];
-function genToys(){
+export function genToys(){
   const shape = rnd(4);
   for(;;){
     const a = 1 + rnd(5), n = 4 + rnd(7), day0 = Math.random() < 0.6 ? 0 : rnd(7), days = [];

@@ -5,7 +5,8 @@
 // Коледно 2022, задача 1: A = 34 + 22, B = 87 − 25, C = 55. Which is NOT true: A < B, C < A, B > C, A > B?
 // A = 56, B = 62, C = 55, so A > B is the false one. Each statement is checked against the worked numbers;
 // exactly one of the four is false. The answer is a statement, so the kind brings its own А/Б/В/Г.
-function genNoTrue(){
+import { KIND, rnd, shuffle, tr } from '../js/core.js';
+export function genNoTrue(){
   for(;;){
     const x = 11 + rnd(50), y = 11 + rnd(40), A = x + y, p = 40 + rnd(59), r = 11 + rnd(p - 20), B = p - r, C = Math.min(A, B) - 3 + rnd(Math.abs(A - B) + 7);
     if(A > 99 || new Set([A, B, C]).size < 3 || Math.abs(A - B) > 12) continue;

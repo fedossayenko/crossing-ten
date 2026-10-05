@@ -5,6 +5,7 @@
 // МБГ Зима 2020, задача 3: Аня added a two-digit and a one-digit number and got 15; one digit rubbed
 // out, it reads 5 + 1 = 15. Put a digit back so it is true again: 5 + 10 = 15, so the 0 went.
 // Every digit in every place is tried, and only questions where one digit works are asked.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function eraseDigFixes(x, y, S){
   const out = new Set();
   [[x, 0], [y, 1]].forEach(([n, which]) => {
@@ -17,7 +18,7 @@ function eraseDigFixes(x, y, S){
   });
   return [...out];
 }
-function genEraseDig(){
+export function genEraseDig(){
   for(;;){
     const X = 10 + rnd(80), y = 1 + rnd(9), S = X + y;
     if(S > 99) continue;

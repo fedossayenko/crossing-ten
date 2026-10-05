@@ -6,6 +6,7 @@
 // back — which is why only the extremes, 1 and 18, happen exactly once.
 // Задача 8: from three digits, every two-digit number with two different ones — and a
 // leading zero does not make a number, which is what has to be spotted.
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 function genFromDigits(){
   const pool = shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0, 3);
   if(Math.random() < 0.6 && pool.indexOf(0) < 0) pool[rnd(3)] = 0;
@@ -29,7 +30,7 @@ function genDigitGap(){
     return {kind:'digits', shape:4, k, ones, list, traps:[ans + near], ans};
   }
 }
-function genDigits(){
+export function genDigits(){
   if(Math.random() < 0.18) return genDigitGap();
   if(Math.random() < 0.28) return genFromDigits();
   if(Math.random() < 0.3){

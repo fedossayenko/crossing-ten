@@ -4,7 +4,8 @@
 
 // Задача 5: find the rule, fill the two gaps — then read whether the question wants
 // the digits of the missing numbers or the numbers themselves.
-function genMissing(){
+import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+export function genMissing(){
   if(Math.random() < 0.2){
     // Коледно 2024, задача 2: 2, 3, 5, 8, 12, …, 23, …, 38, 47 — the step grows by one each time,
     // and both gaps are wanted, one on each side of a number that is shown

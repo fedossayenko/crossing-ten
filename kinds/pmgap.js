@@ -4,7 +4,8 @@
 
 // МБГ Есен, 3 клас, задача 4: how much bigger 9 · 7 + 7 · 5 + 9 is than 9 · 7 + 7 · 5 − 9.
 // The shared start never needs working out: one is 9 above it and the other 9 below, 18 apart.
-function genPmGap(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genPmGap(){
   for(;;){
     const a = 2 + rnd(8), b = 2 + rnd(8), c = 2 + rnd(8), d = 2 + rnd(8);
     const e = 2 + rnd(8), both = Math.random() < 0.25;      // both: + e against + f, so only e − f
@@ -18,7 +19,7 @@ function genPmGap(){
   }
 }
 const pmHead = q => q.a + ' · ' + q.b + ' + ' + q.c + ' · ' + q.d;
-const pmBig = q => pmHead(q) + ' + ' + q.e, pmSmall = q => pmHead(q) + (q.both ? ' + ' : ' − ') + q.f;
+export const pmBig = q => pmHead(q) + ' + ' + q.e, pmSmall = q => pmHead(q) + (q.both ? ' + ' : ' − ') + q.f;
 function drawPmGap(q){
   if(q.kind === 'pmgap'){
     const B = '<span class="num">' + pmBig(q) + '</span>', S = '<span class="num">' + pmSmall(q) + '</span>';

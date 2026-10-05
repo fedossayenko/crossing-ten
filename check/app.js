@@ -1,6 +1,6 @@
 // Runs beside the app (in check.js's own scope, through eval): each block loads its own copy of
-// the app with eval(head + body) and checks it from outside. Run all checks with: node check.js
-// The app as a whole: the level table, one global scope, the languages, the mistakes it names,
+// the app's modules (APP, from check.js) and checks them from outside. Run all checks with: node check.js
+// The app as a whole: the level table, the modules, the languages, the mistakes it names,
 // А/Б/В/Г, and the training path.
 
 // The level table is a static thing, so it is checked on the file rather than through
@@ -50,7 +50,7 @@
 // ordering rules above stay with the 57 autumn rows they were designed for: on other papers groundwork
 // can be harder than a level it unlocks (the times table, d:3, opens "3 + 3 + 3 − 3 · 3", d:2).
 {
-  const { LEVELS } = eval('(function(){' + head + body + '; return { LEVELS }; })()');
+  const { LEVELS } = APP;
   const byId = {}, known = ['-', '+', 'x', 'chain', 'count', 'num', 'seq', 'find', 'word', 'geo'];
   LEVELS.forEach(l => {
     if(byId[l.id]) throw new Error('level id ' + l.id + ' appears twice');
@@ -164,24 +164,19 @@
   }
 }
 
-/* The scripts share one global scope, so a name declared at the top of two files stops the
-   later file from running at all - the page loads with half its code missing. */
+/* Every script is an ES module: the page loads each with type="module" (check.js reads that list), Node
+   imported every one that needs no page (an import that does not resolve fails there), and no name is
+   exported twice (check.js's APP). */
 {
-  const seen = {};
-  scripts.forEach(f => read(f).split('\n').forEach(l => {
-    const m = l.match(/^(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/);
-    if(!m) return;
-    if(seen[m[1]]) throw new Error(m[1] + ' is declared in both ' + seen[m[1]] + ' and ' + f);
-    seen[m[1]] = f;
-  }));
-  console.log('one global scope: ' + Object.keys(seen).length + ' top-level names across ' + scripts.length + ' scripts, none declared twice');
+  if(/<script src=/.test(src)) throw new Error('index.html loads a classic script: ' + src.match(/<script src="[^"]*"/)[0]);
+  console.log('modules: ' + scripts.length + ' ES modules, ' + Object.keys(APP).length + ' names exported by the ' + (scripts.length - 3) + ' that need no page, none twice');
 }
 
 /* Every language says everything English says, with the same shape: a string where English
    has a string, a function that returns text where English has one, and a description for
    every level. Missing text would fall back to English in the middle of a Bulgarian page. */
 {
-  const T = eval('(function(){ const PLAYER = { lang:"en" };' + read('js/i18n.js') + '; return { TEXT, LANGS, t, get LANG(){ return LANG; } }; })()');
+  const T = eval('(function(){ const PLAYER = { lang:"en" };' + classic(read('js/i18n.js')) + '; return { TEXT, LANGS, t, get LANG(){ return LANG; } }; })()');
   const args = [3, 7, 12];
   const sample = v => typeof v === 'function' ? v(...args) : v;
   const shape = v => Array.isArray(v) ? 'list' + v.length : typeof v === 'function' ? 'text' : typeof v === 'object' ? 'map' : typeof v;
@@ -219,7 +214,7 @@
 
 /* The signs task shows an example on its own numbers: correct arithmetic, and never the target. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, signsExample }; })()');
+  const Q = APP;
   for(let i = 0; i < 3000; i++){
     const q = Q.raw(50), ex = Q.signsExample(q), [lhs, rhs] = ex.split(' = ');
     const val = lhs.split(/ (?=[+−])/).reduce((t, p) => t + (p[0] === '−' ? -+p.slice(2) : p[0] === '+' ? +p.slice(2) : +p), 0);
@@ -232,7 +227,7 @@
    and the ten-frame shows exactly the crossing step - the right dots, the right ones
    crossed out - and nothing at all when no ten is crossed. */
 {
-  const Q = eval('(function(){' + head + body + '; return { slipOf, tenFrame }; })()');
+  const Q = APP;
   [[{a:42,b:17,op:'-'}, '35', 'forgotBorrow'], [{a:41,b:17,op:'-'}, '36', 'flipped'], [{a:42,b:17,op:'-'}, '59', 'wrongOp'],
    [{a:27,b:15,op:'+'}, '32', 'forgotCarry'], [{a:8,b:5,op:'+'}, '3', 'wrongOpAdd'], [{a:42,b:17,op:'-'}, '26', 'offByOne'],
    [{a:42,b:17,op:'-'}, '40', null], [{a:112,b:25,op:'-'}, '97', 'forgotBorrow'], [{kind:'erase', ans:7}, '8', null]
@@ -256,7 +251,7 @@
    (the one marked as the answer), the others are distinct, whole and not negative, the
    options go in order of size, and drawing them draws no random number. */
 {
-  const Q = eval('(function(){' + head + body + '; return { withChoices, choiceHtml, raw, accepts, LEVELS, R: () => RANDS }; })()');
+  const Q = Object.assign(Object.create(APP), { R: () => RANDS });
   let asked = 0, slipsOffered = 0;
   Q.LEVELS.forEach(L => {
     for(let i = 0; i < 200; i++){

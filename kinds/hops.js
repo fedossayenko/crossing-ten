@@ -6,12 +6,13 @@
 // flower 14 m away? 14 is only 3 + 3 + 4 + 4, and those four jumps can come in 6 orders:
 // 3344, 3434, 3443, 4334, 4343, 4433. The order matters — each order is another way.
 // every order of jumps a and b that lands exactly on N, as strings like '3344'
+import { KIND, SLOT, rnd, svgText, tr, ukN } from '../js/core.js';
 function hopWays(a, b, N){
   const out = [];
   (function go(left, path){ if(left === 0){ out.push(path); return; } if(left >= a) go(left - a, path + a); if(left >= b) go(left - b, path + b); })(N, '');
   return out;
 }
-function genHops(){
+export function genHops(){
   for(;;){
     const a = 2 + rnd(3), b = a + 1 + rnd(2), N = 7 + rnd(10), n = hopWays(a, b, N).length;
     if(n < 2 || n > 10) continue;

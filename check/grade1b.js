@@ -2,7 +2,7 @@
 // МБГ Пролет 2022 and 2021, 1 клас: the tasks on the levels widened for them, each printed task against the
 // official key, drawn as printed and asked exactly by its level, and the new shapes worked out again.
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, DAYS, MONTHS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), ex = s => s.split(' ').reduce((a, w, i, ws) => i % 2 ? a : a.concat(T(i ? ws[i - 1] : '', +w)), []);
   const pin = (name, id, q, key, shows, tries = 300000) => {   // a short chain is one of very many, and cheap: it gets more tries

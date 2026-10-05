@@ -6,8 +6,9 @@
 // circle, a black square to match it, and a black circle), while raising the white
 // squares costs two — so when the black circles already outnumber the whites, the
 // squares are the cheaper way to catch up.
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 const SHAPE_GLYPH = { wo:'○', ws:'□', bs:'■', bc:'●' };
-function genShapes(){
+export function genShapes(){
   for(;;){
     const wo = 1 + rnd(3), ws = rnd(3), bs = 1 + rnd(4), bc = rnd(5);
     const W = Math.max(wo, bs);

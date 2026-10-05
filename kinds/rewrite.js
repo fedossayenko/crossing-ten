@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 19: 6, 8, 24, 16. The two-digit ones become themselves divided by 4
 // (6, 8, 6, 4), then every one that divides by 3 becomes itself times 2 (12, 8, 12, 4): 36.
 // The second step works on what the first one left, so the 24 counts in it as 6.
-function genRewrite(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genRewrite(){
   for(;;){
     const d = 2 + rnd(3), m = [3, 2, 5][rnd(3)], p = 2 + rnd(2), nums = [];
     while(nums.length < 4){

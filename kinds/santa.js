@@ -8,8 +8,9 @@
 // Б) two pupils, a grandad and a mother, each paying the price for them or the full one: 81 лв.
 // В) the 19 лв change from 100, in exactly 6 notes and coins: 3 ways (1 2 2 2 2 10, 1 1 2 5 5 5,
 //    1 1 1 1 5 10). The paper wants them listed; here it asks how many there are.
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 const SANTA_MONEY = [1, 2, 5, 10, 20, 50];
-function santaWays(R, k){
+export function santaWays(R, k){
   const out = [];
   (function walk(i, left, n, cur){
     if(n === k){ if(left === 0) out.push(cur.slice()); return; }
@@ -17,7 +18,7 @@ function santaWays(R, k){
   })(0, R, 0, []);
   return out;
 }
-function genSanta(){
+export function genSanta(){
   const shape = rnd(3);
   for(;;){
     if(shape === 0){

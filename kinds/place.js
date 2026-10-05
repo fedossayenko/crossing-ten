@@ -5,6 +5,7 @@
 // Задача 17: the figures stand for digits of a two-digit numeral, not for a product.
 // Зима 2021: 9□ − 7∆ = 12, so □ + ∆? 90 − 70 = 20, and 12 is 8 short of it: ∆ is 8 more than □ —
 // □ = 0, ∆ = 8 or □ = 1, ∆ = 9, and □ + ∆ is 8 or 10. Every pair of digits tried.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function genPlaceTwo(){
   for(;;){
     const A = 2 + rnd(8), B = 1 + rnd(A - 1), D = 10*(A - B) + (rnd(2) ? 1 : -1)*(6 + rnd(4)), sols = [];
@@ -15,7 +16,7 @@ function genPlaceTwo(){
     return {kind:'place', shape:2, A, B, D, sols, slots: sums.length, ans: sums[0], alt: sums.slice(1)};
   }
 }
-function genPlace(){
+export function genPlace(){
   if(Math.random() < 0.2) return genPlaceTwo();
   for(;;){
     const t = 1 + rnd(9), u = rnd(10);

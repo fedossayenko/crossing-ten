@@ -2,7 +2,7 @@
   // TypeScript checks the plain JS (no build, nothing emitted): npx -p typescript@7 tsc -p .
   "compilerOptions": {
     "allowJs": true, "checkJs": true, "noEmit": true, "skipLibCheck": true,
-    "target": "es2022", "lib": ["es2023", "dom", "dom.iterable"], "types": [],
+    "target": "es2022", "module": "esnext", "moduleResolution": "bundler", "lib": ["es2023", "dom", "dom.iterable"], "types": [],
     "strict": false
   },
   "include": ["types.d.ts", "js/*.js", "kinds/*.js"]

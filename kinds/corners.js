@@ -7,10 +7,12 @@
 // The trap is to count the sides only (21), or one triangle as 3.
 // [Bulgarian singular, Bulgarian count form, Ukrainian genitive singular, Ukrainian genitive plural, sides]
 /** @type {[string, string, string, string, number][]} */
-const CORNER_FIGS = [['правоъгълник', 'правоъгълника', 'прямокутника', 'прямокутників', 4],
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+/** @type {any[]} */
+export const CORNER_FIGS = [['правоъгълник', 'правоъгълника', 'прямокутника', 'прямокутників', 4],
                      ['квадрат', 'квадрата', 'квадрата', 'квадратів', 4],
                      ['триъгълник', 'триъгълника', 'трикутника', 'трикутників', 3]];
-function genCorners(){
+export function genCorners(){
   for(;;){
     const n = [rnd(4), rnd(3), rnd(4)], asks = Math.random() < 0.7 ? 0 : 1 + rnd(2);
     if(n.filter(Boolean).length < 2) continue;

@@ -6,7 +6,8 @@
 // cubes weigh 63 g, so one is 9 and two are 18; задача 16, Никола 16 pencils, Пиер 2 times fewer (8),
 // Клод 2 more than Пиер (10), so Никола has 6 more than Клод; задача 18, 6 kg and 3 times more (18),
 // 24 kg into 8 crates, 3 kg each.
-function genTimesW(){
+import { KIND, SLOT, bgWith, rnd, tr, ukN } from '../js/core.js';
+export function genTimesW(){
   const shape = rnd(4);
   for(;;){
     const k = 2 + rnd(3);

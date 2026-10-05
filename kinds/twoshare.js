@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 20: under 30 oranges; 7 to each child leaves me 4 short, 6 to each
 // shares them all. One more for each child costs exactly the 4 missing, so there are 4 children
 // and 6 · 4 = 24 oranges. Sometimes the first way leaves some over instead of short.
-function genTwoShare(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genTwoShare(){
   for(;;){
     const b = 3 + rnd(6), g = Math.random() < 0.75 ? 1 : 2, a = b + g, k = 2 + rnd(7), over = Math.random() < 0.3;
     const N = over ? a*k : b*k, s = g*k;                      // over: b each leaves s over, a each is exact

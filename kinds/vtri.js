@@ -6,7 +6,8 @@
 // cross. A triangle with a corner at A has its other two corners on two different lines through
 // A, and those two corners joined by a third line: 3 on the top side, 3 on the bottom, 1 on each
 // end — 8. Each figure is its points and its lines, a line listing every point on it in order.
-const VTRI = [
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export const VTRI = [
   { pts:{a:[0,0], b:[2,0], c:[4,0], d:[0,2], e:[2,2], f:[4,2], o:[2,1]},                         // the paper's
     lines:['abc', 'def', 'ad', 'cf', 'boe', 'aof', 'doc'] },
   { pts:{a:[0,0], c:[2,0], d:[0,2], f:[2,2], o:[1,1]}, lines:['ac', 'df', 'ad', 'cf', 'aof', 'doc'] },  // a square and its diagonals
@@ -24,7 +25,7 @@ function vtriCount(F, V){
   }
   return out;
 }
-function genVTri(){
+export function genVTri(){
   for(;;){
     const f = rnd(VTRI.length), F = VTRI[f], V = Math.random() < 0.6 ? 'o' : Object.keys(F.pts)[rnd(Object.keys(F.pts).length)];
     const n = vtriCount(F, V).length;
@@ -48,7 +49,7 @@ function vtriSvg(q){
 // A grid's points are named by letter, row by row: (x, y) is 'abcdefghijklmnop'[4y + x].
 const gp = (x, y) => 'abcdefghijklmnop'[4*y + x];
 const gridPts = (W, H) => { const o = {}; for(let y = 0; y <= H; y++) for(let x = 0; x <= W; x++) o[gp(x, y)] = [x, y]; return o; };
-const FIGS = [
+export const FIGS = [
   { pts:{a:[0,0], b:[1,0], c:[2,0], g:[0,1], o:[1,1], h:[2,1], d:[0,2], e:[1,2], f:[2,2]},                    // Коледно 2023
     lines:['abc', 'def', 'agd', 'chf', 'boe', 'goh', 'bh', 'he', 'eg', 'gb'] },
   { pts:gridPts(3, 3), lines:['abcd', 'efgh', 'ijkl', 'mnop', 'aeim', 'bfjn', 'cgk', 'dhlp', 'afkp'] },        // Коледно 2022
@@ -76,7 +77,7 @@ function figCount(F){
   }
   return {tri, sq};
 }
-function genFigCount(){
+export function genFigCount(){
   for(;;){
     const f = rnd(FIGS.length), {tri, sq} = figCount(FIGS[f]), asks = rnd(3);
     if(asks === 2 && tri <= sq) continue;

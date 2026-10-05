@@ -3,7 +3,8 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 14: two steps along a line, usually in opposite directions, then the distance.
-function genLine(){
+import { CM, KIND, SLOT, lineSvg, rnd, tr } from '../js/core.js';
+export function genLine(){
   const d1 = 2 + rnd(8);
   const back = Math.random() < 0.75;
   const d2 = back ? d1 + 1 + rnd(9) : 1 + rnd(9);

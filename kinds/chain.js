@@ -4,7 +4,8 @@
 
 // Задача 1: a plain ± chain worked left to right. The zeros are deliberate —
 // noticing that + 0 changes nothing is part of the task.
-function genChain(){
+import { KIND, SLOT, exprText, rnd, tr } from '../js/core.js';
+export function genChain(){
   for(;;){
     const len = 6 + rnd(3);
     const terms = [{op:'', n: 2 + rnd(8)}];
@@ -21,7 +22,7 @@ function genChain(){
 }
 // МБГ Пролет 2025 and 2023, 1 клас, задачи 1–2: the same walk, short — 2 − 0 − 2 + 5, 20 − 2 − 5 —
 // starting anywhere up to 20 and never leaving 0…20 on the way.
-function genChainShort(){
+export function genChainShort(){
   for(;;){
     const len = 3 + rnd(2), terms = [{op:'', n: 2 + rnd(19)}];
     let run = terms[0].n, ok = true;

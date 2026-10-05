@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 18: 10 bouquets, 34 roses, some of 3 and the rest of 7. If all had 3 there
 // would be 30; each bouquet of 7 adds 4 more, and 4 are missing: one of 7, nine of 3.
-function genBouquets(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genBouquets(){
   for(;;){
     const a = 2 + rnd(4), b = a + 2 + rnd(5), n = 5 + rnd(10), x = 1 + rnd(n - 1), T = x*a + (n - x)*b;
     if(T > 99) continue;

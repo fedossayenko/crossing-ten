@@ -1,7 +1,7 @@
 # Crossing Ten – agent guide
 
 Maths practice for a grade-2 pupil (Bulgarian olympiad worksheets). Plain HTML, CSS and
-classic scripts sharing one global scope; no build step, no dependencies. Layout and the
+native ES modules (no bundler); no build step, no dependencies. Layout and the
 design rules (difficulty rubric, training path) are in `README.md`.
 
 ## Commands
@@ -17,10 +17,12 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - Run them before finishing. None may be weakened to make a change pass.
 
 ## Adding or changing a level
-- One question kind per file in `kinds/`, registering `KIND.<kind> = { draw, eq, why }`.
+- One question kind per file in `kinds/`, registering `KIND.<kind> = { draw, eq, why }`. It imports what it
+  uses (`import { KIND, SLOT, rnd, tr } from '../js/core.js';`) and exports its generators, which
+  `js/levels.js` imports for `gen:`. Everything else in the file stays private to it.
   Search `kinds/` and `js/levels.js` first; extend an existing kind rather than add a
   near-duplicate.
-- A new kind file goes into `index.html` before `js/questions.js`; its level row goes in
+- A new kind file goes into `index.html` (`<script type="module" src=…>`) before `js/questions.js`; its level row goes in
   `js/levels.js` with `gen:` and a `d:` from the rubric in `README.md`.
 - Pin the worksheet's original instance in `check/papers.js` and add a brute-force check in `check/kinds.js`.
 - A level from another paper says so on its row (`grade:3`, `src:'mbg-winter-2024'`; `src` defaults to `'mbg-autumn'`).
@@ -33,5 +35,9 @@ design rules (difficulty rubric, training path) are in `README.md`.
   key, on Bulgarian left in Ukrainian task text, and on a render that draws a random number.
 - Never change the Bulgarian output of an existing kind by accident, nor the order of `rnd()`
   calls in a generator: both languages must ask the same question from the same seed.
-- All scripts share one global scope: a top-level name must be unique across every file
-  (check.js fails otherwise; `smoke.js` catches the page failing to load).
+- Every file is an ES module, strict, in its own scope; an exported name must be unique across the app
+  (check.js imports them all and fails otherwise). A module may not assign another's variable: the
+  owner exports a setter (`setLang`, `setW`, `setComp`). app.js imports compete.js and sync.js, so
+  they run first: their wiring waits in `startCompete()` / `startSync()`, which app.js calls at its end.
+  The checks see every export as `APP.x` (and as globals in check/levels.js and check/kinds.js);
+  `smoke.js` reads the page through the names app.js puts on `window`.

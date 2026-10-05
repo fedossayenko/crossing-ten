@@ -4,7 +4,8 @@
 
 // МБГ Зима 2024, задача 9: (1·2 + 2·3 + 3·4 + 5·6) · (1 + 2 + 3 − 6). The long bracket is a
 // decoy: the short one is 0, and anything times 0 is 0. Sometimes a number is added after.
-function genZeroFac(){
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export function genZeroFac(){
   const prods = [];
   for(let a = 1 + rnd(3), i = 0; i < 3 + rnd(2); i++, a += 1 + rnd(2)) prods.push([a, a + 1]);
   const parts = shuffle([1,2,3,4,5,6,7]).slice(0, 2 + rnd(2)).sort((x, y) => x - y);

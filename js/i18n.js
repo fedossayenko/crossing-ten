@@ -2,13 +2,14 @@
 // it has (check.js enforces it). Task text lives with its kind in kinds/, in Bulgarian and
 // Ukrainian through tr(); an English player gets it in Bulgarian. A value is either a
 // string or a function of the numbers in it.
-const LANGS = { bg:'Български', uk:'Українська', en:'English' };
-const LANG_TAG = { bg:'bg-BG', uk:'uk-UA', en:'en-GB' };
-let LANG = LANGS[PLAYER.lang] ? PLAYER.lang : 'bg';
-function setLang(l){ LANG = l; }   // the welcome screen switches language as she picks one
+import { PLAYER } from './players.js';
+export const LANGS = { bg:'Български', uk:'Українська', en:'English' };
+export const LANG_TAG = { bg:'bg-BG', uk:'uk-UA', en:'en-GB' };
+export let LANG = LANGS[PLAYER.lang] ? PLAYER.lang : 'bg';
+export function setLang(l){ LANG = l; }   // the welcome screen switches language as she picks one
 const pl = (n, forms) => forms[new Intl.PluralRules(LANG).select(n)] || forms.other;
 
-const TEXT = {
+export const TEXT = {
 en: {
   sound:'Sound', speak:'Read the sum aloud', progress:'Progress', del:'Delete', check:'Check answer',
   chooseLevel:'Choose a level', pickWarn:'Picking a level ends the round in progress.', cancel:'Cancel',
@@ -580,6 +581,6 @@ uk: {
   }
 }
 };
-const t = (k, ...a) => { const v = k in TEXT[LANG] ? TEXT[LANG][k] : TEXT.en[k]; return typeof v === 'function' ? v(...a) : v; };
-const levelDesc = l => (TEXT[LANG].desc || {})[l.id] || l.desc;
-const levelName = l => (TEXT[LANG].eq || {})[l.id] || l.eq;
+export const t = (k, ...a) => { const v = k in TEXT[LANG] ? TEXT[LANG][k] : TEXT.en[k]; return typeof v === 'function' ? v(...a) : v; };
+export const levelDesc = l => (TEXT[LANG].desc || {})[l.id] || l.desc;
+export const levelName = l => (TEXT[LANG].eq || {})[l.id] || l.eq;

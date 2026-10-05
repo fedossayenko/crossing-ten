@@ -1,36 +1,37 @@
 // Shared by the question kinds: randomness, the answer box, and helpers more than one
 // kind uses. Anything used by a single kind lives in that kind's file under kinds/.
+import { LANG } from './i18n.js';
 
-const rnd = n => Math.floor(Math.random()*n);
-const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
+export const rnd = n => Math.floor(Math.random()*n);
+export const shuffle = a => { for(let i = a.length-1; i > 0; i--){ const j = rnd(i+1), x = a[i]; a[i] = a[j]; a[j] = x; } return a; };
 // A seeded draw: fn runs with Math.random drawn from the seed (mulberry32), so a level's generator asks
 // the same question from the same seed. A round records each question's seed (to draw it again); the
 // checks replay the printed tasks from theirs.
-function seeded(seed, fn){
+export function seeded(seed, fn){
   const real = Math.random; let s = seed | 0;
   Math.random = () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   try { return fn(); } finally { Math.random = real; }
 }
-const $ = s => document.getElementById(s);   // the page's elements by id (only called in the browser)
-const KIND = {};                     // kinds/*.js register { draw, eq, why } here
+export const $ = s => document.getElementById(s);   // the page's elements by id (only called in the browser)
+export const KIND = {};                     // kinds/*.js register { draw, eq, why } here
 // Task text in the player's language: tr('Колко са?', 'Скільки їх?'). Bulgarian is the
 // original and the fallback; anything not yet translated simply stays Bulgarian. Both
 // sides are plain strings, so a translation may regroup a whole phrase, not just a word.
-const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
+export const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
 // a Ukrainian noun after a number, whatever the page's language: 1 фігура, 2 фігури, 5 фігур, 21 фігура
-const ukN = (n, one, few, many) => n + ' ' + ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
+export const ukN = (n, one, few, many) => n + ' ' + ({one, few}[new Intl.PluralRules('uk').select(n)] || many);
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
-const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
-const SLOT = '<span class="slot" id="slot0"></span>';
+export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
+export const SLOT = '<span class="slot" id="slot0"></span>';
 // A solution picture that builds up: the part drawn at step n pops in n·0.12 s after the picture appears
 // (still, all at once, when motion is reduced). Attributes for an SVG element: '<g' + popAt(3) + '>'.
-const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
+export const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
 // a label in a solution picture, centred on x
-const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
+export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
 // A line with points and distances, for the pictures of the line levels. Points: [{at, name, col, step}];
 // distances: [{from, to, label, row, col, step}], drawn as brackets in rows above (row < 0) or below the line.
 // The coordinates are lengths; lo and hi are the ends of the line. A step makes that part pop in.
-function lineSvg(pts, spans, lo, hi, label){
+export function lineSvg(pts, spans, lo, hi, label){
   const X = v => (20 + (v - lo) / (hi - lo) * 200).toFixed(1), rows = spans.map(s => s.row).concat(0);
   const top = Math.min(...rows) * 22 - 24, bottom = Math.max(...rows) * 22 + 34, at = st => st === undefined ? '' : popAt(st);
   let g = '<line x1="8" y1="0" x2="232" y2="0" stroke="var(--ink)" stroke-width="2"/>';
@@ -42,7 +43,7 @@ function lineSvg(pts, spans, lo, hi, label){
 }
 // Two bars to compare, the shorter one's length marked on the longer, and what sticks out —
 // the difference — in orange with its size. rows: [label, value, colour]; foot ends on the answer.
-function diffBars(rows, extra, foot, label){
+export function diffBars(rows, extra, foot, label){
   const max = Math.max(...rows.map(r => r[1])), min = Math.min(...rows.map(r => r[1])), u = 180 / max;
   let g = '';
   rows.forEach(([name, v, col], i) => { const y = i * 30;
@@ -57,15 +58,15 @@ function diffBars(rows, extra, foot, label){
   g += svgText(136, rows.length * 30 + 20, foot, 15, 'var(--ink)', popAt(5));
   return '<svg viewBox="0 -8 262 ' + (rows.length * 30 + 38) + '" style="display:block; width:327px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
 }
-const CM = ' <span class="unit">см</span>';
+export const CM = ' <span class="unit">см</span>';
 
-const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
+export const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
 
-const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
+export const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
 // Ukrainian number words: masculine and neuter nouns take UKNUM (два числа), feminine ones UKNUM_F (дві цифри).
-const UKNUM = {2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять', 10:'десять'};
+export const UKNUM = {2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять', 10:'десять'};
 const UKNUM_F = Object.assign({}, UKNUM, {2:'дві'});
-const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + tr(' и ', ' і ') + a[a.length-1];
+export const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + tr(' и ', ' і ') + a[a.length-1];
 
 function antSvg(x, y, u){
   const k = (u/34).toFixed(3);
@@ -77,7 +78,7 @@ function antSvg(x, y, u){
     '<ellipse cx="-5" cy="-3" rx="3.1" ry="2.7"/><ellipse cx="0" cy="0" rx="2.7" ry="2.5"/>' +
     '<ellipse cx="6" cy="2.4" rx="4.2" ry="3.4"/></g></g>';
 }
-function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
+export function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
   const u = 36, w = W*u, h = H*u;
   let g = '';
   for(let i = 0; i <= W; i++) g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + h + '"/>';
@@ -86,7 +87,7 @@ function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
     '<g stroke="var(--ink)" stroke-width="1.7" fill="none">' + g + '</g>' +
     (c ? antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) : '') + '</svg></div>';
 }
-function fruitBody(t){
+export function fruitBody(t){
   const stem = '<path d="M0,-12 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>';
   if(t === 'p') return stem + '<circle cx="0" cy="-3" r="4.4" fill="var(--pear)"/>' +
     '<circle cx="0" cy="4" r="6.9" fill="var(--pear)"/>';
@@ -101,5 +102,5 @@ function fruitBody(t){
 
 // Задача 11: n trees in a row leave n − 1 gaps. Asked three ways round.
 // [name, Bulgarian "planted", Ukrainian name, Ukrainian "planted"]
-const NAMES = [['Хари', 'посадил', 'Харі', 'посадив'], ['Мая', 'посадила', 'Мая', 'посадила'], ['Ния', 'посадила', 'Нія', 'посадила'],
+export const NAMES = [['Хари', 'посадил', 'Харі', 'посадив'], ['Мая', 'посадила', 'Мая', 'посадила'], ['Ния', 'посадила', 'Нія', 'посадила'],
                ['Борис', 'посадил', 'Борис', 'посадив'], ['Ива', 'посадила', 'Іва', 'посадила'], ['Асен', 'посадил', 'Асен', 'посадив']];

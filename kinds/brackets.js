@@ -5,7 +5,8 @@
 // МБГ Зима 2023, задачи 1 и 3. 86 − (51 − 5): the bracket first, 86 − 46 = 40 — taking away
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
-function genBrackets(){
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export function genBrackets(){
   if(Math.random() < 0.12){
     // Коледно 2023, задача 2: (100 − 57) + 0 − (96 − 78). Each bracket first, and the + 0 changes
     // nothing: 43 + 0 − 18 = 25.
@@ -69,7 +70,7 @@ function genBrackets(){
     return {kind:'brackets', shape:1, xs: pick, gaps, ans};
   }
 }
-const bracketsExpr = q => q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
+export const bracketsExpr = q => q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
   if(q.kind === 'brackets'){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +

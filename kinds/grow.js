@@ -5,6 +5,7 @@
 // Задача 7: every addend moves by the same amount, so the sum moves that many times.
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
 // down 10 and the subtrahend up 10, so both changes take away: 30 − 20 = 10.
+import { BGNUM, KIND, SLOT, UKNUM, popAt, rnd, svgText, tr } from '../js/core.js';
 function genGrowDiff(){
   for(;;){
     const M = 20 + rnd(60), S = 5 + rnd(M - 10), a = 1 + rnd(12), b = 1 + rnd(12), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
@@ -15,7 +16,7 @@ function genGrowDiff(){
 }
 // МБГ Пролет 2025, задача 10: in 15 + 18 + 27 + 28 each odd addend is made 3 times smaller. Only 15 and
 // 27 change, to 5 and 9: 5 + 18 + 9 + 28 = 60. Level 135, apart from 14: it needs the times table.
-function genGrowTimes(){
+export function genGrowTimes(){
   for(;;){
     const odd = Math.random() < 0.6, k = 2 + rnd(2), down = Math.random() < 0.7, xs = [];
     for(let i = 0; i < 4; i++) xs.push(10 + rnd(35));
@@ -24,7 +25,7 @@ function genGrowTimes(){
     return {kind:'grow', shape:'times', odd, k, down, xs, ys, traps:[xs.reduce((t, v) => t + (down ? v / k : v*k), 0)].filter(Number.isInteger), ans: ys.reduce((t, v) => t + v, 0)};
   }
 }
-function genGrow(){
+export function genGrow(){
   if(Math.random() < 0.3) return genGrowDiff();
   const k = 2 + rnd(3);
   const d = 2 + rnd(5);

@@ -7,15 +7,16 @@
 // two-digit ✸✹ + 8. The left side is at most 9 + 9 = 18, the right at least 10 + 8 = 18: both are 18, so
 // ✷ = 9 and ✸✹ = 10, and the two-digit ✸✷ is 19.
 // three stars that cannot be mistaken for each other, the size of a digit
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const STAR_PATH = (n, r1, r2) => { let d = ''; for(let i = 0; i < 2*n; i++){ const r = i % 2 ? r2 : r1, t = Math.PI * i / n - Math.PI / 2; d += (i ? 'L' : 'M') + (r*Math.cos(t)).toFixed(1) + ',' + (r*Math.sin(t)).toFixed(1); } return d + 'Z'; };
 const STARS = [['var(--warm)', STAR_PATH(5, 11, 4.6)], ['var(--accent)', STAR_PATH(8, 11, 5)], ['var(--good)', STAR_PATH(6, 11, 6)]];
-const star = i => '<svg class="ic" viewBox="-12 -12 24 24" aria-hidden="true"><path d="' + STARS[i][1] + '" fill="' + STARS[i][0] + '"/></svg>';
+export const star = i => '<svg class="ic" viewBox="-12 -12 24 24" aria-hidden="true"><path d="' + STARS[i][1] + '" fill="' + STARS[i][0] + '"/></svg>';
 const STAR_TXT = ['★', '✹', '✶'];   // the same three in the summary line, which is plain text
 // 'two': both one-digit, a − b = 7 or 8, so two or three pairs fit. 'tens': the other is two-digit and
 // a − b = 1, which leaves only 9 and 10. ask: which number is wanted then.
 /** @type {[number[], number][]} */
-const STAR_ASK = [[[2, 0], 19], [[0, 2], 91], [[2, 1], 10], [[0], 9]];   // (digits by star) for ✷ = 9, ✸ = 1, ✹ = 0
-function genStarDig(){
+export const STAR_ASK = [[[2, 0], 19], [[0, 2], 91], [[2, 1], 10], [[0], 9]];   // (digits by star) for ✷ = 9, ✸ = 1, ✹ = 0
+export function genStarDig(){
   if(Math.random() < 0.5){
     const d = 7 + rnd(2), b = rnd(10 - d), a = b + d;
     const fits = []; for(let x = 0; x + d <= 9; x++) fits.push(2*x + d);

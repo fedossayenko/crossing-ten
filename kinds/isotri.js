@@ -5,8 +5,9 @@
 // Коледно състезание 2025, задача 1: seven triangles on squared paper, how many are NOT
 // isosceles (4). On a grid the tell is the apex: straight over the middle of a flat side,
 // or a right angle with two equal legs. Checked by the squared side lengths, never by eye.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const isoSq = (a, b) => (a[0] - b[0])**2 + (a[1] - b[1])**2;
-function isoTriIs(t){
+export function isoTriIs(t){
   const [p, q, r] = t, x = isoSq(p, q), y = isoSq(q, r), z = isoSq(r, p);
   return x === y || y === z || z === x;
 }
@@ -27,7 +28,7 @@ function isoTriOne(iso){
     return { t, h };
   }
 }
-function genIsoTri(){
+export function genIsoTri(){
   for(;;){
     const n = 5 + rnd(3), tris = [];
     for(let i = 0; i < n; i++) tris.push(isoTriOne(Math.random() < 0.45));

@@ -5,7 +5,8 @@
 // МБГ Пролет 2022, 1 клас, задача 13: an apple and two pears weigh as much as eight lemons, and two pears
 // as much as three apples. Put three apples in place of the two pears: four apples weigh eight lemons,
 // 2 + 2 + 2 + 2 = 8, so one apple weighs two lemons.
-function genScales(){
+import { KIND, SLOT, fruitBody, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+export function genScales(){
   for(;;){
     const p = 2 + rnd(2), m = 2 + rnd(3), a = 1 + rnd(3), L = (1 + m)*a;   // p pears = m apples, an apple = a lemons
     if(m === p || L > 12) continue;

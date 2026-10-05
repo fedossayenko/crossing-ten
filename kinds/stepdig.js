@@ -4,7 +4,8 @@
 
 // МБГ Зима 2024, задача 8: 0, 3, 6, 9, …, x written with 24 digits. The one-digit numbers
 // take one digit each, every two-digit one takes two — count the first lot, halve the rest.
-function genStepDig(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genStepDig(){
   for(;;){
     const one = Math.random() < 0.2, k = one ? 1 : 2 + rnd(4), start = one ? 1 + rnd(3) : rnd(2) ? 0 : k;
     const run = [];

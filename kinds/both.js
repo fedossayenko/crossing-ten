@@ -1,6 +1,7 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -10,7 +11,7 @@ function genVenn(){
   const ex = [1 + rnd(6), 1 + rnd(5), 1 + rnd(6)], m = 1 + rnd(6), L = m + 2 + rnd(10), R = m + 2 + rnd(12);
   return {kind:'both', shape:'venn', ex, m, L, R, traps:[L + R], ans: L + R - 2*m};
 }
-function genBoth(){
+export function genBoth(){
   if(Math.random() < 0.3) return genVenn();
   for(;;){
     const T = 18 + rnd(12);

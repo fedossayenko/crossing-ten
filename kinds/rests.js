@@ -5,7 +5,8 @@
 // Коледно 2023, задача 7: 3 groups of 5 exercises, 4 minutes each, a 3-minute rest between groups. The work
 // is 3 · 5 · 4 = 60 minutes, and between 3 groups there are only 2 rests: 60 + 6 = 66. Like the trees in
 // a row (level 31), the gaps are one fewer than the things.
-function genRests(){
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genRests(){
   for(;;){
     const g = 2 + rnd(3), n = 2 + rnd(4), t = 2 + rnd(4), r = 2 + rnd(5), work = g*n*t, ans = work + (g - 1)*r;
     if(ans > 99) continue;

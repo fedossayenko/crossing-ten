@@ -5,6 +5,7 @@
 // МБГ Есен, 3 клас, задача 5: (20 □ 2 + 5) □ 2 = 20 + 2 · 5, two different signs of + − · :.
 // The right side is 30; only : then · gets there. A sign pair cannot be typed, so this
 // kind always comes as А/Б/В/Г: its own options, each a pair, and ans is the right one's id.
+import { KIND, rnd, shuffle, tr } from '../js/core.js';
 const SIGNS4 = ['+', '−', '·', ':'];
 function signCalc(x, o, y){
   if(o === '+') return x + y;
@@ -13,13 +14,13 @@ function signCalc(x, o, y){
   return y && x % y === 0 ? x / y : null;
 }
 // (a o1 b + c) o2 d, or null where a step leaves the whole numbers
-function twoSignsVal(a, b, c, d, o1, o2){
+export function twoSignsVal(a, b, c, d, o1, o2){
   const x = signCalc(a, o1, b);
   return x === null ? null : signCalc(x + c, o2, d);
 }
-const SIGN_PAIRS = [];
+export const SIGN_PAIRS = [];
 SIGNS4.forEach(x => SIGNS4.forEach(y => { if(x !== y) SIGN_PAIRS.push([x, y]); }));
-function genTwoSigns(){
+export function genTwoSigns(){
   for(;;){
     const a = 6 + rnd(25), b = 2 + rnd(8), c = 1 + rnd(9), d = 2 + rnd(4);
     const vals = SIGN_PAIRS.map(([x, y]) => twoSignsVal(a, b, c, d, x, y));
@@ -36,7 +37,7 @@ function genTwoSigns(){
     return {kind:'twosigns', a, b, c, d, rhs, val: v, pair: SIGN_PAIRS[k], options, pick, own: true, ans: pick};
   }
 }
-const twoRhs = q => q.rhs ? q.rhs[0] + ' + ' + q.rhs[1] + ' · ' + q.rhs[2] : '' + q.val;
+export const twoRhs = q => q.rhs ? q.rhs[0] + ' + ' + q.rhs[1] + ' · ' + q.rhs[2] : '' + q.val;
 function drawTwoSigns(q){
   if(q.kind === 'twosigns'){
     const box = '<span class="op">□</span>';

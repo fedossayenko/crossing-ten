@@ -4,7 +4,8 @@
 
 // МБГ Зима 2024, задача 5: 22 − ■ when 88 − ■ = 88 − 11. Both sides start from the same
 // number, so they take away the same thing: ■ is 11 without working anything out.
-function genSameSub(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genSameSub(){
   const M = 40 + rnd(60), s = 5 + rnd(20), plus = Math.random() < 0.35;
   const X = s + 1 + rnd(40);
   // the given: M − ■ = M − s, or ■ + M = M + s (the order turned round)

@@ -4,7 +4,8 @@
 
 // Задача 20: a snail that climbs by day and slips back by night. It only has to reach the
 // top once, so the last climb is not followed by a slip — the slipping stops there.
-function genSnail(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genSnail(){
   for(;;){
     const up = 5 + rnd(6), down = 2 + rnd(up - 3);
     const gain = up - down;

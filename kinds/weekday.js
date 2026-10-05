@@ -1,8 +1,10 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { LANG } from '../js/i18n.js';
 
-const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
+export const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
   { nm:'понеделник', cnt:'понеделника' }, { nm:'вторник', cnt:'вторника' },
   { nm:'сряда', cnt:'сряди', f:1 }, { nm:'четвъртък', cnt:'четвъртъка' },
   { nm:'петък', cnt:'петъка' }, { nm:'събота', cnt:'съботи', f:1 }, { nm:'неделя', cnt:'недели', f:1 }
@@ -12,7 +14,7 @@ const DAYS = [                                   // f marks the feminine days: "
 // Задача 19: the first of the month falls on a known weekday. The same weekday comes
 // round every seven days, so the last one is as far along as another seven still fits.
 /** @type {[string, number][]} */
-const MONTHS = [['януари',31], ['март',31], ['април',30], ['май',31], ['юни',30], ['юли',31],
+export const MONTHS = [['януари',31], ['март',31], ['април',30], ['май',31], ['юни',30], ['юли',31],
                 ['август',31], ['септември',30], ['октомври',31], ['ноември',30], ['декември',31]];
 function genLastDay(){
   const mon = MONTHS[rnd(MONTHS.length)];
@@ -40,12 +42,12 @@ function genBound(){
 }
 // МБГ Пролет 2025, 1 клас, задача 20: the same bound over a shorter run — the least Tuesdays among 20 days.
 // short: the weeks are added up as sevens, not multiplied — there is no × in the 1st grade
-function genBoundShort(){ const q = genBound(); return q.n > 30 ? genBoundShort() : Object.assign(q, {short:true}); }
+export function genBoundShort(){ const q = genBound(); return q.n > 30 ? genBoundShort() : Object.assign(q, {short:true}); }
 // МБГ Пролет 2023, 1 клас, задача 17: mum's birthday is on a Sunday, dad's 3 days later, on a Wednesday; mine
 // is 5 days after dad's — Thursday 1, Friday 2, … Monday 5. A day cannot be typed, so it brings its own four.
 // [who first, Ukrainian genitive], [who second, Ukrainian genitive]
 const SHIFT_WHO = [[['мама', 'мами'], ['баща ми', 'тата']], [['баба', 'бабусі'], ['дядо ми', 'дідуся']], [['сестра ми', 'сестри'], ['брат ми', 'брата']]];
-function genShift(){
+export function genShift(){
   const who = rnd(SHIFT_WHO.length), d0 = rnd(7), k = 1 + rnd(4), m = 2 + rnd(5), d1 = (d0 + k) % 7, at = (d1 + m) % 7;
   const wrong = [(d0 + m) % 7, (at + 6) % 7, (at + 1) % 7, d1, (at + 2) % 7].filter((v, i, a) => v !== at && a.indexOf(v) === i).slice(0, 3);
   const ids = shuffle(wrong.concat(at)), options = ids.map((di, id) => ({ id, v: id, text: [DAYS[di].nm, weekdayUk[DAYS[di].nm].nm] }));
@@ -56,13 +58,13 @@ const shiftIn = i => (/^[вф]/.test(DAYS[i].nm) ? 'във ' : 'в ') + DAYS[i].
 const shiftInUk = i => 'у ' + (weekdayUk[DAYS[i].nm].f ? weekdayUk[DAYS[i].nm].nm.replace(/а$/, 'у').replace(/я$/, 'ю') : weekdayUk[DAYS[i].nm].nm);
 // МБГ Пролет 2022, 1 клас, задача 15: 1 април is a Friday; how many Fridays are there in April after it? 8, 15,
 // 22 and 29 — 4. Or another weekday of the month, counted from its first date.
-function genAfter(){
+export function genAfter(){
   const mon = MONTHS[rnd(MONTHS.length)], first1 = rnd(7), want = Math.random() < 0.6 ? first1 : rnd(7);
   let first = 1 + (want - first1 + 7) % 7;
   if(first === 1) first = 8;                      // the 1st itself is not after the 1st
   return {kind:'weekday', shape:'after', mon, d1: DAYS[first1], day: DAYS[want], first, ans: 1 + Math.floor((mon[1] - first) / 7)};
 }
-function genWeekday(){
+export function genWeekday(){
   if(Math.random() < 0.25) return genBound();
   if(Math.random() < 0.3) return genWhichDay();
   if(Math.random() < 0.5) return genLastDay();
@@ -73,7 +75,7 @@ function genWeekday(){
 }
 
 // Ukrainian forms keyed by the Bulgarian name: count forms (2–4 / 5+), "по одному …", gender.
-const weekdayUk = {
+export const weekdayUk = {
   понеделник:{nm:'понеділок', few:'понеділки', many:'понеділків', po:'по одному понеділку'},
   вторник:{nm:'вівторок', few:'вівторки', many:'вівторків', po:'по одному вівторку'},
   сряда:{nm:'середа', few:'середи', many:'серед', po:'по одній середі', f:1},

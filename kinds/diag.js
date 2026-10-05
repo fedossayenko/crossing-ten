@@ -5,12 +5,13 @@
 // МБГ Пролет 2025, задача 15: a 9 by 6 rectangle of 1 см squares and its diagonals AC and BD. How many
 // squares are cut into two parts? Each diagonal crosses 12 squares; the two in the middle are crossed by
 // both, so they are in more than two parts: 12 + 12 − 2 − 2 = 20. Each square is tested here one by one.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function diagCuts(w, h, i, j, flip){
   // does the diagonal (0,0)–(w,h), or (w,0)–(0,h), pass through the inside of square [i, i+1] × [j, j+1]?
   const y = x => flip ? h - h*x/w : h*x/w, y0 = y(i), y1 = y(i + 1), lo = Math.min(y0, y1), hi = Math.max(y0, y1);
   return Math.max(lo, j) < Math.min(hi, j + 1) - 1e-9;
 }
-function genDiag(){
+export function genDiag(){
   for(;;){
     const w = 4 + rnd(7), h = 3 + rnd(5), one = Math.random() < 0.3;
     if(w === h) continue;

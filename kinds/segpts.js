@@ -4,7 +4,8 @@
 
 // МБГ Есен, 3 клас, задача 12: B on AC, 5 cm from C; 5 points split AB into equal parts of 5 cm.
 // Five points make six parts, so AB = 30 and AC = 35 (not 5 · 5 + 5).
-function genSegPts(){
+import { CM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+export function genSegPts(){
   const k = 3 + rnd(5), p = 2 + rnd(5), d = 2 + rnd(8), ans = (k + 1)*p + d;
   return {kind:'segpts', k, p, d, ans, traps: [k*p + d, (k - 1)*p + d]};
 }

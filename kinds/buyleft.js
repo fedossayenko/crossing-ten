@@ -4,7 +4,8 @@
 
 // Коледно 2022, задача 2: Рая had 92 ст. and bought two decorations at 14 ст. each: 14 + 14 = 28, 92 − 28 = 64.
 // The traps are 28 (what she spent) and 78 (one decoration only). Two or three things, added up, not multiplied.
-function genBuyLeft(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genBuyLeft(){
   for(;;){
     const M = 50 + rnd(50), k = 2 + rnd(2), p = 8 + rnd(18), spent = k*p;
     if(M - spent < 5) continue;

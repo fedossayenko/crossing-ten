@@ -5,7 +5,7 @@
    first question (app.js), and every round written to localStorage is written here too. Where IndexedDB
    is missing (some private windows, Node in check.js) every call settles at once and the app runs on the
    last 400, as it always did. */
-const ARCHIVE = (() => {
+export const ARCHIVE = (() => {
   const open = new Promise(res => {
     try {
       const r = indexedDB.open('crossingten', 1);
@@ -33,7 +33,7 @@ const ARCHIVE = (() => {
   };
 })();
 // Two logs of one player as one, each round once, oldest first.
-function unionRounds(a, b){
+export function unionRounds(a, b){
   const seen = new Set(), out = [];
   a.concat(b).forEach(r => { if(r && !seen.has(r.id)){ seen.add(r.id); out.push(r); } });
   return out.sort((x, y) => x.ts - y.ts);

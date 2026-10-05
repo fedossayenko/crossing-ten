@@ -6,7 +6,8 @@
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
 // Level 120: the same inequalities with the traps moved — any number counts, only two-digit ones
 // do, or the unknown is a tens digit (Зима 2021–2023). Rated a dot easier than level 16.
-function genIneqWide(){
+import { KIND, SLOT, exprText, rnd, tr } from '../js/core.js';
+export function genIneqWide(){
   const pick = rnd(3);
   if(pick === 0){
     // Зима 2022, задача 7: only two-digit numbers fit the box — □ + 10 < 30 leaves 10 … 19
@@ -38,7 +39,7 @@ function genIneqWide(){
 }
 // МБГ Пролет 2025, 1 клас, задача 6: how many numbers fit 10 + ■ < 12? ■ is 0 or 1 — 2, because 0 counts.
 // The box added (on either side of the plus) or taken away, all within 20.
-function genIneqSmall(){
+export function genIneqSmall(){
   if(Math.random() < 0.4) return genIneqDigit();
   const form = rnd(3), k = 1 + rnd(6);
   if(form === 2){ const L = rnd(10), A = L + k; return {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k}; }   // A − ■ > L: ■ = 0 … k − 1
@@ -59,7 +60,7 @@ function genIneqDigit(){
 }
 const ineqDigitText = q => exprText(q.terms) + (q.ask === 'count' ? (q.less ? ' &lt; □0' : ' &gt; □0') : (q.more ? ' &gt; ' : ' &lt; ') + q.T + '□');
 const ineqSmallText = q => ['A + ■ &lt; L', '■ + A &lt; L', 'A − ■ &gt; L'][q.form].replace('A', q.A).replace('L', q.L);
-function genIneq(){
+export function genIneq(){
   for(;;){
     const shape = rnd(3);
     const L = 1 + rnd(9), B = 1 + rnd(17), A = L + B, C = 1 + rnd(8);

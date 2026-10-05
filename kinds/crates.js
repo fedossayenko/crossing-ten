@@ -1,6 +1,7 @@
 // Question kind 'crates': level 47 Три щайги — A total, a part of it, and a gap between the rest.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 
 const CRATES = [['щайги','щайга'], ['кутии','кутия'], ['кошници','кошница']];
 const ORD = ['първата', 'втората', 'третата'];
@@ -11,7 +12,7 @@ const cratesOrd = (q, i, loc) => (cratesUk[q.box[0]][2]
   : (loc ? ['першому', 'другому', 'третьому'] : ['перший', 'другий', 'третій']))[i];
 // Задача 15: three amounts, a total, a total of two of them, and a gap between the other
 // two. Peeled off one at a time, each step leaves one fewer unknown.
-function genCrates(){
+export function genCrates(){
   for(;;){
     const c = 4 + rnd(12), d = 1 + rnd(5), b = c - d, a = 2 + rnd(14);
     if(b < 1) continue;

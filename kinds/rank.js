@@ -6,10 +6,12 @@
 // some of the time, so the wording has to be read rather than guessed.
 // Задача 3: the two sums line up term by term, so pairing them off beats adding both —
 // one pair carries a ten, the rest nudge by one or two.
+import { KIND, SLOT, bgList, rnd, shuffle, tr } from '../js/core.js';
+import { LANG } from '../js/i18n.js';
 const BOYS = ['Алекс', 'Борис', 'Виктор', 'Георги', 'Даниел', 'Емил'];
 // Задача 18: who beat whom. One boy is said to be above everybody, and another to be
 // above only a named few — which pins how many are above him, whatever the rest did.
-function genRank(){
+export function genRank(){
   const n = 4 + rnd(2);
   const who = shuffle(BOYS.slice()).slice(0, n);      // who[0] is best, who[n-1] worst
   const k = 2 + rnd(n - 3);                           // the boy the second fact is about

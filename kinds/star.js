@@ -6,7 +6,8 @@
 // star with perimeter 9 cm; the square's perimeter in mm. The star has 8 sides the length of the
 // square's side and the square 4 of them, so it is half: 90 : 2 = 45 mm (a side, 11.25 mm, is not
 // whole — the trick is not to need it). k: how many sides carry a triangle.
-function genStar(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genStar(){
   for(;;){
     const k = [4, 4, 3, 2][rnd(4)], P = 6 + rnd(25), n = 4 + k;     // the figure's outline: 4 − k square sides + 2k triangle sides
     if(40*P % n) continue;

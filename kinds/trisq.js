@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 14: an equilateral triangle with perimeter 12 cm has a side 2 cm longer
 // than a square's perimeter; the square's side in mm. Side 4 cm, so the square's perimeter is
 // 2 cm = 20 mm and its side 5 mm.
-function genTriVsSq(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genTriVsSq(){
   for(;;){
     const t = 3 + rnd(12), d = 1 + rnd(t - 1), x = t - d;
     if(x < 1 || x % 2) continue;                               // 10x mm split in four must come out whole

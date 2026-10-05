@@ -7,7 +7,8 @@
 // and every 6 letters the word starts again: 15 = 6 + 6 + 3, the 3rd letter, Л. A letter
 // cannot be typed, so this kind brings its own А/Б/В/Г, and ans is the right one's id.
 // Each pair is the word in Bulgarian and in Ukrainian, the same length, no letter twice.
-const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+export const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
 // Есен 2019, задача 11: ○ ○ ○ ○ △ □ over and over; how many circles among the first 31. Six to a
 // round, so 31 = 5 · 6 + 1: five rounds of 4 circles, and the 31st starts a sixth — 21.
 function genPatCount(){
@@ -16,7 +17,7 @@ function genPatCount(){
   let ans = 0; for(let i = 0; i < n; i++) if(pat[i % L] === sym) ans++;
   return {kind:'wordpos', shape:'count', pat, n, sym, traps:[Math.floor(n / L)*pat.filter(x => x === sym).length], ans};
 }
-function genWordPos(){
+export function genWordPos(){
   if(Math.random() < 0.3) return genPatCount();
   for(;;){
     const w = rnd(WORDPOS.length), L = WORDPOS[w][0].length, n = 4 + rnd(8), right = Math.random() < 0.6;

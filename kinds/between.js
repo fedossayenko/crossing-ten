@@ -4,7 +4,8 @@
 
 // МБГ Пролет 2025, 1 клас, задача 19: 5 − 2 < калинка < пчела < 5 + 2. Between 3 and 7 are only 4, 5
 // and 6, and the ladybird is the smaller: 4 + 5 = 9, 4 + 6 = 10, 5 + 6 = 11 — three answers.
-function genBetween(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genBetween(){
   const p = 4 + rnd(9), s1 = 1 + rnd(3), s2 = 4 - s1, lo = p - s1;
   return {kind:'between', p, s1, s2, lo, hi: p + s2, slots:3, ans: 2*lo + 3, alt:[2*lo + 4, 2*lo + 5]};
 }

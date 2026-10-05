@@ -3,6 +3,7 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 6: the vocabulary of place value, on its own or feeding a comparison.
+import { BGNUM, KIND, SLOT, rnd, tr } from '../js/core.js';
 const NAMED = [
   { nm:'най-голямото едноцифрено число', v:9 },
   { nm:'най-малкото двуцифрено число',   v:10 },
@@ -61,7 +62,7 @@ const NAMED_A = [['най-малкото двуцифрено число с ед
                  ['най-голямото едноцифрено четно число', 'найбільше одноцифрове парне число', 8],
                  ['най-малкото двуцифрено нечетно число', 'найменше двоцифрове непарне число', 11],
                  ['най-малкото двуцифрено число с различни цифри', 'найменше двоцифрове число з різними цифрами', 10]];
-function genNamedPair(){
+export function genNamedPair(){
   const w = rnd(NAMED_A.length), A = NAMED_A[w][2], d = Math.random() < 0.6 ? 0 : 1 + rnd(3), lo = 2*A + d;
   const B = lo % 2 ? lo + 1 : lo + 2, L = B + 1 + rnd(2);           // the only even number above lo and under L
   return {kind:'named', shape:6, w, A, d, lo, B, L, traps:[B, A], ans: B / 2};
@@ -74,11 +75,11 @@ const NAMED_ONE = [[['най-малкото едноцифрено число', 
                     ['най-голямото едноцифрено четно число', 'найбільшого одноцифрового парного числа', 8], ['най-малкото едноцифрено нечетно число', 'найменшого одноцифрового непарного числа', 1]],
                    [['най-малкото двуцифрено число', 'найменшого двоцифрового числа', 10], ['най-малкото двуцифрено нечетно число', 'найменшого двоцифрового непарного числа', 11],
                     ['най-малкото двуцифрено число с еднакви цифри', 'найменшого двоцифрового числа з однаковими цифрами', 11], ['най-малкото двуцифрено четно число', 'найменшого двоцифрового парного числа', 10]]];
-function genNamedSum(){
+export function genNamedSum(){
   const a = rnd(4), b = rnd(4), sum = Math.random() < 0.7, A = NAMED_ONE[0][a][2], B = NAMED_ONE[1][b][2];
   return {kind:'named', shape:7, a, b, sum, traps: A === 0 ? [sum ? B + 1 : B - 1] : [], ans: sum ? A + B : B - A};
 }
-function genNamed(){
+export function genNamed(){
   if(Math.random() < 0.06){
     const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
     return {kind:'named', shape:5, v, wit: f.wit, ans: f.best};

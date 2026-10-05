@@ -5,7 +5,8 @@
 // МБГ Пролет 2025, задача 3: (11 − 10) · (11 − 9) · (11 − 8) − 1 · 2 · 3 — the brackets are 1, 2 and 3,
 // so it is 1 · 2 · 3 − 1 · 2 · 3 = 0. Задача 4: (2 · 0 + 2 · 5) : (20 : 2 − 5) − 1 — anything times 0
 // is 0, so 10 : 5 − 1 = 1.
-function genMulBr(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genMulBr(){
   if(Math.random() < 0.5){
     for(;;){
       const n = 10 + rnd(11), v = [1 + rnd(3), 2 + rnd(2), 3 + rnd(2)], w = v.slice();

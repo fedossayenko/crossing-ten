@@ -5,9 +5,10 @@
 // МБГ Пролет 2025, 1 клас, задача 14: the first is 12 см, the second 3 см shorter than the first, the
 // third 8 см longer than the second. One step at a time: 12 − 3 = 9, then 9 + 8 = 17.
 // [Bulgarian, Ukrainian, Bulgarian "drew", Ukrainian "drew"]
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 const SEGWORD_WHO = [['Мария', 'Марія', 'начертала', 'накреслила'], ['Петър', 'Петро', 'начертал', 'накреслив'],
                      ['Ива', 'Іва', 'начертала', 'накреслила'], ['Борис', 'Борис', 'начертал', 'накреслив']];
-function genSegWord(){
+export function genSegWord(){
   for(;;){
     const a = 8 + rnd(13), d1 = 2 + rnd(4), d2 = 2 + rnd(8), short1 = Math.random() < 0.6, long2 = Math.random() < 0.6;
     const b = short1 ? a - d1 : a + d1, c = long2 ? b + d2 : b - d2;

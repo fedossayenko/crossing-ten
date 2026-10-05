@@ -4,7 +4,8 @@
 
 // МБГ Пролет 2023, 1 клас, задача 16: 1, 1, 0, 2, 3, 5, 10, ★, 33 — the rule is not given, it is
 // found: 1 + 1 + 0 = 2, 1 + 0 + 2 = 3, 0 + 2 + 3 = 5 … so ★ = 3 + 5 + 10 = 18 (and 5 + 10 + 18 = 33).
-function genTribo(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genTribo(){
   for(;;){
     const t = [rnd(4), rnd(4), rnd(4)], L = 8 + rnd(2);
     if(t[0] + t[1] + t[2] === 0) continue;

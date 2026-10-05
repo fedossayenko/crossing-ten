@@ -6,7 +6,8 @@
 // row and column: column 1 gives 8, row 1 gives 6, row 2 gives 4, column 2 is "?". Both columns
 // together and both rows together are the same four numbers multiplied, so 8 · ? = 6 · 4: ? = 3.
 // sh: [column 1, row 1, row 2, column 2]; ask: which of them is the "?".
-function genProdGrid(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genProdGrid(){
   for(;;){
     const c = [0, 0, 0, 0].map(() => 1 + rnd(6));            // the empty squares: [r1c1, r1c2, r2c1, r2c2]
     const sh = [c[0]*c[2], c[0]*c[1], c[2]*c[3], c[1]*c[3]], ask = rnd(4);

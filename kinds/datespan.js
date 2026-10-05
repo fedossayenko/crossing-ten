@@ -8,10 +8,12 @@
 // February has a leap year, and a span across the New Year would need a year to count in.
 // [Bulgarian name, Ukrainian genitive, days, Ukrainian name]
 /** @type {[string, string, number, string][]} */
-const SPAN_MONTHS = [['март', 'березня', 31, 'березень'], ['април', 'квітня', 30, 'квітень'], ['май', 'травня', 31, 'травень'],
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+/** @type {any[]} */
+export const SPAN_MONTHS = [['март', 'березня', 31, 'березень'], ['април', 'квітня', 30, 'квітень'], ['май', 'травня', 31, 'травень'],
                      ['юни', 'червня', 30, 'червень'], ['юли', 'липня', 31, 'липень'], ['август', 'серпня', 31, 'серпень'], ['септември', 'вересня', 30, 'вересень'],
                      ['октомври', 'жовтня', 31, 'жовтень'], ['ноември', 'листопада', 30, 'листопад']];
-function genDateSpan(){
+export function genDateSpan(){
   for(;;){
     const i = rnd(SPAN_MONTHS.length - 1), two = Math.random() < 0.6 && i < SPAN_MONTHS.length - 2, j = i + (two ? 2 : 1);
     const [m1, , L1] = SPAN_MONTHS[i], d1 = 10 + rnd(L1 - 10), d2 = 1 + rnd(12), k = 1 + rnd(3);

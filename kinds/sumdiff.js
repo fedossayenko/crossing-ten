@@ -4,6 +4,7 @@
 
 // Задача 10: each letter sits a given distance from the same number, on either side of
 // it. Sending them opposite ways opens the widest gap — the two distances added.
+import { KIND, SLOT, lineSvg, popAt, rnd, svgText, tr } from '../js/core.js';
 function genGap(){
   const c = 10 + rnd(30);
   const d1 = 1 + rnd(8);
@@ -21,7 +22,7 @@ function genSumAndDiff(){
     return {kind:'sumdiff', shape:'sd', S, d, small, big, asksBig, ans: asksBig ? big : small};
   }
 }
-function genSumDiff(){
+export function genSumDiff(){
   if(Math.random() < 0.2) return genSumAndDiff();
   if(Math.random() < 0.4) return genGap();
   const d = 1 + rnd(6);

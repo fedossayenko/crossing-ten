@@ -1,11 +1,12 @@
 // What a level asks: prints distinct questions and their answers, to compare a printed task with
 // the levels that might already cover it. Run: node sample.js 12,38 [how many, default 6]
-const fs = require('fs');
-const read = f => fs.readFileSync(__dirname + '/' + f, 'utf8');
-const scripts = [...read('index.html').matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1])
+const fs = require('fs'), { pathToFileURL } = require('url');
+const scripts = [...fs.readFileSync(__dirname + '/index.html', 'utf8').matchAll(/<script type="module" src="([^"]+)"><\/script>/g)].map(m => m[1])
   .filter(f => !['js/app.js', 'js/compete.js', 'js/sync.js'].includes(f));
-const head = `const localStorage = undefined;`;
-const Q = eval('(function(){' + head + scripts.map(read).join('\n') + '; return { raw, drawQ, answer, LEVELS }; })()');
+Object.defineProperty(globalThis, 'localStorage', { value: undefined, configurable: true });   // one player, no storage
+(async () => {
+const Q = {};
+for(const f of scripts) Object.assign(Q, await import(pathToFileURL(__dirname + '/' + f).href));
 const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 if(!process.argv[2]){ console.log('usage: node sample.js <level ids, comma-separated> [how many]'); process.exit(1); }
 const n = +(process.argv[3] || 6);
@@ -19,3 +20,4 @@ for(const id of process.argv[2].split(',').map(Number)){
     if(!seen.has(s)){ seen.add(s); console.log('  ' + s); }
   }
 }
+})();

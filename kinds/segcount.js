@@ -7,11 +7,12 @@
 // next 2 new ones, then 1: 3 + 2 + 1.
 // Есен 2019, задача 14: a 30 см segment, its two ends yellow; red points cut it into 10 pieces of
 // 3 см, so 9 red; then a blue point inside each piece, 10 blue. 2 + 9 + 10 = 21.
+import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 function genDots(){
   const n = 3 + rnd(8), d = 2 + rnd(4), asks = rnd(3);
   return {kind:'segcount', shape:'dots', n, d, L: n*d, asks, traps:[n + 2 + n, 2*n], ans: asks === 0 ? 2*n + 1 : asks === 1 ? n - 1 : n};
 }
-function genSegCount(){
+export function genSegCount(){
   if(Math.random() < 0.3) return genDots();
   const n = 3 + rnd(4), S = n*(n - 1)/2, rev = Math.random() < 0.45;
   return {kind:'segcount', n, S, rev, ans: rev ? n : S};

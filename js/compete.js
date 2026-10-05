@@ -5,12 +5,19 @@
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
+import { $, rnd } from './core.js';
+import { accepts, seededRaw, slipOf } from './questions.js';
+import { LEVELS } from './levels.js';
+import { PLAYER } from './players.js';
+import { t } from './i18n.js';
+import { withChoices } from './choice.js';
+import { COMP, GLYPH, LOCAL, S, clearTimers, compTick, finish, newRound, setComp, sfx, show } from './app.js';
 const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
 // Plain sums (the Take away and Add groups) are drill, not olympiad tasks: a paper leaves them out.
 // A paper is for the player's own grade (her profile's, 2nd by default).
 const olympiad = () => LEVELS.filter(l => l.op !== '-' && l.op !== '+' && l.op !== 'x' && l.grade === (PLAYER.grade || 2));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
-function compTasks(){
+export function compTasks(){
   const out = [], used = new Set(), OLYMPIAD = olympiad();
   let lastGrp = null;
   for(let i = 0; i < COMP_N; i++){
@@ -28,10 +35,10 @@ function compTasks(){
   }
   return out;
 }
-const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
-const compLeft = () => compTime(COMP.end - Date.now());
+export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+export const compLeft = () => compTime(COMP.end - Date.now());
 
-function startComp(){
+export function startComp(){
   const qs = compTasks(), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
   clearInterval(compTick);
@@ -46,7 +53,7 @@ function startComp(){
   $('sub').textContent = t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle');   // a paper mixes levels from every paper of her grade
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.
-function compAnswer(){
+export function compAnswer(){
   const q = S.qs[S.i], ok = accepts(q, S.parts);
   COMP.ans[S.i] = S.parts.slice();
   S.results[S.i] = ok;
@@ -71,12 +78,6 @@ function compEnd(){
   S.qs.forEach((_, k) => { if(S.results[k] === undefined) S.results[k] = false; });   // unanswered is not right
   finish();
 }
-$('skipBtn').onclick = () => {
-  if(!COMP) return;
-  COMP.queue.push(COMP.queue.shift());
-  S.i = COMP.queue[0];
-  show();
-};
 
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
@@ -86,5 +87,15 @@ function paintCompCard(){
     t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b>' +
     (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');
 }
-$('levelPill').addEventListener('click', paintCompCard);
-$('compStart').onclick = () => startComp();
+// The buttons, wired once app.js has set the page up (as a module this file runs first), so the
+// picker's own click handler still runs before the card is painted.
+export function startCompete(){
+  $('skipBtn').onclick = () => {
+    if(!COMP) return;
+    COMP.queue.push(COMP.queue.shift());
+    S.i = COMP.queue[0];
+    show();
+  };
+  $('levelPill').addEventListener('click', paintCompCard);
+  $('compStart').onclick = () => startComp();
+}

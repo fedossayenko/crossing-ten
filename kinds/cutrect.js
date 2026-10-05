@@ -5,7 +5,8 @@
 // МБГ Зима 2022, задача 13: a 4 by 5 rectangle cut into 1 by 2, 2 by 3 and X by 4. The small
 // squares are what is shared out: 20 = 2 + 6 + 4 · X, so 4 · X = 12 and X = 3. Generated from
 // real cuts — a strip off one side, then the rest in two — so the pieces always fit.
-function genCutRect(){
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export function genCutRect(){
   for(;;){
     const W = 3 + rnd(4), H = 3 + rnd(4);
     if(W*H > 36) continue;

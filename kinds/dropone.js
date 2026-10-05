@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 18: choose five different numbers from 2, 3, 5, 6, 7 and 18 so that
 // their sum divides by 3 — which one is left out? All six add to 41; leaving out 2 gives 39 and
 // leaving out 5 gives 36, so the answer is 2 or 5: both boxes, in any order.
-function genDropOne(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genDropOne(){
   for(;;){
     const m = 3 + rnd(2), nums = [];
     while(nums.length < 6){ const v = 2 + rnd(19); if(nums.indexOf(v) < 0) nums.push(v); }

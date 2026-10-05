@@ -5,8 +5,9 @@
 // Коледно 2022, задача 4: A holds every number under 50 ending in 1 (1, 11, 21, 31, 41), C every two-digit
 // number whose digits add to 3 or 4. Only 21 and 31 are on both — 1 is not two-digit, 41's digits make 5.
 // Every number is tried; the question is asked only when two or three are on both lists.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const digSum = v => Math.floor(v / 10) + v % 10;
-function genBothSeq(){
+export function genBothSeq(){
   for(;;){
     const u = rnd(10), N = 30 + rnd(70), s = 2 + rnd(9);
     const A = [], both = [];

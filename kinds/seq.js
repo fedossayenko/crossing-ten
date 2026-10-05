@@ -4,7 +4,8 @@
 
 // Задача 20: near-sorted, so a few numbers sit with everything smaller to their left
 // and everything bigger to their right. Counted directly, never inferred.
-function genSeq(){
+import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+export function genSeq(){
   for(;;){
     const n = 8 + rnd(3);
     const a = [];

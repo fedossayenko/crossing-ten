@@ -6,10 +6,11 @@
 // in order, written one after another, and the digit in the middle. Then 30, 9, 20, 10 ⟹ 9102030, seven
 // digits, the fourth is 2. Задача 6: the same order, and the middle number itself — 30, 9, 20, 19, 10 ⟹ 19.
 // [the numbers as given, in order, what comes out] for each shape's two printed examples
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 const SORTPICK_EX = { digit: [[[9, 12, 10], '91012', 0], [[9, 7, 0, 13], '07913', 9]],
                       mid:   [[[9, 12, 10], '', 10], [[9, 7, 0, 13, 1], '', 7]] };
 const sortUp = ns => ns.slice().sort((a, b) => a - b);
-function genSortPick(){
+export function genSortPick(){
   for(;;){
     const shape = Math.random() < 0.5 ? 'digit' : 'mid';
     const k = shape === 'mid' ? (Math.random() < 0.5 ? 3 : 5) : 3 + rnd(2);

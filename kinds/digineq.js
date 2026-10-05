@@ -5,12 +5,13 @@
 // МБГ Есен, 3 клас, задача 10: A is made of two digits 1 and one digit 2, and 300 − A < A − 100.
 // Only three numbers can be A — 112, 121, 211 — and trying each shows that only 211 works
 // (the inequality says A is past the middle of 100 and 300).
-function digIneqCands(a, b){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function digIneqCands(a, b){
   return [...new Set([100*a + 10*a + b, 100*a + 10*b + a, 100*b + 10*a + a])].sort((x, y) => x - y);
 }
 // holds: c − A < A − d (more) or c − A > A − d (not more)
-const digIneqHolds = (q, A) => q.more ? q.c - A < A - q.d : q.c - A > A - q.d;
-function genDigIneq(){
+export const digIneqHolds = (q, A) => q.more ? q.c - A < A - q.d : q.c - A > A - q.d;
+export function genDigIneq(){
   for(;;){
     const a = 1 + rnd(9), b = 1 + rnd(9);
     if(a === b) continue;

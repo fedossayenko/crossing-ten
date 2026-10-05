@@ -6,13 +6,14 @@
 // correctly. Only four sums can come out — 0 + 20 = 20, 1 + 20 = 21, 10 + 0 = 10, 10 + 2 = 12 — so with
 // five children at least two got the same one: 2.
 // [the sum written with that digit erased, its value] for each of the four digits of x + y
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 const pigeonTries = (x, y) => {
   const [a, b] = [String(x), String(y)];
   return [[a[1], +a[1] + y, '<s>' + a[0] + '</s>' + a[1] + ' + ' + b], [a[0], +a[0] + y, a[0] + '<s>' + a[1] + '</s> + ' + b],
           [b[1], x + +b[1], a + ' + <s>' + b[0] + '</s>' + b[1]], [b[0], x + +b[0], a + ' + ' + b[0] + '<s>' + b[1] + '</s>']];
 };
 const pigeonSums = q => [...new Set(pigeonTries(q.x, q.y).map(t => t[1]))];
-function genPigeon(){
+export function genPigeon(){
   for(;;){
     // two two-digit numbers, often round tens as on the paper
     const round = Math.random() < 0.5;

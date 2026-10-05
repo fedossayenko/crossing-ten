@@ -5,7 +5,8 @@
 // Есен 2019, задача 16: two different dice showed 3 and 2, total 5. In how many more ways can 5
 // come up? 1 + 4, 4 + 1, 2 + 3 — the dice are different, so 3 on the first and 2 on the second is
 // not the same throw as 2 on the first and 3 on the second: 3 more.
-function genDice(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genDice(){
   const S = 3 + rnd(9), ways = [];
   for(let a = 1; a <= 6; a++) if(S - a >= 1 && S - a <= 6) ways.push([a, S - a]);
   const [x, y] = ways[rnd(ways.length)], more = Math.random() < 0.7;

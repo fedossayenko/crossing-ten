@@ -1,6 +1,7 @@
 // Question kind 'cats': level 42 Котките — Two cats and one box of food between them.
 // Generator, drawing, summary line and hints for this kind all live here; the level
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
+import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 
 const CATS = [['Ан','Ед'], ['Мими','Рижко'], ['Сивка','Мурко'], ['Пух','Луна']];
 const catsUk = {'Мими':'Мімі', 'Рижко':'Рижик'};
@@ -11,7 +12,7 @@ const CATS_DAY = ['день','дні','днів'], CATS_BOX = ['коробка',
 
 // Задача 17: in p times q days the first cat gets through q boxes and the second p,
 // so together they eat p + q boxes in that time.
-function genCats(){
+export function genCats(){
   const nm = CATS[rnd(CATS.length)];
   const p = 3 + rnd(3);
   let q = 3 + rnd(3);

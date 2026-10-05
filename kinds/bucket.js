@@ -5,7 +5,8 @@
 // Задача 10: one vessel of a known size and a bucket that is one of two sizes. Pour and
 // watch: the answer is the fill at which the bigger bucket has overflowed the vessel and
 // the smaller one has not, because that is the first moment the two stories differ.
-function genBucket(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genBucket(){
   for(;;){
     const p = 2 + rnd(4), q = p + 1 + rnd(4);
     const V = 10 + rnd(20);

@@ -3,6 +3,7 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
+import { KIND, NAMES, SLOT, rnd, shuffle, tr } from '../js/core.js';
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
 // Задача 10: the other colour is the whole minus the named one, and then two lots are
 // given away — three plain steps, with only the first one needing any thought.
@@ -19,7 +20,7 @@ function genGave(){
             ans: rest - g1 - g2};
   }
 }
-function genPencils(){
+export function genPencils(){
   if(Math.random() < 0.4) return genGave();
   const who = NAMES[rnd(NAMES.length)][0];
   const col = shuffle(PENCIL.slice()).slice(0, 3);

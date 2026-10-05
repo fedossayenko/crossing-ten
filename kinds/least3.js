@@ -5,6 +5,7 @@
 // МБГ Зима 2020, задача 20: from 6003067586 cross out 7 digits to leave the smallest three-digit number.
 // It cannot start with 0, so the first digit is the smallest non-zero one early enough (3); then
 // the smallest after it (0), then after that (5): 305. Found here by trying every three.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 function least3Of(s){
   let best = null;
   for(let i = 0; i < s.length; i++) for(let j = i + 1; j < s.length; j++) for(let k = j + 1; k < s.length; k++){
@@ -14,7 +15,7 @@ function least3Of(s){
   }
   return best;
 }
-function genLeast3(){
+export function genLeast3(){
   for(;;){
     const n = 7 + rnd(4), s = Array.from({length: n}, () => Math.random() < 0.25 ? '0' : String(1 + rnd(9))).join('');
     if(s[0] === '0' || !s.slice(1).includes('0')) continue;

@@ -2,7 +2,7 @@
 // МБГ Пролет 2022 and 2021, 1 клас — the kinds sortpick, pigeon, scales, dicestack and stardig: each printed
 // task against the official key, drawn as printed and met by its level's own generator, then worked out again.
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, answers, accepts, LEVELS, STAR_ASK }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // sig: what has to match for the generator to have asked the printed task (the whole question, unless a

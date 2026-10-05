@@ -5,7 +5,8 @@
 // МБГ Пролет 2023, 1 клас, задача 11: 4 equal shaded squares, each with a side of 1 см, run
 // corner to corner across a big square. Each takes one centimetre of the bottom side, so the side
 // is 4 см, and the perimeter four such sides: 4 + 4 + 4 + 4 = 16.
-function genDiagSq(){
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+export function genDiagSq(){
   const n = 3 + rnd(4), s = Math.random() < 0.75 ? 1 : 2, side = Math.random() < 0.25;
   // the slips: the side for the perimeter, or the four sides of one small square
   return {kind:'diagsq', n, s, side, traps: side ? [n] : [n*s, 4*s], ans: side ? n*s : 4*n*s};

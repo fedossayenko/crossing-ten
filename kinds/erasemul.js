@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 6: erase three digits in 12 · 31 · 41 so the result is 24; the sum
 // of the erased digits. With the three 1s gone it is 2 · 3 · 4 = 24, so 3. Each number keeps a
 // digit, every way of erasing is tried, and all the ways that reach the target erase the same sum.
-function eraseWays(nums, k){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function eraseWays(nums, k){
   const per = nums.map(n => {
     const s = String(n), out = [];
     for(let m = 0; m < (1 << s.length) - 1; m++){             // m: which digits go; never all of them
@@ -23,7 +24,7 @@ function eraseWays(nums, k){
   })(0, [], []);
   return ways;
 }
-function genEraseMul(){
+export function genEraseMul(){
   for(;;){
     const nums = [0, 0, 0].map(() => 10*(1 + rnd(9)) + 1 + rnd(9));    // no 0 digit, so nothing leads with a 0
     const ways = eraseWays(nums, 3), w = ways[rnd(ways.length)];

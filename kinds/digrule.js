@@ -5,9 +5,10 @@
 // МБГ Пролет 2021, 1 клас, задача 19: 10 ⟹ 1 − 0 = 1, 12 ⟹ 2 − 1 = 1, 59 ⟹ 9 − 5 = 4 — so ☺ is the bigger
 // digit take away the smaller. For 79: 9 − 7 = 2. The examples are chosen so the rule is plain: one with
 // the bigger digit in front, so it is not just «ones minus tens». The other rule: the two digits added.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const digRuleOf = (rule, n) => { const t = Math.floor(n / 10), o = n % 10; return rule === 'sum' ? [t, o, t + o] : [Math.max(t, o), Math.min(t, o), Math.abs(t - o)]; };
 const digRuleText = (rule, n) => { const [x, y, v] = digRuleOf(rule, n); return x + (rule === 'sum' ? ' + ' : ' − ') + y + ' = ' + v; };
-function genDigRule(){
+export function genDigRule(){
   for(;;){
     const rule = Math.random() < 0.7 ? 'diff' : 'sum', pick = () => 10 + rnd(90);
     const ex = [pick(), pick(), pick()], n = pick();

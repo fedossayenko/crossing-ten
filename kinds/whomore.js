@@ -6,10 +6,11 @@
 // по-голям сбор и с колко? Niki added the very same numbers and a 3 besides: Ники, by 3 — no sum needs
 // working out. The answer is a name and a number, so this kind brings its own А/Б/В/Г; ans is the right id.
 /** @type {[string, string][]} */
-const WM_GIRLS = [['Лили', 'Лілі'], ['Мая', 'Мая'], ['Ани', 'Ані'], ['Ива', 'Іва']];
+import { KIND, bgWith, rnd, shuffle, tr } from '../js/core.js';
+export const WM_GIRLS = [['Лили', 'Лілі'], ['Мая', 'Мая'], ['Ани', 'Ані'], ['Ива', 'Іва']];
 /** @type {[string, string][]} */
-const WM_BOYS = [['Ники', 'Нікі'], ['Боби', 'Бобі'], ['Тони', 'Тоні'], ['Асен', 'Асен']];
-function genWhoMore(){
+export const WM_BOYS = [['Ники', 'Нікі'], ['Боби', 'Бобі'], ['Тони', 'Тоні'], ['Асен', 'Асен']];
+export function genWhoMore(){
   const g = rnd(WM_GIRLS.length), b = rnd(WM_BOYS.length);
   const base = [1 + rnd(9), 1 + rnd(9), 20 + rnd(10)], e = 1 + rnd(9), at = rnd(4), boy = Math.random() < 0.6;
   const S = base.reduce((t, v) => t + v, 0);

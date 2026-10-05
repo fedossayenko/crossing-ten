@@ -8,6 +8,7 @@
 // brings its own four: the three colours and «cannot be told».
 // [Bulgarian, Ukrainian, Ukrainian genitive]
 /** @type {[string, string, string][]} */
+import { KIND, shuffle, tr } from '../js/core.js';
 const WC_KIDS = [['Алекс', 'Алекс', 'Алекса'], ['Борис', 'Борис', 'Бориса'], ['Катрин', 'Катрін', 'Катрін'], ['Мая', 'Мая', 'Маї'],
                  ['Иван', 'Іван', 'Івана'], ['Ния', 'Нія', 'Нії']];
 // [Bulgarian, for a balloon; Ukrainian, for a balloon (кулька)]
@@ -15,7 +16,7 @@ const WC_KIDS = [['Алекс', 'Алекс', 'Алекса'], ['Борис', '�
 const WC_COLS = [['син', 'синя'], ['зелен', 'зелена'], ['жълт', 'жовта'], ['червен', 'червона']];
 // every way to give the three colours out, kept when it fits both clues
 const wcFits = q => [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].filter(p => !q.not1.includes(p[0]) && p[1] !== q.not2);
-function genWhoColor(){
+export function genWhoColor(){
   for(;;){
     const kids = shuffle([0, 1, 2, 3, 4, 5]).slice(0, 3), cols = shuffle([0, 1, 2, 3]).slice(0, 3);
     const has = shuffle([0, 1, 2]);                       // has[k]: the colour (0–2, into cols) of the k-th child

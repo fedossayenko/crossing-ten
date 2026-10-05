@@ -3,7 +3,7 @@
 // wiggle, dance, party) move any of them. An animal is only its fur: tail, body, paws,
 // ears and head, plus the colours the shared face borrows (--eye for the iris,
 // --fur-dark for the mouth and brows). Drawn after the design canvas's mascot sheet.
-const MASCOTS = {
+export const MASCOTS = {
   cat: {
     view:'0 0 240 224', vars:'--arm:var(--fur);--paw:var(--fur-light);--pad:var(--rose)',
     tail:'<path d="M170,204 C212,208 226,178 212,156 C204,143 187,142 180,154" stroke="var(--fur)" stroke-width="15" stroke-linecap="round" fill="none"/>',
@@ -135,10 +135,10 @@ function mascotInner(key){
     m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + FX + '</g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
-const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;
+export const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;
   return '<svg class="cat" data-mood="' + (mood || 'idle') + '" viewBox="' + m.view + '" style="' + m.vars + '" aria-hidden="true">' + mascotInner(key) + '</svg>'; };
 // Dress the page's own mascot (the one whose moods follow the round) as this animal.
-function wearMascot(el, key){
+export function wearMascot(el, key){
   const m = MASCOTS[key] || MASCOTS.cat;
   el.setAttribute('viewBox', m.view); el.setAttribute('style', m.vars);
   el.innerHTML = mascotInner(key);

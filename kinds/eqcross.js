@@ -6,7 +6,8 @@
 // equality with only ■ in it comes first: ■ = 4, then ● = 10 − 4 = 6, and 6 − 4 = 2.
 // Пролет 2025, задача 4: the same cross with 9 + ■ = 11 — ■ = 2, ● = 8, ● − ■ = 6. Пролет 2021, задача 6:
 // 3 + ■ = 5, 6 − ■ = ● — ● − ■ = 2; Пролет 2022, задача 7: 5 + ■ = 9, 7 − ■ = ●, and ● + ● − ■ = 3 + 3 − 4 = 2.
-function genEqCross(){
+import { KIND, SLOT, rnd, svgText, tr } from '../js/core.js';
+export function genEqCross(){
   for(;;){
     const s = 1 + rnd(9), a = 1 + rnd(20 - s), c = 5 + rnd(16), dot = c - s, r = Math.random();
     const ask = r < 0.45 ? 'minus' : r < 0.65 ? 'twice' : r < 0.85 ? 'plus' : 'dot';

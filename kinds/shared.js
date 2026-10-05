@@ -3,6 +3,8 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { sqWalkSvg } from './sqcut.js';
 function stackSvg(q){
   const u = 150 / (q.a + q.h), W = q.a * u, hh = q.h * u, aa = q.a * u;
   const lab = (x, y, txt) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
@@ -23,7 +25,7 @@ function genStack(){
   const a = 2 + rnd(9), h = 1 + rnd(9);
   return {kind:'shared', shape:2, a, h, d: 2*a, ans: 4*a};
 }
-function genShared(){
+export function genShared(){
   if(Math.random() < 0.3) return genStack();
   if(Math.random() < 0.4){
     // Задача 18: a triangle cut off a square along one whole side. The boundary loses

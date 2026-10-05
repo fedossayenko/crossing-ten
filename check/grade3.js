@@ -1,10 +1,10 @@
 // Runs beside the app (in check.js's own scope, through eval): each block loads its own copy of
-// the app with eval(head + body) and checks it from outside. Run all checks with: node check.js
+// the app's modules (APP, from check.js) and checks them from outside. Run all checks with: node check.js
 // МБГ Есен, 3 клас.
 
 /* МБГ Есен, 3 клас: each of the five tasks as printed, and thousands more checked by brute force. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, eqText, why, accepts, withChoices, genTwoSigns, twoSignsVal, SIGN_PAIRS, DIG_COND, mulMixExpr, zerosExpr, pmBig, pmSmall, twoRhs, LEVELS }; })()');
+  const Q = APP;
   const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ');
   const calc = e => Function('return ' + strip(e).replace(/·/g, '*').replace(/−/g, '-').replace(/:/g, '/'))();
   // the paper's own five
@@ -52,7 +52,7 @@
 /* МБГ Есен, 3 клас, задачи 6–10: as printed, and by brute force. */
 {
   const strip = h => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, accepts, answers, eraseWays, digIneqCands, digIneqHolds, DIG_COND, SUMS_TWO, LEVELS }; })()');
+  const Q = APP;
   const has = (q, text) => { const s = strip(Q.drawQ(q)).replace(/\s+/g, ' '); if(s.indexOf(text) < 0) throw new Error(q.kind + ' does not read "' + text + '": ' + s); };
   // 6: 12 · 31 · 41 → 24, the erased digits add to 3, whichever way
   const w6 = Q.eraseWays([12, 31, 41], 3).filter(w => w.vals.reduce((a, b) => a*b, 1) === 24);
@@ -107,7 +107,7 @@
 
 /* МБГ Есен, 3 клас, задачи 11–15: as printed, and by brute force. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, LEVELS }; })()');
+  const Q = APP;
   const orig = [
     [{kind:'star', k:4, P:9, n:8, ans:45}, 45], [{kind:'segpts', k:5, p:5, d:5, ans:35}, 35],
     [{kind:'midpt', AB:32, half:16, m:4, toB:true, ans:20}, 20], [{kind:'trisq', t:4, d:2, ans:5}, 5],
@@ -134,7 +134,7 @@
 
 /* МБГ Есен, 3 клас, задачи 16–20: as printed, and by brute force. */
 {
-  const Q = eval('(function(){' + head + body + '; return { raw, drawQ, accepts, answers, circPairs }; })()');
+  const Q = APP;
   // 16: 12 ◎ 4 = 16 : 8 = 2
   if((12 + 4) / (12 - 4) !== 2 || !Q.circPairs().some(([a, b]) => a === 12 && b === 4)) throw new Error('task 16: 12 ◎ 4 should be 2');
   // 17: column 1 = 8, row 1 = 6, row 2 = 4 → column 2 = 3, and a whole-number filling exists

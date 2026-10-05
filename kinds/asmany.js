@@ -5,7 +5,8 @@
 // МБГ Пролет 2025, задача 8: the even numbers from 1 to 11 are as many as the odd numbers from 12 to the
 // even number X. Evens up to 11: 2, 4, 6, 8, 10 — five. Odd from 12 on: 13, 15, 17, 19, 21 — five,
 // and the even number after 21 is 22.
-function genAsMany(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genAsMany(){
   for(;;){
     const evenFirst = Math.random() < 0.6, n = 7 + rnd(10), s = 10 + rnd(20);
     const E = [...Array(n).keys()].map(v => v + 1).filter(v => evenFirst ? v % 2 === 0 : v % 2).length;

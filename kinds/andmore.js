@@ -4,7 +4,8 @@
 
 // МБГ Зима 2020, задача 5: 12 girls and 7 more boys. The trap is 12 + 7: the boys are 12 + 7 = 19,
 // and the children 12 + 19 = 31.
-function genAndMore(){
+import { KIND, SLOT, bgWith, rnd, tr, ukN } from '../js/core.js';
+export function genAndMore(){
   const a = 5 + rnd(20), d = 2 + rnd(10), fewer = Math.random() < 0.3;
   if(fewer && d >= a) return genAndMore();
   return {kind:'andmore', a, d, fewer, b: fewer ? a - d : a + d, ans: fewer ? 2*a - d : 2*a + d};

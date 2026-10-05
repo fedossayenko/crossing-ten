@@ -5,7 +5,8 @@
 // МБГ Есен, 3 клас, задача 15: two equal rectangles, each with perimeter 12 cm, and 8 equal squares
 // build a rectangle 3 squares wide and 4 high. The picture shows each small rectangle is two
 // squares, so its perimeter is 6 square sides: a side is 2 cm, and the big one is 6 by 8 cm, 28 cm round.
-function genPlates(){
+import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+export function genPlates(){
   for(;;){
     const w = 3 + rnd(2), h = 3 + rnd(3), m = 1 + rnd(3), u = 1 + rnd(3);
     if(m > h || w*h - 2*m < 4) continue;

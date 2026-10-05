@@ -5,6 +5,7 @@
 // МБГ Пролет 2023, 1 клас, задача 6: two worked examples — 1, 2 give 12 and 21, 12 + 21 = 33;
 // 0, 1, 2 give 10, 12, 20, 21, sum 63 — then 0, 1, 3: 10, 13, 30, 31, and 10 + 13 + 30 + 31 = 84.
 // Two different digits in each number, and 0 never in front.
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 const digPermNums = ds => { const r = []; ds.forEach(a => ds.forEach(b => { if(a !== b && a) r.push(10*a + b); })); return r.sort((x, y) => x - y); };
 // МБГ Пролет 2021, 1 клас, задача 15: not the sum but how many. 5, 2, 1 make 10 < 12 < 15 < 21 < 25 < 51 <
 // 52 < 100 — 6 numbers; 2, 6, 0 make 20, 26, 60, 62 — 4, as 0 never stands in front. The digits as printed, unsorted.
@@ -18,7 +19,7 @@ function genDigCount(){
     return {kind:'digperm', shape:'count', ds, nums, ans: nums.length};
   }
 }
-function genDigPerm(){
+export function genDigPerm(){
   if(Math.random() < 0.35) return genDigCount();
   for(;;){
     // two digits without a 0, or three with one; the sum kept within 100, and not one of the examples

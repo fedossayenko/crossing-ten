@@ -4,7 +4,8 @@
 
 // Задача 19: one digit struck out makes the equation true. Built backwards, then every
 // possible deletion is tried so the digit to cross is never in doubt.
-function genCross(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genCross(){
   for(;;){
     const A = 10*(1 + rnd(5)), C = 10*(1 + rnd(5)), B = 10*(1 + rnd(9));
     const D = A + C;
@@ -30,7 +31,7 @@ function genCross(){
 // МБГ Пролет 2021, 1 клас, задача 12: in each row one digit is struck out to make the equality true, and ☹ is
 // that digit — 29 − 23 = 27 becomes 29 − 2 = 27, so ☹ = 3. Then 23 − 18 = 15: 23 − 8 = 15, ☹ = 1.
 const CROSS_TWO_EX = [[29, '−', 23, 27, 1, 2, 3], [19, '+', 23, 24, 0, 1, 9]];   // [a, op, b, c, which number, what is left, the digit]
-function genCrossTwo(){
+export function genCrossTwo(){
   for(;;){
     const plus = Math.random() < 0.5, a = 1 + rnd(29), b = 1 + rnd(29), c = plus ? a + b : a - b;
     if(c < 0 || c > 29) continue;

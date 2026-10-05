@@ -6,6 +6,7 @@
 // column and its right edge at or right of it — so the count is the choices each way.
 // МБГ Зима 2021, 2023: a small grid, its squares against its other rectangles. A square is a
 // rectangle too, so «all rectangles» holds the squares, and «not squares» leaves them out.
+import { BGNUM, CM, KIND, SLOT, UKNUM, gridSvg, popAt, rnd, svgText, tr } from '../js/core.js';
 function genRectsVsSq(){
   const [W, H] = [[2, 2], [2, 2], [3, 2], [3, 3]][rnd(4)];
   const all = W*(W + 1)/2 * H*(H + 1)/2, sizes = [];
@@ -14,7 +15,7 @@ function genRectsVsSq(){
   const asksAll = Math.random() < 0.4;                 // «rectangles» with the squares in, or «not squares»
   return {kind:'rects', shape:2, W, H, all, sizes, sq, other, asksAll, fewer: !asksAll && other < sq, ans: asksAll ? all - sq : Math.abs(other - sq)};
 }
-function genRects(){
+export function genRects(){
   if(Math.random() < 0.2) return genRectsVsSq();
   if(Math.random() < 0.32){
     // Задача 14: a strip of equal squares. Every sub-rectangle counts — the square ones

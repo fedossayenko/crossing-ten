@@ -6,8 +6,9 @@
 // 16 + 24 = 40, twice is 80 см, and 10 см make a дециметър: 8. The trap is stopping at 80.
 // МБГ Зима 2021–2023: one side given, the other «с 2 дм по-дълга», and the perimeter asked in
 // метра — or in мм and дециметра. Two unit changes, one inside the problem and one at the end.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const RECT_U = { мм:1, см:10, дм:100, м:1000 }, RECT_W = { см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };
-function genRectLonger(){
+export function genRectLonger(){
   for(;;){
     const mm = Math.random() < 0.3, base = mm ? 'мм' : 'см', dU = mm ? 'мм' : 'дм';
     const a = 5 + rnd(40), d = mm ? 5 + rnd(40) : 1 + rnd(4), b = a + d*RECT_U[dU]/RECT_U[base], P = 2*(a + b);
@@ -16,7 +17,7 @@ function genRectLonger(){
     return {kind:'rectdm', shape:1, a, d, base, dU, b, P, to, ans: P*RECT_U[base]/RECT_U[to]};
   }
 }
-function genRectDm(){
+export function genRectDm(){
   for(;;){
     const a = 3 + rnd(28), b = a + 1 + rnd(25), P = 2*(a + b);
     if(P % 10 || P > 150) continue;

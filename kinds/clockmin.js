@@ -5,8 +5,9 @@
 // Коледно 2022, задача 3: at 23:37 on 31 December Ани tasted the cake — how many minutes until the new year?
 // An hour is 60 minutes and 37 of it are gone: 60 − 37 = 23. The traps: 37 (the minutes read off) and 63.
 // The time is written as the paper writes it, the minutes raised: 23³⁷.
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const hm = (h, m) => h + '<sup>' + String(m).padStart(2, '0') + '</sup>';
-function genClockMin(){
+export function genClockMin(){
   const ny = Math.random() < 0.4, h = ny ? 23 : 7 + rnd(14), m = 5 + rnd(54), two = !ny && Math.random() < 0.3;
   const ans = 60 - m + (two ? 60 : 0);
   // the traps: the minutes read off, 100 − m (an hour taken as a hundred), and the second hour forgotten

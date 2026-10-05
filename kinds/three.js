@@ -4,7 +4,8 @@
 
 // Задача 12: with three points on a line the longest distance is the other two added,
 // so the third measurement is either the difference or the sum.
-function genThree(){
+import { CM, KIND, NAMES, SLOT, lineSvg, rnd, tr } from '../js/core.js';
+export function genThree(){
   const who = NAMES[rnd(NAMES.length)][0];
   const a = 1 + rnd(7);
   const b = a + 1 + rnd(7);

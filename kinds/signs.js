@@ -5,7 +5,8 @@
 // Задача 20: the numbers stand in a row and every sign but the first may be a minus.
 // Turning a term round costs twice its value, so the terms turned round have to add to
 // exactly half the drop — and the most of them means taking the smallest ones.
-function genSigns(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genSigns(){
   for(;;){
     const a = 1 + rnd(4), len = 4 + rnd(3);
     const nums = [];
@@ -29,7 +30,7 @@ function genSigns(){
 
 // How the signs are written, on this question's own numbers: one minus that does not land
 // on the target, so the example shows the format without solving the task.
-function signsExample(q){
+export function signsExample(q){
   const total = q.nums.reduce((t, v) => t + v, 0);
   const minus = [q.nums[q.nums.length - 1], q.nums[1]].find(v => total - 2*v !== q.T && total - 2*v >= 0);
   const line = q.nums.map((v, i) => i === 0 ? '' + v : (v === minus ? ' − ' : ' + ') + v).join('');

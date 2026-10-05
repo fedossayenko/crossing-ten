@@ -4,7 +4,8 @@
 // itself (difficulty, group, prerequisites) is its row in js/levels.js.
 
 // МБГ Пролет 2025, задача 6: the product of all odd numbers less than 6: 1 · 3 · 5 = 15.
-function genProdOf(){
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
+export function genProdOf(){
   const odd = Math.random() < 0.6, n = odd ? 4 + rnd(5) : 3 + rnd(4);
   const list = []; for(let v = 1; v < n; v++) if(!odd || v % 2) list.push(v);
   return {kind:'prodof', shape:0, odd, n, list, traps:[list.reduce((t, v) => t + v, 0)], ans: list.reduce((t, v) => t*v, 1)};
@@ -12,7 +13,7 @@ function genProdOf(){
 // Задача 20: three different numbers multiply to 24 — at least how big must the biggest be? 1 · 2 · 12,
 // 1 · 3 · 8, 1 · 4 · 6, 2 · 3 · 4: the biggest is 4 at least. Or the smallest their sum can be.
 function prod3Ways(N){ const w = []; for(let a = 1; a*a*a < N; a++) for(let b = a + 1; a*b*b < N; b++) if(N % (a*b) === 0 && N / (a*b) > b) w.push([a, b, N / (a*b)]); return w; }
-function genProd3(){
+export function genProd3(){
   const N = [12, 18, 20, 24, 30, 36, 40, 48, 60][rnd(9)], w = prod3Ways(N), sum = Math.random() < 0.35;
   const ans = sum ? Math.min(...w.map(t => t[0] + t[1] + t[2])) : Math.min(...w.map(t => t[2]));
   return {kind:'prodof', shape:1, N, sum, traps:[sum ? 1 + 2 + N / 2 : N / 2], ans};

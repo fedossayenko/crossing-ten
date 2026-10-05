@@ -8,6 +8,7 @@
 // right: 6 in each row, and 3 more standing across both rows where they overlap — 15.
 // A figure is its pieces, [x, y, width, height] on a grid; a rectangle counts when it is exactly
 // some of the pieces put together, none of them cut by its border.
+import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 function rectFigAll(tiles){
   const xs = [...new Set(tiles.flatMap(t => [t[0], t[0] + t[2]]))].sort((a, b) => a - b);
   const ys = [...new Set(tiles.flatMap(t => [t[1], t[1] + t[3]]))].sort((a, b) => a - b), out = [];
@@ -25,7 +26,7 @@ function rectFigAll(tiles){
   }
   return out;
 }
-function genRectFig(){
+export function genRectFig(){
   for(;;){
     let tiles = [];
     const rows = Math.random() < 0.5;
