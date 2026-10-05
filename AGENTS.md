@@ -7,7 +7,10 @@ design rules (difficulty rubric, training path) are in `README.md`.
 ## Commands
 - `npx -p typescript@7.0.2 tsc -p .`: TypeScript checks the plain JS against `types.d.ts` (no build, nothing emitted).
 - `node check.js`: generator checks. The checks live in `check/`: `levels.js` and `kinds.js` run inside the app's
-  scope (they call the generators directly), `app.js`, `grade3.js` and `papers.js` beside it; an error names the real file and line. `node smoke.js`: plays every level in headless Chrome.
+  scope (they call the generators directly), every other `check/*.js` beside it (found by name, `golden.js` last); an error names the real file and line. `node smoke.js`: plays every level in headless Chrome.
+- A printed task is replayed from its seed in `check/seeds.json`; when a generator change moves it, check.js fails naming the new seed — `node check.js --repin` records it.
+- `check/golden.json` records what every level shows (30 seeds, both languages, hints, solutions, options). A change a child would see fails until recorded with `node check.js --golden`; record only a change you meant, and say which levels moved.
+- Every level gets every per-level rule in `check/levels.js`; a rule that cannot fit a level is lifted in its `NOT` table for that level alone, with the reason.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local`, then `node worker/test.js`
   and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local --file schema.sql`).

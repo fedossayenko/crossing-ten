@@ -55,7 +55,17 @@ function pinSeed(name, draw, match, tries = 300000){
 
 // The rest run beside the app, in this file's scope (they use read, head, body, scripts and js);
 // sourceURL names the file in an error.
-for(const f of ['check/app.js', 'check/grade3.js', 'check/papers.js', 'check/grade1.js', 'check/grade1b.js', 'check/grade1b-C.js', 'check/grade1b-B.js', 'check/grade1b-A.js', 'check/golden.js']){ CHECK_FILE = f.slice(6, -3); eval(read(f) + '\n//# sourceURL=' + f); }
+// Every check file runs: levels.js and kinds.js above, the rest here in name order, golden output last.
+const inScope = ['check/levels.js', 'check/kinds.js'];
+const beside = fs.readdirSync(__dirname + '/check').filter(f => f.endsWith('.js')).map(f => 'check/' + f)
+  .filter(f => !inScope.includes(f) && f !== 'check/golden.js').sort().concat('check/golden.js');
+// every kind file is loaded by the page, and the page loads no kind that is not there
+{
+  const files = fs.readdirSync(__dirname + '/kinds').filter(f => f.endsWith('.js')).map(f => 'kinds/' + f), listed = scripts.filter(f => f.startsWith('kinds/'));
+  const missing = files.filter(f => !listed.includes(f)), extra = listed.filter(f => !files.includes(f));
+  if(missing.length || extra.length) throw new Error('index.html and kinds/ disagree: not loaded ' + missing.join(', ') + '; loaded but missing ' + extra.join(', '));
+}
+for(const f of beside){ CHECK_FILE = f.slice(6, -3); eval(read(f) + '\n//# sourceURL=' + f); }
 
 // every recorded seed belongs to a pin that ran; --repin rewrites the file with exactly those
 const unused = Object.keys(SEEDS).filter(k => USED[k] === undefined);

@@ -45,6 +45,27 @@
     if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
   }
   console.log('level table: all 57 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+}
+// The same table as the app loads it — every row, whatever order its fields are written in. The two
+// ordering rules above stay with the 57 autumn rows they were designed for: on other papers groundwork
+// can be harder than a level it unlocks (the times table, d:3, opens "3 + 3 + 3 − 3 · 3", d:2).
+{
+  const { LEVELS } = eval('(function(){' + head + body + '; return { LEVELS }; })()');
+  const byId = {}, known = ['-', '+', 'x', 'chain', 'count', 'num', 'seq', 'find', 'word', 'geo'];
+  LEVELS.forEach(l => {
+    if(byId[l.id]) throw new Error('level id ' + l.id + ' appears twice');
+    byId[l.id] = l;
+    if(!(Number.isInteger(l.d) && l.d >= 1 && l.d <= 5)) throw new Error('level ' + l.id + ' has no usable difficulty');
+    if(known.indexOf(l.grp || l.op) < 0) throw new Error('level ' + l.id + ' is in no known group');
+  });
+  LEVELS.forEach(l => (l.needs || []).forEach(n => { if(!byId[n]) throw new Error('level ' + l.id + ' needs a level that does not exist: ' + n); }));
+  const loop = (id, path) => { if(path.has(id)) throw new Error('prerequisites form a loop at level ' + id); (byId[id].needs || []).forEach(n => loop(n, new Set(path).add(id))); };
+  LEVELS.forEach(l => loop(l.id, new Set()));
+  const done = new Set();
+  for(let pass = 0; pass < 100 && done.size < LEVELS.length; pass++)
+    LEVELS.forEach(l => { if(!done.has(l.id) && (l.needs || []).every(n => done.has(n))) done.add(l.id); });
+  if(done.size !== LEVELS.length) throw new Error('levels the path can never reach: ' + LEVELS.filter(l => !done.has(l.id)).map(l => l.id).join(', '));
+  console.log('level table: all ' + LEVELS.length + ' levels have a unique id, a difficulty 1-5 and a known group; their prerequisites exist, form no loop and are all reachable');
 
   // every element the script looks up must exist in the markup
   {

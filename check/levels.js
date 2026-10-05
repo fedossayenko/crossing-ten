@@ -13,7 +13,7 @@ const BG_ONLY = new Set(('и е са от колко сбор сбора сбо�
   'трябва всеки всяка всяко всички между една един едно има няма със във ако или пресметнете пресметни намерете намери ' +
   'запишете запиши разликата разлика когато тогава защото пъти дни ден седмица месец кога отговор отговора ' +
   'получи получаваме остава останаха прибавяме изваждаме събираме значи тук само също').split(' '));
-const SAME = new Set('см дм м мм кг г л хв а в на не за до'.split(' '));
+const SAME = new Set('см дм м мм км кг г л хв а в на не за до'.split(' ').concat([...WM_GIRLS, ...WM_BOYS].map(n => n[0].toLowerCase())));   // units, and the names whomore draws
 const words = h => strip(h).replace(/&[a-z]+;/g, ' ').toLowerCase().match(/[а-яёїієґъѝ’'-]+/g) || [];
 function inUkrainian(L, q, bgTexts){
   const r0 = RANDS;
@@ -22,13 +22,27 @@ function inUkrainian(L, q, bgTexts){
   LANG = 'bg';
   if(RANDS !== r0) throw new Error('level ' + L + ': drawing the question in Ukrainian drew a random number');
   uk.forEach((u, j) => {
-    const bad = words(u).filter(w => /[ъѝыэё]/.test(w) || /^(най|по)-/.test(w) || BG_ONLY.has(w));
+    const bad = words(u).filter(w => !(NOT.letter[L] && w.length === 1) && (/[ъѝыэё]/.test(w) || /^(най|по)-/.test(w) || BG_ONLY.has(w)));
     if(bad.length) throw new Error('level ' + L + ': Bulgarian left in the Ukrainian text (' + bad.join(', ') + '): ' + strip(u));
     if(u === bgTexts[j] && !words(u).every(w => SAME.has(w))) throw new Error('level ' + L + ': a text is not translated: ' + strip(u));
   });
   return uk;
 }
-const IDS = [1,2,7,4,5,6,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,95,96,97,98,99,100,101,120,121,122,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,155,156,159,163,164,171,175,178,157,158,165,166,167,173,161,162,168,174,160,169,172,176,179,191,192,193,194,195,185,186,188,189,190,180,181,182,183,184,196];
+// Every level, in the table's order. A rule that does not fit a level is lifted for that level alone,
+// with the reason; every other rule still holds for it.
+const IDS = LEVELS.map(l => l.id);
+const NOT = {
+  // the worked line or summary line ends on another number, by design
+  lands: { 67:'a note after the answer: (0 също е едноцифрено число)', 68:'the summary ends on the inequality that proves A', 75:'the worked line ends with an example grid',
+           76:'two answers, each shown with the sum it leaves', 142:'it counts both triangles and squares, then asks one' },
+  // the hint names a number that happens to be the answer
+  nudge: { 60:'"0 cannot stand in front" when the product is 0', 64:'the target product, which the question states', 66:'the difference given in the question', 76:'the divisor 3, given in the question' },
+  // their А/Б/В/Г questions answer with an option, not a number, and draw no answer box (their other questions keep every rule)
+  option: { 63:1, 94:1, 146:1, 147:1, 154:1, 170:1, 177:1, 187:1 },
+  // the answer is a letter of a word: a lone «и» there is the letter in САНКИ, not the Bulgarian «и»
+  letter: { 94:'the letter asked for' },
+};
+for(const rule in NOT) for(const id in NOT[rule]) if(!IDS.includes(+id)) throw new Error('check/levels.js lifts ' + rule + ' for level ' + id + ', which does not exist');
 for(const L of IDS){
   for(let i = 0; i < 3000; i++){
     const q = raw(L), ans = answer(q);
@@ -46,14 +60,14 @@ for(const L of IDS){
       // the same rules in both languages: the worked line and summary end on the answer,
       // and the first-miss nudge never gives it away
       [['', bg], [' (Ukrainian)', inUkrainian(L, q, bg)]].forEach(([lang, [, eq, full, nudge]]) => {
-        if(ok.indexOf(lastNum(full)) < 0) throw new Error('level ' + L + lang + ': worked line lands on ' + lastNum(full) + ', answer is ' + ans + ' -- ' + JSON.stringify(q));
-        if(ok.indexOf(lastNum(eq)) < 0) throw new Error('level ' + L + lang + ': summary line lands on ' + lastNum(eq) + ', answer is ' + ans);
+        if(!NOT.lands[L] && !(q.own && NOT.option[L]) && ok.indexOf(lastNum(full)) < 0) throw new Error('level ' + L + lang + ': worked line lands on ' + lastNum(full) + ', answer is ' + ans + ' -- ' + JSON.stringify(q));
+        if(!NOT.lands[L] && !(q.own && NOT.option[L]) && ok.indexOf(lastNum(eq)) < 0) throw new Error('level ' + L + lang + ': summary line lands on ' + lastNum(eq) + ', answer is ' + ans);
         const nums = (strip(nudge).match(/\d+/g) || []).map(Number);
-        if(nums.some(v => ok.indexOf(v) >= 0)) throw new Error('level ' + L + lang + ': the first-miss nudge gives away the answer');
+        if(!NOT.nudge[L] && nums.some(v => ok.indexOf(v) >= 0)) throw new Error('level ' + L + lang + ': the first-miss nudge gives away the answer');
       });
     }
     const boxes = (drawQ(q).match(/class="slot"/g) || []).length;
-    if(boxes !== (q.slots || 1)) throw new Error('level ' + L + ' draws ' + boxes + ' answer boxes but wants ' + (q.slots || 1));
+    if(boxes !== (q.own && NOT.option[L] ? 0 : q.slots || 1)) throw new Error('level ' + L + ' draws ' + boxes + ' answer boxes but wants ' + (q.slots || 1));
     LANG = 'uk'; const ukBoxes = (drawQ(q).match(/class="slot"/g) || []).length; LANG = 'bg';
     if(ukBoxes !== boxes) throw new Error('level ' + L + ' draws ' + ukBoxes + ' answer boxes in Ukrainian, ' + boxes + ' in Bulgarian');
     if((q.alt || []).length && !q.slots) throw new Error('level ' + L + ' has alternatives but only one box');

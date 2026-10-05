@@ -313,11 +313,13 @@ through the service worker), plays one round of every level through the real pic
 and keypad, missing the first question twice to reach the hint and the reveal, and
 fails on any script error.
 
-`node check.js` runs the checks in `check/` (inside the app's scope: `levels.js`, `kinds.js`; beside it:
-`app.js`, `grade3.js`, `papers.js` — an error names the real file and line). It generates thousands of questions per level and verifies the answer,
-the worked line, the summary line and the layout agree, plus targeted checks that
-compare a closed form against a brute-force search wherever one is used, and pin the
-original worksheet instance of each task.
+`node check.js` runs every check in `check/` (inside the app's scope: `levels.js`, `kinds.js`; beside it:
+the rest, by name, `golden.js` last — an error names the real file and line). It generates thousands of questions on every level and verifies the answer,
+the worked line, the summary line and the layout agree (a rule that cannot fit a level is lifted for it alone in
+`NOT`, with the reason), plus targeted checks that compare a closed form against a brute-force search wherever one
+is used, and pin the original worksheet instance of each task — replayed from its seed in `check/seeds.json`
+(`--repin` records new seeds). `check/golden.json` holds a hash of everything each level shows for 30 seeds;
+`--golden` re-records it after a change meant to be seen. About a minute of CPU.
 
 ## Progress storage
 
