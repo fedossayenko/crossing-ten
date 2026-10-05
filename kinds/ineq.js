@@ -36,6 +36,15 @@ function genIneqWide(){
     }
   }
 }
+// МБГ Пролет 2025, 1 клас, задача 6: how many numbers fit 10 + ■ < 12? ■ is 0 or 1 — 2, because 0 counts.
+// The box added (on either side of the plus) or taken away, all within 20.
+function genIneqSmall(){
+  const form = rnd(3), k = 1 + rnd(6);
+  if(form === 2){ const L = rnd(10), A = L + k; return {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k}; }   // A − ■ > L: ■ = 0 … k − 1
+  const A = 2 + rnd(13), L = A + k;
+  return L > 20 ? genIneqSmall() : {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k};
+}
+const ineqSmallText = q => ['A + ■ &lt; L', '■ + A &lt; L', 'A − ■ &gt; L'][q.form].replace('A', q.A).replace('L', q.L);
 function genIneq(){
   for(;;){
     const shape = rnd(3);
@@ -56,6 +65,10 @@ function genIneq(){
 }
 
 function drawIneq(q){
+  if(q.kind === 'ineq' && q.shape === 6){
+    return '<div class="ask">' + tr('Колко числа можем да поставим вместо ■, за да е вярно?', 'Скільки чисел можна поставити замість ■, щоб було правильно?') + '</div>' +
+      '<div class="given">' + ineqSmallText(q) + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'ineq' && q.shape === 4){
     return '<div class="ask">' + tr('Колко са всички <b>двуцифрени</b> числа, които могат да се запишат в □, така че да е вярно', 'Скільки всього <b>двоцифрових</b> чисел можна записати в □, щоб було правильно') + '</div>' +
       '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div><div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
@@ -87,6 +100,7 @@ function drawIneq(q){
   }
 }
 function eqIneq(q){
+  if(q.kind === 'ineq' && q.shape === 6) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
   if(q.kind === 'ineq' && q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
   if(q.kind === 'ineq' && q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
   if(q.kind === 'ineq' && q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
@@ -95,6 +109,11 @@ function eqIneq(q){
     (q.asksSum ? tr(', сборът', ', сума') : '') + ' → ' + q.ans;
 }
 function whyIneq(q, full){
+  if(q.kind === 'ineq' && q.shape === 6){
+    if(!full) return tr('Опитвай числата подред, като започнеш от нулата — докога е вярно?', 'Пробуй числа по черзі, починаючи з нуля, — доки правильно?');
+    const fit = [...Array(q.ans).keys()];
+    return ineqSmallText(q) + ' &nbsp;→&nbsp; ■ &lt; ' + q.ans + ' &nbsp;→&nbsp; ■ = <b>' + fit.join(', ') + '</b> &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.kind === 'ineq'){
     if(q.shape === 4){
       if(!full) return tr('Колко най-много може да е □? И само двуцифрените се броят.', 'Яким найбільшим може бути □? І рахуються лише двоцифрові.');

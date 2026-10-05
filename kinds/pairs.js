@@ -112,6 +112,37 @@ function genPairsSub(){
   }
   return {kind:'pairs', shape:'sub', terms, paired:k, ans: total};
 }
+// МБГ Пролет 2023 and 2025, 1 клас: 1 − 0 + 2 − 1 + 3 − 2 (each pair is 1), 1 + 2 + … + 6 − 5 − … − 1 (the
+// way down takes back the way up but the top), 1 + 19 + 2 + 18 + … − 80 (pairs of twenty), and
+// 11 − 1 + 12 − 2 + 13 − 3 + 14 − 24 (three tens, then 30 + 14 − 24).
+function genPairsShort(){
+  const pick = rnd(4);
+  if(pick === 0){
+    const k = 3 + rnd(3), pairs = [];
+    for(let i = 1; i <= k; i++) pairs.push([i, i - 1]);
+    const terms = [];
+    pairs.forEach(([a, b], i) => terms.push({op: i ? '+' : '', n:a}, {op:'−', n:b}));
+    return {kind:'pairs', shape:'ones', pairs, terms, ans: k};
+  }
+  if(pick === 1){
+    const n = 3 + rnd(5), terms = [];
+    for(let i = 1; i <= n; i++) terms.push({op: i > 1 ? '+' : '', n:i});
+    for(let i = n - 1; i >= 1; i--) terms.push({op:'−', n:i});
+    return {kind:'pairs', shape:'updown', n, terms, ans: n};
+  }
+  if(pick === 2){
+    const k = 2 + rnd(3), terms = [];
+    for(let i = 1; i <= k; i++) terms.push({op: i > 1 ? '+' : '', n:i}, {op:'+', n:20 - i});
+    const ans = Math.random() < 0.5 ? 0 : 10*rnd(2*k);
+    terms.push({op:'−', n: 20*k - ans});
+    return {kind:'pairs', shape:'tens', base:20, terms, paired:k, extra:0, subs:[20*k - ans], ans};
+  }
+  const start = 11, k = 2 + rnd(2), b = start + k, terms = [];
+  for(let i = 0; i < k; i++) terms.push({op: i ? '+' : '', n: start + i}, {op:'−', n: 1 + i});
+  const over = Math.random() < 0.5 ? 10 : 1 + rnd(9);   // the last pair takes away more than it adds
+  terms.push({op:'+', n:b}, {op:'−', n: b + over});
+  return {kind:'pairs', shape:'over', k, b, cut: b + over, terms, ans: 10*k - over};
+}
 
 function drawPairs(q){
   if(q.kind === 'chain' || q.kind === 'pairs'){
@@ -124,6 +155,17 @@ function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
+  if(q.kind === 'pairs' && q.shape === 'updown'){
+    if(!full) return tr('Всяко число, което после се изважда, връща обратно какво е добавено.', 'Кожне число, яке потім віднімається, забирає те, що додали.');
+    const back = q.terms.filter(t => t.op === '−').map(t => t.n);
+    return '+' + back.slice().reverse().join(', +') + tr(' и ', ' і ') + '−' + back.join(', −') + tr(' се махат &nbsp;→&nbsp; остава ', ' знищуються &nbsp;→&nbsp; залишається ') + q.ans;
+  }
+  if(q.kind === 'pairs' && q.shape === 'over'){
+    if(!full) return tr('Групирай ги по двойки — всяка дава кръгло число. Последната двойка е друга.', 'Згрупуй їх парами — кожна дає кругле число. Остання пара інша.');
+    const ts = q.terms, g = [];
+    for(let i = 0; i < 2*q.k; i += 2) g.push('<b>(' + ts[i].n + ' − ' + ts[i + 1].n + ')</b>');
+    return g.join(' + ') + ' = <b>' + 10*q.k + '</b> &nbsp;→&nbsp; ' + 10*q.k + ' + ' + q.b + ' − ' + q.cut + ' = ' + q.ans;
+  }
   if(q.kind === 'pairs' && q.shape === 'ones'){
     if(!full) return tr('Събери ги по двойки — всяко число със следващото.', 'Об’єднай їх парами — кожне число з наступним.');
     return q.pairs.map(([a, b]) => '(' + a + ' − ' + b + ')').join(' + ') + ' = ' + q.pairs.map(() => 1).join(' + ') + ' = ' + q.ans;

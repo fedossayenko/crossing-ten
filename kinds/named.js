@@ -66,6 +66,18 @@ function genNamedPair(){
   const B = lo % 2 ? lo + 1 : lo + 2, L = B + 1 + rnd(2);           // the only even number above lo and under L
   return {kind:'named', shape:6, w, A, d, lo, B, L, traps:[B, A], ans: B / 2};
 }
+// МБГ Пролет 2023 and 2025, 1 клас, задача 8: the sum of the smallest (or largest) one-digit number and the
+// smallest two-digit one — 0 + 10 = 10, 9 + 10 = 19. Zero is a one-digit number too. Or their difference.
+// [Bulgarian, Ukrainian after «суму» / «різницю», the number]
+/** @type {[string, string, number][][]} */
+const NAMED_ONE = [[['най-малкото едноцифрено число', 'найменшого одноцифрового числа', 0], ['най-голямото едноцифрено число', 'найбільшого одноцифрового числа', 9],
+                    ['най-голямото едноцифрено четно число', 'найбільшого одноцифрового парного числа', 8], ['най-малкото едноцифрено нечетно число', 'найменшого одноцифрового непарного числа', 1]],
+                   [['най-малкото двуцифрено число', 'найменшого двоцифрового числа', 10], ['най-малкото двуцифрено нечетно число', 'найменшого двоцифрового непарного числа', 11],
+                    ['най-малкото двуцифрено число с еднакви цифри', 'найменшого двоцифрового числа з однаковими цифрами', 11], ['най-малкото двуцифрено четно число', 'найменшого двоцифрового парного числа', 10]]];
+function genNamedSum(){
+  const a = rnd(4), b = rnd(4), sum = Math.random() < 0.7, A = NAMED_ONE[0][a][2], B = NAMED_ONE[1][b][2];
+  return {kind:'named', shape:7, a, b, sum, traps: A === 0 ? [sum ? B + 1 : B - 1] : [], ans: sum ? A + B : B - A};
+}
 function genNamed(){
   if(Math.random() < 0.06){
     const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
@@ -133,6 +145,12 @@ const namedGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’я
 const namedNum = n => n + ' ' + (new Intl.PluralRules('uk').select(n) === 'few' ? 'числа' : n === 1 ? 'число' : 'чисел');
 
 function drawNamed(q){
+  if(q.kind === 'named' && q.shape === 7){
+    const [A, B] = [NAMED_ONE[0][q.a], NAMED_ONE[1][q.b]], [x, y] = q.sum ? [A, B] : [B, A];
+    return '<div class="ask">' + tr('Пресметнете <b>' + (q.sum ? 'сбора' : 'разликата') + '</b> на ' + x[0] + ' и ' + y[0] + '.',
+      'Обчисліть <b>' + (q.sum ? 'суму' : 'різницю') + '</b> ' + x[1] + ' і ' + y[1] + '.') + '</div>' +
+      '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
+  }
   if(q.kind === 'named'){
     if(q.shape === 6){
       const plus = 'A + A' + (q.d ? ' + ' + q.d : '');
@@ -183,7 +201,9 @@ function drawNamed(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
 }
+const namedSumText = q => { const A = NAMED_ONE[0][q.a][2], B = NAMED_ONE[1][q.b][2]; return q.sum ? A + ' + ' + B : B + ' − ' + A; };
 function eqNamed(q){
+  if(q.kind === 'named' && q.shape === 7) return namedSumText(q) + ' = ' + q.ans;
   if(q.kind === 'named' && q.shape === 6) return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.ans;
   if(q.kind === 'named' && q.shape === 5) return q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + ' = ' + q.ans;
   if(q.kind === 'named' && q.shape === 4 && q.may) return q.tops.map(t => t.join('+')).join(tr(' или ', ' або ')) + ' → ' + q.ans + tr(' или ', ' або ') + q.alt[0];
@@ -198,6 +218,11 @@ function eqNamed(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
 }
 function whyNamed(q, full){
+  if(q.kind === 'named' && q.shape === 7){
+    if(!full) return tr('Първо намери всяко от двете числа. Нулата също е едноцифрено число.', 'Спершу знайди кожне з двох чисел. Нуль — теж одноцифрове число.');
+    const [A, B] = [NAMED_ONE[0][q.a], NAMED_ONE[1][q.b]], cap = t => t[0].toUpperCase() + t.slice(1);
+    return cap(tr(A[0], A[1].replace(/ого(?= |$)/g, 'е').replace('числа', 'число'))) + ' — <b>' + A[2] + '</b>, ' + tr(B[0], B[1].replace(/ого(?= |$)/g, 'е').replace('числа', 'число')) + ' — <b>' + B[2] + '</b> &nbsp;→&nbsp; ' + namedSumText(q) + ' = ' + q.ans;
+  }
   if(q.kind === 'named'){
     if(q.shape === 6){
       if(!full) return tr('Първо кое число е A. После кои числа са между ' + (q.d ? 'A + A + ' + q.d : 'A + A') + ' и ' + q.L + '. Може ли C + C да е нечетно?', 'Спершу — яке число A. Потім — які числа між ' + (q.d ? 'A + A + ' + q.d : 'A + A') + ' і ' + q.L + '. Чи може C + C бути непарним?');

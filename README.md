@@ -109,13 +109,25 @@ A, B and C read from a named number, 153 a square and a rectangle with equal per
 task (its clock time is А/Б/В/Г). The pyramid's boxes are lettered A … M, not А … К: «И» and «Е» would
 read as words to check.js's Ukrainian test.
 
+The **spring round, 1st grade, 2025 and 2023** (МБГ Пролет 2025 and 2023, 1 клас) are in whole, tags
+`mbg-spring-2025-1` and `mbg-spring-2023-1`, every printed task pinned in check/grade1.js against its key.
+The two papers ask much the same things, so they share 25 levels, 155–179, rated on a 1st-grade scale:
+short chains and pairs, two equal chains with a box, the cross of two equalities, a hidden digit, named
+numbers, figures for numbers, pencils over rulers, rectangles in a figure, four points on a line, counting
+with 0, a weekday some days on (А/Б/В/Г), dice, the fewest Tuesdays, the crossed-out digit, two-digit
+numbers from digits, three cards, pictures for digits, a sum-of-three sequence, the ladybird and the bee,
+who has more and by how much (А/Б/В/Г), three segments, the diagonal squares and the arrows puzzle.
+Older kinds grew short versions for them (genChainShort, genPairsShort, genCountShort, genIneqSmall,
+genSegShort, genNamedSum, genShift, genBoundShort); the rest are new kinds.
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
 (Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 3 клас), tags
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
-2nd-grade groundwork counts as done, and competitions are drawn from her grade's levels.
+2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
+as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels.
 
 - Live: https://fedossayenko.github.io/crossing-ten/
 - On an iPad or iPhone: open it in Safari, then Share → Add to Home Screen.

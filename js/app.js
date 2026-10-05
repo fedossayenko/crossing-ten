@@ -784,9 +784,11 @@ function nextUp(m, lastGrp, lastDone, now = Date.now(), pool){
   const done = id => m[id] && m[id].done;
   // groundwork from a lower grade than hers is taken as done: a 3rd-grader has had the 2nd grade
   const met = id => { const l = LEVELS.find(x => x.id === id); return done(id) || l.grade < myGrade() || (pool && !pool(l)); };
-  const all = LEVELS.filter(l => (!pool || pool(l)) && !done(l.id) && (l.needs || []).every(met));
-  // her own grade first (the profile's, 2nd by default); the rest once those are learned
-  const open = all.some(l => l.grade === myGrade()) ? all.filter(l => l.grade === myGrade()) : all;
+  // and a lower grade's own levels are not suggested to her at all, unless she picked them as her focus
+  const all = LEVELS.filter(l => (pool ? pool(l) : l.grade >= myGrade()) && !done(l.id) && (l.needs || []).every(met));
+  // her own grade first (the profile's, 2nd by default), then the next grade up once those are learned
+  const gs = all.map(l => l.grade), up = gs.filter(g => g >= myGrade()), at = up.length ? Math.min(...up) : Math.min(...gs);
+  const open = all.filter(l => l.grade === at);
   const grp = l => l.grp || l.op;
   const fresh = open.filter(l => !m[l.id]);
   if(fresh.length){

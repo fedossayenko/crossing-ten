@@ -19,6 +19,21 @@ function genChain(){
     if(ok && run >= 0 && run <= 20) return {kind:'chain', terms, paired:0, ans:run};
   }
 }
+// МБГ Пролет 2025 and 2023, 1 клас, задачи 1–2: the same walk, short — 2 − 0 − 2 + 5, 20 − 2 − 5 —
+// starting anywhere up to 20 and never leaving 0…20 on the way.
+function genChainShort(){
+  for(;;){
+    const len = 3 + rnd(2), terms = [{op:'', n: 2 + rnd(19)}];
+    let run = terms[0].n, ok = true;
+    for(let k = 1; k < len; k++){
+      const n = Math.random() < 0.25 ? 0 : 1 + rnd(9), up = run + n > 20 ? false : n > run ? true : Math.random() < 0.5;
+      if(!up && n > run){ ok = false; break; }
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(ok) return {kind:'chain', terms, paired:0, ans:run};
+  }
+}
 
 function drawChain(q){
   if(q.kind === 'chain' || q.kind === 'pairs'){

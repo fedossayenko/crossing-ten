@@ -74,7 +74,10 @@
         order.push(nx); last = grp(nx);
         m[nx.id] = { n:20, f:17, rate:.85, done:true, rounds:2 };
       }
-      if(order.length !== LEVELS.length) throw new Error('the path reaches ' + order.length + ' of ' + LEVELS.length + ' levels');
+      // her own grade and the ones above it; a lower grade's levels are only for a focus picked on purpose
+      const mine = LEVELS.filter(l => l.grade >= PLAYER.grade).length;
+      if(order.length !== mine) throw new Error('the path reaches ' + order.length + ' of ' + mine + ' levels for grade ' + PLAYER.grade);
+      if(order.some(l => l.grade < PLAYER.grade)) throw new Error('a grade ' + PLAYER.grade + ' player was suggested a lower grade');
       // Her own grade's tasks all come before the next grade's, and each grade is a ladder of its own.
       const gs = order.map(l => l.grade);
       if(gs.some((g, i) => i && g < gs[i-1])) throw new Error('the path goes back to an easier grade');
@@ -91,9 +94,10 @@
         if(run > worst) worst = run;
       }
       if(worst > 4) throw new Error('the path grinds one group ' + worst + ' times running: ' + order.map(l => l.id + (l.grp || l.op)).join(' '));
-      console.log('training path: reaches all ' + order.length + ' levels, groundwork first, 2nd grade before 3rd, climbing within each, at most ' + worst + ' in a row from one group');
+      console.log('training path, grade ' + PLAYER.grade + ': reaches all ' + order.length + ' levels from her grade up, groundwork first, a grade before the next, climbing within each, at most ' + worst + ' in a row from one group');
     `;
     eval('const PLAYER = { grade:2 };' + levelsSrc + nextSrc + walk);   // the default 2nd-grade player
+    eval('const PLAYER = { grade:1 };' + levelsSrc + nextSrc + walk);   // a 1st-grader climbs through all three grades
     // a 3rd-grader's profile starts her on the 3rd-grade levels
     const first3 = eval('(function(){ const PLAYER = { grade:3 };' + levelsSrc + nextSrc + '; return nextUp({}, null); })()');
     if(!first3 || first3.grade !== 3) throw new Error('a 3rd-grade profile is not recommended a 3rd-grade level');

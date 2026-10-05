@@ -18,6 +18,14 @@ function genSeg(){
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
   return {kind:'seg', p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
 }
+// МБГ Пролет 2023 and 2025, 1 клас: the same four points. 2023 asks AD from AB = 6 мм, CD = 9 мм, CB = 2 мм
+// (13 мм); 2025 gives the whole AD = 15 см and the two outer pieces AC = 5 см, BD = 7 см, and asks the middle
+// CB: 15 − 5 − 7 = 3.
+function genSegShort(){
+  const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
+  if(Math.random() < 0.5) return {kind:'seg', mm: Math.random() < 0.5, p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
+  return {kind:'seg', shape:'cb', p, q, r, AD: p + q + r, traps:[p + q + r - p, p + r], ans: q};
+}
 // Задача 14: the segments are not given, they are read off the ruler — the length is the
 // difference of the two marks, not the mark the segment ends at.
 function genRuler(){
@@ -89,16 +97,24 @@ function drawSeg(q){
       rulerSvg(q) +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
   }
-  if(q.kind === 'seg'){
-    return '<div class="ask">AD = ? см</div>' + segSvg(q) +
-      '<div class="given" style="font-size:clamp(15px,4vw,20px)">AB = ' + q.AB + ' см &nbsp; CD = ' +
-      q.CD + ' см &nbsp; CB = ' + q.q + ' см</div>' +
+  if(q.kind === 'seg' && q.shape === 'cb'){
+    return '<div class="ask">CB = ? см</div>' + segSvg(q) +
+      '<div class="given" style="font-size:clamp(15px,4vw,20px)">AD = ' + q.AD + ' см &nbsp; AC = ' +
+      q.p + ' см &nbsp; BD = ' + q.r + ' см</div>' +
       '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + CM + '</div>';
+  }
+  if(q.kind === 'seg'){
+    const u = q.mm ? ' мм' : ' см';
+    return '<div class="ask">AD = ?' + u + '</div>' + segSvg(q) +
+      '<div class="given" style="font-size:clamp(15px,4vw,20px)">AB = ' + q.AB + u + ' &nbsp; CD = ' +
+      q.CD + u + ' &nbsp; CB = ' + q.q + u + '</div>' +
+      '<div class="line" style="font-size:clamp(28px,8vw,46px)">' + SLOT + (q.mm ? ' <span class="unit">мм</span>' : CM) + '</div>';
   }
 }
 function eqSeg(q){
   if(q.kind === 'seg' && q.shape === 'units') return q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = ' + (q.ans*100) + ' мм = ' + q.ans + ' дм';
   if(q.kind === 'seg' && q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
+  if(q.kind === 'seg' && q.shape === 'cb') return 'AD ' + q.AD + ', AC ' + q.p + ', BD ' + q.r + ' → CB ' + q.ans;
   if(q.kind === 'seg') return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
 }
 function whySeg(q, full){
@@ -112,6 +128,14 @@ function whySeg(q, full){
     const from = tr('от ', 'від '), to = tr(' до ', ' до ');
     return 'AB: ' + from + q.a + to + q.b + ' &nbsp;→&nbsp; <b>' + q.AB + '</b>, &nbsp;CD: ' + from + q.c +
       to + q.d + ' &nbsp;→&nbsp; <b>' + q.CD + '</b> &nbsp;→&nbsp; ' + q.AB + ' + ' + q.CD + ' = ' + q.ans;
+  }
+  if(q.kind === 'seg' && q.shape === 'cb'){
+    if(!full) return tr('AC, CB и BD заедно правят цялата AD.', 'AC, CB і BD разом складають увесь AD.');
+    const L = q.p + q.q + q.r;
+    return 'CB = AD − AC − BD = ' + L + ' − ' + q.p + ' − ' + q.r + ' = ' + q.ans +
+      lineSvg([{at:0, name:'A'}, {at:q.p, name:'C'}, {at:q.p + q.q, name:'B'}, {at:L, name:'D'}],
+        [{from:0, to:L, row:-2, label:'AD ' + L, step:1}, {from:0, to:q.p, row:1, label:'AC ' + q.p, col:'var(--accent)', step:3},
+         {from:q.p + q.q, to:L, row:1, label:'BD ' + q.r, col:'var(--accent)', step:5}, {from:q.p, to:q.p + q.q, row:2, label:'CB ' + q.q, col:'var(--warm)', step:7}], 0, L, tr('отсечките от A до D', 'відрізки від A до D'));
   }
   if(q.kind === 'seg'){
     if(!full) return tr('Отсечките се застъпват — намери първо AC.', 'Відрізки накладаються — спочатку знайди AC.');

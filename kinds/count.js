@@ -50,6 +50,18 @@ function genCount(){
   q.ans = sum ? (q.lo + q.hi) * n / 2 : n;
   return q;
 }
+// МБГ Пролет 2023 and 2025, 1 клас: how many numbers are not greater than 14 (15, with the 0), and the sum of
+// all one-digit numbers that are NOT less than 7 (7 + 8 + 9 = 24) — the one-digit numbers stop at 9.
+function genCountShort(){
+  const sum = Math.random() < 0.5;
+  if(Math.random() < 0.5){
+    const a = 3 + rnd(6);
+    return {kind:'count', shape:6, one:true, sum, natural:false, two:false, a, lo:a, hi:9, ans: sum ? (a + 9)*(10 - a)/2 : 10 - a};
+  }
+  const shape = rnd(2), n = (sum ? 3 : 5) + rnd(sum ? 5 : 11), natural = Math.random() < 0.3;
+  const lo = natural ? 1 : 0, hi = shape ? n - 1 : n;
+  return {kind:'count', shape, sum, natural, two:false, n, lo, hi, ans: sum ? (lo + hi)*(hi - lo + 1)/2 : hi - lo + 1};
+}
 
 function drawCount(q){
   if(q.kind === 'count' && q.set){
@@ -59,18 +71,20 @@ function drawCount(q){
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
   if(q.kind === 'count'){
-    const cond = q.shape === 0 ? 'не са по-големи от ' + q.n
+    const cond = q.shape === 6 ? 'НЕ са по-малки от ' + q.a
+               : q.shape === 0 ? 'не са по-големи от ' + q.n
                : q.shape === 1 ? 'са по-малки от ' + q.n
                : q.shape === 2 ? 'не са по-малки от ' + q.a + ' и не са по-големи от ' + q.b
                : q.shape === 3 ? 'са между ' + q.a + ' и ' + q.b
                : 'са по-малки от ' + q.b + ' и са по-големи от ' + q.a;
-    const ukCond = q.shape === 0 ? 'не більші за ' + q.n
+    const ukCond = q.shape === 6 ? 'НЕ менші за ' + q.a
+                 : q.shape === 0 ? 'не більші за ' + q.n
                  : q.shape === 1 ? 'менші за ' + q.n
                  : q.shape === 2 ? 'не менші за ' + q.a + ' і не більші за ' + q.b
                  : q.shape === 3 ? 'лежать між ' + q.a + ' і ' + q.b
                  : 'менші за ' + q.b + ' і більші за ' + q.a;
-    const what = q.natural ? '<b>естествени</b> числа' : q.two ? '<b>двуцифрени</b> числа' : 'числа';
-    const ukWhat = q.natural ? '<b>натуральних</b> чисел' : q.two ? '<b>двоцифрових</b> чисел' : 'чисел';
+    const what = q.one ? '<b>едноцифрени</b> числа' : q.natural ? '<b>естествени</b> числа' : q.two ? '<b>двуцифрени</b> числа' : 'числа';
+    const ukWhat = q.one ? '<b>одноцифрових</b> чисел' : q.natural ? '<b>натуральних</b> чисел' : q.two ? '<b>двоцифрових</b> чисел' : 'чисел';
     if(q.name){
       return '<div class="ask">' + tr('<b>Кои са</b> числата, които ' + cond + '?', '<b>Які</b> числа ' + ukCond + '?') + '</div>' +
         '<div class="note">' + tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …') + '</div>' +
@@ -84,6 +98,7 @@ function drawCount(q){
     return '<div class="ask">' + ask + '</div>' +
       '<div class="note">' + (q.natural ? tr('Естествените числа са 1, 2, 3, …', 'Натуральні числа — це 1, 2, 3, …')
         : q.two ? tr('Двуцифрените числа са 10, 11, … 99', 'Двоцифрові числа — це 10, 11, … 99')
+        : q.one ? tr('Едноцифрените числа са 0, 1, 2, … 9', 'Одноцифрові числа — це 0, 1, 2, … 9')
         : tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …')) + '</div>' +
       '<div class="line" style="font-size:clamp(34px,10vw,56px)">' + SLOT + '</div>';
   }
@@ -93,9 +108,9 @@ function eqCount(q){
   if(q.kind === 'count' && q.name) return tr('между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi,
                                              'між ' + q.a + ' і ' + q.b + ' → ' + q.lo + ' і ' + q.hi);
   if(q.kind === 'count') return tr((q.sum ? 'сборът, ' : 'броят, ') +
-    (q.natural ? 'естествени, ' : q.two ? 'двуцифрени, ' : '') + 'от ' + q.lo + ' до ' + q.hi,
+    (q.natural ? 'естествени, ' : q.two ? 'двуцифрени, ' : q.one ? 'едноцифрени, ' : '') + 'от ' + q.lo + ' до ' + q.hi,
     (q.sum ? 'сума, ' : 'кількість, ') +
-    (q.natural ? 'натуральні, ' : q.two ? 'двоцифрові, ' : '') + 'від ' + q.lo + ' до ' + q.hi) + ' → ' + q.ans;
+    (q.natural ? 'натуральні, ' : q.two ? 'двоцифрові, ' : q.one ? 'одноцифрові, ' : '') + 'від ' + q.lo + ' до ' + q.hi) + ' → ' + q.ans;
 }
 // The pictures. A range is a number line: the numbers that count light up one by one, numbered as she
 // would count them; an end that does not count, 0 for the natural numbers and 9 for the two-digit ones
@@ -106,7 +121,7 @@ function countLine(q, full){
   const svg = (h, g, label) => '<svg viewBox="0 -24 240 ' + h + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
   const label = tr('числата, които се броят', 'числа, які рахуються');
   if(!full){
-    const inLo = q.shape <= 2, inHi = q.shape === 0 || q.shape === 2;   // whether each end itself counts
+    const inLo = q.shape <= 2 || q.shape === 6, inHi = q.shape === 0 || q.shape === 2 || q.shape === 6;   // whether each end itself counts
     const end = (x, fill) => '<circle cx="' + x + '" cy="0" r="7" fill="' + (fill ? 'var(--good)' : 'none') + '" stroke="' + (fill ? 'var(--good)' : 'var(--bad)') + '" stroke-width="3"/>';
     return svg(40, '<line x1="10" y1="0" x2="230" y2="0" stroke="var(--line)" stroke-width="2"/><line x1="40" y1="0" x2="200" y2="0" stroke="var(--good)" stroke-width="6" stroke-linecap="round"/>' +
       end(40, inLo) + end(200, inHi), label);
@@ -168,7 +183,8 @@ function whyCount(q, full){
       ' &nbsp;→&nbsp; <b>' + q.lo + '</b> ' + tr('и', 'і') + ' <b>' + q.hi + '</b>';
   }
   if(q.kind === 'count'){
-    if(!full) return (q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
+    if(!full) return (q.one ? tr('Едноцифрените числа стигат до девет. Числото от условието също се брои.', 'Одноцифрові числа закінчуються дев’яткою. Число з умови теж рахується.')
+            : q.two ? tr('Двуцифрените числа започват от десет.', 'Двоцифрові числа починаються з десяти.')
             : q.natural ? tr('Естествените числа започват от едно.', 'Натуральні числа починаються з одиниці.')
             : q.sum ? tr('Събирай ги по двойки от двата края.', 'Додавай їх парами з обох кінців.')
             : q.shape >= 3 ? tr('Краищата не се броят.', 'Кінці не рахуються.')
@@ -185,13 +201,15 @@ function whyCount(q, full){
       for(let v = q.lo; v <= q.hi; v++) list.push(v);
       return list.join(' + ') + ' = ' + q.ans + countLine(q, true);
     }
-    const edge = q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
+    const edge = q.shape === 6 ? tr('до 9 — само едноцифрените', 'до 9 — лише одноцифрові')
+               : q.shape === 0 ? tr('включително ' + q.n, 'включно з ' + q.n)
                : q.shape === 1 ? q.n + tr(' не се брои', ' не рахується')
                : q.shape === 2 ? tr('с двата края', 'з обома кінцями')
                : tr('без краищата', 'без кінців');
     const zero = q.natural ? tr('нулата не е естествено число', 'нуль не є натуральним числом')
                : q.lo === 0 ? tr('<b>нулата също се брои</b>', '<b>нуль теж рахується</b>') : '';
-    return q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi +
+    // a short range is listed whole: 7, 8, 9 — not 7, 8, …, 9
+    return (q.hi - q.lo <= 3 ? Array.from({length: q.hi - q.lo + 1}, (_, i) => q.lo + i).join(', ') : q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi) +
       ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans + countLine(q, true);
   }
 }

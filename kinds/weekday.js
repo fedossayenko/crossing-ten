@@ -38,6 +38,22 @@ function genBound(){
   return {kind:'weekday', shape:'bound', n, most, day: DAYS[rnd(7)],
           ans: most ? Math.ceil(n/7) : Math.floor(n/7)};
 }
+// МБГ Пролет 2025, 1 клас, задача 20: the same bound over a shorter run — the least Tuesdays among 20 days.
+// short: the weeks are added up as sevens, not multiplied — there is no × in the 1st grade
+function genBoundShort(){ const q = genBound(); return q.n > 30 ? genBoundShort() : Object.assign(q, {short:true}); }
+// МБГ Пролет 2023, 1 клас, задача 17: mum's birthday is on a Sunday, dad's 3 days later, on a Wednesday; mine
+// is 5 days after dad's — Thursday 1, Friday 2, … Monday 5. A day cannot be typed, so it brings its own four.
+// [who first, Ukrainian genitive], [who second, Ukrainian genitive]
+const SHIFT_WHO = [[['мама', 'мами'], ['баща ми', 'тата']], [['баба', 'бабусі'], ['дядо ми', 'дідуся']], [['сестра ми', 'сестри'], ['брат ми', 'брата']]];
+function genShift(){
+  const who = rnd(SHIFT_WHO.length), d0 = rnd(7), k = 1 + rnd(4), m = 2 + rnd(5), d1 = (d0 + k) % 7, at = (d1 + m) % 7;
+  const wrong = [(d0 + m) % 7, (at + 6) % 7, (at + 1) % 7, d1, (at + 2) % 7].filter((v, i, a) => v !== at && a.indexOf(v) === i).slice(0, 3);
+  const ids = shuffle(wrong.concat(at)), options = ids.map((di, id) => ({ id, v: id, text: [DAYS[di].nm, weekdayUk[DAYS[di].nm].nm] }));
+  const pick = ids.indexOf(at);
+  return {kind:'weekday', shape:'shift', who, d0, k, m, d1, at, options, pick, own: true, ans: pick};
+}
+const shiftIn = i => (/^[вф]/.test(DAYS[i].nm) ? 'във ' : 'в ') + DAYS[i].nm;
+const shiftInUk = i => 'у ' + (weekdayUk[DAYS[i].nm].f ? weekdayUk[DAYS[i].nm].nm.replace(/а$/, 'у').replace(/я$/, 'ю') : weekdayUk[DAYS[i].nm].nm);
 function genWeekday(){
   if(Math.random() < 0.25) return genBound();
   if(Math.random() < 0.3) return genWhichDay();
@@ -70,6 +86,13 @@ const weekdayPl = (n, one, few, many) => ({one, few}[new Intl.PluralRules('uk').
 const weekdayDays = n => n + ' ' + weekdayPl(n, 'день', 'дні', 'днів');
 
 function drawWeekday(q){
+  if(q.kind === 'weekday' && q.shape === 'shift'){
+    const [a, b] = SHIFT_WHO[q.who];
+    return '<div class="ask">' + tr('Рожденият ден на ' + a[0] + ' е ' + shiftIn(q.d0) + ', а рожденият ден на ' + b[0] + ' е <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'ден' : 'дни') + ' по-късно – ' + shiftIn(q.d1) +
+      '. Моят рожден ден ще бъде <span class="num">' + q.m + '</span> дни след рождения ден на ' + b[0] + '. <b>В кой ден от седмицата</b> ще е моят рожден ден?',
+      'День народження ' + a[1] + ' — ' + shiftInUk(q.d0) + ', а день народження мого ' + b[1] + ' — на <span class="num">' + q.k + '</span> ' + weekdayPl(q.k, 'день', 'дні', 'днів') + ' пізніше, ' + shiftInUk(q.d1) +
+      '. Мій день народження буде через <span class="num">' + q.m + '</span> ' + weekdayPl(q.m, 'день', 'дні', 'днів') + ' після дня народження ' + b[1] + '. <b>Яким днем тижня</b> буде мій день народження?') + '</div>';
+  }
   if(q.kind === 'weekday' && q.shape === 'bound'){
     return '<div class="ask">' + tr('Колко <b>най-' + (q.most ? 'много' : 'малко') + '</b> ' + q.day.cnt +
       ' може да има сред <span class="num">' + q.n + '</span> последователни дни от календара?',
@@ -106,6 +129,7 @@ function drawWeekday(q){
   }
 }
 function eqWeekday(q){
+  if(q.kind === 'weekday' && q.shape === 'shift') return tr(DAYS[q.d1].nm, weekdayUk[DAYS[q.d1].nm].nm) + ' + ' + q.m + ' → ' + tr(DAYS[q.at].nm, weekdayUk[DAYS[q.at].nm].nm);
   if(q.kind === 'weekday' && q.shape === 'bound') return tr(q.n + ' дни → най-' + (q.most ? 'много ' : 'малко ') + q.ans,
     weekdayDays(q.n) + ' → ' + (q.most ? 'найбільше ' : 'найменше ') + q.ans);
   if(q.kind === 'weekday' && q.shape === 'which') return tr(q.mon[0] + ', 1-ви е ' + q.d1.nm + ', ден ' +
@@ -158,6 +182,12 @@ function weekdaySvg(q){
   return svg(196, rows * C + 32, g);
 }
 function whyWeekday(q, full){
+  if(q.kind === 'weekday' && q.shape === 'shift'){
+    if(!full) return tr('Тръгни от деня на ' + SHIFT_WHO[q.who][1][0] + ' и брой дните напред по пръсти.', 'Почни від дня ' + SHIFT_WHO[q.who][1][1] + ' і рахуй дні вперед на пальцях.');
+    const nm = i => tr(DAYS[i].nm, weekdayUk[DAYS[i].nm].nm), walk = [];
+    for(let j = 1; j <= q.m; j++) walk.push(nm((q.d1 + j) % 7) + ' ' + j);
+    return tr('след ' + DAYS[q.d1].nm + ' — ', weekdayUk[DAYS[q.d1].nm].nm + ', а далі — ') + walk.join(', ') + ' &nbsp;→&nbsp; <b>' + nm(q.at) + '</b>' + tr(' — денят на ' + SHIFT_WHO[q.who][0][0] + ' не ни трябва', ' — день ' + SHIFT_WHO[q.who][0][1] + ' нам не потрібен');
+  }
   const text = whyWeekdayText(q, full);
   return full && text ? text + weekdaySvg(q) : text;
 }
@@ -165,11 +195,11 @@ function whyWeekdayText(q, full){
   if(q.kind === 'weekday' && q.shape === 'bound'){
     if(!full) return tr('Колко цели седмици се събират, и какво остава след тях?',
       'Скільки цілих тижнів уміщається і що лишається після них?');
-    const w = Math.floor(q.n / 7), r = q.n % 7;
-    return tr(q.n + ' = ' + w + ' × 7 + ' + r + ' &nbsp;→&nbsp; <b>' + w + '</b> пъти е сигурно, а останалите ' +
-      r + ' дни може ' + (q.most ? 'да хванат още един' : 'и да не хванат нито един') +
+    const w = Math.floor(q.n / 7), r = q.n % 7, head = q.n + ' = ' + (q.short ? Array(w).fill(7).join(' + ') : w + ' × 7') + ' + ' + r;
+    return tr(head + ' &nbsp;→&nbsp; <b>' + w + '</b> ' + (w === 1 ? 'е сигурен' : 'са сигурни') + ', а ' +
+      (r === 1 ? 'оставащият 1 ден може ' : 'останалите ' + r + ' дни могат ') + (q.most ? 'да хванат още един' : 'и да не хванат нито един') +
       ' &nbsp;→&nbsp; ' + q.ans,
-      q.n + ' = ' + w + ' × 7 + ' + r + ' &nbsp;→&nbsp; <b>' + w + '</b> — напевно, а ' +
+      head + ' &nbsp;→&nbsp; <b>' + w + '</b> — напевно, а ' +
       (r === 1 ? '1 день, що лишився, може ' : weekdayDays(r) + ', що лишилися, можуть ') +
       (q.most ? 'дати ще один такий день' : 'не дати жодного') + ' &nbsp;→&nbsp; ' + q.ans);
   }
