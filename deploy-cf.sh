@@ -7,5 +7,7 @@ APP="index.html app.css sw.js manifest.json icon-180.png icon-512.png fonts js k
 git diff --quiet HEAD -- $APP || { echo "deploy-cf: the app has uncommitted changes; commit first"; exit 1; }
 rm -rf .deploy && mkdir .deploy
 git ls-files $APP | rsync -a --files-from=- . .deploy/
+# Cloudflare sends no Last-Modified: the page carries its build time instead (app.js reads either)
+sed -i '' "s|<title>|<meta name=\"build\" content=\"$(git log -1 --format=%cI)\"><title>|" .deploy/index.html
 echo "deploy-cf: $(find .deploy -type f | wc -l | tr -d ' ') files from $(git rev-parse --short HEAD)"
 npx -y wrangler@4 deploy "$@"

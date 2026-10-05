@@ -1136,8 +1136,12 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- shared mirror ---------- */
+// When this build was made: the page's own stamp (deploy-cf.sh writes it; Cloudflare sends no Last-Modified),
+// else the Last-Modified GitHub Pages sends, which the browser keeps as document.lastModified.
+const BUILT_STAMP = document.querySelector('meta[name="build"]')?.getAttribute('content');
+const builtAt = () => Date.parse(BUILT_STAMP || document.lastModified);
 export const builtOn = () => {
-  try { return t('build') + new Date(document.lastModified)
+  try { return t('build') + new Date(builtAt())
     .toLocaleString(LANG_TAG[LANG], { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
   catch(e){ return ''; }
 };
@@ -1184,8 +1188,12 @@ if((matchMedia('(display-mode: standalone)').matches || navigator.standalone) &&
 // (no header: nothing happens). Nothing is lost: it only reloads before a key is pressed.
 function newerBuild(){
   if(document.visibilityState !== 'visible' || midRound() || COMP) return;
-  fetch(location.pathname, { method:'HEAD', cache:'no-cache' }).then(r => {
-    if(Date.parse(r.headers.get('last-modified')) > Date.parse(document.lastModified) + 60000){ chose(); location.reload(); }
+  if(BUILT_STAMP) fetch(location.pathname, { cache:'no-cache' }).then(r => r.text()).then(html => {
+    const m = html.match(/<meta name="build" content="([^"]+)">/);
+    if(m && Date.parse(m[1]) > builtAt()){ chose(); location.reload(); }
+  }).catch(() => {});
+  else fetch(location.pathname, { method:'HEAD', cache:'no-cache' }).then(r => {
+    if(Date.parse(r.headers.get('last-modified')) > builtAt() + 60000){ chose(); location.reload(); }
   }).catch(() => {});
 }
 document.addEventListener('visibilitychange', newerBuild);
