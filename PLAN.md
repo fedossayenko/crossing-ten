@@ -12,29 +12,47 @@ idea from that research was checked against the code and the live data before it
 | Elo / FSRS adaptive engine (Math Garden) | Math Garden calibrates on 400,000 children. Here: 136 synced rounds, one learner. Too little data to estimate item difficulty; `mastery()` and `weightsFrom()` already do the per-learner part. | **Drop for one family**; becomes worth it at ~500 families (see below). |
 | Ask the browser to keep storage | `navigator.storage.persist()` is never called. Sync already backs the rounds up to D1, so this only guards an offline-only device. | **Do** — step 4, one line |
 | One Cloudflare Worker for app + API instead of GitHub Pages | Moving changes the origin: the installed home-screen app and its localStorage stay on the old address, the family re-installs and signs in again. Pages is free and works. | **Drop**, unless the domain changes anyway |
-| Svelte / Preact, Vite, ES modules | `app.js` is 1,127 lines; no-build is a feature (open the file, it runs). The one ES-module win, unique global names, check.js already enforces. | **Drop** |
+| Svelte / Preact, Vite | See *A framework?* below: it would touch the 1,900-line shell, not the 11,600 lines of task types that grow. | **Drop for now**; the shell only, if it grows |
 | Vitest / Playwright / fast-check | `check.js` + `smoke.js` already do brute force, pins and a full headless play-through, and pass. Porting 6,000 lines of checks buys nothing new. | **Drop** |
 | A sync engine (Zero, PowerSync, ElectricSQL) | Rounds are append-only, deduped by (family, player, id) — conflict-free by design. Zero 1.0 can't even write offline. | **Drop** |
 | Questions as data, drawing separate | 165 kind files draw HTML strings. A split costs a rewrite of every kind; nothing planned needs it. | **Later**, only if a feature needs it (printing worksheets, a new UI) |
 
-## At 500 or 1,000 — levels or families
+## At 500–1,000 task types (165 today)
 
-Measured today (196 levels, 175 script tags, 1.04 MB of JS / 329 KB gzipped, 136 synced rounds from 5
-families, a round ≈ 246 bytes, check.js 165 s CPU, smoke.js 58 s):
+Pace: the 165 kind files were added in 2 weeks (51 on 2026-09-23, 38, 38, 11, 27), so 500–1,000 is months
+away, not years. Measured today:
 
-| What grows | Today | At 500–1,000 levels | At 500–1,000 families |
+| | Today (165 kinds) | At 1,000 kinds | Verdict |
 |---|---|---|---|
-| **Her history: only the last 400 rounds are kept** (`saveLocal`, `keepRounds`), and *learned*, reviews and badges are all recomputed from them | Already the ceiling: 136 rounds in 14 days (since 2026-09-21), so ~10 a day reaches 400 around **early November 2026**. Then the oldest rounds drop: early levels stop being *learned* and are suggested again, the review ladder resets, and badges like `streak7`, `polyglot`, `fixed`, `racer` can disappear. | A level takes ~2 rounds to learn and up to 5 reviews — 1,000 levels need thousands of rounds. | Same per child. |
-| Startup JS | V8 compiles all of it in 9 ms (lazy) | ~5 MB, ~900 tags: still fine to compile; one concatenated file at deploy if a phone shows it | — |
-| Picking a level | Paper and grade chips | ~300 per grade: needs search or collapsed groups | — |
-| check.js / smoke.js | 165 s / 58 s | Pins grow fastest — step 1 makes them free; sampling ~0.2 s a level → ~4 min, shard with worker_threads if it hurts | — |
-| Adding a paper | Hand-written pins | A paper file per sheet (20 tasks → level, params, key) pays off | — |
-| Worker + D1 free plan | Tiny | — | 100k requests/day and 5M D1 reads/day still cover ~1,000 families |
-| Difficulty from data | 1 learner: too little | — | **Now viable**: per-shape first-try rates across all children (Math Garden style), from step 2's shape log |
-| Children's data | One family | — | A privacy notice, parental consent and "delete my data" (EU/GDPR) **before** opening to others |
+| Code that grows | `kinds/` 11,627 lines (~70 a kind): generators 28%, drawing 20%, hints/solutions 19%, summary lines 6%, helpers and constants 26%. The shell (app, compete, players, sync, index.html) is 1,900 lines and does not grow with kinds. | ~70,000 lines of kinds | The format — one file per kind, `gen` + `draw` + `eq` + `why`, both languages via `tr` — holds; no reason to rewrite it |
+| One global scope | 1,104 top-level names in kinds. Only **6** are shared between kinds, 190 are read by `js/` (mostly `gen:` in levels.js), 35 only by checks — **874 (79%) are private to their file** | ~6,700 globals, every helper needing a unique name | **Fix now, by script**: each kind file in its own scope, exporting only what others read (step 5) |
+| Checks far from the kind | `check/kinds.js` is one 1,541-line file | ~10,000 lines | Move a kind's check beside it when touched; no big-bang move |
+| Pins search random draws | 115 s of check.js's 165 s | grows fastest | Step 1 (seeded pins) |
+| Finding an existing kind before adding one | grep over 165 names (`pairs`/`pairsum`, `seg`/`segcount`/`segpts`/`segword`, `cross`/`crossmin`/`eqcross`) | grep over 1,000 | A generated catalog: kind → levels, papers, one sample question (step 6) |
+| Question fields untyped | `[field: string]: any` in `types.d.ts` | more typos possible | check.js samples every level and checks answer, worked line and summary agree — runtime catches what types don't. Optional JSDoc type per kind, for new kinds |
+| Loading | 175 script tags, compiled lazily in 9 ms | ~1,000 files, ~6 MB (~1.7 MB gzipped) on install | Fine; concatenate at deploy only if a phone shows a slow start |
+| Picking a level | paper / grade chips | ~300 levels a grade | search or collapsed groups when it gets there |
 
-So the greenfield idea that matters most is one the first pass missed: **the learner's state must not be
-recomputed from a capped log.** It is needed now, not at 1,000.
+### Rewrite the 165 task types now, before 1,000?
+
+No full rewrite: the measured problems are structural, not in the task code, and every one can be done by a
+script now — six times cheaper at 165 than at 1,000. A hand rewrite would retype ~11,600 lines of tasks
+that are pinned to the official keys, for no change a child would see, and risk those pins.
+
+### A framework?
+
+A framework (Svelte, Preact, React) is for screens that change with state: lists, forms, navigation. Here
+that is the 1,900-line shell. The task types — the 86% of the code that grows — draw static HTML once per
+question; their `draw` code would be about as long in JSX or Svelte, and the checks that run every kind
+in plain Node (no browser) would need a framework renderer. Costs: a build step, npm dependencies to
+upgrade, hashed bundles for the service worker. It gets worth it if the **shell** grows — a parent
+dashboard, a class/teacher view, a worksheet printer — or if tasks become interactive (drag, tap a
+figure). Then: Preact or Svelte for the shell only; kinds keep returning HTML.
+
+### The history cap (found on the way, separate from task types)
+Only the last 400 rounds are kept (`saveLocal`, `keepRounds`), and *learned*, reviews and badges are all
+recomputed from them. 136 rounds in 14 days (since 2026-09-21) reaches 400 around **early November 2026**;
+then early levels stop being *learned*, reviews restart and some badges can disappear.
 
 ### Step 0 — keep her whole history (do first, before ~2026-11-01)
 1. Raise the cap from 400 to 5,000 rounds in `saveLocal` and `keepRounds`: 5,000 × 246 B ≈ 1.2 MB a player,
@@ -74,6 +92,22 @@ hard to place.
 
 ### Step 4 — persistent storage
 1. On start: `navigator.storage?.persist?.()`; no UI, no effect where unsupported.
+
+### Step 5 — one scope per kind file (a script, not a rewrite)
+1. A script wraps each `kinds/*.js` in `(() => { 'use strict'; … })();` and ends it with
+   `KIND.x = { draw, eq, why, gens: { genX, … } }` — exporting only the names `js/`, checks or another kind
+   read (found by the same scan that counted them: 190 + 35 + 6).
+2. `js/levels.js`'s `gen: genBowl` → `gen: GEN.genBowl` (`GEN` gathered from every `KIND.x.gens`);
+   checks read the same `GEN`. The 6 shared helpers move to `js/core.js`.
+3. No task's text, numbers or draw order changes: check.js pins and smoke.js prove it.
+4. AGENTS.md: a new kind keeps its helpers inside its scope.
+
+### Step 6 — a kind catalog
+`node sample.js --catalog > KINDS.md`: each kind, its levels and papers, one sample question. Search it
+before adding a kind.
+
+### Order
+0 (history cap, before November) → 1 (seeded pins) → 5 (scopes) → 2 + 4 → 6 → 3 (after data).
 
 ### Not planned
 The dropped rows above. Revisit "questions as data" only when a feature needs it.
