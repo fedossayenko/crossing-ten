@@ -146,11 +146,18 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   mode, imports and load order); the cross-file writes were only W, LANG and the competition (setters);
   one load-order bug (sync's first paint reading app.js before it ran) was caught by the two-device sync
   smoke only — compete/sync wiring now runs from startCompete()/startSync() at the end of app.js.
-- **C2. Kind cleanup** (#8, #18, merge 4): guards, headers, `ask()`/`answerLine()`/`steps()`, the
-  hard-coded Nunito and inline sizes, chain/pairs draw, cross/crossmin lister.
+- **C2. Kind cleanup — DONE (532ad53).** 724 do-nothing kind tests gone, 161 headers, answer-line sizes as
+  classes (.line.xl/.lg/.md, proven equivalent), one chainLine(). Not done on purpose: figure fonts (a CSS
+  rule overrides them), ask()/steps() helpers (classes cover styling), one-line shared slices, merging
+  look-alike kinds. Net −975 lines.
 - **C3. `template()` for word problems.**
-- **D1. Per-shape difficulty**: kinds declare `shapes: { name: d }`; check.js fails on a level mixing
-  shapes far from its `d` (#9). Split what it finds.
+- **D1. Per-shape difficulty — DONE (f90d0c5).** The ratings live on the level row, not the kind (a shape
+  name means different things in different generators): 60 levels rate their 192 shapes; check/shapes.js
+  fails a shape above its level. Rated twice, blind; only agreed cases acted on: 17, 79, 96, 97, 175, 180 up a
+  dot; 197–202 split from 10, 11, 23, 32, 164, 19 with their printed tasks and tags. Seeds record exact (+)
+  or same-form (−) matches and must replay the same way.
+- **Speed — DONE (1f8530b).** check.js 76 → 7.4 s (UK plural rules made once, arrows pruned, the level check
+  in 4 threads sharing its draws with the shape check); smoke 58 → 22 s, with sync 82 → 41 s. E5 done.
 
 ### Phase R — the redesign, on the new structure
 - **R0. Spike**: Badges (the simplest screen, all data exists) in Preact + htm, vendored, behind a flag;
