@@ -86,6 +86,10 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   // reset: her rounds from before the reset go, on the server and so on every device
   await call('/sync', { since: 0, players: [{ id: 'p1', name: 'Ани', mascot: 'fox', lang: 'uk', updated: 10, resetAt: 2500 }] }, A);
   ok((await pull(B)).rounds.map(r => r.round.id).join() === 'r3', 'a reset should drop the rounds before it');
+  // a round struck out on her record leaves the server, and sending it again does not bring it back
+  await call('/sync', { rounds: [round('drop1', 9e12)] }, A);
+  await call('/sync', { players: [{ id: 'p1', name: 'Ани', updated: 8e12, dropped: ['drop1'] }], rounds: [round('drop1', 9e12)] }, B);
+  ok(!(await pull(A)).rounds.some(r => r.round.id === 'drop1'), 'a dropped round should leave the server');
   // a deleted player: tombstone kept, rounds gone, and a stale edit does not bring her back
   await call('/sync', { since: 0, players: [{ id: 'p2', name: 'Иво', mascot: 'owl', lang: 'en', updated: 11 }], rounds: [round('q1', 5000, 'p2')] }, A);
   await call('/sync', { since: 0, gone: [{ id: 'p2', updated: 12 }] }, B);

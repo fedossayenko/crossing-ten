@@ -2,7 +2,7 @@ import { $, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
-import { ARCHIVE, unionRounds } from './archive.js';
+import { ARCHIVE, keeps, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
@@ -80,8 +80,9 @@ export const ARCHIVE_READY = Promise.race([
   Promise.all(PLAYERS.list.map(p => ARCHIVE.all(p.id).then(rs => {
     const here = p.id === PLAYER.id ? LOCAL.rounds : lsRounds(p), known = new Set(rs.map(r => r.id));
     ARCHIVE.put(p.id, here.filter(r => !known.has(r.id)));          // rounds from before the archive
-    const all = unionRounds(rs, here).filter(r => r.ts >= (p.resetAt || 0));
-    if(p.id === PLAYER.id){ LOCAL.rounds = unionRounds(all, LOCAL.rounds); setW(weightsFrom(LOCAL.rounds)); }
+    const all = unionRounds(rs, here).filter(keeps(p));
+    ARCHIVE.dropIds(p.id, p.dropped || []);
+    if(p.id === PLAYER.id){ LOCAL.rounds = unionRounds(all, LOCAL.rounds).filter(keeps(p)); setW(weightsFrom(LOCAL.rounds)); }
     else ARCH[p.id] = unionRounds(all, ARCH[p.id] || []);
   }))),
   new Promise(res => setTimeout(res, 2000))

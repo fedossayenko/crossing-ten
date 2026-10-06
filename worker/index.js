@@ -192,6 +192,9 @@ export default {
     // a reset player keeps no rounds from before her reset
     await db.prepare(`DELETE FROM rounds WHERE family = ?1 AND ts < (SELECT json_extract(body, '$.resetAt') FROM players
       WHERE players.family = rounds.family AND players.id = rounds.player AND gone = 0)`).bind(family).run();
+    // and none a grown-up struck out: the ids on her record's `dropped` list
+    await db.prepare(`DELETE FROM rounds WHERE family = ?1 AND id IN (SELECT value FROM players, json_each(players.body, '$.dropped')
+      WHERE players.family = rounds.family AND players.id = rounds.player AND gone = 0)`).bind(family).run();
 
     const got = await db.prepare('SELECT seq, player, body FROM rounds WHERE family = ?1 AND seq > ?2 ORDER BY seq LIMIT ?3')
       .bind(family, since, PAGE + 1).all();

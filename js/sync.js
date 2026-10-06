@@ -8,7 +8,7 @@
 import { $ } from './core.js';
 import { setW } from './questions.js';
 import { PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
-import { ARCHIVE, unionRounds } from './archive.js';
+import { ARCHIVE, keeps, unionRounds } from './archive.js';
 import { LANG, LANG_TAG, t } from './i18n.js';
 import { ARCH, ARCHIVE_READY, LOCAL, builtOn, chose, heldHere, lsRounds, renderParent, renderStats, saveLocal, saveStore, say, weightsFrom } from './app.js';
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
@@ -69,14 +69,14 @@ function mergeFromServer(r){
   const incoming = {};
   (r.rounds || []).forEach(x => (incoming[x.player] = incoming[x.player] || []).push(x.round));
   PLAYERS.list.forEach(p => {
-    const have = roundsOf(p), cut = p.resetAt || 0;
+    const have = roundsOf(p), cut = p.resetAt || 0, keep = keeps(p);
     const ids = new Set(have.map(x => x.id));
     const add = (incoming[p.id] || []).filter(x => x && x.id && !ids.has(x.id));
-    const kept = have.filter(x => x.ts >= cut);
-    const fresh = add.filter(x => x.ts >= cut);
+    const kept = have.filter(keep);
+    const fresh = add.filter(keep);
     if(add.length || kept.length !== have.length) keepRounds(p, kept.concat(fresh));
     ARCHIVE.put(p.id, fresh);
-    if(kept.length !== have.length) ARCHIVE.drop(p.id, cut);
+    if(kept.length !== have.length){ ARCHIVE.drop(p.id, cut); ARCHIVE.dropIds(p.id, p.dropped || []); }
     FAMILY.sent[p.id] = [...new Set((FAMILY.sent[p.id] || []).concat((incoming[p.id] || []).map(x => x.id)))];
   });
   return reload;

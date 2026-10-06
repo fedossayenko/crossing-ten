@@ -30,8 +30,12 @@ export const ARCHIVE = (() => {
       const c = s.index('player').openCursor(player);
       c.onsuccess = () => { const cur = c.result; if(!cur) return; if(cur.value.r.ts < before) cur.delete(); cur.continue(); };
     }),
+    // single rounds a grown-up struck out (the player's `dropped` list)
+    dropIds: (player, ids) => ids.length ? tx('readwrite', s => { ids.forEach(id => s.delete([player, id])); }) : Promise.resolve(),
   };
 })();
+// What a player keeps: rounds since her last reset, and none a grown-up struck out (`dropped`, synced on her record)
+export const keeps = p => r => r.ts >= (p.resetAt || 0) && !(p.dropped || []).includes(r.id);
 // Two logs of one player as one, each round once, oldest first.
 export function unionRounds(a, b){
   const seen = new Set(), out = [];
