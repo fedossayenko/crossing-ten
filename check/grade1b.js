@@ -48,7 +48,8 @@
     const x = Q.raw(193), digs = new Set();
     x.shown.forEach((v, t) => { const s = String(v); for(let j = 0; j < s.length; j++){ const left = s.slice(0, j) + s.slice(j + 1); if(!left) continue; const e = x.shown.slice(); e[t] = +left; if((x.op === '+' ? e[0] + e[1] : e[0] - e[1]) === e[2]) digs.add(+s[j]); } });
     if(digs.size !== 1 || !digs.has(x.ans) || (x.op === '+' ? x.shown[0] + x.shown[1] : x.shown[0] - x.shown[1]) === x.shown[2]) fail('cross two: ' + [...digs], x);
-    const g = Q.raw(194); let m = 0; for(let v = 1; v < g.N; v++) for(const ch of String(v)) if(+ch === g.d) m++;
+    let g = Q.raw(194); while(g.shape === 'from') g = Q.raw(194);   // from one number to another: check/grade1c-B.js
+    let m = 0; for(let v = 1; v < g.N; v++) for(const ch of String(v)) if(+ch === g.d) m++;
     if(m !== g.ans) fail('digit below: ' + m, g);
     const u = Q.raw(195), vals = new Set(); for(let lo = 10; lo <= 99; lo++) for(let hi = lo + 1; hi <= 99; hi++) if(lo + hi < u.B) vals.add(u.ask ? hi : hi - lo);
     if([...vals].sort((a, b) => a - b).join() !== [u.ans].concat(u.alt).join()) fail('two-digit under: ' + [...vals], u);
