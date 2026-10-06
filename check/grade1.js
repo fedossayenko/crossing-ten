@@ -39,7 +39,7 @@
     let dot = -1; for(let v = 0; v <= 20; v++) if(c.c - sq === v) dot = v;
     if([dot - sq, dot + sq, dot, dot + dot - sq][['minus', 'plus', 'dot', 'twice'].indexOf(c.ask)] !== c.ans || c.ans < 0 || c.b > 20) fail('eqcross:', c);
     // 165: every digit put in by text and the equality evaluated
-    const d = Q.raw(165), ok = [];
+    let d = Q.raw(165); const ok = []; while(d.shape === 'calc') d = Q.raw(165);   // 1■ − ■ asked after: check/grade1c-B.js
     for(let v = 0; v <= 9; v++){ const e = d.e.replace(/■/g, v); if(/(^| )0\d/.test(e)) continue; const [l, r] = e.split(' = ').map(x => eval(x.replace(/−/g, '-'))); if(l === r) ok.push(v); }
     if(ok.length !== 1 || ok[0] !== d.ans) fail('digeq: ' + ok, d);
     // 166: every digit crossed out of the written sum
