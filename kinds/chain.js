@@ -20,7 +20,10 @@ export function genChain(){
 }
 // МБГ Пролет 2025 and 2023, 1 клас, задачи 1–2: the same walk, short — 2 − 0 − 2 + 5, 20 − 2 − 5 —
 // starting anywhere up to 20 and never leaving 0…20 on the way.
+// МБГ Полуфинал 2024, 1 клас, задача 1: 20 − 2 + 4 — a step down from near 20, then up past it (shape 'past',
+// the answer 21 to 24). Полуфинал 2025, задача 2: 10 − 0 − 2 − 7, the plain walk.
 export function genChainShort(){
+  if(Math.random() < 0.2) return genChainPast();
   for(;;){
     const len = 3 + rnd(2), terms = [{op:'', n: 2 + rnd(19)}];
     let run = terms[0].n, ok = true;
@@ -32,6 +35,27 @@ export function genChainShort(){
     }
     if(ok) return {kind:'chain', terms, paired:0, ans:run};
   }
+}
+function genChainPast(){
+  for(;;){
+    const s = 16 + rnd(5), a = rnd(6), end = 21 + rnd(4), b = end - s + a;
+    if(b < 1 || b > 9) continue;
+    return {kind:'chain', shape:'past', terms:[{op:'', n:s}, {op:'−', n:a}, {op:'+', n:b}], paired:0, ans:end};
+  }
+}
+// МБГ Полуфинал 2024, 1 клас, задача 2: 20 − 2 + 4 − 2 + 0 − 2 − 4 — six steps from 12…20, one at a time. As on
+// the papers, the steps are two small numbers again and again (here 2 and 4), with a 0 about half the time;
+// the walk never leaves 0…24.
+export function genChainLong(){
+  const p = 1 + rnd(4), q = p + 1 + rnd(5 - p), zero = Math.random() < 0.5 ? 1 + rnd(6) : 0;
+  const terms = [{op:'', n: 12 + rnd(9)}];
+  let run = terms[0].n;
+  for(let k = 1; k <= 6; k++){
+    const n = k === zero ? 0 : Math.random() < 0.5 ? p : q, up = run + n > 24 ? false : n > run ? true : Math.random() < 0.5;
+    terms.push({op: up ? '+' : '−', n});
+    run += up ? n : -n;
+  }
+  return {kind:'chain', terms, paired:0, ans:run};
 }
 
 function drawChain(q){ return chainLine(q.terms); }

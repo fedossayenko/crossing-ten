@@ -129,8 +129,17 @@ export function genPairsRegroup(){
     return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
   }
 }
+// МБГ Полуфинал 2025, 1 клас, задача 3: 3 − 2 + 3 − 3 + 4 − 4 + 1 — after the first two numbers every number added
+// is taken straight back, so 3 − 2 + 1 is all that is left (shape 'back').
 export function genPairsShort(){
-  const pick = rnd(6);
+  const pick = rnd(7);
+  if(pick === 6){
+    const a = 2 + rnd(4), b = 1 + rnd(a - 1), k = 2 + rnd(2), cs = [], terms = [{op:'', n:a}, {op:'−', n:b}];
+    for(let i = 0; i < k; i++){ const c = 1 + rnd(5); cs.push(c); terms.push({op:'+', n:c}, {op:'−', n:c}); }
+    const e = 1 + rnd(3);
+    terms.push({op:'+', n:e});
+    return {kind:'pairs', shape:'back', a, b, cs, e, terms, ans: a - b + e};
+  }
   if(pick === 4){
     const a = 1 + rnd(4), b = a + rnd(3), c = a + b, off = rnd(3), terms = [];
     [a, a, b, b].forEach((n, i) => terms.push({op: i ? '+' : '', n}));
@@ -175,6 +184,11 @@ function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
+  if(q.shape === 'back'){
+    if(!full) return tr('Число, което се добавя и веднага се изважда, не променя нищо — такива двойки се махат.', 'Число, яке додають і відразу віднімають, нічого не змінює — такі пари знищуються.');
+    return q.cs.map(c => '<b>+ ' + c + ' − ' + c + '</b>').join(', ') + tr(' — всяка двойка дава 0 &nbsp;→&nbsp; остава ', ' — кожна пара дає 0 &nbsp;→&nbsp; залишається ') +
+      q.a + ' − ' + q.b + ' + ' + q.e + ' = ' + q.ans;
+  }
   if(q.shape === 'twice'){
     if(!full) return tr('Събери първо всичко, което се добавя, после всичко, което се маха.', 'Спершу додай усе, що додається, потім усе, що віднімається.');
     return q.a + ' + ' + q.a + ' + ' + q.b + ' + ' + q.b + ' = <b>' + 2*(q.a + q.b) + '</b>, &nbsp;' + q.c + ' + ' + (q.c - q.off) + ' = <b>' + (2*q.c - q.off) + '</b> &nbsp;→&nbsp; ' + 2*(q.a + q.b) + ' − ' + (2*q.c - q.off) + ' = ' + q.ans;

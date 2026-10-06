@@ -27,10 +27,22 @@ function genSidesTens(){
     return {kind:'sides', shape:'tens', sym:'□', left, right, VL, VR, ans: VR - VL};
   }
 }
+// МБГ Полуфинал 2025, 1 клас, задача 4: 2 + 0 + 2 + 4 = 2 + 0 − 2 + 5 + ☺ — the two starts only look alike: the
+// third sign is turned round (2 + 0 + 2 is 4, 2 + 0 − 2 is 0), so each side is worked out: 8 = 5 + ☺, ☺ = 3.
+function genSidesFlip(){
+  for(;;){
+    const x = 1 + rnd(5), y = rnd(4), z = 1 + rnd(3), a = 1 + rnd(9), b = 1 + rnd(9);
+    const VL = x + y + z + a, VR = x + y - z + b;
+    if(x + y < z || VL < VR || VL - VR > 9) continue;
+    return {kind:'sides', shape:'flip', sym:'☺', left:[{op:'', n:x}, {op:'+', n:y}, {op:'+', n:z}, {op:'+', n:a}],
+            right:[{op:'', n:x}, {op:'+', n:y}, {op:'−', n:z}, {op:'+', n:b}], minus:false, VL, VR, ans: VL - VR};
+  }
+}
 export function genSides(){
   const r = Math.random();
   if(r < 0.25) return genSidesOne();
   if(r < 0.4) return genSidesTens();
+  if(r < 0.55) return genSidesFlip();
   for(;;){
     if(Math.random() < 0.5){
       // the same start on both sides, then a different last number, and ☺ taken off or added on
@@ -77,6 +89,13 @@ function whySides(q, full){
     if(!full) return tr('Пресметни всяка страна без ' + q.sym + '. С колко дясната е повече?', 'Обчисли кожну сторону без ' + q.sym + '. На скільки права більша?');
     return tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') + exprText(q.right) + ' = <b>' + q.VR +
       '</b> &nbsp;→&nbsp; ' + q.VL + ' + ' + q.sym + ' = ' + q.VR + ' &nbsp;→&nbsp; ' + q.sym + ' = ' + q.VR + ' − ' + q.VL + ' = ' + q.ans;
+  }
+  if(q.shape === 'flip'){
+    if(!full) return tr('Двете страни само изглеждат еднакво — виж знаците! Пресметни всяка страна поотделно.', 'Обидві сторони лише здаються однаковими — подивись на знаки! Обчисли кожну сторону окремо.');
+    const z = q.left[2].n;
+    return tr('вляво е <b>+ ' + z + '</b>, а вдясно <b>− ' + z + '</b>', 'ліворуч <b>+ ' + z + '</b>, а праворуч <b>− ' + z + '</b>') + ' &nbsp;→&nbsp; ' +
+      tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') + exprText(q.right) + ' = <b>' + q.VR +
+      '</b> &nbsp;→&nbsp; ' + q.VL + ' = ' + q.VR + ' + ' + q.sym + ' &nbsp;→&nbsp; ' + q.sym + ' = ' + q.VL + ' − ' + q.VR + ' = ' + q.ans;
   }
   if(q.shape === 'same'){
     if(!full) return tr('И двете страни започват еднакво — сравни само това, което е различно.', 'Обидві сторони починаються однаково — порівняй лише те, що різне.');
