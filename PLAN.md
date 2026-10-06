@@ -281,7 +281,8 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   what to practise; the family card with "синхронизирано преди 2 мин · 3 устройства"; on iPad the three-column board
   (players and the family on the left, the week and groups in the middle, mistakes, practice and settings on the
   right); "Състезанието тегли от N клас" as a setting.
-- **R9.9 Notebook extras (Notebook, iPadNotebook).** "Поправи ги" (all kinds in one round) on the summary; iPad: the summary
+- **R9.9 Notebook extras (Notebook, iPadNotebook) — DONE.** (Also: "Упражни тези" on the parents' board now takes her latest
+  three misses of a shape, not the oldest.) "Поправи ги" (all kinds in one round) on the summary; iPad: the summary
   in a left column.
 - **R9.10 Small rules from Style.** `prefers-reduced-transparency` → solid (as the glass setting); one tinted button per
   screen (audit); concentric radii (card 24 → inner 12) and 44 px targets (audit).

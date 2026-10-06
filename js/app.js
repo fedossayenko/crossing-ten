@@ -802,7 +802,7 @@ export function renderParent(){
   LOCAL.rounds.filter(r => r.ts > Date.now() - 30*DAY && Array.isArray(r.t)).forEach(r => r.t.forEach(([lv, shape, seed, wrote, ok]) => {
     if(ok === -1) return;
     const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, n: 0, miss: 0, seed: null, seeds: [] };
-    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)){ x.seed = seed; if(x.seeds.length < 3) x.seeds.push(seed); } }
+    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)){ x.seed = seed; x.seeds.push(seed); if(x.seeds.length > 3) x.seeds.shift(); } }   // her latest three misses of it
   }));
   const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
   // practise these: the very tasks she missed (drawn again from their seeds), and new ones from those levels up to ten
@@ -862,7 +862,8 @@ const DAY = 864e5;
 export function notebookData(now = Date.now()){
   const rounds = LOCAL.rounds.filter(r => r.ts > now - 30*DAY && Array.isArray(r.t));
   const pass = {};   // the last round that put each kind right, or checked it
-  rounds.forEach(r => { const k = r.redo && (r.redo.fix || r.redo.check); if(k && r.firstTry === r.n && (!pass[k] || pass[k].ts < r.ts)) pass[k] = { ts: r.ts, check: !!r.redo.check }; });
+  // a round fixes one kind, or several at once ("put them all right")
+  rounds.forEach(r => { const ks = r.redo ? [].concat(r.redo.fix || r.redo.check || []) : []; if(r.firstTry === r.n) ks.forEach(k => { if(!pass[k] || pass[k].ts < r.ts) pass[k] = { ts: r.ts, check: !!r.redo.check }; }); });
   const seen = new Map();
   rounds.forEach(r => r.t.forEach(([lv, , seed, wrote, ok, ans]) => {
     if(ok !== 0 || wrote == null) return;
@@ -893,8 +894,17 @@ export function fixKind(kind, check){
   newRound(shuffle(set));
   S.redo = check ? { check: kind } : { fix: kind };
 }
+// Put them all right: every kind's missed tasks in one round (at most twelve, the most repeated kinds first)
+export function fixAll(){
+  const open = notebookData().open, set = open.flatMap(g => g.items.filter(x => x.q).map(x => x.q)).slice(0, 12);
+  const levels = [...new Set(open.flatMap(g => g.items.map(x => x.lv)))];
+  if(!levels.length) return;
+  while(set.length < 5){ const lv = levels[rnd(levels.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
+  newRound(shuffle(set));
+  S.redo = { fix: open.map(g => g.kind) };
+}
 // the levels a kind was put right on: from the round that put it right
-const notebookLevels = kind => { const r = [...LOCAL.rounds].reverse().find(r => r.redo && r.redo.fix === kind); return r ? [...new Set(r.t.map(x => x[0]))] : []; };
+const notebookLevels = kind => { const r = [...LOCAL.rounds].reverse().find(r => r.redo && [].concat(r.redo.fix || []).includes(kind)); return r ? [...new Set(r.t.map(x => x[0]))] : []; };
 // Her week: rounds, right first time (and the change from last week), levels newly learned, tasks, the days she
 // played, and the groups that went best and worst (5 tasks or more)
 function weekData(now = Date.now()){
@@ -1537,5 +1547,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

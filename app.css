@@ -945,7 +945,16 @@ body.tabbed .sheet-in{padding-bottom:96px}
 #today .nbcard .eq{font-size:16px}
 /* the mistakes notebook */
 .linkbtn{background:none; border:0; padding:4px 2px; color:var(--accent-ink); font:inherit; font-size:13px; font-weight:600; cursor:pointer}
-.nbtotal{flex-direction:row; align-items:baseline; gap:10px}
+.nbtotal{flex-direction:row; flex-wrap:wrap; align-items:baseline; gap:6px 10px}
+.nbtotal .nbsub{flex:1 1 100%; font-size:13px; color:var(--muted)}
+.nbtotal .btn{flex:1 1 100%}
+.nbcols,.nbside,.nbmain{display:flex; flex-direction:column; gap:14px}
+@media (min-width:1100px){
+  #notebook .sheet-in{max-width:1040px}
+  .nbcols{display:grid; grid-template-columns:300px minmax(0,1fr); gap:20px; align-items:start}
+  .nbtotal{flex-direction:column; align-items:flex-start}
+  .nbtotal .big{font-size:64px}
+}
 .nbtotal .big{font-family:Fredoka,var(--ui-font); font-size:44px; font-weight:500; line-height:1; color:var(--accent-ink)}
 .nbtotal span:last-child{font-weight:600; color:var(--muted)}
 .nbhead{display:flex; gap:12px; align-items:flex-start}
@@ -961,6 +970,7 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .nbdone > div{display:flex; flex-direction:column; gap:2px}
 .nbdone span{font-size:13px}
 #notebook .sheet-in{max-width:760px}
+@media (min-width:1100px){ #notebook .sheet-in{max-width:1040px} }
 .nbhead b::first-letter,.nbdone b::first-letter{text-transform:uppercase}   /* the kinds are named in lower case for the parents' list */
 .weekrow{display:flex; flex-direction:column; gap:4px; font-size:15px; font-weight:600}
 .weekrow i{font-style:normal; font-size:13px} .weekrow i.up{color:var(--good)} .weekrow i.down{color:var(--bad)}

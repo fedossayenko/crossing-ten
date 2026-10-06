@@ -192,11 +192,20 @@ const server = http.createServer((req, res) => {
     r.fixed = last.redo && last.redo.fix === 'forgotBorrow' && last.firstTry === 5 && !after.open.some(x => x.kind === 'forgotBorrow') &&
       after.done.some(x => x.kind === 'forgotBorrow' && !x.recheck);
     r.recheck = notebookData(Date.now() + 8 * 864e5).done.some(x => x.kind === 'forgotBorrow' && x.recheck);
+    // R9.9: two kinds missed, "put them all right" plays both in one round, and all right puts both right
+    $('sheet').hidden = true;
+    const qa = Object.assign(seeded(21, () => raw(2)), { seed: 21 }), qb = Object.assign(seeded(22, () => raw(5)), { seed: 22 });
+    newRound([qa, qb]); for(const v of [answer(qa) + 10, +String(answer(qb)).split('').reverse().join('')]){ [...String(v)].forEach(K); K('go'); [...String(v)].forEach(K); K('go'); K('go'); await tick(); }
+    const two = notebookData().open.map(g => g.kind);
+    fixAll(); await tick();
+    r.all = two.length >= 2 && Array.isArray(S.redo.fix) && two.every(k => S.redo.fix.includes(k)) && S.qs.length >= 5;
+    await answerAll();
+    r.allFixed = two.every(k => !notebookData().open.some(g => g.kind === k));
     // the tasks of the fixing round are logged under their own level and seed: drawn again, each has its recorded answer
     r.logged = last.t.every(x => answer(seeded(x[2], () => raw(x[0]))) === x[5]);
     LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
     return JSON.stringify(r); })()`) || '{}');
-  expect(r6.listed && r6.shown && r6.round && r6.fixed && r6.recheck && r6.logged, 'the mistakes notebook went wrong: ' + JSON.stringify(r6));
+  expect(r6.listed && r6.shown && r6.round && r6.fixed && r6.recheck && r6.logged && r6.all && r6.allFixed, 'the mistakes notebook went wrong: ' + JSON.stringify(r6));
   // R7: the grown-ups see this week against the last and the shapes she misses most; her grade is set there (and
   // stamped, so it wins on her other devices); a round's end says how long it took; a player's card, grade and rounds
   const r7 = JSON.parse(await run(`(async () => { const tick = () => new Promise(r => setTimeout(r, 30));
