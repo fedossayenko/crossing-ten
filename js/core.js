@@ -84,14 +84,14 @@ function antSvg(x, y, u){
     '<ellipse cx="-5" cy="-3" rx="3.1" ry="2.7"/><ellipse cx="0" cy="0" rx="2.7" ry="2.5"/>' +
     '<ellipse cx="6" cy="2.4" rx="4.2" ry="3.4"/></g></g>';
 }
-export function gridSvg(W, H, c, r){   // c = 0 draws the bare grid, with no ant
+export function gridSvg(W, H, c, r, ants){   // c = 0 draws the bare grid, with no ant; ants: more of them, [c, r] each
   const u = 36, w = W*u, h = H*u;
   let g = '';
   for(let i = 0; i <= W; i++) g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + h + '"/>';
   for(let j = 0; j <= H; j++) g += '<line x1="0" y1="' + j*u + '" x2="' + w + '" y2="' + j*u + '"/>';
   return '<div class="fig"><svg viewBox="-3 -3 ' + (w+6) + ' ' + (h+6) + '" role="img" aria-label="решетка с мравка">' +
     '<g stroke="var(--ink)" stroke-width="1.7" fill="none">' + g + '</g>' +
-    (c ? antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) : '') + '</svg></div>';
+    (c ? antSvg((c - 0.5)*u, (H - r + 0.5)*u, u) : '') + (ants || []).map(([x, y]) => antSvg((x - 0.5)*u, (H - y + 0.5)*u, u)).join('') + '</svg></div>';
 }
 export function fruitBody(t){
   const stem = '<path d="M0,-12 v4" stroke="var(--ant)" stroke-width="1.6" fill="none"/>';

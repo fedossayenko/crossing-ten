@@ -20,9 +20,13 @@ export function genSeg(){
 // МБГ Пролет 2023 and 2025, 1 клас: the same four points. 2023 asks AD from AB = 6 мм, CD = 9 мм, CB = 2 мм
 // (13 мм); 2025 gives the whole AD = 15 см and the two outer pieces AC = 5 см, BD = 7 см, and asks the middle
 // CB: 15 − 5 − 7 = 3.
+// МБГ Полуфинал 2025, 1 клас, задача 12: AD = 7 см, AB = 3 см, CD = 5 см, and CB asked. AB and CD both hold CB,
+// so together they are AD and CB once more: 3 + 5 − 7 = 1. (Полуфинал 2024, задача 13 is the first kind: AD = 10.)
 export function genSegShort(){
   const p = 2 + rnd(6), q = 1 + rnd(4), r = 2 + rnd(7);
   if(Math.random() < 0.5) return {kind:'seg', mm: Math.random() < 0.5, p, q, r, AB: p + q, CD: q + r, ans: p + q + r};
+  // drawn after the other two, so their questions keep their seeds
+  if(Math.random() > 0.6) return {kind:'seg', shape:'cbov', p, q, r, AB: p + q, CD: q + r, AD: p + q + r, traps:[p + 2*q + r, r], ans: q};
   return {kind:'seg', shape:'cb', p, q, r, AD: p + q + r, traps:[p + q + r - p, p + r], ans: q};
 }
 // Задача 14: the segments are not given, they are read off the ruler — the length is the
@@ -102,6 +106,12 @@ function drawSeg(q){
       q.p + ' см &nbsp; BD = ' + q.r + ' см</div>' +
       '<div class="line md">' + SLOT + CM + '</div>';
   }
+  if(q.shape === 'cbov'){
+    return '<div class="ask">CB = ? см</div>' + segSvg(q) +
+      '<div class="given" style="font-size:clamp(15px,4vw,20px)">AD = ' + q.AD + ' см &nbsp; AB = ' +
+      q.AB + ' см &nbsp; CD = ' + q.CD + ' см</div>' +
+      '<div class="line md">' + SLOT + CM + '</div>';
+  }
   const u = q.mm ? ' мм' : ' см';
   return '<div class="ask">AD = ?' + u + '</div>' + segSvg(q) +
     '<div class="given" style="font-size:clamp(15px,4vw,20px)">AB = ' + q.AB + u + ' &nbsp; CD = ' +
@@ -112,6 +122,7 @@ function eqSeg(q){
   if(q.shape === 'units') return q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = ' + (q.ans*100) + ' мм = ' + q.ans + ' дм';
   if(q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
   if(q.shape === 'cb') return 'AD ' + q.AD + ', AC ' + q.p + ', BD ' + q.r + ' → CB ' + q.ans;
+  if(q.shape === 'cbov') return 'AB ' + q.AB + ' + CD ' + q.CD + ' − AD ' + q.AD + ' → CB ' + q.ans;
   return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
 }
 function whySeg(q, full){
@@ -133,6 +144,15 @@ function whySeg(q, full){
       lineSvg([{at:0, name:'A'}, {at:q.p, name:'C'}, {at:q.p + q.q, name:'B'}, {at:L, name:'D'}],
         [{from:0, to:L, row:-2, label:'AD ' + L, step:1}, {from:0, to:q.p, row:1, label:'AC ' + q.p, col:'var(--accent)', step:3},
          {from:q.p + q.q, to:L, row:1, label:'BD ' + q.r, col:'var(--accent)', step:5}, {from:q.p, to:q.p + q.q, row:2, label:'CB ' + q.q, col:'var(--warm)', step:7}], 0, L, tr('отсечките от A до D', 'відрізки від A до D'));
+  }
+  if(q.shape === 'cbov'){
+    if(!full) return tr('AB и CD се застъпват: CB е и в двете. Сравни AB и CD заедно с цялата AD.', 'AB і CD накладаються: CB є в обох. Порівняй AB і CD разом з усім AD.');
+    // AB and CD laid end to end are AD with CB twice: what is over is CB
+    const both = q.AB + q.CD;
+    return 'AB + CD = ' + q.AB + ' + ' + q.CD + ' = <b>' + both + '</b> &nbsp;→&nbsp; CB = ' + both + ' − AD = ' + both + ' − ' + q.AD + ' = ' + q.ans +
+      lineSvg([{at:0, name:'A'}, {at:q.p, name:'C'}, {at:q.p + q.q, name:'B'}, {at:q.AD, name:'D'}],
+        [{from:0, to:q.AD, row:-2, label:'AD ' + q.AD, step:1}, {from:0, to:q.p + q.q, row:1, label:'AB ' + q.AB, col:'var(--accent)', step:3},
+         {from:q.p, to:q.AD, row:2, label:'CD ' + q.CD, col:'var(--accent)', step:5}, {from:q.p, to:q.p + q.q, row:-1, label:'CB ' + q.q, col:'var(--warm)', step:7}], 0, q.AD, tr('отсечките от A до D', 'відрізки від A до D'));
   }
   if(!full) return tr('Отсечките се застъпват — намери първо AC.', 'Відрізки накладаються — спочатку знайди AC.');
   // the four points, then AB and CB measured, AC what is left, then CD and the whole AD
