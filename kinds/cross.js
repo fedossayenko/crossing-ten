@@ -2,7 +2,7 @@
 
 // Задача 19: one digit struck out makes the equation true. Built backwards, then every
 // possible deletion is tried so the digit to cross is never in doubt.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
 export function genCross(){
   for(;;){
     const A = 10*(1 + rnd(5)), C = 10*(1 + rnd(5)), B = 10*(1 + rnd(9));
@@ -59,11 +59,26 @@ function crossFewest(shown){
     if(best && cut.length >= best.length) continue;
     const left = shown.map((v, t) => String(v).split('').filter((_, i) => !cut.some(c => c[0] === t && c[1] === i)).join(''));
     if(left.some(w => !w || (w.length > 1 && w[0] === '0'))) continue;
-    if(+left[0] + +left[1] + +left[2] === +left[3]) best = cut;
+    if(left.slice(0, -1).reduce((t, w) => t + +w, 0) === +left[left.length - 1]) best = cut;   // the addends against the last number
   }
   return best;
 }
+// МБГ Полуфинал 2023, 1 клас, задача 16: 10 + 20 + 30 + 40 = 10 — the fewest digits to cross out is 3: 10 + 0 + 0 + 0 = 10.
+// Three or four round tens, any order, equal to the smallest: every other one loses its tens digit. Drawn after the
+// other question, so its seed keeps it.
+function genCrossTens(){
+  for(;;){
+    const k = Math.random() < 0.5 ? 3 : 4, ns = shuffle([10, 20, 30, 40, 50]).slice(0, k), shown = ns.concat(Math.min(...ns)), cut = crossFewest(shown);
+    if(!cut || cut.length !== k - 1) continue;
+    // the slips: every addend crossed, or one fewer than needed
+    return {kind:'cross', shape:'tens', shown, cut, traps:[k, k - 2].filter(v => v > 0), ans: cut.length};
+  }
+}
 export function genCrossFew(){
+  const q = genCrossFewSlip();
+  return Math.random() < 0.25 ? genCrossTens() : q;
+}
+function genCrossFewSlip(){
   for(;;){
     const parts = [1 + rnd(9), 1 + rnd(9), 1 + rnd(9)];
     parts.push(parts[0] + parts[1] + parts[2]);
@@ -78,10 +93,16 @@ export function genCrossFew(){
     return {kind:'cross', shape:'few', shown, cut, traps, ans: cut.length};
   }
 }
-// the four numbers with each crossed-out digit marked (or dropped), and the equality they make
+// the numbers with each crossed-out digit marked (or dropped), and the equality they make
 const crossFewNums = (q, mark) => q.shown.map((v, t) => String(v).split('').map((c, i) => q.cut.some(x => x[0] === t && x[1] === i) ? mark(c) : c).join(''));
-const crossFewEq = w => w[0] + ' + ' + w[1] + ' + ' + w[2] + ' = ' + w[3];
+const crossFewEq = w => w.slice(0, -1).join(' + ') + ' = ' + w[w.length - 1];
 function drawCross(q){
+  if(q.shape === 'tens'){
+    return '<div class="ask">' + tr('Колко <b>най-малко</b> цифри трябва да зачеркнем, за да е вярно следното?',
+      'Яку <b>найменшу</b> кількість цифр треба закреслити, щоб рівність стала правильною?') + '</div>' +
+      '<div class="given">' + crossFewEq(q.shown) + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 'few'){
     return '<div class="ask">' + tr('Колко <b>най-малко</b> цифри трябва да зачеркнем, така че след пресмятането да се получи верен отговор?',
       'Яку <b>найменшу</b> кількість цифр треба закреслити, щоб після обчислення вийшла правильна відповідь?') + '</div>' +
@@ -98,11 +119,19 @@ function drawCross(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCross(q){
-  if(q.shape === 'few') return crossFewEq(q.shown) + ' → ' + crossFewEq(crossFewNums(q, () => '')) + ' → ' + q.ans;
+  if(q.shape === 'few' || q.shape === 'tens') return crossFewEq(q.shown) + ' → ' + crossFewEq(crossFewNums(q, () => '')) + ' → ' + q.ans;
   if(q.shape === 'two'){ const l = q.shown.slice(); l[q.hit.t] = q.hit.left; return crossTwoText(q.shown, q.op) + ' → ' + crossTwoText(l, q.op) + ' → ' + q.ans; }
   return q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + tr(' → зачерква се ', ' → закреслюємо ') + q.ans;
 }
 function whyCross(q, full){
+  if(q.shape === 'tens'){
+    if(!full) return tr('Гледай само цифрите на десетиците. Зачеркнеш ли цифрата на десетиците, числото става 0.',
+      'Дивись лише на цифри десятків. Якщо закреслити цифру десятків, число стане 0.');
+    const keep = q.shown[q.shown.length - 1];
+    return tr('отляво остава ' + keep + ', а всяко друго число става 0 — по една цифра от всяко', 'ліворуч лишається ' + keep + ', а кожне інше число стає 0 — по одній цифрі з кожного') +
+      ' &nbsp;→&nbsp; ' + crossFewEq(crossFewNums(q, c => '<s style="color:var(--bad)">' + c + '</s>')) + ' &nbsp;→&nbsp; <b>' + crossFewEq(crossFewNums(q, () => '')) + '</b>' +
+      ' &nbsp;→&nbsp; ' + tr('най-малко ', 'найменше ') + q.ans;
+  }
   if(q.shape === 'few'){
     if(!full) return tr('Пресметни лявата страна и я сравни с дясната. Опитай да зачеркнеш една цифра; ако не стига — две.',
       'Обчисли ліву частину й порівняй із правою. Спробуй закреслити одну цифру; якщо не вистачить — дві.');

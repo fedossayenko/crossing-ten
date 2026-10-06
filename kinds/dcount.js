@@ -34,12 +34,15 @@ export function genDigitRun(){
 
 // МБГ Пролет 2021, 1 клас, задача 13: I wrote all the numbers below 25 — 24, 23, 22, …, 3, 2, 1. How many
 // times did I write the digit 2? 2, 12, 20, 21, 22 (twice), 23, 24: 8. The same count as from 1 to 24.
+// МБГ Полуфинал 2023, 1 клас, задача 15 asks it in its own words, 0 written too: how many digits 1 does it take to
+// write all the numbers below 22 — 21, 20, 19, …, 3, 2, 1, 0? 1, 10, 11 (twice), 12, …, 19, 21: 13. Those words
+// (zero) are drawn after the question, so a seed keeps its numbers.
 export function genDigitBelow(){
   if(Math.random() < 0.4) return genDigitFromTo();
   for(;;){
     const d = 1 + rnd(3), N = 12 + rnd(19);
     let n = 0; for(let v = 1; v < N; v++) n += String(v).split(String(d)).length - 1;
-    if(n >= 2) return {kind:'dcount', shape:0, below:true, d, from:1, to:N - 1, N, ans:n};
+    if(n >= 2) return Math.random() < 0.3 ? {kind:'dcount', shape:0, below:true, zero:true, d, from:0, to:N - 1, N, ans:n} : {kind:'dcount', shape:0, below:true, d, from:1, to:N - 1, N, ans:n};
   }
 }
 // МБГ Полуфинал 2024, 1 клас, задача 7: how many digits 1 it takes to write the numbers from 9 to 22 — 9, 10, 11, 12,
@@ -87,6 +90,12 @@ function drawDcount(q){
   if(q.shape === 'freq'){
     return '<div class="ask">' + tr('Коя цифра е записана <b>' + FREQ_K[q.k][0] + '</b>?', 'Яку цифру записано <b>' + FREQ_K[q.k][1] + '</b>?') + '</div>' +
       '<div class="line" style="font-size:clamp(20px,calc((100vw - 64px)/' + (q.s.length * 0.66).toFixed(2) + '),44px); letter-spacing:.06em">' + q.s + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
+  if(q.zero){
+    return '<div class="ask">' + tr('Колко цифри <span class="num">' + q.d + '</span> се използват за записването на всички числа, които са по-малки от <span class="num">' + q.N + '</span>?',
+      'Скільки цифр <span class="num">' + q.d + '</span> використано, щоб записати всі числа, менші за <span class="num">' + q.N + '</span>?') + '</div>' +
+      '<div class="given">' + [q.N - 1, q.N - 2, q.N - 3].join(', ') + ', …, 3, 2, 1, 0</div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }
   if(q.below){

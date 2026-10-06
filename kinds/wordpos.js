@@ -15,6 +15,24 @@ function genPatCount(){
   let ans = 0; for(let i = 0; i < n; i++) if(pat[i % L] === sym) ans++;
   return {kind:'wordpos', shape:'count', pat, n, sym, traps:[Math.floor(n / L)*pat.filter(x => x === sym).length], ans};
 }
+// МБГ Полуфинал 2023, 1 клас, задача 7: how many digits 1 in the row of 20 numbers 1, 2, 1, 1, 2, 1, 2, 1, 1, 2, 1, …, 1, 2?
+// The part 1, 2, 1, 1, 2 four times over, 3 ones in each: 12. A part of 1s and 2s, 4 or 5 long, in a row of 15 or 20
+// numbers; two parts and one more number are shown, then the last two. The shown start fixes the part: no shorter
+// part repeats through it (so both digits are in it).
+const digitPeriod = a => { for(let p = 1; p < a.length; p++) if(a.every((v, i) => i < p || v === a[i - p])) return p; return a.length; };
+export function genDigitBlocks(){
+  for(;;){
+    const L = 4 + rnd(2), pat = Array.from({length: L}, () => 1 + rnd(2)), n = Math.random() < 0.7 ? 20 : 15, dig = Math.random() < 0.7 ? 1 : 2;
+    const at = i => pat[i % L], shown = Array.from({length: 2*L + 1}, (_, i) => at(i)).concat(at(n - 2), at(n - 1));
+    if(digitPeriod(shown.slice(0, 2*L + 1)) !== L) continue;
+    let ans = 0; for(let i = 0; i < n; i++) if(at(i) === dig) ans++;
+    // the slips: only the digits that can be seen, or half the row
+    const traps = [shown.filter(v => v === dig).length, Math.floor(n / 2)];
+    return {kind:'wordpos', shape:'digits', pat, n, dig, traps: traps.filter((v, k) => v !== ans && traps.indexOf(v) === k), ans};
+  }
+}
+// the parts the row falls into: whole ones, then what is left of one
+const digitParts = q => { const L = q.pat.length, r = q.n % L; return Array(Math.floor(q.n / L)).fill(q.pat).concat(r ? [q.pat.slice(0, r)] : []); };
 export function genWordPos(){
   if(Math.random() < 0.3) return genPatCount();
   for(;;){
@@ -30,6 +48,13 @@ export function genWordPos(){
 }
 const wordPosWord = q => tr(WORDPOS[q.w][0], WORDPOS[q.w][1]);
 function drawWordPos(q){
+  if(q.shape === 'digits'){
+    const L = q.pat.length, at = i => q.pat[i % L];
+    return '<div class="ask">' + tr('Колко цифри <span class="num">' + q.dig + '</span> са записани в редицата от <span class="num">' + q.n + '</span> числа?',
+      'Скільки цифр <span class="num">' + q.dig + '</span> записано в ряду з <span class="num">' + q.n + '</span> чисел?') + '</div>' +
+      '<div class="seq">' + Array.from({length: 2*L + 1}, (_, i) => at(i)).join(', ') + ', …, ' + at(q.n - 2) + ', ' + at(q.n - 1) + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 'count'){
     const what = q.sym === '○' ? tr('кръгчета', 'кружечків') : tr('триъгълничета', 'трикутничків');
     return '<div class="ask">' + tr('Според модела, показан по-долу, броейки отляво надясно, колко ' + what + ' има от 1-вия до <span class="num">' + q.n + '-ия</span> символ включително?',
@@ -44,11 +69,18 @@ function drawWordPos(q){
     'Яка буква стоїть на <span class="num">' + q.p + '-му</span> місці, якщо рахувати <b>' + (q.right ? 'справа наліво' : 'зліва направо') + '</b>?') + '</div>';
 }
 function eqWordPos(q){
+  if(q.shape === 'digits') return q.pat.join(', ') + ' → ' + digitParts(q).map(p => p.filter(v => v === q.dig).length).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'count'){ const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length;
     return q.n + ' = ' + Math.floor(q.n / L) + ' · ' + L + ' + ' + q.n % L + ' → ' + q.ans; }
   return (q.right ? q.n*q.L + ' − ' + q.p + ' + 1 = ' + q.fromLeft + ', ' : '') + q.fromLeft + tr('-ма → ', '-га → ') + wordPosWord(q)[q.at];
 }
 function whyWordPos(q, full){
+  if(q.shape === 'digits'){
+    if(!full) return tr('Намери частта, която се повтаря, и огради всяка. Колко цифри ' + q.dig + ' има в една част?', 'Знайди частину, що повторюється, і обведи кожну. Скільки цифр ' + q.dig + ' в одній частині?');
+    const parts = digitParts(q);
+    return parts.map(p => '(' + p.join(', ') + ')').join(' ') + ' &nbsp;→&nbsp; ' + q.n + ' = ' + parts.map(p => p.length).join(' + ') +
+      ' &nbsp;→&nbsp; ' + tr('цифри ', 'цифр ') + q.dig + ': ' + parts.map(p => p.filter(v => v === q.dig).length).join(' + ') + ' = <b>' + q.ans + '</b>';
+  }
   if(q.shape === 'count'){
     if(!full) return tr('Колко символа има в едно повторение на модела — и колко от тях са търсените?', 'Скільки символів в одному повторенні зразка — і скільки з них ті, що треба?');
     const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length, w = Math.floor(q.n / L), r = q.n % L, extra = q.pat.slice(0, r).filter(x => x === q.sym).length;

@@ -17,8 +17,24 @@ function genDigCount(){
     return {kind:'digperm', shape:'count', ds, nums, ans: nums.length};
   }
 }
+// МБГ Полуфинал 2023, 1 клас, задача 8: 4, 5 ⟹ 45, 54 ⟹ 2 and 0, 4, 5 ⟹ 40, 45, 50, 54 ⟹ 4, then 0, 1, 2, 3 ⟹ ? —
+// 10, 12, 13, 20, 21, 23, 30, 31, 32: 9. Four digits in order, with a 0 (9 numbers) or without (12); a 1 may stand
+// beside the 0 here, as there is no frame from 10. Drawn after the other questions, so their seeds keep them.
+const DIGFOUR_EX = [[[4, 5], [45, 54]], [[0, 4, 5], [40, 45, 50, 54]]];
+function genDigFour(){
+  for(;;){
+    const zero = Math.random() < 0.5, ds = (zero ? [0] : []).concat(Array.from({length: zero ? 3 : 4}, () => 1 + rnd(9))).sort((a, b) => a - b);
+    if(new Set(ds).size !== 4) continue;
+    const nums = digPermNums(ds);
+    // the slips: a 0 put in front too (or a digit twice, without a 0), and each pair of digits once
+    return {kind:'digperm', shape:'four', ds, nums, traps:[zero ? 12 : 16, 6], ans: nums.length};
+  }
+}
 export function genDigPerm(){
-  if(Math.random() < 0.35) return genDigCount();
+  const q = Math.random() < 0.35 ? genDigCount() : genDigSum();
+  return Math.random() < 0.2 ? genDigFour() : q;
+}
+function genDigSum(){
   for(;;){
     // two digits without a 0, or three with one; the sum kept within 100, and not one of the examples
     const ds = Math.random() < 0.2 ? [0, 1, 2 + rnd(2)] : [1 + rnd(8), 1 + rnd(8)].sort((a, b) => a - b);
@@ -52,6 +68,12 @@ function drawDigPerm(q){
       '<div class="fig"><svg viewBox="0 0 ' + w + ' 48" style="max-width:' + Math.round(w * 1.2) + 'px" role="img" aria-label="' + tr('картички', 'картки') + '">' + q.ds.map((v, i) => flipCard(v, 2 + i*56)).join('') + '</svg></div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }
+  if(q.shape === 'four'){
+    const ex = ([ds, nums]) => '<div class="given" style="font-size:clamp(14px,3.8vw,20px)">' + ds.join(', ') + ' &nbsp;⟹&nbsp; ' + nums.join(', ') + ' &nbsp;⟹&nbsp; ? = ' + nums.length + '</div>';
+    return '<div class="ask">' + tr('Разгледайте примерите и открийте правилото. Какво число трябва да е на мястото на въпросителния знак?',
+      'Розгляньте приклади й знайдіть правило. Яке число має стояти на місці знака питання?') + '</div>' + DIGFOUR_EX.map(ex).join('') +
+      '<div class="line" style="font-size:clamp(20px,6vw,36px)">' + q.ds.join(', ') + ' &nbsp;⟹&nbsp; … &nbsp;⟹&nbsp; ? = ' + SLOT + '</div>';
+  }
   if(q.shape === 'count'){
     return '<div class="ask">' + tr('Виж примера. <b>Колко</b> двуцифрени числа с различни цифри могат да се запишат с дадените цифри?',
       'Подивись на приклад. <b>Скільки</b> двоцифрових чисел з різними цифрами можна записати з даних цифр?') + '</div>' +
@@ -65,7 +87,7 @@ function drawDigPerm(q){
     '<div class="line" style="font-size:clamp(20px,6vw,36px)">' + q.ds.join(', ') + ' &nbsp;⟹&nbsp; ' + q.nums.map(() => '…').join(' + ') + ' = ' + SLOT + '</div>';
 }
 function eqDigPerm(q){
-  if(q.shape === 'count' || q.shape === 'flip') return q.ds.join(', ') + ' → ' + q.nums.join(', ') + ' → ' + q.ans;
+  if(q.shape === 'count' || q.shape === 'flip' || q.shape === 'four') return q.ds.join(', ') + ' → ' + q.nums.join(', ') + ' → ' + q.ans;
   return q.ds.join(', ') + ' → ' + q.nums.join(' + ') + ' = ' + q.ans;
 }
 function whyDigPerm(q, full){
@@ -77,6 +99,14 @@ function whyDigPerm(q, full){
       flipCard(six, 2) + svgText(60, 30, '→', 20, 'var(--ink)') + flipCard(six, 78, true) + '</svg>' +
       plain.join(', ') + tr('; картичката ' + six + ', обърната, е ' + FLIP[six] + ': ', '; картка ' + six + ', перевернута, — це ' + FLIP[six] + ': ') + more.join(', ') +
       ' &nbsp;→&nbsp; ' + tr('общо ', 'усього ') + '<b>' + q.ans + '</b>';
+  }
+  if(q.shape === 'four'){
+    if(!full) return tr('Примерите изписват всички двуцифрени числа от дадените цифри, без цифра два пъти. Избери цифрата на десетиците (не 0), после цифрата на единиците — всяка от другите.',
+      'Приклади виписують усі двоцифрові числа з даних цифр, без цифри двічі. Обери цифру десятків (не 0), потім цифру одиниць — будь-яку з інших.');
+    // one row per tens digit: each takes the other three digits as its ones
+    const tens = q.ds.filter(v => v);
+    return tens.map(a => q.nums.filter(v => Math.floor(v / 10) === a).join(', ')).join('; &nbsp;') + (q.ds.includes(0) ? tr(' (0 не стои отпред)', ' (0 не стоїть попереду)') : '') +
+      ' &nbsp;→&nbsp; ' + tens.map(() => 3).join(' + ') + ' = <b>' + q.ans + '</b>';
   }
   if(!full) return tr('Запиши числата подред: първо с най-малката цифра отпред, после със следващата. 0 не може да стои отпред.',
     'Випиши числа по порядку: спершу з найменшою цифрою попереду, потім з наступною. 0 не може стояти попереду.');

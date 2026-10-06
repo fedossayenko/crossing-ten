@@ -71,8 +71,43 @@ export function genMissing(){
     return {kind:'missing', seq, at, hidden, asksDigits, rule, ans};
   }
 }
-
+// МБГ Полуфинал 2022, 1 клас, задача 2: 1, 2, …, …, 5, 6 — under the gap 3 + 4 = 7, so ? = 7; then 3, 4, …, …, 7, 8 — ? = 5 + 6 = 11.
+// A run of six from x, the middle two left out and added; the example is the same run two lower.
+export function genGapSum(){
+  const x = 3 + rnd(10), row = [0, 1, 2, 3, 4, 5].map(i => x + i);
+  // the slips: the example's sum copied, or one of the two numbers alone
+  return {kind:'missing', shape:'gap', row, hide:[2, 3], traps:[2*x + 1, x + 3], ans: 2*x + 5};
+}
+// МБГ Полуфинал 2023, 1 клас, задача 4: ● + ■ = ?  1, 5, 2, 6, 3, 7, ●, ■, 5, 9, 6, 10 — pairs, each second number 4 more than the
+// first: ● = 4, ■ = 8, 12. The first numbers count on from 1 to 4, the second are k = 3 … 6 more; six pairs, the fourth or
+// fifth hidden.
+export function genTurns(){
+  const a = 1 + rnd(4), k = 3 + rnd(4), h = 3 + rnd(2), row = [];
+  for(let i = 0; i < 6; i++) row.push(a + i, a + i + k);
+  // the slips: one of the two hidden numbers taken for the sum
+  return {kind:'missing', shape:'turns', row, hide:[2*h, 2*h + 1], traps:[a + h, a + h + k], ans: 2*(a + h) + k};
+}
+// the run with its two left-out places, a brace under them and what is written there; cw: the width of a place, f: the
+// size of the numbers (the example smaller than the question)
+function gapRowSvg(row, x0, cw, f, lines, col){
+  const x = i => x0 + cw/2 + i*cw, a = x(2) - cw/2 + 2, b = x(3) + cw/2 - 2, m = (a + b) / 2;
+  let g = row.map((v, i) => svgText(x(i), 0, (i === 2 || i === 3 ? '…' : v) + (i < 5 ? ',' : ''), f, col)).join('');
+  g += '<path d="M' + a + ',6 Q' + a + ',12 ' + (a + 6) + ',12 H' + (m - 6) + ' Q' + m + ',12 ' + m + ',18 Q' + m + ',12 ' + (m + 6) + ',12 H' + (b - 6) + ' Q' + b + ',12 ' + b + ',6" stroke="' + col + '" stroke-width="1.6" fill="none"/>';
+  return g + lines.map((t, k) => svgText(m, 34 + k*17, t, f - 2, col)).join('');
+}
 function drawMissing(q){
+  if(q.shape === 'gap'){
+    const x = q.row[0], ex = q.row.map(v => v - 2);
+    return '<div class="ask">' + tr('Разгледай примера. Кое число трябва да е на мястото на въпросителния знак?', 'Розглянь приклад. Яке число має стояти на місці знака питання?') + '</div>' +
+      '<div class="fig"><svg viewBox="0 -18 404 74" role="img" aria-label="' + tr('две редици с пропуснати числа', 'два ряди з пропущеними числами') + '">' +
+      gapRowSvg(ex, 0, 30, 15, [x + ' + ' + (x + 1) + ' = ' + (2*x + 1), '? = ' + (2*x + 1)], 'var(--muted)') + gapRowSvg(q.row, 198, 34, 19, ['… + … = ?'], 'var(--ink)') + '</svg></div>' +
+      '<div class="line lg">? = ' + SLOT + '</div>';
+  }
+  if(q.shape === 'turns'){
+    return '<div class="ask">' + tr('Пресметни ● + ■.', 'Обчисли ● + ■.') + '</div>' +
+      '<div class="seq">' + q.row.map((v, i) => i === q.hide[0] ? '<span class="circle">●</span>' : i === q.hide[1] ? '<span class="circle">■</span>' : v).join(', ') + '</div>' +
+      '<div class="line lg">● + ■ = ' + SLOT + '</div>';
+  }
   if(q.grows){
     return '<div class="ask">' + tr('<b>Кои са</b> пропуснатите числа в редицата?', '<b>Які</b> числа пропущено в ряду?') + '</div>' +
       '<div class="seq">' + q.seq.map((v, i) => q.gaps.includes(i) ? '…' : v).join(', ') + '</div>' +
@@ -101,6 +136,8 @@ function drawMissing(q){
     '<div class="line lg">' + SLOT + '</div>';
 }
 function eqMissing(q){
+  if(q.shape === 'gap') return tr('липсват ', 'пропущено ') + q.row[2] + tr(' и ', ' і ') + q.row[3] + ' → ' + q.row[2] + ' + ' + q.row[3] + ' = ' + q.ans;
+  if(q.shape === 'turns') return '● = ' + q.row[q.hide[0]] + ', ■ = ' + q.row[q.hide[1]] + ' → ' + q.ans;
   if(q.grows) return tr('стъпките ', 'кроки ') + q.seq.slice(1).map((v, i) => v - q.seq[i]).join(', ') + ' → ' + q.ans + tr(' и ', ' і ') + q.alt[0];
   if(q.one) return tr('правило ' + q.rule + ', липсва на място ', 'правило ' + q.rule + ', пропуск на місці ') + (q.at + 1) + ' → ' + q.ans;
   if(q.woven) return '★ ' + q.star + ', ● ' + q.dot + ' → ' + q.ans;
@@ -111,9 +148,9 @@ function eqMissing(q){
 // missing places stand in an orange frame and fill in as the arcs reach them. Two runs woven together
 // step over every other number, one run above and the other below.
 function missingSvg(q){
-  const vals = q.woven || (q.one && q.next ? q.seq.concat(q.ans) : q.seq);
-  const gone = q.grows ? q.gaps : q.woven ? q.hideAt : q.one ? [q.at] : [q.at, q.at + 1];
-  const N = vals.length, cw = 30, x = i => 15 + i * cw, W = N * cw, below = !!q.woven;
+  const vals = q.row || q.woven || (q.one && q.next ? q.seq.concat(q.ans) : q.seq);
+  const gone = q.row ? q.hide : q.grows ? q.gaps : q.woven ? q.hideAt : q.one ? [q.at] : [q.at, q.at + 1];
+  const N = vals.length, cw = 30, x = i => 15 + i * cw, W = N * cw, below = !!q.woven || q.shape === 'turns';
   let g = '';
   vals.forEach((v, i) => {
     if(gone.includes(i)) g += '<rect x="' + (x(i) - 14) + '" y="-13" width="28" height="19" rx="6" fill="none" stroke="var(--warm)" stroke-width="2"/>' +
@@ -130,7 +167,8 @@ function missingSvg(q){
     else if(j >= 2) g += step(j - 2, j, j % 2 === 0);
   }
   const a = q.one && q.seq[q.at - 1], b = q.one && q.seq[q.at - 2];
-  const foot = q.grows ? vals[q.gaps[0]] + tr(' и ', ' і ') + vals[q.gaps[1]]
+  const foot = q.row ? vals[q.hide[0]] + ' + ' + vals[q.hide[1]] + ' = ' + q.ans
+    : q.grows ? vals[q.gaps[0]] + tr(' и ', ' і ') + vals[q.gaps[1]]
     : q.woven ? q.star + ' − ' + q.dot + ' = ' + q.ans
     : q.one ? (q.rule === 0 ? b + ' + ' + a : a + ' + ' + (q.ans - a)) + ' = ' + q.ans
     : q.asksDigits ? String(q.hidden[0]).length + ' + ' + String(q.hidden[1]).length + ' = ' + q.ans
@@ -145,6 +183,17 @@ function whyMissing(q, full){
   return full && text ? text + missingSvg(q) : text;
 }
 function whyMissingText(q, full){
+  if(q.shape === 'gap'){
+    if(!full) return tr('Виж примера: под скобата е сборът на двете пропуснати числа. Кои числа липсват тук?', 'Подивись на приклад: під дужкою — сума двох пропущених чисел. Яких чисел бракує тут?');
+    return tr('числата растат с по 1: ', 'числа зростають на 1: ') + q.row.map((v, i) => i === 2 || i === 3 ? '<b>' + v + '</b>' : v).join(', ') + ' &nbsp;→&nbsp; ' +
+      q.row[2] + ' + ' + q.row[3] + ' = ' + q.ans;
+  }
+  if(q.shape === 'turns'){
+    if(!full) return tr('Погледни числата през едно — това са две редици.', 'Подивись на числа через одне — це два ряди.');
+    const [i, j] = q.hide, run = from => q.row.filter((_, k) => k % 2 === from && k < i + from).join(', ');
+    return run(0) + tr(', … растат с 1 → ', ', … зростають на 1 → ') + '● = ' + q.row[i] + '; &nbsp;' + run(1) + tr(', … растат с 1 → ', ', … зростають на 1 → ') + '■ = ' + q.row[j] +
+      ' &nbsp;→&nbsp; ' + q.row[i] + ' + ' + q.row[j] + ' = ' + q.ans;
+  }
   if(q.kind === 'missing' && q.grows){
     if(!full) return tr('С колко расте всяко число? Виж как се мени и самата стъпка.', 'На скільки зростає кожне число? Подивись, як змінюється сам крок.');
     const st = q.seq.slice(1).map((v, i) => v - q.seq[i]);

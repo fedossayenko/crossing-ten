@@ -29,8 +29,22 @@ function genCrossThree(){
     return {kind:'crossmin', shape:'three', ns, least, best, traps: [...new Set(digits)].filter(d => d !== ans).slice(0, 3), ans};
   }
 }
+// МБГ Полуфинал 2022, 1 клас, задача 12: in 8 + 12 one digit was erased, and the sum worked out was one-digit — which
+// digit? Erasing the 8 leaves 12, the 1 leaves 8 + 2 = 10, the 2 leaves 8 + 1 = 9: the 2. Built so: x + t ≤ 9 and
+// x + u ≥ 10 for x + tu, so only the ones digit u works; u is not x, so the digit names the try. Either order.
+function genCrossOne(){
+  for(;;){
+    const x = 3 + rnd(6), t = 1 + rnd(9 - x), u = 10 - x + rnd(x);
+    if(u === x) continue;
+    return {kind:'crossmin', shape:'one', ns: Math.random() < 0.3 ? [10*t + u, x] : [x, 10*t + u], best: x + t, traps: [...new Set([x, t, x + t])].filter(d => d !== u), ans: u};
+  }
+}
+// the one-digit question drawn after the others, so a seed that asks one of them keeps asking it
 export function genCrossMin(){
-  if(Math.random() < 0.35) return genCrossThree();
+  const q = Math.random() < 0.35 ? genCrossThree() : genCrossTwoNums();
+  return Math.random() < 0.2 ? genCrossOne() : q;
+}
+function genCrossTwoNums(){
   for(;;){
     const x = 11 + rnd(89), y = 11 + rnd(89), ds = String(x) + y;
     if(ds.includes('0') || new Set(ds).size !== 4 || x + y > 99) continue;   // every sum tried stays under a hundred
@@ -41,8 +55,13 @@ export function genCrossMin(){
     return {kind:'crossmin', x, y, least, best, traps: tries.map(t => t[0]).filter(d => d !== ans), ans};   // as А/Б/В/Г, the other three digits
   }
 }
-const crossSum = q => q.shape === 'three' ? q.ns.join(' + ') : q.x + ' + ' + q.y;
+const crossSum = q => q.ns ? q.ns.join(' + ') : q.x + ' + ' + q.y;
 function drawCrossMin(q){
+  if(q.shape === 'one'){
+    return '<div class="ask">' + tr('В сбора <span class="num">' + crossSum(q) + '</span> изтрих една цифра. След като го пресметнах вярно, получих <b>едноцифрено</b> число. Коя цифра съм изтрил?',
+      'У сумі <span class="num">' + crossSum(q) + '</span> я стер одну цифру. Обчисливши її правильно, я отримав <b>одноцифрове</b> число. Яку цифру я стер?') + '</div>' +
+      '<div class="line lg">' + SLOT + '</div>';
+  }
   if(q.shape === 'three'){
     return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + crossSum(q) + '</span>, така че да се получи <b>' + (q.least ? 'най-малък' : 'най-голям') + '</b> сбор?',
       'Яку цифру треба закреслити в <span class="num">' + crossSum(q) + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
@@ -53,14 +72,21 @@ function drawCrossMin(q){
     '<div class="line lg">' + SLOT + '</div>';
 }
 function eqCrossMin(q){
+  if(q.shape === 'one') return crossSum(q) + ', ' + tr('едноцифрен сбор ', 'одноцифрова сума ') + q.best + ' → ' + q.ans;
   return crossSum(q) + ', ' + tr(q.least ? 'най-малък ' : 'най-голям ', q.least ? 'найменша ' : 'найбільша ') + q.best + ' → ' + q.ans;
 }
 function whyCrossMin(q, full){
-  if(!full) return tr('Зачеркни всяка цифра поред и пресметни сбора, който остава. После сравни.',
+  if(!full) return q.shape === 'one' ? tr('Изтрий всяка цифра поред и пресметни сбора, който остава. Кога се получава едноцифрено число?',
+    'Зітри по черзі кожну цифру й обчисли суму, що лишається. Коли виходить одноцифрове число?')
+    : tr('Зачеркни всяка цифра поред и пресметни сбора, който остава. После сравни.',
     'Закресли по черзі кожну цифру й обчисли суму, що лишається. Потім порівняй.');
+  // every try written out, the crossed digit struck through where it stands
+  const one = t => q.ns.map((n, k) => k === t[0] ? String(n).split('').map((d, j) => j === t[1] ? '<s>' + d + '</s>' : d).join('') : n).join(' + ');
+  if(q.shape === 'one'){
+    return crossThreeTries(q.ns).map(t => one(t) + ' = ' + (t[3] < 10 ? '<b>' + t[3] + '</b>' : t[3])).join(', &nbsp;') +
+      ' &nbsp;→&nbsp; ' + tr('едноцифрено е само ', 'одноцифрове лише ') + q.best + tr(', изтрита е цифрата ', ', стерто цифру ') + q.ans;
+  }
   if(q.shape === 'three'){
-    // every try written out, the crossed digit struck through where it stands
-    const one = t => q.ns.map((n, k) => k === t[0] ? String(n).split('').map((d, j) => j === t[1] ? '<s>' + d + '</s>' : d).join('') : n).join(' + ');
     return crossThreeTries(q.ns).map(t => one(t) + ' = ' + (t[3] === q.best ? '<b>' + t[3] + '</b>' : t[3])).join(', &nbsp;') +
       ' &nbsp;→&nbsp; ' + tr(q.least ? 'най-малкият е ' : 'най-големият е ', q.least ? 'найменша — ' : 'найбільша — ') + q.best + tr(', зачеркваме ', ', закреслюємо ') + q.ans;
   }
