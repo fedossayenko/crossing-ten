@@ -892,6 +892,11 @@ const setLook = change => { try { localStorage.setItem(LOOK_KEY, JSON.stringify(
 document.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => setLook({ theme: b.dataset.v || undefined }));
 document.querySelectorAll('#glassSeg button').forEach(b => b.onclick = () => setLook({ solid: b.dataset.v === '1' || undefined }));
 paintLook();
+// the list beside the task opens on a tap and stays so on this device (off at first: she solves with the whole screen)
+const SIDE_KEY = 'crossingten.side';
+function paintSideOpen(open){ document.body.classList.toggle('sideopen', open); $('sideBtn').setAttribute('aria-pressed', String(open)); }
+try { paintSideOpen(localStorage.getItem(SIDE_KEY) === '1'); } catch(e){ paintSideOpen(false); }
+$('sideBtn').onclick = () => { const open = !document.body.classList.contains('sideopen'); paintSideOpen(open); try { localStorage.setItem(SIDE_KEY, open ? '1' : '0'); } catch(e){} };
 // her next competition, set by a grown-up (the rounds run over a week or two, each school on its own day)
 const paperAt = () => [...new Set(LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => compOf(p) === 'mbg' ? 'mbg-' + roundOf(p) : compOf(p)))];
 const paperAtName = at => t('comps')[at.split('-')[0]] + (at.includes('-') ? ' ' + t('mbgRounds')[at.split('-')[1]] : '');
@@ -1089,11 +1094,6 @@ function paintSide(){
   if(now) now.scrollIntoView({ block:'nearest' });
 }
 const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
-// the list beside the task opens on a tap and stays so on this device (off at first: she solves with the whole screen)
-const SIDE_KEY = 'crossingten.side';
-function paintSideOpen(open){ document.body.classList.toggle('sideopen', open); $('sideBtn').setAttribute('aria-pressed', String(open)); }
-try { paintSideOpen(localStorage.getItem(SIDE_KEY) === '1'); } catch(e){ paintSideOpen(false); }
-$('sideBtn').onclick = () => { const open = !document.body.classList.contains('sideopen'); paintSideOpen(open); try { localStorage.setItem(SIDE_KEY, open ? '1' : '0'); } catch(e){} };
 const OPENED = new Map();   // a group she opened or closed on the levels page stays so while the app is open
 function buildPicker(){
   const hist = levelHistory(LOCAL.rounds);
