@@ -192,7 +192,7 @@ export function genPairsShort(){
 
 function drawPairs(q){
   if(q.shape === 'down') return '<div class="given">' + tr('Пример:', 'Приклад:') +
-    ['1 − 8 + 9 = 1 + 9 − 8 = 10 − 8 = 2', '1 − 5 + 2 + 3 = 1 + 2 + 3 − 5 = 6 − 5 = 1'].map(e => '<br><span style="white-space:nowrap">' + e + '</span>').join('') +
+    ['1 − 8 + 9 = 1 + 9 − 8 = 10 − 8 = 2', '1 − 5 + 2 + 3 = 1 + 2 + 3 − 5 = 6 − 5 = 1'].map(e => '<br><span style="font-size:.85em">' + e.split(' = ').map((p, i) => '<span style="white-space:nowrap">' + (i ? '= ' : '') + p + '</span>').join(' ') + '</span>').join('') +   // a narrow phone breaks it between steps
     '</div><div class="ask">' + tr('Пресметнете:', 'Обчисліть:') + '</div>' + chainLine(q.terms);
   return chainLine(q.terms);
 }
