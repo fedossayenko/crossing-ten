@@ -365,7 +365,7 @@ export function show(){
   $('stage').innerHTML = drawQ(q);
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
-  $('compRow').hidden = !COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
+  $('compRow').hidden = $('compNote').hidden = !COMP; $('compTop').hidden = !COMP; $('levelPill').hidden = !!COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
   $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = $('sideBtn').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options; $('typeHint').hidden = !!q.options || !!COMP;
   if(q.options) paintChoices();
@@ -401,8 +401,11 @@ function paintSlot(){
 function paintDots(){
   if(COMP){      // a paper has no marks until the end: how far she is, and the clock
     const done = Object.keys(COMP.ans).length;
-    $('dots').innerHTML = '<span class="ctrack"><i style="width:' + Math.round(100 * done / S.qs.length) + '%"></i></span>' +
-      '<span class="cnum">' + done + ' / ' + S.qs.length + '</span><span class="clock" id="compClock">' + compLeft() + '</span>';
+    // one segment a task: answered, the one on screen, or skipped for now (outlined)
+    $('dots').innerHTML = S.qs.map((_, k) => '<span class="step ' + (k === S.i ? 'now' : COMP.ans[k] ? 'done' : COMP.skipped && COMP.skipped.has(k) ? 'skip' : '') + '"></span>').join('');
+    $('compCount').textContent = String(done); $('compOf').textContent = String(S.qs.length); $('compClock').textContent = compLeft();
+    const skipped = COMP.skipped ? [...COMP.skipped].filter(k => !COMP.ans[k]).length : 0;
+    if(skipped) $('qnum').textContent += ' · ' + t('skippedN', skipped);
     $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
     $('run').innerHTML = '<span class="ptschip">' + t('ptsN', S.qs[S.i].pts) + '</span>';
     return;
@@ -660,7 +663,7 @@ export function finish(){
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
   $('again').onclick = COMP ? () => startComp() : () => newRound();
-  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; }
+  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; $('levelPill').hidden = false; $('compTop').hidden = true; }
 
   $('sheet').hidden = false;
 }

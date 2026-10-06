@@ -704,10 +704,25 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .crow .cp{text-align:right; color:var(--muted); font-variant-numeric:tabular-nums}
 .clegend{font-size:13px; color:var(--muted); padding-bottom:4px}
 /* competition: how far through the paper, and the clock, in place of the dots */
-.dots .ctrack{flex:1; height:10px; border-radius:999px; background:rgba(22,35,46,.15); overflow:hidden; align-self:center}
-.dots .ctrack i{display:block; height:100%; border-radius:999px; background:var(--accent)}
-.dots .cnum,.dots .clock{font-family:Fredoka,var(--ui-font); font-size:15px; color:var(--muted); font-variant-numeric:tabular-nums}
-.dots .clock{padding:3px 10px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-edge); color:var(--ink)}
+/* a paper's top bar: ✕, its clock, how many answered; its segments mark answered (accent) and skipped (outlined) */
+.comptop{flex:1 1 auto; display:flex; gap:10px; min-width:0}
+.comptop[hidden]{display:none}
+.clockpill,.countpill{display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 16px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-edge);
+  font-family:Fredoka,var(--ui-font); font-variant-numeric:tabular-nums; color:var(--ink)}
+.clockpill{flex:1 1 auto; font-size:22px; font-weight:500}
+.clockpill svg{width:22px; height:22px; color:var(--accent-ink)}
+.countpill{font-size:15px; color:var(--muted)} .countpill b{font-size:18px; font-weight:500; color:var(--ink)}
+.step.done{background:var(--accent)}
+.step.skip{background:var(--solid); box-shadow:inset 0 0 0 1.5px var(--warmink)}
+.dots:has(.step:nth-child(15)){gap:3px}
+.compnote{margin:0; font-size:14px; color:var(--muted); text-align:center}
+.compnote[hidden]{display:none}
+@media (orientation:landscape) and (min-width:1100px) and (min-height:700px){
+  .app:has(#compTop:not([hidden])) .choices{grid-template-columns:1fr}
+  .app:has(#compTop:not([hidden])) .ch{min-height:84px}
+  .comptop{flex:0 1 auto}
+  .app:has(#compTop:not([hidden])) .catwrap{display:none}   /* a paper is drawn without the mascot */
+}
 .compcard{flex-direction:row; align-items:center; gap:12px; text-align:left; color:var(--ink); font:inherit; cursor:pointer; flex:none}
 .compcard .nm{flex:1; display:flex; flex-direction:column; gap:3px; min-width:0}
 .compcard .lab{color:var(--accent-ink); font-size:11px}
@@ -724,12 +739,13 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @media (orientation:landscape) and (min-width:660px){
   .card-in:has(> .choices:not([hidden])){
     display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); column-gap:28px; row-gap:10px;
-    grid-template-areas:"stage choices" "stage skip" "verdict verdict" "hint hint";
+    grid-template-areas:"stage choices" "stage skip" "stage note" "verdict verdict" "hint hint";
     grid-template-rows:auto auto; align-content:safe center; align-items:center;
   }
   .card-in:has(> .choices:not([hidden])) > .stage{grid-area:stage}
   .card-in:has(> .choices:not([hidden])) > .choices{grid-area:choices; align-self:end}
   .card-in:has(> .choices:not([hidden])) > .comprow{grid-area:skip; align-self:start}
+  .card-in:has(> .choices:not([hidden])) > .compnote{grid-area:note; align-self:start}
   .card-in:has(> .choices:not([hidden])) > .verdict{grid-area:verdict}
   .card-in:has(> .choices:not([hidden])) > .hint{grid-area:hint}
   .card:has(.fb) .card-in:has(> .choices:not([hidden])){align-content:start}
@@ -740,7 +756,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
   .card{gap:6px; padding:10px 16px 12px}
 }
 /* the paper's progress track shows in the dark too */
-.dots .ctrack{background:var(--line)}
 .gtag.gb{color:var(--good); background:var(--goodbg)}
 .gtag.gw{color:var(--ink); background:rgba(120,150,200,.18)}
 /* figures that sit under a long task: a smaller drawing, and a line that is only as tall as it is */

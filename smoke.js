@@ -325,7 +325,8 @@ const server = http.createServer((req, res) => {
       const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
         header: $('levelName').textContent + ' ' + $('sub').textContent,
         chip: /[0-9]/.test(($('run').querySelector('.ptschip') || {}).textContent || ''), quitShown: !$('quitBtn').hidden && $('homeBtn').hidden };
-      $('skipBtn').click(); await wait(50); out.afterSkip = S.i;
+      out.top = !$('compTop').hidden && $('levelPill').hidden && document.querySelectorAll('#dots .step').length === 20 && !$('compNote').hidden;
+      $('skipBtn').click(); await wait(50); out.afterSkip = S.i; out.skipSeg = !!document.querySelector('#dots .step.skip') && $('qnum').textContent.includes(t('skippedN', 1));
       const order = [];
       for(let step = 0; step < 25 && COMP; step++){
         const q = S.qs[S.i], right = order.length < 12;
@@ -349,6 +350,7 @@ const server = http.createServer((req, res) => {
         tasks: r.t.length, redrawn: r.t.every(x => Number.isInteger(x[2]) && answer(seeded(x[2], () => raw(x[0]))) === x[5]), right: r.t.filter(x => x[4] === 1).length,
         small: JSON.stringify(r).length < 4096 };   // the sync server drops a round over 4 KB (MAX_ROUND)
       out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
+      out.pillBack = !$('levelPill').hidden && $('compTop').hidden;
       out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
       // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
       $('sheet').hidden = true; window.confirm = () => true;
@@ -365,7 +367,7 @@ const server = http.createServer((req, res) => {
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
-      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit, 'the competition went wrong: ' + JSON.stringify(cp));
+      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task

@@ -258,7 +258,7 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   10 · 3 верни подред" under them; the mascot bottom-left of the task; the keypad a 300 px column at the bottom,
   76 px keys; "Опитай пак — можеш!" above the keys after a miss; the side panel as drawn (logo, player, the four
   sections, overall progress, the level's group with status per row, the competition card at the foot).
-- **R9.3 Competition play (Competition, iPadChoice).** The top bar becomes ✕ · the clock pill (stopwatch) · "7 / 20" — no
+- **R9.3 Competition play (Competition, iPadChoice) — DONE.** The top bar becomes ✕ · the clock pill (stopwatch) · "7 / 20" — no
   level pill; 20 segments, a skipped one outlined; the note "Нищо не се проверява до края…"; on iPad the options
   stacked one per row and "МБГ Есен · пробно състезание · една пропусната" under the segments.
 - **R9.4 Results (RoundEnd, iPadRoundEnd, iPadCompEnd).** A missed task as "42 − 17   35 → 25 · <the mistake>";

@@ -93,6 +93,7 @@ function paintCompCard(){
 export function startCompete(){
   $('skipBtn').onclick = () => {
     if(!COMP) return;
+    (COMP.skipped = COMP.skipped || new Set()).add(S.i);   // drawn outlined until she answers it
     COMP.queue.push(COMP.queue.shift());
     S.i = COMP.queue[0];
     show();
