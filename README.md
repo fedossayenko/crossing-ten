@@ -126,6 +126,16 @@ widened (sides, symeq, eqcross, crossmin, digperm, pairs, ineq, count, weekday, 
 twodig); 16 new levels, 180–195, hold the rest, and 196 the paper's last task, 1 − 10 + 2 + 3 + 4 + 5 (pluses first — it breaks the left-to-right habit of 155 and 156, so it is its own d:3 level): the middle digit, children and sums, scales, a dice tower,
 the star digit, prices, hops, who is which colour (А/Б/В/Г), the digit rule, the blindfold and the bowl.
 
+The **semifinal, 1st grade, 2024 and 2025** (МБГ Полуфинал, a round of its own, `semifinal`; tags
+`mbg-semifinal-2024-1` and `mbg-semifinal-2025-1`) are in whole, pinned in check/grade1c-A/B/C/D.js (split by
+kind, not by paper). Six tasks are tags on levels as they were (159, 163, 164, 183, 201, and 155 for 2025 task 2); 155–158, 160, 161, 163, 165, 172, 175, 176 and 194
+grew a shape each; 21 new levels, 203–223, hold the rest: a seven-step chain, one hidden digit, the digit string,
+the digits of left-out numbers, the digit written twice, turned cards, the fewest digits crossed out, a row of
+squares, the perimeter in one unit, ants in a strip, broken lines on a grid (zigzag), points at a distance
+(distpts), two colours in a row, sum and difference on a board, the middle number, balloons that are not a colour
+(notcolor), the missed numbers, the Fibonacci run, boxes in boxes (nest), at least one balloon each and the
+erased digits (keepdig).
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
