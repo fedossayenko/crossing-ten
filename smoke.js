@@ -99,7 +99,7 @@ const server = http.createServer((req, res) => {
   if(launch.start !== launch.suggested) res.out.push('the launch did not open the recommended level: ' + JSON.stringify(launch));
   const bad = res.out.slice();
   const expect = (cond, what) => { if(!cond) bad.push(what); };
-  const t_bg_wrote = 'ти написа 35 · забравен заем от десетиците';
+  const t_bg_wrote = '35 → 25 · забравен заем от десетиците';   // what she wrote (struck) → the answer · the mistake
   const page = async expr => JSON.parse(await run('JSON.stringify(' + expr + ')') || '{}');
   expect(td.today === '#/today' && td.tabs && td.card === td.level && td.after === '#/play' && !td.tabsAfter, 'Today went wrong: ' + JSON.stringify(td));
   // A first launch is one Bulgarian player with the cat, and asks nothing.
@@ -351,6 +351,10 @@ const server = http.createServer((req, res) => {
         small: JSON.stringify(r).length < 4096 };   // the sync server drops a round over 4 KB (MAX_ROUND)
       out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
       out.pillBack = !$('levelPill').hidden && $('compTop').hidden;
+      // R9.4: the score as a bar, the buttons a paper's end names, a row opening its task and its solution
+      { const row = $('compTable').querySelector('.crow'); row.click();
+        out.end = !$('scoreBar').hidden && parseInt($('scoreBar').firstElementChild.style.width) >= 0 && $('again').textContent === t('newComp') &&
+          $('toStats').textContent === t('backToday') && row.getAttribute('aria-expanded') === 'true' && !row.nextElementSibling.hidden && row.nextElementSibling.textContent.length > 3; }
       out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
       // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
       $('sheet').hidden = true; window.confirm = () => true;
@@ -367,7 +371,7 @@ const server = http.createServer((req, res) => {
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
-      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack, 'the competition went wrong: ' + JSON.stringify(cp));
+      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task

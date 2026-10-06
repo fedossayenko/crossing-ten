@@ -560,6 +560,7 @@ export function finish(){
   $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(Date.now() - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
   const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
+  if(COMP) /** @type {HTMLElement} */ ($('scoreBar').firstElementChild).style.width = Math.round(100 * pts / max) + '%';
   $('stars').setAttribute('aria-label', t('starsOf', stars));
   putCat('sheetcat', tier.mood);
   sfx.tune(tier.tune, tier.gap);
@@ -584,10 +585,17 @@ export function finish(){
   $('missWrap').hidden = missed.length === 0;
   $('toNotebook').onclick = () => go('notebook');
   $('redo').hidden = missed.length === 0;
+  $('redo').textContent = COMP ? t('fixWrongN', missed.length) : t('fixMiss', missed.length);
+  $('again').textContent = t(COMP ? 'newComp' : 'newRound');
+  $('toStats').textContent = t(COMP ? 'backToday' : 'progress');
+  $('toStats').onclick = COMP ? () => go('today', true) : () => go('badges');
+  $('scoreBar').hidden = !COMP;
+  // as drawn: the task, what she wrote struck → the answer, and what the mistake most likely was
   $('misslist').innerHTML = missed.map(({ q, k }) => {
-    const wrote = S.typed[k] === undefined ? '' : '<span class="wrote">' + t('youWrote', esc(S.typed[k])) +
+    const wrote = S.typed[k] === undefined ? '' : '<span class="wrote"><s>' + esc(S.typed[k]) + '</s> → <b>' + answers(q).join(' · ') + '</b>' +
       (S.slip[k] ? ' · ' + t('slip')[S.slip[k]][0] : S.second[k] ? ' · ' + t('secondTry') : '') + '</span>';
-    return '<div class="miss"><div class="mrow"><span class="mdot"></span><div class="mtext"><span class="eq">' + eqText(q) + '</span>' + wrote +
+    const task = q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;   // a plain sum without its answer: the answer is in the line under it
+    return '<div class="miss"><div class="mrow"><span class="mdot"></span><div class="mtext"><span class="eq">' + task + '</span>' + wrote +
       '</div><button class="whyb" aria-expanded="false">' + t('why') + '</button></div><div class="why" hidden>' + why(q, true) + '</div></div>';
   }).join('');
   $('misslist').querySelectorAll('.whyb').forEach(b => b.onclick = () => {
@@ -613,9 +621,14 @@ export function finish(){
       const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
       const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
         t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
-      return '<div class="crow ' + st + '"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
-        '</span><span class="co">' + said + '</span><span class="cp">' + q.pts + '</span></div>';
+      return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
+        '</span><span class="co">' + said + '</span><span class="cp">' + q.pts + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
     }).join('');
+    // a row opens its task and how it is solved
+    $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
+      const open = b.getAttribute('aria-expanded') !== 'true';
+      b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
+    });
     const prev = LOCAL.rounds.filter(r => r.level === 'comp' && r.max).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
     if(prev){
       $('compBest').hidden = false;
@@ -920,7 +933,6 @@ export function todayData(){
 }
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }
-$('toStats').onclick = () => go('badges');
 $('closeStats').onclick = back;
 $('toParent').onclick = () => go('parents');
 $('closeParent').onclick = back;   // to where it was opened from: badges, players or the round

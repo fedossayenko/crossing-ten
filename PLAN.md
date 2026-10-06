@@ -261,7 +261,8 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
 - **R9.3 Competition play (Competition, iPadChoice) — DONE.** The top bar becomes ✕ · the clock pill (stopwatch) · "7 / 20" — no
   level pill; 20 segments, a skipped one outlined; the note "Нищо не се проверява до края…"; on iPad the options
   stacked one per row and "МБГ Есен · пробно състезание · една пропусната" under the segments.
-- **R9.4 Results (RoundEnd, iPadRoundEnd, iPadCompEnd).** A missed task as "42 − 17   35 → 25 · <the mistake>";
+- **R9.4 Results (RoundEnd, iPadRoundEnd, iPadCompEnd) — DONE.** (A kind whose one-line form already ends in its answer
+  shows it twice in the miss row; left as is.) A missed task as "42 − 17   35 → 25 · <the mistake>";
   buttons "Нов рунд · Поправи грешката · Напредък"; the paper's end: the score card with its bar, "Упражни N-те
   сгрешени · Към Днес · Ново състезание", each table row opens its task and solution, the footnote that tasks come
   from the levels' generators, not the papers.
