@@ -28,6 +28,9 @@
           <path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>
         </svg>
       </button>
+      <button class="icon" id="quitBtn" hidden data-t-aria="quitComp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
     </div>
   </div>
   <div class="roundbar">
@@ -47,7 +50,7 @@
       <div class="choices" id="choices" role="group" data-t-aria="answers" hidden></div>
       <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
       <div class="hint" id="hint"></div>
-      <button class="btn ghost" id="skipBtn" hidden data-t="skip"></button>
+      <div class="comprow" id="compRow" hidden><button class="btn ghost" id="skipBtn" data-t="skip"></button><button class="btn" id="nextBtn" data-t="goNext"></button></div>
     </div>
   </div>
 
@@ -109,7 +112,12 @@
       <div class="stars" id="stars"></div>
     </div>
     <div class="banner good" id="learnedCard" hidden></div>
+    <div class="banner warm" id="compBest" hidden></div>
     <div id="earnedWrap" hidden></div>
+    <div id="compWrap" hidden>
+      <div class="lab" data-t="taskByTask"></div>
+      <div class="gcard list" id="compTable"></div>
+    </div>
     <div id="missWrap" hidden>
       <div class="lab" data-t="worthLook"></div>
       <div class="gcard list" id="misslist"></div>

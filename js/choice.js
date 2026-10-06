@@ -8,6 +8,7 @@ import { shuffle, tr } from './core.js';
 import { accepts, answer } from './questions.js';
 import { LANG } from './i18n.js';
 const LETTERS = { bg:'АБВГДЕ', uk:'АБВГДЕ', en:'ABCDEF' };
+export const letterOf = id => (LETTERS[LANG] || LETTERS.en)[id];
 export function withChoices(q, n = 4){
   if(q.own) return q;                                        // a kind that brings its own options
   if((q.slots || 1) > 1 || !Number.isInteger(answer(q))) return q;
@@ -31,6 +32,6 @@ export function choiceHtml(q, crossed, right, picked){
     const cls = right && o.id === q.pick ? ' ok' : crossed && crossed.indexOf(o.id) >= 0 ? ' no' : '';
     return '<button class="ch' + cls + '" data-o="' + o.id + '"' + (cls === ' no' ? ' disabled' : '') +
       (picked !== undefined ? ' aria-pressed="' + (picked === o.id) + '"' : '') + '><span class="lt">' +
-      (LETTERS[LANG] || LETTERS.en)[o.id] + '</span><span class="v">' + (o.text ? tr(o.text[0], o.text[1]) : o.signs ? o.signs.join(' ' + tr('и', 'і') + ' ') : o.v) + '</span></button>';
+      letterOf(o.id) + '</span><span class="v">' + (o.text ? tr(o.text[0], o.text[1]) : o.signs ? o.signs.join(' ' + tr('и', 'і') + ' ') : o.v) + '</span></button>';
   }).join('');
 }

@@ -61,7 +61,8 @@ export function compAnswer(){
   S.slip[S.i] = ok ? undefined : slipOf(q, S.parts);
   sfx.tap();
   clearTimeout(COMP.go);
-  COMP.go = setTimeout(compNext, q.options ? 450 : 150);
+  if(q.options){ $('nextBtn').disabled = false; return; }   // a choice waits for Next: she may still change it
+  COMP.go = setTimeout(compNext, 150);
 }
 function compNext(){
   if(!COMP) return;
@@ -71,7 +72,7 @@ function compNext(){
   S.i = COMP.queue[0];
   show();
 }
-function compEnd(){
+export function compEnd(){
   if(!COMP) return;
   clearInterval(compTick); clearTimeout(COMP.go);
   S.skipped = S.qs.map((_, k) => S.results[k] === undefined);                         // kept apart in the round's record
@@ -96,6 +97,8 @@ export function startCompete(){
     S.i = COMP.queue[0];
     show();
   };
+  $('nextBtn').onclick = () => { if(COMP && COMP.ans[S.i]) compNext(); };
+  $('quitBtn').onclick = () => { if(COMP && confirm(t('quitAsk'))) compEnd(); };   // what she has answered counts, the rest is unanswered
   $('levelPill').addEventListener('click', paintCompCard);
   $('compStart').onclick = () => startComp();
 }

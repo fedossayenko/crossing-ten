@@ -638,7 +638,20 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .ch.ok{border-color:var(--good); background:var(--goodbg)} .ch.ok .lt{background:var(--good); color:#fff}
 .ch.no{opacity:.5} .ch.no .v{text-decoration:line-through}
 .ch:active{transform:scale(.97)}
-#skipBtn{flex:none; align-self:stretch}
+.comprow{display:flex; gap:10px; flex:none}
+.comprow .btn{flex:1; white-space:nowrap; font-size:15px; padding-inline:12px}
+.comprow #skipBtn{flex:1.25}
+.ptschip{font-size:12px; font-weight:600; color:var(--warmink); background:var(--warmbg); border-radius:999px; padding:2px 9px}
+.banner.warm{background:var(--warmbg); color:var(--warmink); font-weight:600}
+/* the paper's table at the end: number, group, what she answered, points */
+.crow{display:grid; grid-template-columns:1.8em minmax(0,1fr) auto 2.6em; gap:10px; align-items:center; padding:8px 2px; font-size:14px}
+.crow + .crow{border-top:1px solid var(--line)}
+.crow .cn{font-family:Fredoka,var(--ui-font); color:var(--muted)}
+.crow .cg{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.crow .co{font-weight:600; font-family:Fredoka,var(--ui-font)}
+.crow.ok .co{color:var(--good)} .crow.no .co{color:var(--bad)} .crow.skip .co{color:var(--muted); font-family:inherit; font-weight:500}
+.crow .cp{text-align:right; color:var(--muted); font-variant-numeric:tabular-nums}
+.clegend{font-size:13px; color:var(--muted); padding-bottom:4px}
 /* competition: how far through the paper, and the clock, in place of the dots */
 .dots .ctrack{flex:1; height:10px; border-radius:999px; background:rgba(22,35,46,.15); overflow:hidden; align-self:center}
 .dots .ctrack i{display:block; height:100%; border-radius:999px; background:var(--accent)}
@@ -665,7 +678,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   }
   .card-in:has(> .choices:not([hidden])) > .stage{grid-area:stage}
   .card-in:has(> .choices:not([hidden])) > .choices{grid-area:choices; align-self:end}
-  .card-in:has(> .choices:not([hidden])) > #skipBtn{grid-area:skip; align-self:start}
+  .card-in:has(> .choices:not([hidden])) > .comprow{grid-area:skip; align-self:start}
   .card-in:has(> .choices:not([hidden])) > .verdict{grid-area:verdict}
   .card-in:has(> .choices:not([hidden])) > .hint{grid-area:hint}
   .card:has(.fb) .card-in:has(> .choices:not([hidden])){align-content:start}

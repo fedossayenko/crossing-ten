@@ -212,7 +212,8 @@ const server = http.createServer((req, res) => {
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
       const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
-        header: $('levelName').textContent + ' ' + $('sub').textContent };
+        header: $('levelName').textContent + ' ' + $('sub').textContent,
+        chip: /[0-9]/.test(($('run').querySelector('.ptschip') || {}).textContent || ''), quitShown: !$('quitBtn').hidden && $('homeBtn').hidden };
       $('skipBtn').click(); await wait(50); out.afterSkip = S.i;
       const order = [];
       for(let step = 0; step < 25 && COMP; step++){
@@ -221,10 +222,12 @@ const server = http.createServer((req, res) => {
         if(q.options){
           const id = right ? q.pick : q.options.find(o => o.id !== q.pick).id;
           document.querySelector('#choices .ch[data-o="' + id + '"]').click();
+          await wait(500); if(S.i !== order[order.length - 1]) out.movedAlone = true;   // a choice waits for Next
+          $('nextBtn').click();
         } else {
           for(let slot = 0; slot < (q.slots || 1); slot++){ [...(right ? String(answers(q)[slot]) : '999')].forEach(K); K('go'); }
         }
-        // the paper moves on by itself (150 ms, or 450 after А/Б/В/Г): wait for the next task, not a fixed time
+        // a typed answer moves on by itself after 150 ms: wait for the next task, not a fixed time
         const at = S.i;
         for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
       }
@@ -235,12 +238,21 @@ const server = http.createServer((req, res) => {
         tasks: r.t.length, redrawn: r.t.every(x => Number.isInteger(x[2]) && answer(seeded(x[2], () => raw(x[0]))) === x[5]), right: r.t.filter(x => x[4] === 1).length,
         small: JSON.stringify(r).length < 4096 };   // the sync server drops a round over 4 KB (MAX_ROUND)
       out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
+      out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
+      // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
+      $('sheet').hidden = true; window.confirm = () => true;
+      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
+      { const q = S.qs[S.i]; document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); }
+      await wait(50); $('quitBtn').click(); await wait(50);
+      const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
+      out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&
+        $('compTable').querySelectorAll('.crow.skip').length === 19 && !$('compBest').hidden && !$('homeBtn').hidden;
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
-      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header), 'the competition went wrong: ' + JSON.stringify(cp));
+      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task

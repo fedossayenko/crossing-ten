@@ -5,8 +5,8 @@ import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
-import { choiceHtml, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, compAnswer, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { choiceHtml, letterOf, withChoices } from './choice.js';
+import { COMP_MIN, COMP_N, compAnswer, compEnd, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
 /* ---------- screens and the address ----------
@@ -364,9 +364,11 @@ export function show(){
   S.tries = 0; S.revealed = false; S.settled = false; S.wrong = false;
   clearTimers();
   $('stage').innerHTML = drawQ(q);
-  $('qnum').textContent = COMP ? t('compTask', S.i + 1, q.pts) : t('taskOf', S.i + 1, S.qs.length);
+  $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
+  // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
+  $('compRow').hidden = !COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
+  $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options;
-  $('skipBtn').hidden = !COMP;
   if(q.options) paintChoices();
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
@@ -403,7 +405,7 @@ function paintDots(){
     $('dots').innerHTML = '<span class="ctrack"><i style="width:' + Math.round(100 * done / S.qs.length) + '%"></i></span>' +
       '<span class="cnum">' + done + ' / ' + S.qs.length + '</span><span class="clock" id="compClock">' + compLeft() + '</span>';
     $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
-    $('run').textContent = '';
+    $('run').innerHTML = '<span class="ptschip">' + t('ptsN', S.qs[S.i].pts) + '</span>';
     return;
   }
   $('dots').innerHTML = S.qs.map((_, k) => {
@@ -574,7 +576,7 @@ export function finish(){
   }
 
   // Worth another look: what she wrote, what it most likely was, and - on a tap - the way through.
-  const missed = S.qs.map((q, k) => ({ q, k })).filter(x => !S.results[x.k]);
+  const missed = S.qs.map((q, k) => ({ q, k })).filter(x => !S.results[x.k] && !S.skipped[x.k]);   // a paper's unanswered tasks are in its table, not mistakes
   $('missWrap').hidden = missed.length === 0;
   $('redo').hidden = missed.length === 0;
   $('misslist').innerHTML = missed.map(({ q, k }) => {
@@ -589,13 +591,32 @@ export function finish(){
     b.closest('.miss').querySelector('.why').hidden = !open;
     if(open){ LOCAL.whys = (LOCAL.whys || 0) + 1; saveLocal(); }
   });
+  const padFrom = COMP ? missed.map(x => x.q.lvl) : [S.level];   // a paper's redo is padded from its own levels, not the one picked before it
   $('redo').onclick = () => {
     const set = missed.map(x => x.q);
     const want = Math.min(12, Math.max(6, missed.length*2));
-    while(set.length < want) set.push(gen(S.level));
+    while(set.length < want) set.push(gen(padFrom[rnd(padFrom.length)]));
     newRound(shuffle(set));
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
+
+  // a paper: task by task, and against her best paper before this one
+  $('compWrap').hidden = !COMP; $('compBest').hidden = true;
+  if(COMP){
+    const n = k => S.qs.filter((_, j) => k(j)).length, right = n(j => S.results[j]), none = n(j => S.skipped[j]);
+    $('compTable').innerHTML = '<div class="clegend">' + t('compLegend', right, S.qs.length - right - none, none) + '</div>' + S.qs.map((q, k) => {
+      const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
+      const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
+        t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
+      return '<div class="crow ' + st + '"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
+        '</span><span class="co">' + said + '</span><span class="cp">' + q.pts + '</span></div>';
+    }).join('');
+    const prev = LOCAL.rounds.filter(r => r.level === 'comp' && r.max).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+    if(prev){
+      $('compBest').hidden = false;
+      $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
+    }
+  }
 
   const before = earnedSet(LOCAL.rounds), was = mastery(LOCAL.rounds)[S.level];
   const now = Date.now();
@@ -636,7 +657,7 @@ export function finish(){
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
   $('again').onclick = COMP ? () => startComp() : () => newRound();
-  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); }
+  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; }
 
   $('sheet').hidden = false;
 }
@@ -774,13 +795,13 @@ $('homeBtn').onclick = () => go('today', true);
 // a tab swaps the section in place, so the back gesture does not walk through the tabs
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.r, true));
 
+const groupOf = l => { const g = l ? PICK_GROUPS.findIndex(x => x.has(l)) : -1; return g >= 0 ? t('groups')[g] : ''; };
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
 export function todayData(){
   const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
-  const gi = l => PICK_GROUPS.findIndex(g => g.has(l));
-  const card = l => ({ id: l.id, name: levelName(l), group: gi(l) >= 0 ? t('groups')[gi(l)] : '', d: l.d, review: !!(m[l.id] && m[l.id].done) });
+  const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
   const lv = LEVELS.find(l => l.id === S.level);
   return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',

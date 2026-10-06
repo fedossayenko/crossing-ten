@@ -190,8 +190,12 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   the keys behind the hint, "Опитвам пак" brings them back (iPad keeps them beside it); `slipOf` names swapped
   tens and ones. Hints already used her numbers. Moved: the iPad level list beside the task → R4 (it needs R4's
   shared row); chain-sign slips → R6 (chains are kinds, slips there come with the notebook's categories).
-- **R3b. Competition play**: points, group, "Напред", quit, unanswered ≠
-  wrong, result table, previous best, redo padded from the paper (fixes the current `gen(S.level)` bug).
+- **R3b. Competition play — DONE.** Each task names its group and shows its points as a chip; a choice waits for
+  "Напред" (she may change it), a typed answer goes on with ✓; ✕ replaces Home and stops the paper after a confirm
+  (what is answered counts, the rest is unanswered); the end has a task-by-task table (✓ / избра Б → В / 24 → 42 /
+  без отговор, points) with its legend, and the best paper before this one or a new record; "Погледни пак" lists
+  wrong answers only; the redo pads from the paper's own levels (was: the level picked before it). Smoke plays a
+  paper through Next and stops a second one with ✕. Not done: an iPad-wide two-column result (R7, round end).
 - **R4. Levels page** (E1, E2, C4): one row renderer shared with the sidebar; groups keyed by `grp`;
   collapsed groups; status as %; level text from its row.
 - **R5. Today**: start here, `dueList()` of every review due, week numbers, countdown + readiness % (from
