@@ -13,6 +13,23 @@ function genRectsVsSq(){
   const asksAll = Math.random() < 0.4;                 // «rectangles» with the squares in, or «not squares»
   return {kind:'rects', shape:2, W, H, all, sizes, sq, other, asksAll, fewer: !asksAll && other < sq, ans: asksAll ? all - sq : Math.abs(other - sq)};
 }
+// МБГ Полуфинал 2025, 1 клас, задача 13: a strip of four squares, an ant in the first and in the fourth. The strip
+// holds 4 + 3 + 2 + 1 = 10 rectangles; those with no ant lie inside the empty run between them (2 + 1 = 3): 7.
+// A strip of 3 to 5 squares with 2 or 3 ants, and at least one square empty.
+export function genRectsAnts(){
+  for(;;){
+    const n = 3 + rnd(3), k = 2 + rnd(2), ants = [];
+    if(k >= n) continue;
+    while(ants.length < k){ const c = 1 + rnd(n); if(!ants.includes(c)) ants.push(c); }
+    ants.sort((x, y) => x - y);
+    const runs = [];   // the runs of squares with no ant, left to right
+    let run = 0;
+    for(let c = 1; c <= n + 1; c++){ if(c <= n && !ants.includes(c)) run++; else { if(run) runs.push(run); run = 0; } }
+    const all = n*(n + 1)/2, free = runs.reduce((t, m) => t + m*(m + 1)/2, 0);
+    // the slips: every rectangle, ant or not; only the squares with an ant
+    return {kind:'rects', shape:3, n, ants, runs, all, free, traps:[all, k], ans: all - free};
+  }
+}
 export function genRects(){
   if(Math.random() < 0.2) return genRectsVsSq();
   if(Math.random() < 0.32){
@@ -39,6 +56,14 @@ export function genRects(){
 }
 
 function drawRects(q){
+  if(q.shape === 3){
+    return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има <b>поне една</b> мравка?',
+      'Скільки всього на рисунку прямокутників, у яких є <b>хоча б одна</b> мурашка?') + '</div>' +
+      gridSvg(q.n, 1, 0, 0, q.ants.map(c => [c, 1])) +
+      '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
+      'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
+      '<div class="line md">' + SLOT + '</div>';
+  }
   if(q.shape === 2){
     return '<div class="ask">' + (q.asksAll ? tr('С колко <b>правоъгълниците</b> на чертежа са повече от <b>квадратите</b>?', 'На скільки <b>прямокутників</b> на рисунку більше, ніж <b>квадратів</b>?')
       : tr('С колко правоъгълниците на чертежа, които <b>не са квадрати</b>, са ' + (q.fewer ? 'по-малко' : 'повече') + ' от <b>квадратите</b>?',
@@ -65,6 +90,7 @@ function drawRects(q){
     '<div class="line md">' + SLOT + '</div>';
 }
 function eqRects(q){
+  if(q.shape === 3) return tr('всички ', 'усіх ') + q.all + tr(', без мравка ', ', без мурашки ') + q.free + ' → ' + q.ans;
   if(q.shape === 2) return q.W + '×' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
   return q.shape === 1
     ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
@@ -91,7 +117,34 @@ function rectsAntSvg(q){
   return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8) * 1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('всички правоъгълници с мравката', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
 }
+// The ants' strip: every rectangle with an ant in it, each small on its own copy of the strip, a row for each
+// length (one square, two, …), and the rows added up.
+function rectsStripSvg(q){
+  const s = 10, tw = q.n*s, gx = 8, gy = 10, rows = [];
+  for(let L = 1; L <= q.n; L++){ const these = []; for(let i = 1; i + L - 1 <= q.n; i++) if(q.ants.some(c => c >= i && c < i + L)) these.push(i); rows.push(these); }
+  let g = '', k = 0, W = 0;
+  rows.forEach((these, j) => these.forEach((i, m) => {
+    const x = m*(tw + gx), y = j*(s + gy);
+    let cells = '';
+    for(let a = 1; a < q.n; a++) cells += '<line x1="' + (x + a*s) + '" y1="' + y + '" x2="' + (x + a*s) + '" y2="' + (y + s) + '"/>';
+    g += '<g' + popAt(1 + k++*0.25) + '><rect x="' + x + '" y="' + y + '" width="' + tw + '" height="' + s + '" fill="none" stroke="var(--line)"/><g stroke="var(--line)" stroke-width=".6">' + cells + '</g>' +
+      '<rect x="' + (x + (i - 1)*s) + '" y="' + y + '" width="' + (j + 1)*s + '" height="' + s + '" fill="rgba(47,111,143,.18)" stroke="var(--accent)" stroke-width="1.6"/>' +
+      q.ants.map(c => '<circle cx="' + (x + (c - 0.5)*s) + '" cy="' + (y + s/2) + '" r="2.2" fill="var(--warm)"/>').join('') + '</g>';
+    W = Math.max(W, x + tw);
+  }));
+  const H = rows.length*(s + gy) - gy;
+  g += svgText(Math.max(W, 120)/2, H + 22, rows.map(r => r.length).join(' + ') + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k*0.25));
+  return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8)*1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('всички правоъгълници с мравка', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
+}
 function whyRects(q, full){
+  if(q.shape === 3){
+    if(!full) return tr('Брой правоъгълниците от едно, две, три и повече квадратчета — само тези, в които има мравка.',
+      'Рахуй прямокутники з одного, двох, трьох і більше квадратиків — лише ті, де є мурашка.');
+    const down = []; for(let L = q.n; L >= 1; L--) down.push(L);
+    return tr('всички правоъгълници: ', 'усі прямокутники: ') + down.join(' + ') + ' = <b>' + q.all + '</b>, ' + tr('без мравка: ', 'без мурашки: ') + '<b>' + q.free + '</b> &nbsp;→&nbsp; ' +
+      q.all + ' − ' + q.free + ' = ' + q.ans + rectsStripSvg(q);
+  }
   if(q.shape === 2){
     if(!full) return tr('Преброй поотделно квадратите — малки и големи — и всички правоъгълници. Квадратът също е правоъгълник.',
       'Порахуй окремо квадрати — малі й великі — і всі прямокутники. Квадрат теж прямокутник.');

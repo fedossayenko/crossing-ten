@@ -17,7 +17,7 @@ import { genSumDiff } from '../kinds/sumdiff.js';
 import { genDigits } from '../kinds/digits.js';
 import { genDigitBelow, genDigitRun } from '../kinds/dcount.js';
 import { genBucket } from '../kinds/bucket.js';
-import { genRects } from '../kinds/rects.js';
+import { genRects, genRectsAnts } from '../kinds/rects.js';
 import { genLine } from '../kinds/line.js';
 import { genShared } from '../kinds/shared.js';
 import { genStep } from '../kinds/step.js';
@@ -81,7 +81,7 @@ import { genBalloons } from '../kinds/balloons.js';
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
-import { genRectDm, genRectLonger } from '../kinds/rectdm.js';
+import { genRectDm, genRectLonger, genRectSame } from '../kinds/rectdm.js';
 import { genMinuend } from '../kinds/minuend.js';
 import { genConsec } from '../kinds/consec.js';
 import { genWordPos } from '../kinds/wordpos.js';
@@ -91,7 +91,7 @@ import { genIsoPerim, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
 import { genBrackets } from '../kinds/brackets.js';
 import { genMagic } from '../kinds/magic.js';
-import { genPaintRow } from '../kinds/paintrow.js';
+import { genPaintRow, genPaintTwo } from '../kinds/paintrow.js';
 import { genSegCount } from '../kinds/segcount.js';
 import { genCommon } from '../kinds/common.js';
 import { genWeights } from '../kinds/weights.js';
@@ -145,7 +145,7 @@ import { genCrossMin } from '../kinds/crossmin.js';
 import { genDigPerm } from '../kinds/digperm.js';
 import { genCards3 } from '../kinds/cards3.js';
 import { genPencil } from '../kinds/pencil.js';
-import { genRectFig } from '../kinds/rectfig.js';
+import { genRectFig, genRectRow } from '../kinds/rectfig.js';
 import { genDiagSq } from '../kinds/diagsq.js';
 import { genArrows } from '../kinds/arrows.js';
 import { genSymEq } from '../kinds/symeq.js';
@@ -165,6 +165,8 @@ import { genPigeon } from '../kinds/pigeon.js';
 import { genScales } from '../kinds/scales.js';
 import { genDiceStack } from '../kinds/dicestack.js';
 import { genStarDig } from '../kinds/stardig.js';
+import { genZigzag } from '../kinds/zigzag.js';
+import { genDistPts } from '../kinds/distpts.js';
 
 // A level's generator kept to some of its shapes, or without some: a shape harder than its level gets a
 // level of its own (check/shapes.js).
@@ -347,15 +349,19 @@ export const LEVELS = [
   { id:166, op:'w', grp:'num', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2022-1'], d:3, shapes:{ '-':3, three:3 }, eq:{ bg:'Зачеркни цифра', uk:'Закресли цифру' }, desc:{ en:'Cross one digit out of a sum for the smallest or largest total', bg:'Зачеркни една цифра от сбора за най-малък или най-голям резултат', uk:'Закресли одну цифру в сумі, щоб вийшло найменше чи найбільше' }, gen:genCrossMin },
   { id:167, op:'w', grp:'num', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2021-1'], d:3, shapes:{ '-':3, count:2 }, eq:{ bg:'Всички двуцифрени', uk:'Усі двоцифрові' }, desc:{ en:'Every two-digit number from given digits, added up', bg:'Всички двуцифрени числа от дадени цифри, събрани', uk:'Усі двоцифрові числа з даних цифр, додані' }, gen:genDigPerm },
   { id:173, op:'w', grp:'num', grade:1, src:'mbg-spring-2023', d:3, eq:{ bg:'Три картички', uk:'Три картки' }, desc:{ en:'Three cards, a one-digit and a two-digit number: every sum', bg:'Три картички, едноцифрено и двуцифрено число: всеки сбор', uk:'Три картки, одноцифрове і двоцифрове число: кожна сума' }, gen:genCards3 },
-  { id:161, op:'w', grp:'geo', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2025-1'], d:2, eq:{ bg:'Моливите', uk:'Олівці' }, desc:{ en:'Two pencils over rulers, not from 0 — how long the longer or the shorter one is', bg:'Два молива над линийки, не от нулата — колко е дълъг по-дългият или по-късият', uk:'Два олівці над лінійками, не від нуля — яка довжина довшого чи коротшого' }, gen:genPencil },
+  { id:161, op:'w', grp:'geo', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2025-1', 'mbg-semifinal-2024-1'], d:2, shapes:{ '-':2, one:2 }, eq:{ bg:'Моливите', uk:'Олівці' }, desc:{ en:'Pencils over rulers, not from 0 — how long the longer or the shorter one is, or how much longer than another', bg:'Моливи над линийки, не от нулата — колко е дълъг по-дългият или по-късият, или с колко е по-дълъг от друг', uk:'Олівці над лінійками, не від нуля — яка довжина довшого чи коротшого або на скільки він довший за інший' }, gen:genPencil },
+  { id:211, op:'w', grp:'geo', grade:1, src:'mbg-semifinal-2024', d:2, eq:{ bg:'С 2 см по-дълга', uk:'На 2 см довша' }, desc:{ en:'One side given, the other so much longer: the perimeter, all in centimetres', bg:'Едната страна дадена, другата с толкова по-дълга: обиколката, всичко в сантиметри', uk:'Одна сторона дана, інша на стільки довша: периметр, усе в сантиметрах' }, gen:genRectSame },
   { id:162, op:'w', grp:'count', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2025-1'], d:4, shapes:{ cols:4, rows:4 }, eq:{ bg:'Колко правоъгълника?', uk:'Скільки прямокутників?' }, desc:{ en:'Every rectangle in a figure of pieces, single and put together', bg:'Всички правоъгълници във фигура от части — единични и сглобени', uk:'Усі прямокутники у фігурі з частин — окремі й складені' }, gen:genRectFig },
+  { id:210, op:'w', grp:'count', grade:1, src:'mbg-semifinal-2024', d:2, eq:{ bg:'Квадрати в редица', uk:'Квадрати в ряд' }, desc:{ en:'Every rectangle in a row of squares, from an example one square shorter', bg:'Всички правоъгълници в редица от квадрати, от пример с едно квадратче по-малко', uk:'Усі прямокутники в ряду квадратів, з прикладом на один квадратик менше' }, gen:genRectRow },
+  { id:212, op:'w', grp:'count', needs:[210], grade:1, src:'mbg-semifinal-2025', d:3, eq:{ bg:'Поне една мравка', uk:'Хоча б одна мурашка' }, desc:{ en:'A strip of squares with ants: every rectangle with at least one ant in it', bg:'Ивица от квадратчета с мравки: всички правоъгълници с поне една мравка', uk:'Смужка з квадратиків із мурашками: усі прямокутники, де є хоча б одна' }, gen:genRectsAnts },
+  { id:215, op:'w', grp:'count', grade:1, src:'mbg-semifinal-2024', d:2, shapes:{ two:2, pair:2, end:2 }, eq:{ bg:'Зелено или червено', uk:'Зелене чи червоне' }, desc:{ en:'A row in two colours, neighbours different — or two squares in three colours', bg:'Редица в два цвята, съседите различни — или две квадратчета в три цвята', uk:'Ряд у два кольори, сусіди різні — або два квадратики в три кольори' }, gen:genPaintTwo },
   { id:168, op:'w', grp:'geo', grade:1, src:'mbg-spring-2023', d:2, eq:{ bg:'По диагонала', uk:'По діагоналі' }, desc:{ en:'Shaded squares corner to corner give the big square\'s side and perimeter', bg:'Защриховани квадратчета от ъгъл до ъгъл дават страната и обиколката на големия квадрат', uk:'Заштриховані квадратики від кута до кута дають сторону й периметр великого квадрата' }, gen:genDiagSq },
   { id:174, op:'w', grp:'find', grade:1, src:'mbg-spring-2023', d:5, eq:{ bg:'Стрелките', uk:'Стрілки' }, desc:{ en:'Letters for 1 to 6, arrows to the smaller — a sum that is certain though the order is not', bg:'Букви за числата от 1 до 6, стрелки към по-малкото — сбор, който е сигурен, макар редът да не е', uk:'Букви замість чисел від 1 до 6, стрілки до меншого — сума, яка точна, хоч порядок і ні' }, gen:genArrows },
   { id:160, op:'w', grp:'find', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2025-1', 'mbg-spring-2022-1', 'mbg-spring-2021-1'], d:3, shapes:{ chain:2, def:2, part:2, tri:2 }, eq:'■ + ∆ = 5', desc:{ en:'Figures stand for numbers: find one, line by line or from all three lines', bg:'Фигурите са числа: една намерена ред по ред или от трите реда заедно', uk:'Фігури — це числа: одну знайди рядок за рядком або з трьох рядків разом' }, gen:genSymEq },
   { id:179, op:'w', grp:'find', grade:1, src:'mbg-spring-2025', d:4, eq:{ bg:'Калинка и пчела', uk:'Сонечко й бджілка' }, desc:{ en:'Two numbers in order between two bounds: every sum they can make', bg:'Две числа подред между две граници — всички сборове, които правят', uk:'Два числа по черзі між двома межами — усі суми, які вони дають' }, gen:genBetween },
   { id:169, op:'w', grp:'seq', grade:1, src:'mbg-spring-2023', d:4, eq:'1, 1, 0, 2, 3, 5', desc:{ en:'Each number is the sum of the three before it', bg:'Всяко число е сборът на трите преди него', uk:'Кожне число — сума трьох чисел перед ним' }, gen:genTribo },
   { id:172, op:'w', grp:'num', grade:1, src:'mbg-spring-2023', also:['mbg-spring-2025-1'], d:4, shapes:{ sub:4, table:4 }, eq:{ bg:'Картинки-цифри', uk:'Картинки-цифри' }, desc:{ en:'Pictures for digits, read off differences or two-digit numbers', bg:'Картинките са цифри, разчетени от разлики или двуцифрени числа', uk:'Картинки — це цифри, знайдені з різниць або двоцифрових чисел' }, gen:genPicDig },
-  { id:176, op:'w', grp:'word', grade:1, src:'mbg-spring-2025', d:2, eq:{ bg:'Три отсечки', uk:'Три відрізки' }, desc:{ en:'Each segment so much longer or shorter than the one before', bg:'Всяка отсечка с толкова по-дълга или по-къса от предната', uk:'Кожен відрізок на стільки довший чи коротший за попередній' }, gen:genSegWord },
+  { id:176, op:'w', grp:'word', grade:1, src:'mbg-spring-2025', also:['mbg-semifinal-2025-1'], d:2, eq:{ bg:'Три отсечки', uk:'Три відрізки' }, desc:{ en:'Each segment so much longer or shorter than the one before', bg:'Всяка отсечка с толкова по-дълга или по-къса от предната', uk:'Кожен відрізок на стільки довший чи коротший за попередній' }, gen:genSegWord },
   { id:177, op:'w', grp:'word', grade:1, src:'mbg-spring-2025', d:2, eq:{ bg:'Кой и с колко?', uk:'Хто і на скільки?' }, desc:{ en:'The same numbers added, one sum with an extra addend: who has more, and by how much', bg:'Едни и същи числа, в единия сбор и още едно: кой има повече и с колко', uk:'Ті самі числа, в одній сумі ще одне: у кого більше і на скільки' }, gen:genWhoMore },
   { id:191, op:'w', grp:'count', grade:1, src:'mbg-spring-2022', d:3, eq:{ bg:'Петъците през април', uk:'П’ятниці у квітні' }, desc:{ en:'A weekday of a month counted after its first day', bg:'Ден от седмицата в месец, преброен след първия ден', uk:'День тижня в місяці, порахований після першого дня' }, gen:genAfter },
   { id:194, op:'w', grp:'count', grade:1, src:'mbg-spring-2021', d:3, eq:{ bg:'Колко пъти цифрата 2?', uk:'Скільки разів цифра 2?' }, desc:{ en:'How many times a digit is written in all the numbers below a bound', bg:'Колко пъти е написана цифра във всички числа под някое', uk:'Скільки разів записано цифру в усіх числах, менших за якесь' }, gen:genDigitBelow },
@@ -371,10 +377,12 @@ export const LEVELS = [
   { id:180, op:'w', grp:'num', grade:1, src:'mbg-spring-2022', d:4, shapes:{ digit:4, mid:3 }, eq:{ bg:'Подреди и избери', uk:'Розстав і вибери' }, desc:{ en:'Numbers put in order, then the middle digit or the middle number', bg:'Числа, подредени по големина, и после средната цифра или средното число', uk:'Числа, розставлені за величиною, а потім середня цифра чи середнє число' }, gen:genSortPick },
   { id:181, op:'w', grp:'count', grade:1, src:'mbg-spring-2022', d:4, eq:{ bg:'Пет деца', uk:'П’ятеро дітей' }, desc:{ en:'Each child erases a digit of the same sum: how many results must be equal', bg:'Всяко дете изтрива по цифра от един и същ сбор: колко сбора със сигурност са равни', uk:'Кожна дитина стирає цифру в тій самій сумі: скільки сум точно однакові' }, gen:genPigeon },
   { id:182, op:'w', grp:'find', grade:1, src:'mbg-spring-2022', d:3, eq:{ bg:'Везните', uk:'Терези' }, desc:{ en:'Two balances: pears swapped for apples, then the lemons shared out', bg:'Две везни: крушите сменени с ябълки, после лимоните разделени', uk:'Двоє терезів: груші замінені яблуками, потім лимони поділені' }, gen:genScales },
-  { id:183, op:'w', grp:'count', grade:1, src:'mbg-spring-2022', d:3, eq:{ bg:'Невидимите точки', uk:'Невидимі точки' }, desc:{ en:'Two dice stacked: the dots that cannot be seen', bg:'Два зара един върху друг: точките, които не се виждат', uk:'Два кубики один на одному: точки, яких не видно' }, gen:genDiceStack },
+  { id:183, op:'w', grp:'count', grade:1, src:'mbg-spring-2022', also:['mbg-semifinal-2025-1'], d:3, eq:{ bg:'Невидимите точки', uk:'Невидимі точки' }, desc:{ en:'Two dice stacked: the dots that cannot be seen', bg:'Два зара един върху друг: точките, които не се виждат', uk:'Два кубики один на одному: точки, яких не видно' }, gen:genDiceStack },
   { id:184, op:'w', grp:'num', grade:1, src:'mbg-spring-2022', also:['mbg-spring-2021-1'], d:4, shapes:{ tens:4, two:4 }, eq:{ bg:'Звездите', uk:'Зірки' }, desc:{ en:'Stars for one-digit numbers, pinned down by how big they can be', bg:'Звезди вместо едноцифрени числа, открити от това колко големи могат да са', uk:'Зірки замість одноцифрових чисел, знайдені з того, якими великими вони можуть бути' }, gen:genStarDig },
   { id:159, op:'w', grp:'num', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1'], d:1, eq:'0 + 10', desc:{ en:'The smallest or largest one-digit number with the smallest two-digit one', bg:'Най-малкото или най-голямото едноцифрено число с най-малкото двуцифрено', uk:'Найменше чи найбільше одноцифрове число з найменшим двоцифровим' }, gen:genNamedSum },
-  { id:163, op:'w', grp:'geo', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1'], d:2, shapes:{ '-':2, cb:2 }, eq:'CB = ?', desc:{ en:'Four points on a line: the whole from its pieces, or the middle piece', bg:'Четири точки върху права: цялата отсечка от частите или средната част', uk:'Чотири точки на прямій: увесь відрізок із частин або середня частина' }, gen:genSegShort },
+  { id:163, op:'w', grp:'geo', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1', 'mbg-semifinal-2024-1', 'mbg-semifinal-2025-1'], d:2, shapes:{ '-':2, cb:2, cbov:2 }, eq:'CB = ?', desc:{ en:'Four points on a line: the whole from its pieces, or the middle piece', bg:'Четири точки върху права: цялата отсечка от частите или средната част', uk:'Чотири точки на прямій: увесь відрізок із частин або середня частина' }, gen:genSegShort },
+  { id:213, op:'w', grp:'geo', grade:1, src:'mbg-semifinal-2025', d:2, eq:{ bg:'Начупените линии', uk:'Ламані лінії' }, desc:{ en:'Lines down a grid of 1 cm squares: the shortest — they all go down as far', bg:'Линии надолу по мрежа от квадратчета по 1 см: най-късата — всички слизат еднакво', uk:'Лінії вниз сіткою з квадратиків по 1 см: найкоротша — усі спускаються однаково' }, gen:genZigzag },
+  { id:214, op:'w', grp:'geo', grade:1, src:'mbg-semifinal-2025', d:3, eq:{ bg:'На 1 см от A или B', uk:'За 1 см від A чи B' }, desc:{ en:'Points of a line a given distance from A or from B — one of them may be the same point', bg:'Точки от права на дадено разстояние от A или от B — две от тях може да са една и съща', uk:'Точки прямої на даній відстані від A чи від B — дві з них можуть збігтися' }, gen:genDistPts },
 ];
 // 3rd-grade rows are rated against each other, not on the 2nd-grade scale: multiplication is
 // the ordinary operation there, so their d spreads over 1–5 like the 2nd grade's does.

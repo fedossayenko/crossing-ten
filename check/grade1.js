@@ -122,7 +122,8 @@
   };
   const perms = []; (function p(a, r){ if(!r.length) perms.push(a); r.forEach((v, i) => p(a.concat(v), r.filter((_, j) => j !== i))); })([], [1, 2, 3, 4, 5, 6]);
   for(let i = 0; i < 2000; i++){
-    const p = Q.raw(161), l1 = p.b - p.a, l2 = p.d - p.c;
+    let p = Q.raw(161); while(p.shape === 'one') p = Q.raw(161);   // one pencil against a length: check/grade1c-C.js
+    const l1 = p.b - p.a, l2 = p.d - p.c;
     if(p.a < 0 || p.b > 15 || p.c < 0 || p.d > 15 || l1 === l2 || p.ans !== (p.long ? Math.max(l1, l2) : Math.min(l1, l2))) fail('pencil', p);
     const r = Q.raw(162); if(rectsByCells(r.tiles) !== r.ans) fail('rectfig: ' + rectsByCells(r.tiles) + ' by cells', r);
     const s = Q.raw(168); if(s.ans !== (s.side ? s.n*s.s : 4*s.n*s.s)) fail('diagsq', s);

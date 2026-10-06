@@ -45,6 +45,13 @@ export function genRectFig(){
     return {kind:'rectfig', shape: rows ? 'rows' : 'cols', tiles, traps:[tiles.length], ans: all.length};
   }
 }
+// МБГ Полуфинал 2024, 1 клас, задача 14: two squares in a row make 3 rectangles — how many in a row of three?
+// 3 single, 2 of two, 1 of three: 6. A row of 3 to 5 squares, the example one square shorter. The slips:
+// only the single squares, or one more than the example.
+export function genRectRow(){
+  const n = 3 + rnd(3), tiles = Array.from({length: n}, (_, i) => [i, 0, 1, 1]);
+  return {kind:'rectfig', shape:'row', tiles, traps:[n, (n - 1)*n/2 + 1], ans: n*(n + 1)/2};
+}
 // One figure drawn with unit u at (x0, y0); dots at the corners for the paper's 'rows' figures,
 // and a rectangle to highlight on top.
 function rectFigDraw(tiles, u, x0, y0, dots, hi, sw){
@@ -84,15 +91,16 @@ function rectFigSolSvg(q){
     tr('всички правоъгълници на картинката', 'усі прямокутники на малюнку') + '">' + g + '</svg>';
 }
 function drawRectFig(q){
-  const ex = [[0, 0, 1, 1], [1, 0, 1, 1], [2, 0, 1, 1]], dots = q.shape === 'rows';
-  const fig = tr('фигура от части', 'фігура з частин');
+  // the example: three squares in a row (6 rectangles), or for a row one square fewer than the question's
+  const ex = q.shape === 'row' ? q.tiles.slice(0, -1) : [[0, 0, 1, 1], [1, 0, 1, 1], [2, 0, 1, 1]], dots = q.shape === 'rows';
+  const m = ex.length*(ex.length + 1)/2, fig = tr('фигура от части', 'фігура з частин');
   return dots
     ? '<div class="ask">' + tr('Тук правоъгълниците са <span class="num">6</span>.', 'Тут прямокутників <span class="num">6</span>.') + '</div>' +
       '<div class="fig small">' + rectFigSvg(ex, true, fig) + '</div>' +
       '<div class="ask">' + tr('Колко са правоъгълниците тук?', 'Скільки тут прямокутників?') + '</div>' +
       '<div class="fig">' + rectFigSvg(q.tiles, true, fig) + '</div>' +
       '<div class="line lg">' + SLOT + '</div>'
-    : '<div class="ask">' + tr('На тази картинка има <span class="num">6</span> правоъгълника:', 'На цьому малюнку <span class="num">6</span> прямокутників:') + '</div>' +
+    : '<div class="ask">' + tr('На тази картинка има <span class="num">' + m + '</span> правоъгълника:', 'На цьому малюнку <span class="num">' + m + '</span> ' + (m < 5 ? 'прямокутники' : 'прямокутників') + ':') + '</div>' +
       '<div class="fig small">' + rectFigSvg(ex, false, fig) + '</div>' +
       '<div class="ask">' + tr('Колко са правоъгълниците на тази картинка?', 'Скільки прямокутників на цьому малюнку?') + '</div>' +
       '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +

@@ -8,13 +8,20 @@
 import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 const SEGWORD_WHO = [['Мария', 'Марія', 'начертала', 'накреслила'], ['Петър', 'Петро', 'начертал', 'накреслив'],
                      ['Ива', 'Іва', 'начертала', 'накреслила'], ['Борис', 'Борис', 'начертал', 'накреслив']];
-export function genSegWord(){
+// МБГ Полуфинал 2025, 1 клас, задача 14: the same, from a first segment over 20 — 21, then 3 shorter, then 8
+// longer: 18, 26.
+function segWordFrom(lo, n){   // the first segment lo, lo + 1, … n of them
   for(;;){
-    const a = 8 + rnd(13), d1 = 2 + rnd(4), d2 = 2 + rnd(8), short1 = Math.random() < 0.6, long2 = Math.random() < 0.6;
+    const a = lo + rnd(n), d1 = 2 + rnd(4), d2 = 2 + rnd(8), short1 = Math.random() < 0.6, long2 = Math.random() < 0.6;
     const b = short1 ? a - d1 : a + d1, c = long2 ? b + d2 : b - d2;
     if(b < 1 || c < 1 || b > 30 || c > 30) continue;
     return {kind:'segword', who: rnd(SEGWORD_WHO.length), a, d1, d2, short1, long2, b, ans: c};
   }
+}
+export function genSegWord(){
+  const q = segWordFrom(8, 13);
+  // now and then a first segment from 21 to 29, drawn after the other, so a question from 8 to 20 keeps its seed
+  return Math.random() < 0.15 ? segWordFrom(21, 9) : q;
 }
 function drawSegWord(q){
   const w = SEGWORD_WHO[q.who];

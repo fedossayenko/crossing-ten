@@ -4,7 +4,7 @@
 // 16 + 24 = 40, twice is 80 см, and 10 см make a дециметър: 8. The trap is stopping at 80.
 // МБГ Зима 2021–2023: one side given, the other «с 2 дм по-дълга», and the perimeter asked in
 // метра — or in мм and дециметра. Two unit changes, one inside the problem and one at the end.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 const RECT_U = { мм:1, см:10, дм:100, м:1000 }, RECT_W = { см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };
 export function genRectLonger(){
   for(;;){
@@ -15,6 +15,13 @@ export function genRectLonger(){
     return {kind:'rectdm', shape:1, a, d, base, dU, b, P, to, ans: P*RECT_U[base]/RECT_U[to]};
   }
 }
+// МБГ Полуфинал 2024, 1 клас, задача 15: one side 3 см, the other 2 см longer, all in сантиметри. The other
+// side is 3 + 2 = 5, and the four sides 3 + 5 + 3 + 5 = 16. The slips stop at one side of each (3 + 5 = 8),
+// or add the two numbers given (3 + 2 = 5).
+export function genRectSame(){
+  const a = 2 + rnd(8), d = 1 + rnd(4), b = a + d;
+  return {kind:'rectdm', shape:2, a, d, b, traps:[a + b, a + d], ans: 2*(a + b)};
+}
 export function genRectDm(){
   for(;;){
     const a = 3 + rnd(28), b = a + 1 + rnd(25), P = 2*(a + b);
@@ -23,6 +30,11 @@ export function genRectDm(){
   }
 }
 function drawRectDm(q){
+  if(q.shape === 2){
+    return '<div class="ask">' + tr('Една от страните на правоъгълник е <span class="num">' + q.a + '&nbsp;см</span>, а другата е с <span class="num">' + q.d + '&nbsp;см</span> по-дълга. Колко сантиметра е обиколката на правоъгълника?',
+      'Одна зі сторін прямокутника — <span class="num">' + q.a + '&nbsp;см</span>, а інша на <span class="num">' + q.d + '&nbsp;см</span> довша. Скільки сантиметрів становить периметр прямокутника?') + '</div>' +
+      '<div class="line xl">' + SLOT + CM + '</div>';
+  }
   if(q.shape === 1){
     const w = RECT_W[q.to];
     return '<div class="ask">' + tr('Една от страните на правоъгълник е <span class="num">' + q.a + '&nbsp;' + q.base + '</span>, а другата е с <span class="num">' + q.d + '&nbsp;' + q.dU + '</span> по-дълга. Колко <b>' + w[0] + '</b> е обиколката на правоъгълника?',
@@ -33,11 +45,25 @@ function drawRectDm(q){
     'Скільки <b>дециметрів</b> становить периметр прямокутника зі сторонами <span class="num">' + q.a + '&nbsp;см</span> і <span class="num">' + q.b + '&nbsp;см</span>?') + '</div>' +
     '<div class="line xl">' + SLOT + ' <span class="unit">дм</span></div>';
 }
+const rectSides = q => q.a + ' + ' + q.b + ' + ' + q.a + ' + ' + q.b + ' = ' + q.ans;
+// the rectangle, its four sides labelled, the longer ones across
+function rectSameSvg(q){
+  const u = Math.min(18, 160 / q.b), w = q.b*u, h = q.a*u, X = 30, Y = 22;
+  return '<svg viewBox="0 0 ' + (w + 2*X) + ' ' + (h + 2*Y) + '" style="display:block; width:' + Math.round((w + 2*X)*1.3) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('правоъгълникът и страните му', 'прямокутник і його сторони') + '">' +
+    '<rect x="' + X + '" y="' + Y + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="var(--accentbg)" stroke="var(--accent)" stroke-width="2.5"/>' +
+    svgText((X + w/2).toFixed(1), Y - 6, q.b, 13, 'var(--warm)', popAt(1)) + svgText(X - 12, (Y + h/2 + 5).toFixed(1), q.a, 13, 'var(--ink)', popAt(2)) +
+    svgText((X + w/2).toFixed(1), (Y + h + 17).toFixed(1), q.b, 13, 'var(--warm)', popAt(3)) + svgText((X + w + 12).toFixed(1), (Y + h/2 + 5).toFixed(1), q.a, 13, 'var(--ink)', popAt(4)) + '</svg>';
+}
 function eqRectDm(q){
+  if(q.shape === 2) return q.a + ' + ' + q.d + ' = ' + q.b + ', ' + rectSides(q);
   if(q.shape === 1) return q.a + ' + ' + q.d + ' ' + q.dU + ' = ' + q.b + ' ' + q.base + ', 2 · (' + q.a + ' + ' + q.b + ') = ' + q.P + ' ' + q.base + ' = ' + q.ans + ' ' + q.to;
   return '2 · (' + q.a + ' + ' + q.b + ') = ' + q.P + ' см = ' + q.ans + ' дм';
 }
 function whyRectDm(q, full){
+  if(q.shape === 2){
+    if(!full) return tr('Първо намери другата страна. Обиколката е сборът от четирите страни.', 'Спершу знайди іншу сторону. Периметр — це сума чотирьох сторін.');
+    return tr('другата страна: ', 'інша сторона: ') + q.a + ' + ' + q.d + ' = <b>' + q.b + '</b> см' + rectSameSvg(q) + tr('обиколката: ', 'периметр: ') + rectSides(q) + ' см';
+  }
   if(q.shape === 1){
     if(!full) return tr('Първо двете страни в едни и същи мерки — после обиколката, и накрая в каквото е попитано.', 'Спершу обидві сторони в однакових одиницях — потім периметр, і нарешті в тому, про що питають.');
     return (q.dU === q.base ? '' : q.d + ' ' + q.dU + ' = ' + q.d*RECT_U[q.dU]/RECT_U[q.base] + ' ' + q.base + ', ') + tr('другата страна ', 'інша сторона ') + q.a + ' + ' + (q.b - q.a) + ' = <b>' + q.b + ' ' + q.base + '</b> &nbsp;→&nbsp; ' +
