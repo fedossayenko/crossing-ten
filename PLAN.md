@@ -253,7 +253,8 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   ten-frames, one sentence of method), "първи опит" under the segments. Decision (default in bold): the mock drops
   the sound and read-aloud buttons — **sound moves to the settings (it is already in her profile); "Прочети ми"
   stays on the card** (a 2nd-grader reading long tasks needs it).
-- **R9.2 The task screen on iPad (iPad, iPadHint, iPadGeom).** The pill and the segments on one row with "Задача 4 от
+- **R9.2 The task screen on iPad (iPad, iPadHint, iPadGeom) — DONE.** (Fixed on the way: the panel drew during module load and
+  called two helpers defined later — a reload mid-round stopped the app; esc and playerName are hoisted now.) The pill and the segments on one row with "Задача 4 от
   10 · 3 верни подред" under them; the mascot bottom-left of the task; the keypad a 300 px column at the bottom,
   76 px keys; "Опитай пак — можеш!" above the keys after a miss; the side panel as drawn (logo, player, the four
   sections, overall progress, the level's group with status per row, the competition card at the foot).

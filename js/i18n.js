@@ -92,7 +92,7 @@ en: {
   syncJoined:'Logged in — progress will match on every device',
   skip:'Skip for now', answers:'Answers', answerBy:'Answers', typeIt:'Type', chooseIt:'A B C D', themeIs:'Theme', themeAuto:'Auto', themeLight:'Light', themeDark:'Dark', glassIs:'Glass', glassOn:'On', glassOff:'Solid', tabToday:'Today', tabLevels:'Levels', tabParents:'Parents', sections:'Sections', helloName:n => 'Hi, ' + n + '!', roundsToday:n => n === 1 ? '1 round today' : n + ' rounds today', goOn:'Go on',
   compName:'Competition', compSubtitle:'Competition mode',
-  compTask:(i, g) => 'Task ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'point', other:'points' }), goNext:'Next', backToday:'Back to Today', crossHow:(bo, o) => (o ? 'Cross out the ones first (' + o + '), then ' + (bo - o) + ' more from the ten' : 'Cross out ' + bo + ' from the ten') +
+  compTask:(i, g) => 'Task ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'point', other:'points' }), goNext:'Next', tryAgainCan:'Try again — you can!', backToday:'Back to Today', crossHow:(bo, o) => (o ? 'Cross out the ones first (' + o + '), then ' + (bo - o) + ' more from the ten' : 'Cross out ' + bo + ' from the ten') +
     ': ' + (10 + o - bo) + ' left.', thenTake:(bt, lend) => 'Then take ' + bt + ' from ' + lend + '.',
   fillHow:(o, need, rest) => 'Make ' + o + ' up to 10 with ' + need + ' — ' + rest + ' more are left.', notQuite:'Not quite.', lookAgain:'Read the task once more.',
   typeHint:'Type the answer and press ✓', tryTwo:'second try', soundOn:'On', soundOff:'Off', changePass:'Change the password', oldPass:'Current password', newPass:'New password (8 characters or more)', passChanged:'The password is changed',
@@ -197,7 +197,7 @@ bg: {
   syncJoined:'Готово — напредъкът ще е еднакъв на всички устройства',
   skip:'Пропусни за сега', answers:'Отговори', answerBy:'Отговор', typeIt:'Пише', chooseIt:'А Б В Г', themeIs:'Тема', themeAuto:'Като системата', themeLight:'Светла', themeDark:'Тъмна', glassIs:'Стъкло', glassOn:'Да', glassOff:'Плътно', tabToday:'Днес', tabLevels:'Нива', tabParents:'Родители', sections:'Раздели', helloName:n => 'Здравей, ' + n + '!', roundsToday:n => n === 1 ? '1 рунд днес' : n + ' рунда днес', goOn:'Продължи',
   compName:'Състезание', compSubtitle:'Състезателен режим',
-  compTask:(i, g) => 'Задача ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'точка', other:'точки' }), goNext:'Напред', backToday:'Назад към Днес', crossHow:(bo, o) => (o ? 'Задраскай първо единиците (' + o + '), после още ' + (bo - o) + ' от десетката' : 'Задраскай ' + bo + ' от десетката') +
+  compTask:(i, g) => 'Задача ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'точка', other:'точки' }), goNext:'Напред', tryAgainCan:'Опитай пак — можеш!', backToday:'Назад към Днес', crossHow:(bo, o) => (o ? 'Задраскай първо единиците (' + o + '), после още ' + (bo - o) + ' от десетката' : 'Задраскай ' + bo + ' от десетката') +
     ': остават ' + (10 + o - bo) + '.', thenTake:(bt, lend) => 'После извади ' + bt + ' от ' + lend + '.',
   fillHow:(o, need, rest) => 'Допълни ' + o + ' до 10 с ' + need + ' — остават още ' + rest + '.', notQuite:'Не съвсем.', lookAgain:'Прочети задачата още веднъж.',
   typeHint:'Напиши отговора и натисни ✓', tryTwo:'втори опит', soundOn:'Вкл.', soundOff:'Изкл.', changePass:'Смени паролата', oldPass:'Сегашната парола', newPass:'Нова парола (поне 8 знака)', passChanged:'Паролата е сменена',
@@ -303,7 +303,7 @@ uk: {
   syncJoined:'Готово — прогрес буде однаковим на всіх пристроях',
   skip:'Пропустити поки що', answers:'Відповіді', answerBy:'Відповідь', typeIt:'Пише', chooseIt:'А Б В Г', themeIs:'Тема', themeAuto:'Як у системі', themeLight:'Світла', themeDark:'Темна', glassIs:'Скло', glassOn:'Так', glassOff:'Суцільно', tabToday:'Сьогодні', tabLevels:'Рівні', tabParents:'Батьки', sections:'Розділи', helloName:n => 'Привіт, ' + n + '!', roundsToday:n => n + ' ' + pl(n, { one:'раунд', few:'раунди', many:'раундів', other:'раунду' }) + ' сьогодні', goOn:'Продовжити',
   compName:'Змагання', compSubtitle:'Змагальний режим',
-  compTask:(i, g) => 'Завдання ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'бал', few:'бали', many:'балів', other:'бала' }), goNext:'Далі', backToday:'Назад до Сьогодні', crossHow:(bo, o) => (o ? 'Закресли спершу одиниці (' + o + '), потім ще ' + (bo - o) + ' з десятка' : 'Закресли ' + bo + ' з десятка') +
+  compTask:(i, g) => 'Завдання ' + i + (g ? ' · ' + g : ''), ptsN:p => p + ' ' + pl(p, { one:'бал', few:'бали', many:'балів', other:'бала' }), goNext:'Далі', tryAgainCan:'Спробуй ще — ти зможеш!', backToday:'Назад до Сьогодні', crossHow:(bo, o) => (o ? 'Закресли спершу одиниці (' + o + '), потім ще ' + (bo - o) + ' з десятка' : 'Закресли ' + bo + ' з десятка') +
     ': лишається ' + (10 + o - bo) + '.', thenTake:(bt, lend) => 'Потім відніми ' + bt + ' від ' + lend + '.',
   fillHow:(o, need, rest) => 'Доповни ' + o + ' до 10 числом ' + need + ' — лишається ще ' + rest + '.', notQuite:'Не зовсім.', lookAgain:'Прочитай завдання ще раз.',
   typeHint:'Напиши відповідь і натисни ✓', tryTwo:'друга спроба', soundOn:'Увімк.', soundOff:'Вимк.', changePass:'Змінити пароль', oldPass:'Поточний пароль', newPass:'Новий пароль (щонайменше 8 знаків)', passChanged:'Пароль змінено',

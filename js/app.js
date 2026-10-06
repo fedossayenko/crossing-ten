@@ -1144,14 +1144,22 @@ function paintSide(){
   const l = LEVELS.find(x => x.id === S.level);
   if(!l) return;
   const m = mastery(LOCAL.rounds), hist = levelHistory(LOCAL.rounds), key = groupKey(l), mine = LEVELS.filter(x => groupKey(x) === key && x.grade === l.grade);
-  $('side').innerHTML = '<div class="grouphead"><b>' + groupOf(l) + '</b><span>' + t('learnedGroup', mine.filter(x => m[x.id] && m[x.id].done).length, mine.length) + '</span></div>' +
+  const learned = LEVELS.filter(x => m[x.id] && m[x.id].done).length;
+  // as drawn: the app and who plays, the four sections (the tab bar's own buttons), how far overall, the level's group,
+  // and the practice paper at the foot
+  $('side').innerHTML = '<div class="sidehead"><span class="logo">10</span><b>' + t('appName') + '</b><span class="sidewho">' + mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER)) + '</span></div>' +
+    '<nav class="sidenav">' + [...document.querySelectorAll('#tabs button')].map(b => '<button data-r="' + b.dataset.r + '">' + b.innerHTML + '</button>').join('') + '</nav>' +
+    '<div class="progress"><span class="track"><i style="width:' + Math.round(100 * learned / LEVELS.length) + '%"></i></span><span>' + t('learnedOf', learned, LEVELS.length) + '</span></div>' +
+    '<div class="grouphead"><b>' + groupOf(l) + '</b><span>' + t('learnedGroup', mine.filter(x => m[x.id] && m[x.id].done).length, mine.length) + '</span></div>' +
     '<div class="gcard list">' + mine.map(x => levelRow(x, m, hist)).join('') + '</div>' +
-    '<button class="btn ghost sideall">' + t('chooseLevel') + '</button>';
+    '<button class="gcard nextcard comp sidecomp"><span class="nm"><span class="lab">' + t('compName') + '</span><span class="eq">' + t('compWhat', COMP_N, COMP_MIN) + '</span></span>' + CHEV + '</button>';
   $('side').querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => {
     if(+b.dataset.lvl === S.level || (midRound() && !confirm(t('pickWarn')))) return;
     S.level = +b.dataset.lvl; paintPill(); newRound();
   });
-  $('side').querySelector('.sideall').onclick = () => go('levels');
+  $('side').querySelectorAll('.sidenav button').forEach(b => b.onclick = () => go(b.dataset.r));
+  $('side').querySelector('.sidecomp').onclick = () => { if(!midRound() || confirm(t('pickWarn'))) startComp(); };
+  $('side').querySelector('.sidewho').onclick = openPlayers;
   const now = $('side').querySelector('[aria-pressed="true"]');
   if(now) now.scrollIntoView({ block:'nearest' });
 }
@@ -1274,8 +1282,9 @@ paintPill();
 /* ---------- players ----------
    Tap the mascot to change player. Switching reloads the page: every setting, the log,
    the language and the mascot then come up exactly as a fresh launch would. */
-const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
-const playerName = p => p.name || t('playerN', PLAYERS.list.indexOf(p) + 1);
+// function declarations, not consts: the side panel draws while the module is still loading (a saved round resumed)
+function esc(v){ return String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
+function playerName(p){ return p.name || t('playerN', PLAYERS.list.indexOf(p) + 1); }
 const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
 const FLAME = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 .5-3-1-5 1-9.5z"/></svg>';
 export function chose(){ try { sessionStorage.setItem('crossingten.chosen', '1'); } catch(e){} }
