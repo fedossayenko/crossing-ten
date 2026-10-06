@@ -9,6 +9,7 @@ import { choiceHtml, letterOf, withChoices } from './choice.js';
 import { COMP_MIN, COMP_N, compAnswer, compEnd, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
+import { shareWeekly, weeklyPng } from './weekly.js';
 import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
 /* ---------- screens and the address ----------
    Each screen has an address (#/levels, #/badges …), so a reload and the back gesture of an installed app land
@@ -771,16 +772,16 @@ export function renderParent(){
   paintPaperSet();
   document.querySelectorAll('#gradeSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.g === myGrade())));
 
-  // this week against the last: rounds, right first time, levels newly learned
-  const ws = weekStart(Date.now()), inWeek = (a, b) => LOCAL.rounds.filter(r => r.ts >= a && r.ts < b);
-  const pct = rs => { const n = rs.reduce((x, r) => x + r.n, 0); return n ? Math.round(100 * rs.reduce((x, r) => x + r.firstTry, 0) / n) : null; };
-  const now7 = inWeek(ws, Infinity), last7 = inWeek(ws - 7*DAY, ws), p = pct(now7), q = pct(last7);
-  const before = mastery(LOCAL.rounds.filter(r => r.ts < ws)), fresh = LEVELS.filter(l => m[l.id] && m[l.id].done && !(before[l.id] && before[l.id].done)).length;
-  const day = ms => new Date(ms).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'short' });
-  $('weekCard').innerHTML = '<div class="gtitle"><b>' + t('thisWeek') + '</b><span>' + day(ws) + ' – ' + day(ws + 6*DAY) + '</span></div>' +
-    '<div class="weekrow"><span>' + t('rounds', now7.length) + '</span>' + (p === null ? '' : '<span>' + t('firstPct', p) +
-    (q === null ? '' : ' <i class="' + (p >= q ? 'up' : 'down') + '">' + t('vsLast', p - q) + '</i>') + '</span>') +
-    (fresh ? '<span>' + t('newLevels', fresh) + '</span>' : '') + '</div>';
+  // this week against the last, and the picture of it to share
+  const w = weekData(), day = ms => new Date(ms).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'short' });
+  $('weekCard').innerHTML = '<div class="gtitle"><b>' + t('thisWeek') + '</b><span>' + day(w.ws) + ' – ' + day(w.ws + 6*DAY) + '</span></div>' +
+    '<div class="weekrow"><span>' + t('rounds', w.rounds) + '</span>' + (w.pct === null ? '' : '<span>' + t('firstPct', w.pct) +
+    (w.delta === null ? '' : ' <i class="' + (w.delta >= 0 ? 'up' : 'down') + '">' + t('vsLast', w.delta) + '</i>') + '</span>') +
+    (w.fresh ? '<span>' + t('newLevels', w.fresh) + '</span>' : '') + '</div>' +
+    (w.rounds ? '<button class="btn ghost weekopen">' + t('shareWeek') + '</button>' : '');
+  $('weekShare').hidden = true;
+  const open = $('weekCard').querySelector('.weekopen');
+  if(open) open.onclick = () => { $('weekShare').hidden = false; buildWeek(); };
 
   // the shapes of a level she misses most (each round logs a task's shape): a task of it, and how often it went wrong
   const by = {};
@@ -874,6 +875,36 @@ export function fixKind(kind, check){
 }
 // the levels a kind was put right on: from the round that put it right
 const notebookLevels = kind => { const r = [...LOCAL.rounds].reverse().find(r => r.redo && r.redo.fix === kind); return r ? [...new Set(r.t.map(x => x[0]))] : []; };
+// Her week: rounds, right first time (and the change from last week), levels newly learned, tasks, the days she
+// played, and the groups that went best and worst (5 tasks or more)
+function weekData(now = Date.now()){
+  const ws = weekStart(now), inWeek = (a, b) => LOCAL.rounds.filter(r => r.ts >= a && r.ts < b);
+  const pct = rs => { const n = rs.reduce((x, r) => x + r.n, 0); return n ? Math.round(100 * rs.reduce((x, r) => x + r.firstTry, 0) / n) : null; };
+  const now7 = inWeek(ws, Infinity), p = pct(now7), q = pct(inWeek(ws - 7*DAY, ws)), m = mastery(LOCAL.rounds), before = mastery(LOCAL.rounds.filter(r => r.ts < ws));
+  const by = {};
+  now7.forEach(r => (r.t || []).forEach(([lv, , , , ok]) => { const l = LEVELS.find(x => x.id === lv); if(!l || ok === -1) return;
+    const g = by[groupKey(l)] = by[groupKey(l)] || [0, 0]; g[0]++; if(ok === 1) g[1]++; }));
+  const ranked = Object.entries(by).filter(([, [n]]) => n >= 5).sort((a, b) => b[1][1] / b[1][0] - a[1][1] / a[1][0]).map(([k]) => t('groups')[k].toLowerCase());
+  // ponytail: days by 24 h steps from Monday; a clock change shifts a boundary by an hour
+  const day0 = k => ws + k*DAY, long = ms => new Date(ms).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'long' });
+  return { ws, range: long(ws) + ' – ' + long(ws + 6*DAY), rounds: now7.length, pct: p, delta: p === null || q === null ? null : p - q,
+    fresh: LEVELS.filter(l => m[l.id] && m[l.id].done && !(before[l.id] && before[l.id].done)).length, tasks: now7.reduce((x, r) => x + r.n, 0),
+    days: Array.from({ length: 7 }, (_, k) => ({ label: new Date(day0(k) + 12*3600e3).toLocaleDateString(LANG_TAG[LANG], { weekday:'short' }),
+      played: now7.some(r => r.ts >= day0(k) && r.ts < day0(k + 1)) })),
+    best: ranked[0] || '', weak: ranked.length > 1 ? ranked[ranked.length - 1] : '', name: playerName(PLAYER), mascot: PLAYER.mascot };
+}
+// the picture is made when the preview opens (and again when the name is switched), so the tap on Share shares at once
+let WEEK_PNG = null;
+async function buildWeek(){
+  WEEK_PNG = null; $('weekGo').disabled = true;
+  const b = await weeklyPng(weekData(), $('weekName').checked);
+  const img = /** @type {HTMLImageElement} */ ($('weekImg'));
+  if(img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+  img.src = URL.createObjectURL(b);
+  WEEK_PNG = b; $('weekGo').disabled = false;
+}
+$('weekName').onchange = buildWeek;
+$('weekGo').onclick = () => { if(WEEK_PNG) shareWeekly(WEEK_PNG, 'desetka-' + dayKey(weekStart(Date.now())) + '.png'); };
 // Monday 00:00 of this week, local time
 const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
 export function todayData(){
@@ -1452,5 +1483,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

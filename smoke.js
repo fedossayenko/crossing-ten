@@ -201,6 +201,30 @@ const server = http.createServer((req, res) => {
     newRound(); await tick(); finish(); await tick(); r.took = /[0-9]/.test($('scoreSub').textContent) && $('scoreSub').textContent.includes(t('took', 0, 0).replace(/^[0-9 ]+/, '').trim());
     $('sheet').hidden = true; newRound(); await tick();
     return JSON.stringify(r); })()`) || '{}');
+  // R8: the week as a picture — 1080×1350, the card drawn into it (the blue "10" square), rebuilt without her name,
+  // and where files cannot be shared, a download of it
+  const r8 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    $('tabParents').click(); await tick();
+    const open = $('weekCard').querySelector('.weekopen'), r = { button: !!open };
+    open.click(); for(let i = 0; i < 100 && $('weekGo').disabled; i++) await tick(50);
+    const img = $('weekImg'); await img.decode();
+    const c = document.createElement('canvas'); c.width = 1080; c.height = 1350; c.getContext('2d').drawImage(img, 0, 0);
+    const [R, G, B] = c.getContext('2d').getImageData(110, 1242, 1, 1).data;
+    r.png = !$('weekShare').hidden && img.naturalWidth === 1080 && img.naturalHeight === 1350 && R < 30 && G > 90 && G < 125 && B > 175;
+    // the mascot in its own colours (the page's rules carried into the picture), not a black shape: grey fur in its corner
+    const px = c.getContext('2d').getImageData(790, 60, 230, 215).data; let fur = 0;
+    for(let i = 0; i < px.length; i += 4) if(px[i] > 110 && px[i] < 190 && Math.abs(px[i] - px[i + 2]) < 30 && px[i + 3] > 200) fur++;
+    r.mascot = fur > 2000;
+    const first = img.src; $('weekName').checked = false; $('weekName').onchange(); for(let i = 0; i < 100 && $('weekGo').disabled; i++) await tick(50);
+    r.renamed = img.src !== first && img.src.startsWith('blob:');
+    const can = Object.getOwnPropertyDescriptor(Navigator.prototype, 'canShare'), clickWas = HTMLAnchorElement.prototype.click; let got = '';
+    Object.defineProperty(navigator, 'canShare', { value: undefined, configurable: true });
+    HTMLAnchorElement.prototype.click = function(){ got = this.download; };
+    $('weekGo').click();
+    HTMLAnchorElement.prototype.click = clickWas; delete navigator.canShare; if(can) Object.defineProperty(Navigator.prototype, 'canShare', can);
+    r.download = /^desetka-[0-9]{4}-[0-9]{2}-[0-9]{2}[.]png$/.test(got);
+    $('weekName').checked = true; return JSON.stringify(r); })()`) || '{}');
+  expect(r8.button && r8.png && r8.mascot && r8.renamed && r8.download, 'the weekly card went wrong: ' + JSON.stringify(r8));
   expect(r7.week && r7.shapes && r7.grade && r7.back && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {

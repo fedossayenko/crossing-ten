@@ -227,8 +227,11 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   whole screen. Badges and Welcome already match. **Left: the worker's side** — devices and last sync per family
   (`sessions.last_seen` + device) and changing the password: a D1 migration on the families' live data, done as its
   own step with a backup first.
-- **R8. Weekly card**: SVG → canvas → PNG, `navigator.share({files})` built before the tap (iOS user
-  activation), download fallback; a parent's action, name optional.
+- **R8. Weekly card — DONE.** js/weekly.js: the week (rounds, first try, new levels, tasks, the days played, best and
+  weakest group) as a 1080×1350 SVG — Fredoka and the page's .cat rules and light palette carried inside it, since an
+  SVG drawn as an image sees none of the page — onto a canvas, as a PNG. Parents → "Сподели седмицата": a preview
+  first, "С името" to leave her name out, then Share (the PNG is made before the tap, as iOS asks) or a download where
+  files cannot be shared. Smoke reads the pixels: the logo square and the mascot's grey fur.
 - smoke.js is rewritten alongside R2–R7, screen by screen.
 
 ### Phase E — as kinds grow
