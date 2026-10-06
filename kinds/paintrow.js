@@ -22,7 +22,7 @@ export function genPaintRow(){
 // the first is chosen the rest follow, so there are 2 ways, however long the row. Also two squares in three
 // colours (3 · 2 = 6), and a row whose first square is already green: 1 way.
 export function genPaintTwo(){
-  const r = Math.random(), n = 2 + rnd(4);
+  const r = Math.random(), n = 2 + rnd(3);
   if(r < 0.2) return {kind:'paintrow', shape:'pair', n:2, c:3, traps:[9, 3], ans:6};
   if(r < 0.4) return {kind:'paintrow', shape:'end', n, c:2, cols:[1, 2], traps:[2], ans:1};
   return {kind:'paintrow', shape:'two', n, c:2, cols:[1, 2], traps:[Math.pow(2, n)], ans:2};   // the slip: 2 · 2 · 2, neighbours forgotten

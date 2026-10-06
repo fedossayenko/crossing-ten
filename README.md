@@ -128,8 +128,8 @@ the star digit, prices, hops, who is which colour (А/Б/В/Г), the digit rule,
 
 The **semifinal, 1st grade, 2024 and 2025** (МБГ Полуфинал, a round of its own, `semifinal`; tags
 `mbg-semifinal-2024-1` and `mbg-semifinal-2025-1`) are in whole, pinned in check/grade1c-A/B/C/D.js (split by
-kind, not by paper). Six tasks are tags on levels as they were (159, 163, 164, 183, 201, and 155 for 2025 task 2); 155–158, 160, 161, 163, 165, 172, 175, 176 and 194
-grew a shape each; 21 new levels, 203–223, hold the rest: a seven-step chain, one hidden digit, the digit string,
+kind, not by paper). Six tasks are tags on levels as they were (159, 163, 164, 183, 201, and 155 for 2025 task 2); 156–158, 160, 161, 163, 165, 172, 175, 176 and 194
+grew a shape each; 22 new levels, 203–224, hold the rest: a short chain past 20 (224, split from 155 as it rates higher), a seven-step chain, one hidden digit, the digit string,
 the digits of left-out numbers, the digit written twice, turned cards, the fewest digits crossed out, a row of
 squares, the perimeter in one unit, ants in a strip, broken lines on a grid (zigzag), points at a distance
 (distpts), two colours in a row, sum and difference on a board, the middle number, balloons that are not a colour

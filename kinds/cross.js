@@ -109,7 +109,7 @@ function whyCross(q, full){
     return (q.ans > 1 ? tr('с една зачеркната цифра не става; ', 'однієї закресленої цифри замало; ') : '') +
       q.shown[0] + ' + ' + q.shown[1] + ' + ' + q.shown[2] + ' = ' + (q.shown[0] + q.shown[1] + q.shown[2]) + tr(', а не ', ', а не ') + q.shown[3] +
       ' &nbsp;→&nbsp; ' + crossFewEq(crossFewNums(q, c => '<s style="color:var(--bad)">' + c + '</s>')) + ' &nbsp;→&nbsp; <b>' + crossFewEq(crossFewNums(q, () => '')) + '</b>' +
-      ' &nbsp;→&nbsp; ' + tr('най-малко ', 'щонайменше ') + q.ans;
+      ' &nbsp;→&nbsp; ' + tr('най-малко ', 'найменше ') + q.ans;
   }
   if(q.shape === 'two'){
     if(!full) return tr('Пресметни лявата страна — вярно ли е? Опитай да махнеш по една цифра.', 'Обчисли ліву частину — чи правильно? Спробуй прибрати по одній цифрі.');

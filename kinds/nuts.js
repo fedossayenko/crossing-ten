@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 11: four squirrels share 16 nuts, each more than 2. For one to get as many
 // as possible the other three get as few as allowed — 3 each, 9 — and she gets 16 − 9 = 7.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 export function genNuts(){
   for(;;){
     const k = 3 + rnd(3), m = 1 + rnd(4), T = k*(m + 1) + 2 + rnd(12);
@@ -21,7 +21,7 @@ const LEAST_BG = {5:'Пет', 6:'Шест', 7:'Седем', 8:'Осем', 9:'Д�
 const LEAST_UK = {5:'П’ять', 6:'Шість', 7:'Сім', 8:'Вісім', 9:'Дев’ять', 10:'Десять', 11:'Одинадцять', 12:'Дванадцять'};
 function drawNuts(q){
   if(q.shape === 'least'){
-    return '<div class="ask">' + tr(LEAST_BG[q.T] + ' балона трябва да се раздадат на ' + (q.k === 3 ? 'три' : 'четири') + ' деца. Всяко дете трябва да получи <b>поне един</b> балон. Колко най-много балона може да има детето с най-голям брой балони?',
+    return '<div class="ask">' + tr(LEAST_BG[q.T] + ' балона трябва да се раздадат на ' + BGNUM[q.k] + ' деца. Всяко дете трябва да получи <b>поне един</b> балон. Колко най-много балона може да има детето с най-голям брой балони?',
       LEAST_UK[q.T] + ' кульок треба роздати ' + (q.k === 3 ? 'трьом' : 'чотирьом') + ' дітям. Кожна дитина має отримати <b>щонайменше одну</b> кульку. Яку найбільшу кількість кульок може мати дитина, в якої кульок найбільше?') + '</div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }

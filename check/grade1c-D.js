@@ -47,7 +47,7 @@
     const tag = 'mbg-semifinal-' + name.match(/20\d\d/)[0] + '-1';
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + tag);
     const s = sig || JSON.stringify, want = s(q);
-    if(pinSeed(name, () => Q.raw(id), g => s(g) === want ? 2 : 0)) return;
+    if(pinSeed(name, () => Q.raw(id), g => s(g) !== want ? 0 : sig ? 1 : 2)) return;   // a signature: the same question, not the printed one
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Полуфинал 2024 task 5', 175, {kind:'ineq', shape:8, form:0, A:20, L:24, traps:[3], ans:4}, [4], 'Колко числа можем да поставим вместо ■, за да е вярно? 20 + ■ < 24');

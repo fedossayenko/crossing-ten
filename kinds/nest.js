@@ -3,17 +3,16 @@
 // МБГ Полуфинал 2025, 1 клас, задача 17: two smaller boxes were put in a box, and three boxes in each of the smaller
 // ones — how many boxes are there? The big one, the 2 smaller ones and 3 + 3 = 6 small ones: 1 + 2 + 6 = 9.
 // Or how many are empty: only the smallest, 6.
-import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UKNUM_F, popAt, rnd, tr } from '../js/core.js';
 export function genNest(){
   const a = 2 + rnd(3), b = 2 + rnd(3), empty = Math.random() < 0.35, all = 1 + a + a*b, ans = empty ? a*b : all;
   return {kind:'nest', a, b, empty, traps: [...new Set(empty ? [all, a + b, a + a*b] : [a*b, a + b, a + a*b])].filter(v => v !== ans), ans};
 }
-const NEST_BG = {2:'две', 3:'три', 4:'четири'}, NEST_UK = {2:'дві', 3:'три', 4:'чотири'};
 const nestSmall = q => Array(q.a).fill(q.b).join(' + ') + ' = ' + q.a*q.b;
 function drawNest(q){
-  return '<div class="ask">' + tr('В една кутия поставили ' + NEST_BG[q.a] + ' по-малки, а във всяка от по-малките кутии поставили по ' + NEST_BG[q.b] + ' кутии. ' +
+  return '<div class="ask">' + tr('В една кутия поставили ' + BGNUM[q.a] + ' по-малки, а във всяка от по-малките кутии поставили по ' + BGNUM[q.b] + ' кутии. ' +
       (q.empty ? 'Колко от всички кутии са <b>празни</b>?' : 'Колко са <b>всичките</b> кутии?'),
-    'В одну коробку поклали ' + NEST_UK[q.a] + ' менші, а в кожну з менших коробок поклали по ' + NEST_UK[q.b] + ' коробки. ' +
+    'В одну коробку поклали ' + UKNUM_F[q.a] + ' менші, а в кожну з менших коробок поклали по ' + UKNUM_F[q.b] + ' коробки. ' +
       (q.empty ? 'Скільки з усіх коробок <b>порожні</b>?' : 'Скільки <b>всього</b> коробок?')) + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }

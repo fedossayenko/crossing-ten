@@ -19,7 +19,7 @@
     if(pinSeed(name, () => Q.raw(id), g => s(g) === want ? 2 : 0, tries)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
-  pin('Полуфинал 2024 task 1', 155, {kind:'chain', shape:'past', terms: ex('20 − 2 + 4'), paired:0, ans:22}, [22], '20 − 2 + 4', null, 3e6);
+  pin('Полуфинал 2024 task 1', 224, {kind:'chain', shape:'past', terms: ex('20 − 2 + 4'), paired:0, ans:22}, [22], '20 − 2 + 4', null, 3e6);
   // the long chain is one of about a million: its seed is replayed, the search (only after a generator change) gets 1e7 tries
   pin('Полуфинал 2024 task 2', 203, {kind:'chain', terms: ex('20 − 2 + 4 − 2 + 0 − 2 − 4'), paired:0, ans:14}, [14], '20 − 2 + 4 − 2 + 0 − 2 − 4', null, 1e7);
   pin('Полуфинал 2025 task 2', 155, {kind:'chain', terms: ex('10 − 0 − 2 − 7'), paired:0, ans:1}, [1], '10 − 0 − 2 − 7', null, 3e6);
@@ -41,11 +41,14 @@
   const runs = ts => ts.map((_, k) => walk(ts.slice(0, k + 1)));
   let past = 0, zeros = 0;
   for(let i = 0; i < 3000; i++){
-    // 155: walked again; the plain chain stays in 0…20, 'past' ends 21 to 24 after a step down
-    const c = Q.raw(155), r = runs(c.terms);
-    if(walk(c.terms) !== c.ans || r.some(v => v < 0)) fail('chain short: walked gives ' + walk(c.terms), c);
-    if(c.shape === 'past'){ past++; if(c.terms.length !== 3 || c.terms[1].op !== '−' || c.terms[2].op !== '+' || r[1] > 20 || c.ans < 21 || c.ans > 24) fail('chain past', c); }
-    else if(Math.max(...r) > 20) fail('chain short: leaves 0…20', c);
+    // 155: walked again, it stays in 0…20; 224 (its 'past' shape, a level of its own) ends 21 to 24 after a step down
+    for(const id of [155, 224]){
+      const c = Q.raw(id), r = runs(c.terms);
+      if(walk(c.terms) !== c.ans || r.some(v => v < 0)) fail('chain short: walked gives ' + walk(c.terms), c);
+      if((c.shape === 'past') !== (id === 224)) fail('chain short: level ' + id + ' drew shape ' + c.shape, c);
+      if(c.shape === 'past'){ past++; if(c.terms.length !== 3 || c.terms[1].op !== '−' || c.terms[2].op !== '+' || r[1] > 20 || c.ans < 21 || c.ans > 24) fail('chain past', c); }
+      else if(Math.max(...r) > 20) fail('chain short: leaves 0…20', c);
+    }
     // 203: seven numbers, a start of 12…20, steps of 0…5, every running total in 0…24, two step sizes at most
     const g = Q.raw(203), rg = runs(g.terms), sizes = new Set(g.terms.slice(1).map(t => t.n).filter(n => n));
     if(g.terms.length !== 7 || g.terms[0].n < 12 || g.terms[0].n > 20 || g.terms.slice(1).some(t => t.n > 5) || rg.some(v => v < 0 || v > 24) || sizes.size > 2 || walk(g.terms) !== g.ans) fail('chain long', g);
@@ -81,7 +84,7 @@
       if(found.size !== 1 || !found.has(d.ans) || d.ans < 1 || new Set([d.x, d.y, d.z]).size !== 3) fail('picdig twin: ' + [...found], d);
     }
   }
-  if(past < 300 || past > 900) throw new Error('chain short: ' + past + ' of 3000 go past 20');
+  if(past !== 3000) throw new Error('chain past: level 224 drew ' + past + ' of 3000');
   if(zeros < 1000 || zeros > 2000) throw new Error('chain long: a 0 in ' + zeros + ' of 3000, not about half');
   console.log('МБГ Полуфинал 2024 and 2025, 1 клас: 2024 tasks 1, 2 and 2025 tasks 2, 3, 4, 10, 19 match the key and are asked exactly by their levels; the chains walked, the pairs, ☺, the flower and the pictures worked out again');
 }

@@ -4,7 +4,7 @@
 // «между», where the two ends are NOT counted — so the condition has to be read.
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 export function genCount(){
   if(Math.random() < 0.14){
     // Задача 3: a list with repeats. What is asked is about the set behind it, not the
@@ -87,8 +87,8 @@ function countMissedSvg(q){
 
 function drawCount(q){
   if(q.shape === 8){
-    return '<div class="ask">' + tr('Петър искал да запише на дъската всички числа от 1 до <span class="num">' + q.N + '</span>, но записал само ' + q.list.join(', ').replace(/, (\d+)$/, ' и $1') + '. Колко числа е пропуснал да запише?',
-      'Петро хотів записати на дошці всі числа від 1 до <span class="num">' + q.N + '</span>, але записав лише ' + q.list.join(', ').replace(/, (\d+)$/, ' і $1') + '. Скільки чисел він пропустив?') + '</div>' +
+    return '<div class="ask">' + tr('Петър искал да запише на дъската всички числа от 1 до <span class="num">' + q.N + '</span>, но записал само ' + bgList(q.list) + '. Колко числа е пропуснал да запише?',
+      'Петро хотів записати на дошці всі числа від 1 до <span class="num">' + q.N + '</span>, але записав лише ' + bgList(q.list) + '. Скільки чисел він пропустив?') + '</div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }
   if(q.set){

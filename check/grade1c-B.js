@@ -14,7 +14,7 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes('mbg-semifinal-' + name.match(/20\d\d/)[0] + '-1')) throw new Error('level ' + id + ' is not tagged ' + name);
     const s = sig || JSON.stringify, want = s(q);
-    if(pinSeed(name, () => Q.raw(id), g => s(g) === want ? 2 : 0, tries)) return;
+    if(pinSeed(name, () => Q.raw(id), g => s(g) !== want ? 0 : sig ? 1 : 2, tries)) return;   // a signature: the same question, not the printed one
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
   pin('Полуфинал 2024 task 3', 204, {kind:'digeq', shape:'one', sym:'☺', e:'2■ − 2 − 4 = 16', traps:[6, 0], ans:2}, [2], 'Под ☺ е скрита цифра. Коя е тя? 2☺ − 2 − 4 = 16');

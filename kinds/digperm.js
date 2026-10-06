@@ -3,7 +3,7 @@
 // МБГ Пролет 2023, 1 клас, задача 6: two worked examples — 1, 2 give 12 and 21, 12 + 21 = 33;
 // 0, 1, 2 give 10, 12, 20, 21, sum 63 — then 0, 1, 3: 10, 13, 30, 31, and 10 + 13 + 30 + 31 = 84.
 // Two different digits in each number, and 0 never in front.
-import { KIND, SLOT, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, bgList, rnd, shuffle, svgText, tr } from '../js/core.js';
 const digPermNums = ds => { const r = []; ds.forEach(a => ds.forEach(b => { if(a !== b && a) r.push(10*a + b); })); return r.sort((x, y) => x - y); };
 // МБГ Пролет 2021, 1 клас, задача 15: not the sum but how many. 5, 2, 1 make 10 < 12 < 15 < 21 < 25 < 51 <
 // 52 < 100 — 6 numbers; 2, 6, 0 make 20, 26, 60, 62 — 4, as 0 never stands in front. The digits as printed, unsorted.
@@ -47,8 +47,8 @@ const flipCard = (v, x, turn) => '<rect x="' + x + '" y="2" width="40" height="4
 function drawDigPerm(q){
   if(q.shape === 'flip'){
     const n = CARDS_N[q.ds.length], w = q.ds.length * 56 - 12;
-    return '<div class="ask">' + tr('Колко са всички двуцифрени числа, които можем да съставим с ' + n[0] + ' картички, на които са записани ' + q.ds.join(', ').replace(/, (\d)$/, ' и $1') + '?',
-      'Скільки всього двоцифрових чисел можна скласти з ' + n[1] + ' карток, на яких записано ' + q.ds.join(', ').replace(/, (\d)$/, ' і $1') + '?') + '</div>' +
+    return '<div class="ask">' + tr('Колко са всички двуцифрени числа, които можем да съставим с ' + n[0] + ' картички, на които са записани ' + bgList(q.ds) + '?',
+      'Скільки всього двоцифрових чисел можна скласти з ' + n[1] + ' карток, на яких записано ' + bgList(q.ds) + '?') + '</div>' +
       '<div class="fig"><svg viewBox="0 0 ' + w + ' 48" style="max-width:' + Math.round(w * 1.2) + 'px" role="img" aria-label="' + tr('картички', 'картки') + '">' + q.ds.map((v, i) => flipCard(v, 2 + i*56)).join('') + '</svg></div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }

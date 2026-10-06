@@ -71,7 +71,7 @@ export function chainLine(terms){
 export const BGNUM = {2:'две', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем'};
 // Ukrainian number words: masculine and neuter nouns take UKNUM (два числа), feminine ones UKNUM_F (дві цифри).
 export const UKNUM = {2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять', 10:'десять'};
-const UKNUM_F = Object.assign({}, UKNUM, {2:'дві'});
+export const UKNUM_F = Object.assign({}, UKNUM, {2:'дві'});
 export const bgList = a => a.length < 2 ? a.join('') : a.slice(0,-1).join(', ') + tr(' и ', ' і ') + a[a.length-1];
 
 function antSvg(x, y, u){

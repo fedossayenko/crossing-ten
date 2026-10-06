@@ -54,7 +54,7 @@ function genDigitFromTo(){
 // МБГ Полуфинал 2024, 1 клас, задача 8: 1, 2, 3, 4, …, 12, 13, 14 — how many digits have the numbers left out? 5 to 11:
 // five one-digit numbers and two two-digit ones, 5 + 2 + 2 = 9 — not 7, how many numbers, nor 38, their digits added.
 export function genDigitOmit(){
-  const a = 1 + rnd(4), b = 13 + rnd(8), gone = [];
+  const a = 1, b = 13 + rnd(8), gone = [];   // a: the run starts at 1, as on the paper (a later start reads as 1, 2 … left out too)
   for(let v = a + 4; v <= b - 3; v++) gone.push(v);
   const digs = gone.join('');
   return {kind:'dcount', shape:'omit', a, b, traps:[gone.length, [...digs].reduce((t, c) => t + +c, 0)], ans: digs.length};
