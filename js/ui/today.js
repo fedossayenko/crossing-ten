@@ -55,7 +55,6 @@ function Today(){
           <div class="days">${d.days.map(x => html`<span class=${x.played ? 'on' : ''}><i></i>${x.label}</span>`)}</div>
         </div>
         <button class="gcard nextcard comp" onClick=${() => startComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
-        <button class="btn ghost" onClick=${() => go('levels', true)}>${t('chooseLevel')}</button>
       </div>
     </div>`;
 }

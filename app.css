@@ -449,6 +449,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
   .side .progress{padding:2px 6px}
   .side .sidecomp{flex:none}
   .side .btn{flex:none}
+  body.sideopen:has(.side:not([hidden])) #homeBtn{display:none}   /* the sidebar has Днес */
   body.sideopen:has(.side:not([hidden])) .app{margin-left:332px; margin-right:16px; max-width:none}
   #sideBtn:not([hidden]){display:inline-flex}
 }

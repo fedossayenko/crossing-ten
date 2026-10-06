@@ -294,7 +294,7 @@ const server = http.createServer((req, res) => {
   expect(Object.values(slip.r91 || {}).length === 7 && Object.values(slip.r91).every(Boolean) && slip.slip && slip.frame && slip.struck && slip.fresh && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
     'the forgotten borrow was not named: ' + JSON.stringify(slip));
   // ...and the grown-ups see it: the slip counted, the groups charted, every round in the CSV
-  const grown = await page(`(() => { $('tabBadges').click(); $('toParent').click();
+  const grown = await page(`(() => { $('tabParents').click();
     const csv = csvOf(LOCAL.rounds).split('\\r\\n');
     return { slips: $('slips').textContent, groups: $('byGroup').children.length, rows: csv.length, n: LOCAL.rounds.length,
              head: csv[0], last: csv[csv.length - 1] }; })()`);
@@ -439,15 +439,15 @@ const server = http.createServer((req, res) => {
   // Screens have addresses: back returns to where a screen was opened from, a reload comes back to the screen,
   // and back from a screen the app was opened on goes to the round, never out of the app
   {
-    const nav = await page(`(() => { $('tabBadges').click(); const a = !$('stats').hidden && location.hash; $('toParent').click(); const b = !$('parent').hidden && location.hash;
+    const nav = await page(`(() => { $('who').click(); const a = !$('players').hidden && location.hash; $('parentBtn').click(); const b = !$('parent').hidden && location.hash;
       return { a, b }; })()`);
     await run(`$('closeParent').click(); 1`); await new Promise(r => setTimeout(r, 150));
-    const nav2 = await page(`({ stats: !$('stats').hidden, parent: !$('parent').hidden, hash: location.hash })`);
+    const nav2 = await page(`({ stats: !$('players').hidden, parent: !$('parent').hidden, hash: location.hash })`);
     await cmd('Page.reload'); await settle();
-    const nav3 = await page(`({ stats: !$('stats').hidden, hash: location.hash })`);
-    await run(`$('closeStats').click(); 1`); await new Promise(r => setTimeout(r, 150));
-    const nav4 = await page(`({ stats: !$('stats').hidden, hash: location.hash, stage: !!$('stage').innerHTML })`);
-    expect(nav.a === '#/badges' && nav.b === '#/parents' && nav2.stats && !nav2.parent && nav2.hash === '#/badges' && nav3.stats && nav3.hash === '#/badges' &&
+    const nav3 = await page(`({ stats: !$('players').hidden, hash: location.hash })`);
+    await run(`$('closePlayers').click(); 1`); await new Promise(r => setTimeout(r, 150));
+    const nav4 = await page(`({ stats: !$('players').hidden, hash: location.hash, stage: !!$('stage').innerHTML })`);
+    expect(nav.a === '#/players' && nav.b === '#/parents' && nav2.stats && !nav2.parent && nav2.hash === '#/players' && nav3.stats && nav3.hash === '#/players' &&
       !nav4.stats && nav4.hash === '#/play' && nav4.stage, 'screen addresses went wrong: ' + JSON.stringify({ nav, nav2, nav3, nav4 }));
   }
   // The look on this device: dark and solid chosen in the grown-ups' settings take effect at once, and come
@@ -499,7 +499,7 @@ const server = http.createServer((req, res) => {
     const fam = 'Smoke ' + Date.now();
     const fill = (pass, btn) => `$('lName').value = '${fam}'; $('lPass').value = '${pass}'; $('${btn}').click(); 1`;
     await open(A); await run(fresh); await settle();
-    await run(`$('pSave').click(); $('tabBadges').click(); $('toParent').click(); $('syncLogin').click(); 1`); await settle(300);
+    await run(`$('pSave').click(); $('tabParents').click(); $('syncLogin').click(); 1`); await settle(300);
     await run(fill('smoke-pass', 'lSignup')); await settle(1500);
     const a1 = await page(`{ in: IN(), shown: $('syncCode').textContent, card: !$('syncOnRow').hidden, sheet: $('login').hidden }`);
     expect(a1.in && a1.shown === fam && a1.card && a1.sheet, 'signing up on A went wrong: ' + JSON.stringify(a1));

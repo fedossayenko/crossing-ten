@@ -971,7 +971,6 @@ export function todayData(){
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }
 $('closeStats').onclick = back;
-$('toParent').onclick = () => go('parents');
 $('closeParent').onclick = back;   // to where it was opened from: badges, players or the round
 
 $('practise').onclick = () => {
