@@ -5,7 +5,14 @@
 // next 2 new ones, then 1: 3 + 2 + 1.
 // Есен 2019, задача 14: a 30 см segment, its two ends yellow; red points cut it into 10 pieces of
 // 3 см, so 9 red; then a blue point inside each piece, 10 blue. 2 + 9 + 10 = 21.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, bgList, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+// МБГ Полуфинал 2022 and 2023, 1 клас, задача 14: points A, B, C on a line, «Тук са 3 отсечки: AB, AC и BC» (2023
+// only «Тук са 3 отсечки.»); then A, B, C, D — how many segments? From A 3, from B 2 more, from C 1: 6. The
+// example has a point fewer; the slips: a segment per gap (n − 1), or the example's number again.
+export function genSegCountEx(){
+  const n = Math.random() < 0.2 ? 6 : 4 + rnd(2), list = Math.random() < 0.5, S = n*(n - 1)/2;
+  return {kind:'segcount', shape:'ex', n, S, list, traps:[n - 1, (n - 1)*(n - 2)/2], ans: S};
+}
 function genDots(){
   const n = 3 + rnd(8), d = 2 + rnd(4), asks = rnd(3);
   return {kind:'segcount', shape:'dots', n, d, L: n*d, asks, traps:[n + 2 + n, 2*n], ans: asks === 0 ? 2*n + 1 : asks === 1 ? n - 1 : n};
@@ -26,6 +33,13 @@ function segCountSvg(n){
     '<line x1="4" y1="20" x2="' + (W - 4) + '" y2="20" stroke="var(--ink)" stroke-width="2"/>' + pts + labs + '</svg></div>';
 }
 function drawSegCount(q){
+  if(q.shape === 'ex'){
+    const m = q.n - 1, k = m*(m - 1)/2, segs = [];
+    for(let i = 0; i < m; i++) for(let j = i + 1; j < m; j++) segs.push('ABCDEF'[i] + 'ABCDEF'[j]);
+    return '<div class="ask">' + tr('Тук са <span class="num">' + k + '</span> отсечки', 'Тут ' + ukN(k, 'відрізок', 'відрізки', 'відрізків').replace(/^(\d+)/, '<span class="num">$1</span>')) + (q.list ? ': ' + bgList(segs) : '') + '.</div>' +
+      segCountSvg(m) + '<div class="ask">' + tr('Колко са <b>отсечките</b> тук?', 'Скільки тут <b>відрізків</b>?') + '</div>' +
+      segCountSvg(q.n) + '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 'dots'){
     const ask = q.asks === 0 ? tr('Колко <b>общо</b> са отбелязаните жълти, сини и червени точки?', 'Скільки <b>всього</b> позначено жовтих, синіх і червоних точок?')
       : q.asks === 1 ? tr('Колко са <b>червените</b> точки?', 'Скільки <b>червоних</b> точок?') : tr('Колко са <b>сините</b> точки?', 'Скільки <b>синіх</b> точок?');

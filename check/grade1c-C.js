@@ -72,8 +72,9 @@
     for(let C = 1; C < s.AD; C++) for(let B = C + 1; B < s.AD; B++) if(B === s.AB && s.AD - C === s.CD) cbs.push(B - C);
     if(cbs.length !== 1 || cbs[0] !== s.ans) fail('seg cbov: ' + cbs, s);
     // 210: every rectangle of the row, by its two ends; the example's number is the row one square shorter
+    // (Полуфинал 2023's row with no example, shape 'bare', shows none: check/grade1d-C.js)
     const r = Q.raw(210), n = r.tiles.length, rects = m => { let c = 0; for(let x1 = 0; x1 < m; x1++) for(let x2 = x1 + 1; x2 <= m; x2++) c++; return c; };
-    if(rects(n) !== r.ans || n < 3 || n > 5 || strip(Q.drawQ(r)).indexOf('има' + rects(n - 1) + 'правоъгълника') < 0) fail('rectfig row', r);
+    if(rects(n) !== r.ans || n < 3 || n > 5 || (r.shape === 'bare' ? strip(Q.drawQ(r)).includes('има') : strip(Q.drawQ(r)).indexOf('има' + rects(n - 1) + 'правоъгълника') < 0)) fail('rectfig row', r);
     // 211: the four sides walked round
     const m = Q.raw(211), sides = [m.a, m.a + m.d, m.a, m.a + m.d];
     if(sides.reduce((t, v) => t + v, 0) !== m.ans || m.b !== m.a + m.d) fail('rectdm 2', m);

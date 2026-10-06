@@ -48,8 +48,12 @@ export function genRectFig(){
 // МБГ Полуфинал 2024, 1 клас, задача 14: two squares in a row make 3 rectangles — how many in a row of three?
 // 3 single, 2 of two, 1 of three: 6. A row of 3 to 5 squares, the example one square shorter. The slips:
 // only the single squares, or one more than the example.
+// МБГ Полуфинал 2023, 1 клас, задача 12: the row alone, no example — «Колко са правоъгълниците?» under a row of four:
+// 4 + 3 + 2 + 1 = 10. Drawn after the row, so a question with an example keeps its seed. The slips: only the
+// single squares, or those and the pairs.
 export function genRectRow(){
   const n = 3 + rnd(3), tiles = Array.from({length: n}, (_, i) => [i, 0, 1, 1]);
+  if(Math.random() < 0.3) return {kind:'rectfig', shape:'bare', tiles, traps:[n, 2*n - 1], ans: n*(n + 1)/2};
   return {kind:'rectfig', shape:'row', tiles, traps:[n, (n - 1)*n/2 + 1], ans: n*(n + 1)/2};
 }
 // One figure drawn with unit u at (x0, y0); dots at the corners for the paper's 'rows' figures,
@@ -94,6 +98,9 @@ function drawRectFig(q){
   // the example: three squares in a row (6 rectangles), or for a row one square fewer than the question's
   const ex = q.shape === 'row' ? q.tiles.slice(0, -1) : [[0, 0, 1, 1], [1, 0, 1, 1], [2, 0, 1, 1]], dots = q.shape === 'rows';
   const m = ex.length*(ex.length + 1)/2, fig = tr('фигура от части', 'фігура з частин');
+  if(q.shape === 'bare') return '<div class="ask">' + tr('Колко са правоъгълниците?', 'Скільки прямокутників?') + '</div>' +
+    '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +
+    '<div class="line lg">' + SLOT + '</div>';
   return dots
     ? '<div class="ask">' + tr('Тук правоъгълниците са <span class="num">6</span>.', 'Тут прямокутників <span class="num">6</span>.') + '</div>' +
       '<div class="fig small">' + rectFigSvg(ex, true, fig) + '</div>' +
