@@ -848,3 +848,22 @@ body.tabbed .sheet-in{padding-bottom:96px}
 #today .nextcard:not(.main){border-color:transparent !important}
 #today .nextcard.main .eq{font-size:26px}
 #today .sheet-in{max-width:760px}
+.tcols,.tcol{display:flex; flex-direction:column; gap:14px}
+.paperset{display:flex; gap:8px; flex-wrap:wrap}
+.paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:600 15px var(--ui-font)}
+.paperset input[hidden]{display:none}
+.tcol > .btn{flex:none}
+/* the countdown to her next competition, and how ready she is */
+.paperday{display:flex; flex-direction:row; align-items:center; gap:14px; width:100%; text-align:left; padding:14px 16px; color:var(--ink); font:inherit; cursor:pointer}
+.paperday .nm{flex:1; display:flex; flex-direction:column; gap:3px; min-width:0}
+.paperday .lab{color:var(--warmink); font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase}
+.paperday .eq{font-size:17px; font-weight:700}
+.paperday .meta{font-size:13px; font-weight:600; color:var(--muted)}
+.paperday .ready{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:0 0 96px}
+.paperday .ready b{font-family:Fredoka,var(--ui-font); font-size:28px; font-weight:500; color:var(--accent-ink); line-height:1}
+.paperday .track{width:96px; height:6px; border-radius:999px; background:var(--well); overflow:hidden}
+.paperday .track i{display:block; height:100%; background:var(--accent); border-radius:999px}
+@media (min-width:1100px){
+  #today .sheet-in{max-width:1040px}
+  .tcols{display:grid; grid-template-columns:minmax(0,1fr) 340px; align-items:start; gap:20px}
+}

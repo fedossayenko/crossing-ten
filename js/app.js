@@ -51,7 +51,7 @@ export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:fals
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-export let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false };
+export let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false, next:/** @type {{ at:string, date:string } | undefined} */ (undefined) };
 // a competition under way (js/compete.js), and its clock
 export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
@@ -763,6 +763,7 @@ export function renderParent(){
   document.querySelectorAll('#lenSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.n === LOCAL.n)));
   document.querySelectorAll('#ansSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.c === '1') === !!LOCAL.choice)));
   $('csv').hidden = !LOCAL.rounds.length;
+  paintPaperSet();
 }
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
 function csvOf(rounds){
@@ -798,6 +799,8 @@ document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.da
 
 const groupOf = l => l && t('groups')[groupKey(l)] || '';
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
+// Monday 00:00 of this week, local time
+const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
 export function todayData(){
   const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
@@ -806,7 +809,8 @@ export function todayData(){
   const lv = LEVELS.find(l => l.id === S.level);
   return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
-    next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).slice(0, 4).map(card),
+    next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
+    week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(),
     compN: COMP_N, compMin: COMP_MIN };
 }
 // Today's cards: play this level now
@@ -842,6 +846,37 @@ const setLook = change => { try { localStorage.setItem(LOOK_KEY, JSON.stringify(
 document.querySelectorAll('#themeSeg button').forEach(b => b.onclick = () => setLook({ theme: b.dataset.v || undefined }));
 document.querySelectorAll('#glassSeg button').forEach(b => b.onclick = () => setLook({ solid: b.dataset.v === '1' || undefined }));
 paintLook();
+// her next competition, set by a grown-up (the rounds run over a week or two, each school on its own day)
+const paperAt = () => [...new Set(LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => compOf(p) === 'mbg' ? 'mbg-' + roundOf(p) : compOf(p)))];
+const paperAtName = at => t('comps')[at.split('-')[0]] + (at.includes('-') ? ' ' + t('mbgRounds')[at.split('-')[1]] : '');
+function paintPaperSet(){
+  const nx = LOCAL.next || { at:'', date:'' };
+  $('paperAt').innerHTML = '<option value="">' + t('noPaper') + '</option>' + paperAt().map(a => '<option value="' + a + '"' + (a === nx.at ? ' selected' : '') + '>' + paperAtName(a) + '</option>').join('');
+  $('paperDate').value = nx.date || ''; $('paperDate').hidden = !nx.at;
+}
+$('paperAt').onchange = $('paperDate').onchange = () => {
+  LOCAL.next = $('paperAt').value ? { at: $('paperAt').value, date: $('paperDate').value } : undefined; saveLocal(); paintPaperSet();
+};
+// The countdown on Today: how many days to it, and how ready she is — the levels its papers ask (her grade) learned,
+// each counting 1 + how many dated papers ask it. Nothing once the day has passed or no date is set.
+export function nextPaper(){
+  const nx = LOCAL.next;
+  if(!nx || !nx.at || !/^\d{4}-\d\d-\d\d$/.test(nx.date || '')) return null;
+  const [y, mo, d] = nx.date.split('-').map(Number), when = new Date(y, mo - 1, d), today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((+when - +today) / 864e5);
+  if(days < 0) return null;
+  const g = myGrade(), m = mastery(LOCAL.rounds), ls = LEVELS.filter(l => l.papers.some(p => paperSrc(p).startsWith(nx.at) && paperGrade(p) === g));
+  const w = l => 1 + (l.freq || 0), all = ls.reduce((s, l) => s + w(l), 0), got = ls.filter(l => m[l.id] && m[l.id].done).reduce((s, l) => s + w(l), 0);
+  return { at: nx.at, name: paperAtName(nx.at) + ' · ' + t('gradeN', g), days, ready: all ? Math.round(100 * got / all) : 0,
+    when: when.toLocaleDateString(LANG_TAG[LANG], { weekday:'long', day:'numeric', month:'long' }) };
+}
+// Train for it: the levels page, focused on that competition and round in her grade
+export function trainFor(at){
+  loadFocus();
+  [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER] = [myGrade(), at.split('-')[0], at.split('-')[1] || '', ''];
+  saveFocus(); go('levels');
+}
 document.querySelectorAll('#ansSeg button').forEach(b => b.onclick = () => {
   LOCAL.choice = b.dataset.c === '1'; saveLocal();
   document.querySelectorAll('#ansSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));

@@ -138,6 +138,23 @@ const server = http.createServer((req, res) => {
     document.querySelector('#pickAll details[data-k="+"]').open = true; document.querySelector('#pickAll details[data-k="+"]').dispatchEvent(new Event('toggle'));
     S.level = was; paintPill(); return r; })()`);
   expect(r4.side && r4.open && r4.folded && r4.pct > 0 && r4.kept, 'the levels page or the list beside the task went wrong: ' + JSON.stringify(r4));
+  // R5: a grown-up sets her next competition in the settings; Today counts down to it with how ready she is, and
+  // a tap trains for it (the levels page on that round). A day gone by shows nothing.
+  const r5 = JSON.parse(await run(`(async () => { const tick = () => new Promise(r => setTimeout(r, 30));
+    const day = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+    const set = (at, date) => { $('paperAt').value = at; $('paperAt').onchange(); $('paperDate').value = date; $('paperDate').onchange(); };
+    $('tabParents').click(); await tick();
+    const r = { options: [...$('paperAt').options].map(o => o.value).includes('mbg-autumn') };
+    set('mbg-autumn', day(5)); r.saved = LOCAL.next && LOCAL.next.at === 'mbg-autumn' && LOCAL.next.date === day(5);
+    $('tabToday').click(); await tick();
+    const card = document.querySelector('#today .paperday'), ready = card && +card.querySelector('.ready b').textContent.replace('%', '');
+    r.card = !!card && /5/.test(card.textContent) && Number.isInteger(ready) && ready >= 0 && ready <= 100;
+    card.click(); await tick(); r.trains = !$('picker').hidden && PICK_COMP === 'mbg' && PICK_ROUND === 'autumn';
+    set('mbg-autumn', day(-1)); $('tabToday').click(); await tick(); r.past = !document.querySelector('#today .paperday');
+    set('', ''); r.cleared = LOCAL.next === undefined;
+    newRound(); await tick();   // back where the next test expects her: on a fresh round
+    return JSON.stringify(r); })()`) || '{}');
+  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared, 'the next competition went wrong: ' + JSON.stringify(r5));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
@@ -253,8 +270,10 @@ const server = http.createServer((req, res) => {
       // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
       $('sheet').hidden = true; window.confirm = () => true;
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
-      { const q = S.qs[S.i]; document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); }
-      await wait(50); $('quitBtn').click(); await wait(50);
+      { const q = S.qs[S.i];   // the first task right, as А/Б/В/Г or typed (a task with several boxes stays typed)
+        if(q.options) document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click();
+        else for(let slot = 0; slot < (q.slots || 1); slot++){ [...String(answers(q)[slot])].forEach(K); K('go'); } }
+      await wait(50); if(COMP && COMP.ans[S.i]) await wait(250); $('quitBtn').click(); await wait(50);
       const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&
         $('compTable').querySelectorAll('.crow.skip').length === 19 && !$('compBest').hidden && !$('homeBtn').hidden;

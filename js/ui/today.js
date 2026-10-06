@@ -1,9 +1,10 @@
-// Today (#/today), the home screen of the Десетка 2026 redesign: hello, the streak and the rounds played today,
-// the level to play now (or the round to go back to), the levels due again, and the practice paper.
+// Today (#/today), the home screen of the Десетка 2026 redesign: hello, the streak and the rounds played today and
+// this week, the level to play now (or the round to go back to), every level due again, the countdown to her next
+// competition with how ready she is, and the practice paper. Two columns on a wide screen (app.css).
 // app.js gathers the data (todayData) and does the playing; this only draws. Same classes as the picker's cards.
 import { h, render } from '../vendor/preact.js';
 import htm from '../vendor/htm.js';
-import { go, playLevel, todayData } from '../app.js';
+import { go, playLevel, todayData, trainFor } from '../app.js';
 import { startComp } from '../compete.js';
 import { LANG, LANG_TAG, t } from '../i18n.js';
 
@@ -23,14 +24,25 @@ function Today(){
     <div class="chiprow">
       ${d.streak > 0 && html`<span class="pill warm">${t('streakDays', d.streak)}</span>`}
       <span class="pill">${t('roundsToday', d.roundsToday)}</span>
+      ${d.week > d.roundsToday && html`<span class="pill">${t('weekRounds', d.week)}</span>`}
     </div>
-    ${d.mid && html`<button class="gcard nextcard main" onClick=${() => go('play', true)}><span class="nm"><span class="lab">${t('goOn')}</span><span class="eq">${d.mid}</span></span>${CHEV}</button>`}
-    ${d.next ? html`<${LevelCard} l=${d.next} lab=${t(d.next.review ? 'reviewNext' : 'startHere')} cls=${d.mid ? '' : 'main'}/>`
-             : html`<div class="gcard advice">${t('allLearned')}</div>`}
-    ${d.due.length > 0 && html`<div class="gtitle"><b>${t('reviewNext')}</b></div>
-      <div class="duegrid">${d.due.map(l => html`<${LevelCard} l=${l}/>`)}</div>`}
-    <button class="gcard nextcard comp" onClick=${() => startComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
-    <button class="btn ghost" onClick=${() => go('levels', true)}>${t('chooseLevel')}</button>`;
+    <div class="tcols">
+      <div class="tcol">
+        ${d.mid && html`<button class="gcard nextcard main" onClick=${() => go('play', true)}><span class="nm"><span class="lab">${t('goOn')}</span><span class="eq">${d.mid}</span></span>${CHEV}</button>`}
+        ${d.next ? html`<${LevelCard} l=${d.next} lab=${t(d.next.review ? 'reviewNext' : 'startHere')} cls=${d.mid ? '' : 'main'}/>`
+                 : html`<div class="gcard advice">${t('allLearned')}</div>`}
+        ${d.due.length > 0 && html`<div class="gtitle"><b>${t('reviewNext')}</b><span>${t('dueToday', d.due.length)}</span></div>
+          <div class="duegrid">${d.due.map(l => html`<${LevelCard} l=${l}/>`)}</div>`}
+      </div>
+      <div class="tcol">
+        ${d.paper && html`<button class="gcard paperday" data-at=${d.paper.at} onClick=${() => trainFor(d.paper.at)}>
+          <span class="nm"><span class="lab">${d.paper.name}</span><span class="eq">${d.paper.when}</span><span class="meta">${t('inDays', d.paper.days)}</span></span>
+          <span class="ready" title=${t('readyHow')}><b>${d.paper.ready}%</b><span class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${d.paper.ready}
+            aria-label=${t('readyPct', d.paper.ready)}><i style=${{ width: d.paper.ready + '%' }}></i></span></span></button>`}
+        <button class="gcard nextcard comp" onClick=${() => startComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
+        <button class="btn ghost" onClick=${() => go('levels', true)}>${t('chooseLevel')}</button>
+      </div>
+    </div>`;
 }
 
 export const showToday = el => render(html`<${Today}/>`, el);

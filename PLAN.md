@@ -206,8 +206,12 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   one row scrolling sideways. ≥1100 px landscape: the played level's group beside the task (a glass panel, the
   current one marked, a switch mid-round asks first; hidden in a paper). Not done: E2's lazy rendering of rows (#15,
   ~9,000 elements at 1,000 levels) — when the picker is measurably slow.
-- **R5. Today**: start here, `dueList()` of every review due, week numbers, countdown + readiness % (from
-  paper dates; readiness = the focus's levels learned, weighted by how often papers ask them).
+- **R5. Today — DONE.** Every review due (not four), "N за днес"; rounds this week beside today's; the countdown to her next
+  competition — set by a grown-up in the settings (a round runs over one or two weeks, each school on its own day;
+  no 2026/27 dates published yet, so none are built in), with readiness = the levels its papers ask in her grade
+  learned, each weighing 1 + how many dated papers ask it; a tap opens the levels page focused on that round.
+  ≥1100 px: two columns (play on the left; the competition, the paper and the level choice on the right).
+  Also fixed: the early-stop competition test assumed its first task was А/Б/В/Г (a flake about one run in three).
 - **R6. Notebook**: from per-task records — slips grouped, examples rebuilt from seeds, "Поправи N"
   practises those very tasks, fixed → recheck in a week.
 - **R7. Round end, Badges, Parents (+ per-shape report, old D2), ParentsMore (grade moves here), Players
