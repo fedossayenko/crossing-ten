@@ -35,7 +35,8 @@
     for(let v = 0; v <= 30; v++) if(L === (s.minus ? R - v : R + v)) fits.push(v);
     if((s.shape === 'same' || s.shape === 'diff') && (fits.length !== 1 || fits[0] !== s.ans || s.ans > 9 || R > 20)) fail('sides:', s);
     // 158: ■ and ● searched for in the two equalities
-    const c = Q.raw(158); let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
+    let c = Q.raw(158); while(c.shape === 'stack') c = Q.raw(158);   // one flower in two lines: check/grade1c-A.js
+    let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
     let dot = -1; for(let v = 0; v <= 20; v++) if(c.c - sq === v) dot = v;
     if([dot - sq, dot + sq, dot, dot + dot - sq][['minus', 'plus', 'dot', 'twice'].indexOf(c.ask)] !== c.ans || c.ans < 0 || c.b > 20) fail('eqcross:', c);
     // 165: every digit put in by text and the equality evaluated
@@ -205,7 +206,8 @@
     }
     if(fits.length !== 1 || fits[0] !== s.ans || new Set([s.x, s.y, s.z]).size !== 3) fail('symeq: ' + fits, s);
     // picdig: every set of digits tried against what is shown
-    const p = Q.raw(172), found = new Set();
+    let p = Q.raw(172); while(p.shape === 'twin') p = Q.raw(172);   // [x][x] − [y][z]: check/grade1c-A.js
+    const found = new Set();
     if(p.shape === 'sub'){
       for(let P = 1; P <= 9; P++) for(let R = 1; R <= 9; R++) for(let Y = 0; Y <= 9; Y++)
         if(new Set([P, R, Y]).size === 3 && 10*P + R === p.m1 - p.k1 && 10*P + Y === p.m2 - p.k2) found.add(10*R + Y - P);

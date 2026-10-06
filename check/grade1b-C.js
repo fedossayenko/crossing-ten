@@ -55,7 +55,8 @@
       if(fit.size !== 1 || !fit.has(y.ans) || y.T > 20) fail('symeq part', y);
     }
     // 158: ■ and ● searched for, then the ask
-    const c = Q.raw(158); let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
+    let c = Q.raw(158); while(c.shape === 'stack') c = Q.raw(158);   // one flower in two lines: check/grade1c-A.js
+    let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
     const dot = c.c - sq, want = {minus: dot - sq, plus: dot + sq, twice: dot + dot - sq, dot}[c.ask];
     if(dot < 1 || want !== c.ans || want < 0 || want > 20) fail('eqcross', c);
     // 166: every digit of the three numbers crossed out by cutting it from the written sum
