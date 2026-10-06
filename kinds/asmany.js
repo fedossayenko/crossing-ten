@@ -15,9 +15,10 @@ export function genAsMany(){
 }
 // МБГ Полуфинал 2024, 1 клас, задача 18: the numbers from 2 to ☺ are as many as the numbers from ☺ to 20 — ☺?
 // ☺ = 10 leaves 9 against 11, so one on: ☺ = 11, ten numbers each side (☺ itself counted in both).
+// Полуфинал 2023, задача 18: from 10 to ☻ as many as from ☻ to 32 — ☻ = 21, twelve each side.
 export function genAsManyMid(){
   for(;;){
-    const a = 1 + rnd(9), b = 14 + rnd(17);
+    const a = 1 + rnd(10), b = 14 + rnd(19);
     if((a + b) % 2) continue;
     const m = (a + b) / 2;
     return {kind:'asmany', shape:'mid', a, b, traps: [...new Set([b % 2 ? m - 1 : b / 2, b - a, (b - a) / 2])].filter(v => v !== m), ans: m};

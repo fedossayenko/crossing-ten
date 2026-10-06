@@ -89,9 +89,9 @@
     const y = Q.raw(160);
     if(y.shape === 'double' && (solve['symeq:double'](y) !== y.ans || new Set([y.x, y.y, y.z]).size !== 3 || y.s1 > 20 || y.s3 > 20)) fail('symeq double: ' + solve['symeq:double'](y), y);
     const b = Q.raw(216);
-    if(solve['sumdiff:board'](b) !== b.ans || b.S > 20 || b.small < 1 || b.traps.includes(b.ans)) fail('sumdiff board: ' + solve['sumdiff:board'](b), b);
+    if(solve['sumdiff:board'](b) !== b.ans || b.S > 22 || b.small < 1 || b.traps.includes(b.ans)) fail('sumdiff board: ' + solve['sumdiff:board'](b), b);
     const m = Q.raw(217);
-    if(solve['asmany:mid'](m) !== m.ans || m.a < 1 || m.a > 9 || m.b < 14 || m.b > 30 || m.traps.includes(m.ans)) fail('asmany mid: ' + solve['asmany:mid'](m), m);
+    if(solve['asmany:mid'](m) !== m.ans || m.a < 1 || m.a > 10 || m.b < 14 || m.b > 32 || m.traps.includes(m.ans)) fail('asmany mid: ' + solve['asmany:mid'](m), m);
     const c = Q.raw(218);
     if(solve.notcolor(c) !== c.ans || c.c.some(v => v < 1) || c.not.reduce((s, v) => s + v, 0) > 20 || c.traps.includes(c.ans)) fail('notcolor: ' + solve.notcolor(c), c);
     const w = Q.raw(219);

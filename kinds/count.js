@@ -67,6 +67,17 @@ export function genCountShort(){
   const lo = natural ? 1 : 0, hi = shape ? n - 1 : n;
   return {kind:'count', shape, sum, natural, two:false, n, lo, hi, ans: sum ? (lo + hi)*(hi - lo + 1)/2 : hi - lo + 1};
 }
+// Level 164: genCountShort without level 201's 'NOT less than' shape. МБГ Полуфинал 2023, 1 клас, задача 10: the
+// numbers not greater than 3 are 4 — their sum? 0 + 1 + 2 + 3 = 6. So 164 sometimes words its sum that way, telling
+// how many there are. Drawn after the question is made, not inside genCountShort, so no other question moves
+// (level 201 draws from genCountShort too, skipping every other shape).
+export function genCountTold(){
+  for(;;){
+    const q = genCountShort();
+    if(q.shape === 6) continue;
+    return q.sum && !q.natural && q.shape === 0 && Math.random() < 0.4 ? Object.assign(q, {told: true}) : q;
+  }
+}
 // МБГ Полуфинал 2025, 1 клас, задача 6: Петър meant to write every number from 1 to 12, but wrote only 11, 1, 2,
 // 7, 9, 12 and 8 — how many did he leave out? 12 numbers, 7 of them written: 12 − 7 = 5.
 export function genCountMissed(){
@@ -121,7 +132,9 @@ function drawCount(q){
       '<div class="line md">' + SLOT +
       ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
   }
-  const ask = q.sum ? tr('Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.',
+  const ask = q.told ? tr('Числата, които ' + cond + ', са ' + (q.hi - q.lo + 1) + '. Пресметнете <b>сбора</b> им.',
+                          'Чисел, які ' + ukCond + ', всього ' + (q.hi - q.lo + 1) + '. Обчисліть їхню <b>суму</b>.')
+            : q.sum ? tr('Пресметнете <b>сбора</b> на всички ' + what + ', които ' + cond + '.',
                          'Обчисліть <b>суму</b> всіх ' + ukWhat + ', які ' + ukCond + '.')
                     : tr('<b>Колко са</b> всички ' + what + ', които ' + cond + '?',
                          '<b>Скільки всього</b> ' + ukWhat + ', які ' + ukCond + '?');
