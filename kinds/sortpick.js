@@ -8,7 +8,27 @@ import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 const SORTPICK_EX = { digit: [[[9, 12, 10], '91012', 0], [[9, 7, 0, 13], '07913', 9]],
                       mid:   [[[9, 12, 10], '', 10], [[9, 7, 0, 13, 1], '', 7]] };
 const sortUp = ns => ns.slice().sort((a, b) => a - b);
+// the middle digit of the numbers in order, and А/Б/В/Г that stay digits: the other digits of the row, then the neighbours of the answer
+function sortPickDigit(nums){
+  const joined = sortUp(nums).join(''), ans = +joined[(joined.length - 1) / 2];
+  const traps = [...new Set([...joined].map(Number).concat([(ans + 1) % 10, (ans + 9) % 10]))].filter(d => d !== ans).slice(0, 3);
+  return {kind:'sortpick', shape:'digit', nums, traps, ans};
+}
+// МБГ Полуфинал 2022, 1 клас, задачи 5 и 6: the same two examples each, then five numbers of one sort — a run that
+// crosses ten, 8, 9, 10, 11, 7 ⟹ 7891011, seven digits, the fourth is 1; five round tens, 10, 30, 20, 0, 40 ⟹ 20.
+// Drawn after the other question, so a seed that asks that keeps asking it.
 export function genSortPick(){
+  const q = genSortPickAny();
+  if(Math.random() >= 0.3) return q;
+  if(q.shape === 'digit'){
+    // a run a … a + 4 with an odd count of digits: one-digit numbers, or across ten from 7 or 9 (6 or 8 give an even count)
+    const a = Math.random() < 0.5 ? (Math.random() < 0.5 ? 7 : 9) : 1 + rnd(5);
+    return sortPickDigit(shuffle([a, a + 1, a + 2, a + 3, a + 4]));
+  }
+  const nums = shuffle([0, 10, 20, 30, 40, 50]).slice(0, 5);
+  return {kind:'sortpick', shape:'mid', nums, ans: sortUp(nums)[2]};
+}
+function genSortPickAny(){
   for(;;){
     const shape = Math.random() < 0.5 ? 'digit' : 'mid';
     const k = shape === 'mid' ? (Math.random() < 0.5 ? 3 : 5) : 3 + rnd(2);
@@ -23,9 +43,7 @@ export function genSortPick(){
     if(SORTPICK_EX[shape].some(e => sortUp(e[0]).join() === up.join())) continue;   // not one of the examples again
     if(shape === 'digit'){
       if(joined.length % 2 === 0 || joined.length > 9) continue;                     // a middle digit needs an odd count
-      // А/Б/В/Г stay digits: the other digits of the row, then the neighbours of the answer
-      const ans = +joined[(joined.length - 1) / 2], traps = [...new Set([...joined].map(Number).concat([(ans + 1) % 10, (ans + 9) % 10]))].filter(d => d !== ans).slice(0, 3);
-      return {kind:'sortpick', shape, nums, traps, ans};
+      return sortPickDigit(nums);
     }
     return {kind:'sortpick', shape, nums, ans: up[(k - 1) / 2]};
   }

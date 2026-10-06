@@ -65,15 +65,16 @@
     if(made.size !== p.ans || p.traps[0] !== plain.size || plain.size >= made.size || [...made].sort((a, b) => a - b).join() !== p.nums.join()) fail('digperm flip: ' + [...made], p);
     // 167's own count never turns a card
     if(Q.raw(167).shape === 'flip') throw new Error('level 167 turned a card over');
-    // 209: every set of digits crossed out of the written equality, the fewest that leave it true
-    const x = Q.raw(209), txt = x.shown.slice(0, 3).join('+') + '=' + x.shown[3], at = [...txt].map((ch, j) => /\d/.test(ch) ? j : -1).filter(j => j >= 0);
+    // 209: every set of digits crossed out of the written equality, the fewest that leave it true (the round tens of
+    // Полуфинал 2023 task 16 have four addends at most, and need up to three crossed: check/grade1d-B.js)
+    const x = Q.raw(209), txt = x.shown.slice(0, -1).join('+') + '=' + x.shown[x.shown.length - 1], at = [...txt].map((ch, j) => /\d/.test(ch) ? j : -1).filter(j => j >= 0);
     let least = Infinity;
     for(let mask = 0; mask < 1 << at.length; mask++){
-      const gone = new Set(at.filter((_, b) => mask >> b & 1)), t = [...txt].filter((_, j) => !gone.has(j)).join(''), [lhs, rhs] = t.split('='), ns = lhs.split('+').concat(rhs);
-      if(ns.some(n => !n || /^0\d/.test(n))) continue;
-      if(+ns[0] + +ns[1] + +ns[2] === +ns[3]) least = Math.min(least, gone.size);
+      const gone = new Set(at.filter((_, b) => mask >> b & 1)), t = [...txt].filter((_, j) => !gone.has(j)).join(''), [lhs, rhs] = t.split('='), ns = lhs.split('+');
+      if(ns.concat(rhs).some(n => !n || /^0\d/.test(n))) continue;
+      if(ns.reduce((s, n) => s + +n, 0) === +rhs) least = Math.min(least, gone.size);
     }
-    if(least !== x.ans || least < 1 || least > 2) fail('cross few: ' + least, x);
+    if(least !== x.ans || least < 1 || least > (x.shape === 'tens' ? 3 : 2) || x.shown.length !== (x.shape === 'tens' ? x.ans + 2 : 4)) fail('cross few: ' + least, x);
   }
   console.log('МБГ Полуфинал 2024 and 2025, 1 клас: 2024 tasks 3, 4, 6, 7, 8, 12, 16 and 2025 tasks 1, 8 match the key and their levels ask them; the hidden digit, 1■ − ■, the digit rows, the digit counts, the tally, the turned card and the fewest crossed digits worked out again');
 }

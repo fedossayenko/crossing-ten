@@ -44,12 +44,12 @@
     for(let v = 0; v <= 9; v++){ const e = d.e.replace(/■/g, v); if(/(^| )0\d/.test(e)) continue; const [l, r] = e.split(' = ').map(x => eval(x.replace(/−/g, '-'))); if(l === r) ok.push(v); }
     if(ok.length !== 1 || ok[0] !== d.ans) fail('digeq: ' + ok, d);
     // 166: every digit crossed out of the written sum
-    let x = Q.raw(166); while(x.shape === 'three') x = Q.raw(166);   // three numbers: check/grade1b-C.js
+    let x = Q.raw(166); while(x.shape === 'three' || x.shape === 'one') x = Q.raw(166);   // three numbers: check/grade1b-C.js; a one-digit sum: check/grade1d-B.js
     const w = String(x.x) + String(x.y), sums = [...w].map((_, k) => { const t = w.slice(0, k) + w.slice(k + 1); return k < 2 ? +t.slice(0, 1) + +t.slice(1) : +t.slice(0, 2) + +t.slice(2); });
     const best = x.least ? Math.min(...sums) : Math.max(...sums);
     if(sums.filter(v => v === best).length !== 1 || +w[sums.indexOf(best)] !== x.ans || new Set(w).size !== 4) fail('crossmin:', x);
     // 167: every two-digit number tested for its digits
-    let p = Q.raw(167); while(p.shape === 'count') p = Q.raw(167);   // the count: check/grade1b-C.js
+    let p = Q.raw(167); while(p.shape === 'count' || p.shape === 'four') p = Q.raw(167);   // the count: check/grade1b-C.js; four digits: check/grade1d-B.js
     let S = 0; for(let v = 10; v <= 99; v++){ const a = Math.floor(v / 10), b = v % 10; if(a !== b && p.ds.includes(a) && p.ds.includes(b)) S += v; }
     if(S !== p.ans) fail('digperm:', p);
     // 173: every order of the three cards, split after the first or the second
