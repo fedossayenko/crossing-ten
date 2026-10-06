@@ -200,8 +200,12 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   row (`eq` a string or `{ bg, uk }`, `desc:{ en, bg, uk }`); i18n.js 86 → 43 KB. E1: groups are keyed (`groupKey`:
   the sign for sums, else `grp`), `t('groups')` a map by key; check.js checks every key named in every language and every
   level in exactly one group.
-- **R4. Levels page** (E1, E2, C4): one row renderer shared with the sidebar; groups keyed by `grp`;
-  collapsed groups; status as %; level text from its row.
+- **R4b. Levels page — DONE.** One row renderer (`levelRow`) for the levels page and the list beside the task; status
+  as "70%" first try on the last round (with how long ago); groups fold (`<details>`: open when a topic is picked or
+  it holds the level played or suggested; a fold she makes is kept while the app is open); on a phone each filter is
+  one row scrolling sideways. ≥1100 px landscape: the played level's group beside the task (a glass panel, the
+  current one marked, a switch mid-round asks first; hidden in a paper). Not done: E2's lazy rendering of rows (#15,
+  ~9,000 elements at 1,000 levels) — when the picker is measurably slow.
 - **R5. Today**: start here, `dueList()` of every review due, week numbers, countdown + readiness % (from
   paper dates; readiness = the focus's levels learned, weighted by how often papers ask them).
 - **R6. Notebook**: from per-task records — slips grouped, examples rebuilt from seeds, "Поправи N"

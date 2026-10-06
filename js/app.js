@@ -367,7 +367,7 @@ export function show(){
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
   $('compRow').hidden = !COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
-  $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP;
+  $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options;
   if(q.options) paintChoices();
   $('card').className = 'card';
@@ -640,6 +640,7 @@ export function finish(){
   saveLocal();
   setW(weightsFrom(LOCAL.rounds));
   syncSoon();
+  paintSide();
 
   // a level learned this very round
   const nowM = mastery(LOCAL.rounds)[S.level];
@@ -657,7 +658,7 @@ export function finish(){
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
   $('again').onclick = COMP ? () => startComp() : () => newRound();
-  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; }
+  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = false; }
 
   $('sheet').hidden = false;
 }
@@ -877,6 +878,7 @@ function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), g = groupOf(l);
   $('levelName').textContent = levelName(l);
   $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (g ? ' · ' + g : '');
+  paintSide();
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
@@ -972,23 +974,45 @@ function nextUp(m, lastGrp, lastDone, now = Date.now(), pool){
 // The grades there are levels for, and the one on her profile (2nd until someone sets it).
 const GRADES = [...new Set(LEVELS.map(l => l.grade))].sort();
 const myGrade = () => PLAYER.grade || 2;
+// One level as a row — the levels page and the list beside the task (a wide screen) draw the same one.
+// How hard it is, on the rubric in the README: operations, reading, search, number size and how easy
+// the trap is to miss — five dots. Its status: learned, new, or right first time on its last round.
+const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
+  [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
+const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
+function levelStatus(l, m, hist){
+  if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
+  const h = hist[l.id];
+  if(!h) return '<span class="isnew">' + t('isNew') + '</span>';
+  const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
+  return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + ago(h.last.ts) + '</i></span>';
+}
+const levelRow = (l, m, hist, tags = '') => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
+  '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + tags + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
+  hard(l) + levelStatus(l, m, hist) + '</button>';
+// The list beside the task on a wide screen (app.css shows it): the levels of the one being played.
+// ponytail: redrawn when the level changes or a round ends; 20-odd rows, cheap.
+function paintSide(){
+  const l = LEVELS.find(x => x.id === S.level);
+  if(!l) return;
+  const m = mastery(LOCAL.rounds), hist = levelHistory(LOCAL.rounds), key = groupKey(l), mine = LEVELS.filter(x => groupKey(x) === key && x.grade === l.grade);
+  $('side').innerHTML = '<div class="grouphead"><b>' + groupOf(l) + '</b><span>' + t('learnedGroup', mine.filter(x => m[x.id] && m[x.id].done).length, mine.length) + '</span></div>' +
+    '<div class="gcard list">' + mine.map(x => levelRow(x, m, hist)).join('') + '</div>' +
+    '<button class="btn ghost sideall">' + t('chooseLevel') + '</button>';
+  $('side').querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => {
+    if(+b.dataset.lvl === S.level || (midRound() && !confirm(t('pickWarn')))) return;
+    S.level = +b.dataset.lvl; paintPill(); newRound();
+  });
+  $('side').querySelector('.sideall').onclick = () => go('levels');
+  const now = $('side').querySelector('[aria-pressed="true"]');
+  if(now) now.scrollIntoView({ block:'nearest' });
+}
+const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+const OPENED = new Map();   // a group she opened or closed on the levels page stays so while the app is open
 function buildPicker(){
   const hist = levelHistory(LOCAL.rounds);
   const m = mastery(LOCAL.rounds);
   const done = l => m[l.id] && m[l.id].done;
-  // how hard it is, on the rubric in the README: operations, reading, search,
-  // number size and how easy the trap is to miss — five dots
-  const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
-    [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
-  const status = l => {
-    if(done(l)) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
-    const h = hist[l.id];
-    if(!h) return '<span class="isnew">' + t('isNew') + '</span>';
-    const f = h.last.n ? h.last.firstTry / h.last.n : 0;
-    const col = f >= .8 ? 'var(--good)' : f >= .5 ? 'var(--warm)' : 'var(--bad)';
-    return '<span class="stat"><b style="color:' + col + '">' + h.last.firstTry + ' / ' + h.last.n + '</b><i>' + ago(h.last.ts) + '</i></span>';
-  };
-  const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
   // which papers ask this level: one tag per round, "Есен ×6" when several years share it (the years in its title)
   const paperTags = l => {
     const ps = l.papers.filter(p => !PICK_PAPER && p !== 'basics' && paperSrc(p) !== 'mbg-autumn' && (!PICK_COMP || compOf(p) === PICK_COMP) && (!PICK_ROUND || roundOf(p) === PICK_ROUND));
@@ -997,10 +1021,7 @@ function buildPicker(){
     return Object.values(byRound).map(g => ' <span class="gtag gw"' + (g.length > 1 ? ' title="' + g.map(p => t('paperTag')[paperSrc(p)]).join(', ') + '"' : '') + '>' +
       (g.length > 1 ? t('paperTag')[paperSrc(g[0])].replace(/\s*\d{4}$/, '') + ' ×' + g.length : t('paperTag')[paperSrc(g[0])]) + '</span>').join('');
   };
-  const row = l => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
-    '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + (l.src === 'basics' ? (PICK_COMP ? '' : ' <span class="gtag gb">' + t('basics') + '</span>') : PICK_GRADE ? '' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') +
-      paperTags(l) + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
-    hard(l) + status(l) + '</button>';
+  const row = l => levelRow(l, m, hist, (l.src === 'basics' ? (PICK_COMP ? '' : ' <span class="gtag gb">' + t('basics') + '</span>') : PICK_GRADE ? '' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') + paperTags(l));
 
   $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
@@ -1061,9 +1082,15 @@ function buildPicker(){
   const path = focused() && LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC)).sort((a, b) => a.d - b.d || b.freq - a.freq);
   $('pickAll').innerHTML = path ? '<div class="grouphead"><b>' + t('byDifficulty') + '</b><span>' + t('learnedGroup', path.filter(done).length, path.length) + '</span></div>' +
     '<div class="gcard list">' + path.map(row).join('') + '</div>' :
-    groups.filter(g => !PICK_TOPIC || g.k === PICK_TOPIC).map(g =>
-    '<div class="grouphead"><b>' + t('groups')[g.k] + '</b><span>' + t('learnedGroup', g.levels.filter(done).length, g.levels.length) + '</span></div>' +
-    '<div class="gcard list">' + g.levels.map(row).join('') + '</div>').join('');
+    // a group folds: open when a topic is picked, or it holds the level played or the one suggested, unless she folded it
+    groups.filter(g => !PICK_TOPIC || g.k === PICK_TOPIC).map(g => {
+      const def = !!PICK_TOPIC || g.levels.some(l => l.id === S.level || (nx && l.id === nx.id)), open = OPENED.has(g.k) ? OPENED.get(g.k) : def;
+      return '<details class="grp" data-k="' + g.k + '" data-def="' + def + '"' + (open ? ' open' : '') + '><summary class="grouphead"><b>' + CHEV + t('groups')[g.k] + '</b><span>' +
+        t('learnedGroup', g.levels.filter(done).length, g.levels.length) + '</span></summary>' +
+        '<div class="gcard list">' + g.levels.map(row).join('') + '</div></details>';
+    }).join('');
+  // a group drawn open fires a toggle of its own: only a change from how it was drawn is hers
+  $('pickAll').querySelectorAll('details').forEach(d => d.ontoggle = () => { if(String(d.open) === d.dataset.def) OPENED.delete(d.dataset.k); else OPENED.set(d.dataset.k, d.open); });
   document.querySelectorAll('#picker [data-lvl]').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
     paintPill();
@@ -1304,5 +1331,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

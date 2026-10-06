@@ -69,8 +69,8 @@ const server = http.createServer((req, res) => {
     if(!navigator.serviceWorker.controller) out.push('the service worker is not serving the page');
     for(const l of LEVELS){
       $('levelPill').click();
-      if(!document.querySelector('.pick[data-lvl="' + l.id + '"]')) document.querySelector('#pickGrades [data-v="0"]').click();   // it opens on her grade
-      document.querySelector('.pick[data-lvl="' + l.id + '"]').click();
+      if(!document.querySelector('#picker .pick[data-lvl="' + l.id + '"]')) document.querySelector('#pickGrades [data-v="0"]').click();   // it opens on her grade
+      document.querySelector('#picker .pick[data-lvl="' + l.id + '"]').click();
       for(let i = 0; i < S.qs.length; i++){
         const q = S.qs[S.i], want = answers(q).slice(0, q.slots || 1);
         if(i === 0){
@@ -127,6 +127,17 @@ const server = http.createServer((req, res) => {
     r.grade1 = PICK_GRADE === 1 && LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl).grade === 1;
     document.querySelector('#pickGrades [data-v="2"]').click(); return r; })()`);
   expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus && filt.grade1, 'the picker filters are wrong: ' + JSON.stringify(filt));
+  // R4: the list beside the task holds the played level's group with it marked; on the levels page its group is
+  // open and others folded, a fold she makes is kept, and a level played shows its first-try share
+  const r4 = await page(`(() => { const was = S.level; S.level = 5; paintPill(); PICK_FOR = null; delete LOCAL.focus; buildPicker();
+    const side = [...$('side').querySelectorAll('.pick')], det = [...document.querySelectorAll('#pickAll details')], mine = det.find(d => d.querySelector('[data-lvl="5"]'));
+    const r = { side: side.length > 1 && side.every(b => LEVELS.find(l => l.id === +b.dataset.lvl).op === '+') && ($('side').querySelector('[aria-pressed="true"]') || {}).dataset?.lvl === '5',
+      open: !!mine && mine.open, folded: det.some(d => !d.open), pct: [...document.querySelectorAll('#pickAll .stat b')].filter(b => /^[0-9]+%$/.test(b.textContent)).length };
+    mine.open = false; mine.dispatchEvent(new Event('toggle')); buildPicker();
+    r.kept = !document.querySelector('#pickAll details[data-k="+"]').open;
+    document.querySelector('#pickAll details[data-k="+"]').open = true; document.querySelector('#pickAll details[data-k="+"]').dispatchEvent(new Event('toggle'));
+    S.level = was; paintPill(); return r; })()`);
+  expect(r4.side && r4.open && r4.folded && r4.pct > 0 && r4.kept, 'the levels page or the list beside the task went wrong: ' + JSON.stringify(r4));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
