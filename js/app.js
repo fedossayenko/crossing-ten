@@ -1260,7 +1260,7 @@ function buildPicker(){
   chips('pickComps', [['', t('all')]].concat(comps.map(c => [c, c === 'basics' ? t('basics') : t('comps')[c]])), PICK_COMP, v => { PICK_COMP = v; PICK_ROUND = PICK_PAPER = ''; });
   // МБГ has rounds — autumn, winter, … — each with its years; a competition with one round skips this row
   const ofComp = PICK_COMP ? [...new Set(inGrade.flatMap(l => l.papers.filter(p => compOf(p) === PICK_COMP && (!PICK_GRADE || paperGrade(p) === PICK_GRADE) && inGrade.some(m => inPaper(m, p)))))] : [];
-  const ROUNDS = ['autumn', 'winter', 'spring', 'final'], rounds = [...new Set(ofComp.map(roundOf).filter(Boolean))].sort((a, b) => ROUNDS.indexOf(a) - ROUNDS.indexOf(b));
+  const ROUNDS = ['autumn', 'winter', 'spring', 'semifinal', 'final'], rounds = [...new Set(ofComp.map(roundOf).filter(Boolean))].sort((a, b) => ROUNDS.indexOf(a) - ROUNDS.indexOf(b));
   if(PICK_ROUND && !rounds.includes(PICK_ROUND)) PICK_ROUND = '';
   chips('pickRounds', rounds.length > 1 ? [['', t('all')]].concat(rounds.map(r => [r, t('mbgRounds')[r]])) : [], PICK_ROUND, v => { PICK_ROUND = v; PICK_PAPER = ''; });
   const yearOf = p => +(paperSrc(p).match(/\d{4}$/) || [0])[0];

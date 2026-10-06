@@ -138,6 +138,7 @@
   const srcs = [...new Set(Q.LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => p.replace(/-\d+$/, '')))];
   ['bg', 'uk', 'en'].forEach(lang => srcs.forEach(s => {
     if(!Q.TEXT[lang].papers[s] || !Q.TEXT[lang].paperTag[s]) throw new Error(lang + ' has no name for the paper ' + s);
+    if(s.startsWith('mbg-') && !Q.TEXT[lang].mbgRounds[s.split('-')[1]]) throw new Error(lang + ' has no name for the МБГ round of ' + s);   // the picker's round chips
   }));
 
   const n = {};
