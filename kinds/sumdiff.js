@@ -25,13 +25,19 @@ function genSumAndDiff(){
 // 10 + 10 differ by 0, 11 + 9 by 2, 12 + 8 by 4 — so 12. Sometimes the smaller is asked.
 // Полуфинал 2023, задача 17, asks it plainly, without the board: the difference of two numbers is 12 and their sum
 // 22 — which is the larger? 17 (17 − 5 = 12, 17 + 5 = 22). The plain wording is drawn after the question is built.
+// the bigger numbers (a sum up to 22, a difference up to 12) and the plain wording are drawn after the old
+// question, so a seed recorded before them still asks what it asked
 export function genSumBoard(){
+  let q = sumBoard(9, 10, 20);
+  if(Math.random() < 0.2) q = sumBoard(10, 12, 22, true);
+  return Math.random() < 0.3 ? Object.assign(q, {plain: true}) : q;
+}
+function sumBoard(sm, dm, top, wide){
   for(;;){
-    const small = 1 + rnd(10), d = 1 + rnd(12), big = small + d, S = small + big;
-    if(S > 22) continue;
+    const small = 1 + rnd(sm), d = 1 + rnd(dm), big = small + d, S = small + big;
+    if(S > top || (wide && S <= 20 && d <= 10)) continue;
     const asksBig = Math.random() < 0.7, ans = asksBig ? big : small;
-    const q = {kind:'sumdiff', shape:'board', S, d, small, big, asksBig, traps: (S % 2 ? [S - d] : [S / 2, S - d]).filter(v => v !== ans), ans};
-    return Math.random() < 0.3 ? Object.assign(q, {plain: true}) : q;
+    return {kind:'sumdiff', shape:'board', S, d, small, big, asksBig, traps: (S % 2 ? [S - d] : [S / 2, S - d]).filter(v => v !== ans), ans};
   }
 }
 export function genSumDiff(){

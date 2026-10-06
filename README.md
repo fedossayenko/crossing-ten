@@ -139,7 +139,7 @@ erased digits (keepdig).
 The **semifinal, 1st grade, 2022 and 2023** (tags `mbg-semifinal-2022-1` and `mbg-semifinal-2023-1`) are in whole too,
 pinned in check/grade1d-A/B/C/D.js. 2022 retells Пролет 2022 with other numbers and 2023 follows 2024 slot for slot,
 so most tasks are tags or a new shape on a level already there (each new shape drawn after the old question, so old
-seeds keep theirs); six new levels, 225–230: the sum of the missing pair, two runs taking turns, the digits in a
+seeds mostly keep theirs); six new levels, 225–230: the sum of the missing pair, two runs taking turns, the digits in a
 repeating row, segments with a worked example (both papers' task 14), squares in a strip, and the new difference.
 
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is

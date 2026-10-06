@@ -191,7 +191,9 @@ export function genPairsShort(){
 }
 
 function drawPairs(q){
-  if(q.shape === 'down') return '<div class="ask">' + tr('Например: 1 − 8 + 9 = 1 + 9 − 8. Пресметнете:', 'Наприклад: 1 − 8 + 9 = 1 + 9 − 8. Обчисліть:') + '</div>' + chainLine(q.terms);
+  if(q.shape === 'down') return '<div class="given">' + tr('Пример:', 'Приклад:') +
+    ['1 − 8 + 9 = 1 + 9 − 8 = 10 − 8 = 2', '1 − 5 + 2 + 3 = 1 + 2 + 3 − 5 = 6 − 5 = 1'].map(e => '<br><span style="white-space:nowrap">' + e + '</span>').join('') +
+    '</div><div class="ask">' + tr('Пресметнете:', 'Обчисліть:') + '</div>' + chainLine(q.terms);
   return chainLine(q.terms);
 }
 function eqPairs(q){

@@ -48,7 +48,7 @@ function genChainFive(){
     const terms = [{op:'', n: 1 + rnd(4)}];
     let run = terms[0].n;
     for(let k = 1; k < 5 && run >= 0 && run <= 8; k++){
-      const n = rnd(4), up = Math.random() < 0.5;
+      const n = terms.some(t => t.op && !t.n) ? 1 + rnd(3) : rnd(4), up = Math.random() < 0.5;   // one ± 0 at most
       terms.push({op: up ? '+' : '−', n});
       run += up ? n : -n;
     }

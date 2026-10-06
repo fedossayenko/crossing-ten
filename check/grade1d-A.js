@@ -23,7 +23,7 @@
   // the six numbers are one of about a million: the seed is replayed, the search (only after a generator change) gets 1e7 tries
   pin('Полуфинал 2023 task 2', 203, {kind:'chain', shape:'six', terms: ex('15 − 1 + 6 − 2 + 7 − 5'), paired:0, ans:20}, [20], '15 − 1 + 6 − 2 + 7 − 5', 1e7);
   // task 19 shows how a take-away moves to the end, 1 − 8 + 9 = 1 + 9 − 8, then asks
-  pin('Полуфинал 2022 task 19', 196, {kind:'pairs', shape:'down', s:5, B:10, adds:[5, 4, 3, 2, 1], terms: ex('5 − 10 + 5 + 4 + 3 + 2 + 1'), ans:10}, [10], '1 − 8 + 9 = 1 + 9 − 8. Пресметнете: 5 − 10 + 5 + 4 + 3 + 2 + 1');
+  pin('Полуфинал 2022 task 19', 196, {kind:'pairs', shape:'down', s:5, B:10, adds:[5, 4, 3, 2, 1], terms: ex('5 − 10 + 5 + 4 + 3 + 2 + 1'), ans:10}, [10], 'Пример: 1 − 8 + 9 = 1 + 9 − 8 = 10 − 8 = 2 1 − 5 + 2 + 3 = 1 + 2 + 3 − 5 = 6 − 5 = 1 Пресметнете: 5 − 10 + 5 + 4 + 3 + 2 + 1');
   pin('Полуфинал 2022 task 9', 157, {kind:'sides', shape:'tens', sym:'□', left: ex('10 + 20 + 30'), right: ex('30 + 20 + 10'), VL:60, VR:60, ans:0}, [0], '10 + 20 + 30 + □ = 30 + 20 + 10');
   // task 7: down 6 + ■ = 8, across ● − ■ = 5 (● first in the row), «Пресметнете ● + ■»
   pin('Полуфинал 2022 task 7', 158, {kind:'eqcross', shape:'flip', a:6, s:2, b:8, c:5, dot:7, ask:'plus', ans:9}, [9], '● + ■ ? 6 + = 8 ● − ■ = 5');

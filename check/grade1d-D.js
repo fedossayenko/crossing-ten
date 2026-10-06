@@ -14,7 +14,7 @@
     'symeq:triple': q => { const f = []; for(let s = 0; s <= 20; s++) for(let t = 0; t <= 60; t++) if(s === q.k && t === s + s + s) f.push([t - s, t + s, t][q.ask]); return one(f); },
     // every ○ and □ from 0 to 20 along the two arrows
     'symeq:arrow': q => { const f = []; for(let o = 0; o <= 20; o++) for(let s = 0; s <= 20; s++) if(o + q.a === q.b && q.b + s === o + o) f.push(s); return one(f); },
-    // every □, ☻ and ʘ from 0 to 20 against the three lines
+    // every □, ☻ and ◆ from 0 to 20 against the three lines
     'symeq:direct': q => { const f = []; for(let x = 0; x <= 20; x++) for(let y = 0; y <= 20; y++) for(let z = 0; z <= 20; z++) if(x + x + x === q.s1 && y + y === q.s2 && y + z + x === q.s3) f.push(z); return one(f); },
     // every ○, ● and □ from 0 to 20
     'symeq:part': q => { const f = []; for(let o = 0; o <= 20; o++) for(let d = 0; d <= 20; d++) for(let s = 0; s <= 20; s++) if(o + d + s === q.T && o + d === q.a && (q.rel ? s === o + q.d : d + s === q.b)) f.push(d); return one(f); },
@@ -49,7 +49,7 @@
   pin('Полуфинал 2022 task 4', 160, {kind:'symeq', shape:'triple', k:3, ask:0, tri:9, traps:[9], ans:6}, [6], 'Колко е ∆ − □, ако: □ = 3 ∆ = □ + □ + □');
   pin('Полуфинал 2022 task 10', 160, {kind:'symeq', shape:'part', rel:false, o:2, f:1, s:3, T:6, a:3, b:4, d:1, ans:1}, [1], 'Колко е ●, ако: ○ + ● + □ = 6 ○ + ● = 3 ● + □ = 4');
   pin('Полуфинал 2022 task 11', 160, {kind:'symeq', shape:'arrow', x:4, a:1, b:5, traps:[4, 8], ans:3}, [3], 'Колко е □, ако: ○ ⟶ +1 5 ⟶ +□ ○ + ○');
-  pin('Полуфинал 2023 task 9', 160, {kind:'symeq', shape:'direct', x:2, y:4, z:5, s1:6, s2:8, s3:11, ans:5}, [5], 'Колко е ʘ, ако: □ + □ + □ = 6 ☻ + ☻ = 8 ☻ + ʘ + □ = 11');
+  pin('Полуфинал 2023 task 9', 160, {kind:'symeq', shape:'direct', x:2, y:4, z:5, s1:6, s2:8, s3:11, ans:5}, [5], 'Колко е ◆, ако: □ + □ + □ = 6 ☻ + ☻ = 8 ☻ + ◆ + □ = 11');
   pin('Полуфинал 2023 task 17', 216, {kind:'sumdiff', shape:'board', S:22, d:12, small:5, big:17, asksBig:true, traps:[11, 10], ans:17, plain:true}, [17],
     'Разликата на две числа е 12, а сборът им е 22. Кое е по-голямото число?');
   pin('Полуфинал 2023 task 18', 217, {kind:'asmany', shape:'mid', a:10, b:32, traps:[16, 22, 11], ans:21}, [21], 'Числата от 10 до ☺ са толкова, колкото са числата от ☺ до 32. Кое число е ☺?');
@@ -75,5 +75,5 @@
     const g = Q.raw(230);
     if(solve['grow:diff'](g) !== g.ans || g.M < 6 || g.M > 20 || g.S < 2 || g.S >= g.M || g.a < 1 || g.a > 3 || g.b < 1 || g.b > 3 || [g.M2, g.S2, g.ans].some(v => v < 0 || v > 20) || g.traps.includes(g.ans)) fail('grow short: ' + solve['grow:diff'](g), g);
   }
-  console.log('МБГ Полуфинал 2022 and 2023, 1 клас (builder D): 2022 tasks 4, 10, 11, 17, 18, 20 and 2023 tasks 9, 10, 17, 18, 19 match the key and their levels ask them; ∆ = □ + □ + □, the arrows, □ ☻ ʘ, the plain sum and difference, the counted sum and the new difference worked out again by brute force');
+  console.log('МБГ Полуфинал 2022 and 2023, 1 клас (builder D): 2022 tasks 4, 10, 11, 17, 18, 20 and 2023 tasks 9, 10, 17, 18, 19 match the key and their levels ask them; ∆ = □ + □ + □, the arrows, □ ☻ ◆, the plain sum and difference, the counted sum and the new difference worked out again by brute force');
 }

@@ -68,8 +68,8 @@ function genSymArrow(){
     return {kind:'symeq', shape:'arrow', x, a, b: x + a, traps: [x, 2*x], ans: x - a};
   }
 }
-// МБГ Полуфинал 2023, 1 клас, задача 9: □ + □ + □ = 6, ☻ + ☻ = 8, ☻ + ʘ + □ = 11 — ʘ? □ = 2 and ☻ = 4, each
-// from a line of its own, then ʘ = 11 − 4 − 2 = 5. The paper's own figures, □ ☻ ʘ.
+// МБГ Полуфинал 2023, 1 клас, задача 9: □ + □ + □ = 6, ☻ + ☻ = 8, ☻ + ◆ + □ = 11 — ◆? □ = 2 and ☻ = 4, each
+// from a line of its own, then ◆ = 11 − 4 − 2 = 5. The paper's figures, □ ☻ and ◆ drawn as ◆ (on a phone ◆ reads as a 0).
 function genSymDirect(){
   for(;;){
     const x = 1 + rnd(5), y = 1 + rnd(8), z = 1 + rnd(8);
@@ -88,12 +88,12 @@ const symEqLines = q => q.shape === 'chain'
   : q.shape === 'def' ? ['□ = ' + q.k, '∆ = ' + symDefOf(q)]
   : q.shape === 'triple' ? ['□ = ' + q.k, '∆ = □ + □ + □']
   : q.shape === 'arrow' ? ['○ + ' + q.a + ' = ' + q.b, q.b + ' + □ = ○ + ○']
-  : q.shape === 'direct' ? ['□ + □ + □ = ' + q.s1, '☻ + ☻ = ' + q.s2, '☻ + ʘ + □ = ' + q.s3]
+  : q.shape === 'direct' ? ['□ + □ + □ = ' + q.s1, '☻ + ☻ = ' + q.s2, '☻ + ◆ + □ = ' + q.s3]
   : q.shape === 'part' ? ['○ + ● + □ = ' + q.T, '○ + ● = ' + q.a, q.rel ? '□ = ○ + ' + q.d : '● + □ = ' + q.b]
   : q.shape === 'double' ? ['▲ + ◆ + ☺ = ' + q.s1, '▲ + ▲ = ' + q.s2, '☺ + ☺ + ▲ = ' + q.s3]
   : ['■ + ∆ = ' + q.s1, '∆ + ○ = ' + q.s2, '■ + ○ = ' + q.s3];
 const symEqAsk = q => q.shape === 'chain' ? '○' : q.shape === 'double' ? '◆' : q.shape === 'def' ? (q.ask ? '□ + ' + q.p + ' + ∆ − ' + q.m : '□ + ∆') : q.shape === 'part' ? '●'
-  : q.shape === 'triple' ? ['∆ − □', '∆ + □', '∆'][q.ask] : q.shape === 'arrow' ? '□' : q.shape === 'direct' ? 'ʘ' : SYMS[q.ask];
+  : q.shape === 'triple' ? ['∆ − □', '∆ + □', '∆'][q.ask] : q.shape === 'arrow' ? '□' : q.shape === 'direct' ? '◆' : SYMS[q.ask];
 // 'arrow' is drawn as the paper prints it: one row, each arrow with what it adds written under it
 const symArrow = lbl => '<span style="display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1; margin:0 .3em">⟶<small>' + lbl + '</small></span>';
 const symArrowRow = q => '<span style="white-space:nowrap">○' + symArrow('+' + q.a) + q.b + symArrow('+□') + '○ + ○</span>';
@@ -118,10 +118,10 @@ function whySymEq(q, full){
       '</b> &nbsp;→&nbsp; ' + q.b + ' + □ = ' + 2*q.x + ' &nbsp;→&nbsp; □ = ' + 2*q.x + ' − ' + q.b + ' = ' + q.ans;
   }
   if(q.shape === 'direct'){
-    if(!full) return tr('Започни от реда, в който има само □. После намери ☻, а накрая — ʘ.',
-      'Почни з рядка, де є тільки □. Потім знайди ☻, а наприкінці — ʘ.');
+    if(!full) return tr('Започни от реда, в който има само □. После намери ☻, а накрая — ◆.',
+      'Почни з рядка, де є тільки □. Потім знайди ☻, а наприкінці — ◆.');
     return q.x + ' + ' + q.x + ' + ' + q.x + ' = ' + q.s1 + ' &nbsp;→&nbsp; □ = <b>' + q.x + '</b> &nbsp;→&nbsp; ' + q.y + ' + ' + q.y + ' = ' + q.s2 + ' &nbsp;→&nbsp; ☻ = <b>' + q.y +
-      '</b> &nbsp;→&nbsp; ʘ = ' + q.s3 + ' − ' + q.y + ' − ' + q.x + ' = ' + q.ans;
+      '</b> &nbsp;→&nbsp; ◆ = ' + q.s3 + ' − ' + q.y + ' − ' + q.x + ' = ' + q.ans;
   }
   if(q.shape === 'def'){
     if(!full) return tr('Първо намери ∆ — той е записан чрез □. После сложи числата на мястото на фигурите.',
