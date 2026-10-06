@@ -186,6 +186,22 @@ const server = http.createServer((req, res) => {
     LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
     return JSON.stringify(r); })()`) || '{}');
   expect(r6.listed && r6.shown && r6.round && r6.fixed && r6.recheck && r6.logged, 'the mistakes notebook went wrong: ' + JSON.stringify(r6));
+  // R7: the grown-ups see this week against the last and the shapes she misses most; her grade is set there (and
+  // stamped, so it wins on her other devices); a round's end says how long it took; a player's card, grade and rounds
+  const r7 = JSON.parse(await run(`(async () => { const tick = () => new Promise(r => setTimeout(r, 30));
+    const bad = s => /undefined|NaN|null/.test(s);
+    $('tabParents').click(); await tick();
+    const r = { week: !bad($('weekCard').textContent) && /[0-9]/.test($('weekCard').textContent) && $('weekCard').textContent.includes(t('thisWeek')),
+      shapes: $('shapeWrap').hidden || (!bad($('byShape').textContent) && $('byShape').children.length > 0) };
+    const g0 = PLAYER.grade || 2, t0 = Date.now();
+    document.querySelector('#gradeSeg [data-g="3"]').click();
+    r.grade = PLAYER.grade === 3 && PLAYER.updated >= t0 && document.querySelector('#gradeSeg [data-g="3"]').getAttribute('aria-pressed') === 'true';
+    document.querySelector('#gradeSeg [data-g="' + g0 + '"]').click(); r.back = PLAYER.grade === g0;
+    $('who').click(); await tick(); r.player = document.querySelector('.pchoose .pmeta').textContent.includes(t('gradeN', g0));
+    newRound(); await tick(); finish(); await tick(); r.took = /[0-9]/.test($('scoreSub').textContent) && $('scoreSub').textContent.includes(t('took', 0, 0).replace(/^[0-9 ]+/, '').trim());
+    $('sheet').hidden = true; newRound(); await tick();
+    return JSON.stringify(r); })()`) || '{}');
+  expect(r7.week && r7.shapes && r7.grade && r7.back && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };

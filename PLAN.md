@@ -219,8 +219,14 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   five new tasks (redo { check }). slipOf also names a sign read backwards in a ± chain. Reached from Today and from
   the round's end ("В тетрадката"). Fixed on the way: plainQ dropped a task's level, so a paper's redo logged its tasks
   under the level picked before it.
-- **R7. Round end, Badges, Parents (+ per-shape report, old D2), ParentsMore (grade moves here), Players
-  (devices, last sync), Welcome.**
+- **R7. Other screens — DONE on the device (this commit).** Round end: how long it took, the notebook link, two columns
+  ≥1100 px. Parents: "this week" (rounds, first try with the change from last week, levels newly learned), "what to
+  practise" — the level shapes she misses most over 30 days, each with a task of it drawn again from its seed (the old
+  D2) — and her grade in the settings (stamped `updated`, so it wins across devices). Players: grade · rounds on each card.
+  The list beside the task is folded away by default (a button opens it; remembered per device): she solves with the
+  whole screen. Badges and Welcome already match. **Left: the worker's side** — devices and last sync per family
+  (`sessions.last_seen` + device) and changing the password: a D1 migration on the families' live data, done as its
+  own step with a backup first.
 - **R8. Weekly card**: SVG → canvas → PNG, `navigator.share({files})` built before the tap (iOS user
   activation), download fallback; a parent's action, name optional.
 - smoke.js is rewritten alongside R2–R7, screen by screen.

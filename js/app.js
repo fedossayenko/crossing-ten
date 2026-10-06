@@ -556,7 +556,8 @@ export function finish(){
   const pts = COMP ? S.qs.reduce((a, q, k) => a + (S.results[k] ? q.pts : 0), 0) : got;
   const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
   $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
-  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(Date.now() - COMP.t0)) : t('firstTryAt', levelName(lv));
+  const secs = Math.round((Date.now() - S.t0) / 1000);
+  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(Date.now() - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
   const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
   $('stars').setAttribute('aria-label', t('starsOf', stars));
@@ -768,6 +769,34 @@ export function renderParent(){
   document.querySelectorAll('#ansSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.c === '1') === !!LOCAL.choice)));
   $('csv').hidden = !LOCAL.rounds.length;
   paintPaperSet();
+  document.querySelectorAll('#gradeSeg button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.g === myGrade())));
+
+  // this week against the last: rounds, right first time, levels newly learned
+  const ws = weekStart(Date.now()), inWeek = (a, b) => LOCAL.rounds.filter(r => r.ts >= a && r.ts < b);
+  const pct = rs => { const n = rs.reduce((x, r) => x + r.n, 0); return n ? Math.round(100 * rs.reduce((x, r) => x + r.firstTry, 0) / n) : null; };
+  const now7 = inWeek(ws, Infinity), last7 = inWeek(ws - 7*DAY, ws), p = pct(now7), q = pct(last7);
+  const before = mastery(LOCAL.rounds.filter(r => r.ts < ws)), fresh = LEVELS.filter(l => m[l.id] && m[l.id].done && !(before[l.id] && before[l.id].done)).length;
+  const day = ms => new Date(ms).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'short' });
+  $('weekCard').innerHTML = '<div class="gtitle"><b>' + t('thisWeek') + '</b><span>' + day(ws) + ' – ' + day(ws + 6*DAY) + '</span></div>' +
+    '<div class="weekrow"><span>' + t('rounds', now7.length) + '</span>' + (p === null ? '' : '<span>' + t('firstPct', p) +
+    (q === null ? '' : ' <i class="' + (p >= q ? 'up' : 'down') + '">' + t('vsLast', p - q) + '</i>') + '</span>') +
+    (fresh ? '<span>' + t('newLevels', fresh) + '</span>' : '') + '</div>';
+
+  // the shapes of a level she misses most (each round logs a task's shape): a task of it, and how often it went wrong
+  const by = {};
+  LOCAL.rounds.filter(r => r.ts > Date.now() - 30*DAY && Array.isArray(r.t)).forEach(r => r.t.forEach(([lv, shape, seed, wrote, ok]) => {
+    if(ok === -1) return;
+    const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, n: 0, miss: 0, seed: null };
+    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)) x.seed = seed; }
+  }));
+  const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
+  $('shapeWrap').hidden = !worst.length;
+  $('byShape').innerHTML = worst.map(x => {
+    const l = LEVELS.find(y => y.id === x.lv);
+    let ex = '';
+    try { if(x.seed !== null) ex = eqText(seeded(x.seed, () => raw(x.lv))); } catch(e){}
+    return '<div class="nbitem"><span class="eq">' + (ex || (l ? levelName(l) : x.lv)) + '</span><span class="smeta">' + (l ? levelName(l) + ' · ' : '') + t('shapeMiss', x.miss, x.n) + '</span></div>';
+  }).join('');
 }
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
 function csvOf(rounds){
@@ -928,6 +957,12 @@ export function trainFor(at){
   [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER] = [myGrade(), at.split('-')[0], at.split('-')[1] || '', ''];
   saveFocus(); go('levels');
 }
+// her grade: the levels page, the suggestion and a paper keep to it
+document.querySelectorAll('#gradeSeg button').forEach(b => b.onclick = () => {
+  PLAYER.grade = +b.dataset.g; PLAYER.updated = Date.now(); savePlayers(); PICK_FOR = null;   // updated: the newest edit wins across devices
+  document.querySelectorAll('#gradeSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  syncSoon();
+});
 document.querySelectorAll('#ansSeg button').forEach(b => b.onclick = () => {
   LOCAL.choice = b.dataset.c === '1'; saveLocal();
   document.querySelectorAll('#ansSeg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
@@ -1233,7 +1268,7 @@ function paintPlayers(){
                : st.streak >= 2 ? '<span class="pill warm">' + FLAME + t('streakDays', st.streak) + '</span>' : '';
     return '<div class="ptile">' +
       '<button class="pchoose" data-id="' + p.id + '" aria-pressed="' + (p === PLAYER) + '">' + mascotSvg(p.mascot) +
-        '<b>' + esc(playerName(p)) + '</b><span class="pmeta">' + t('learnedN', LEVELS.filter(l => m[l.id] && m[l.id].done).length) +
+        '<b>' + esc(playerName(p)) + '</b><span class="pmeta">' + t('gradeN', p.grade || 2) + ' · ' + t('rounds', rounds.length) +
         '</span>' + pill + '</button>' +
       '<button class="icon pedit" data-edit="' + p.id + '" aria-label="' + t('edit') + ': ' + esc(playerName(p)) + '">' + EDIT_ICON + '</button>' +
     '</div>';

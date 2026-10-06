@@ -872,6 +872,16 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .nbdone span{font-size:13px}
 #notebook .sheet-in{max-width:760px}
 .nbhead b::first-letter,.nbdone b::first-letter{text-transform:uppercase}   /* the kinds are named in lower case for the parents' list */
+.weekrow{display:flex; flex-direction:column; gap:4px; font-size:15px; font-weight:600}
+.weekrow i{font-style:normal; font-size:13px} .weekrow i.up{color:var(--good)} .weekrow i.down{color:var(--bad)}
+.nbitem .smeta{font-size:12.5px; color:var(--muted); text-align:right}
+/* the round's end on a wide screen: the result on the left, what to look at again on the right */
+@media (min-width:1100px){
+  #sheet .sheet-in:has(> #missWrap:not([hidden])),#sheet .sheet-in:has(> #compWrap:not([hidden])){max-width:1040px; display:grid; grid-template-columns:400px minmax(0,1fr); column-gap:32px; align-content:start}
+  #sheet .sheet-in > *{grid-column:1}
+  #sheet .sheet-in > #compWrap,#sheet .sheet-in > #missWrap{grid-column:2; grid-row:1 / span 12}
+  #sheet .sheet-in > #compWrap:not([hidden]) ~ #missWrap{grid-row:auto}
+}
 .nbhow{font-size:13px; color:var(--muted); margin:0; padding:0 4px}
 .paperset{display:flex; gap:8px; flex-wrap:wrap}
 .paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:15px; font-weight:600}
