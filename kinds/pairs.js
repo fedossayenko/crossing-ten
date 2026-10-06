@@ -126,8 +126,19 @@ export function genPairsRegroup(){
     const S = adds.reduce((t, v) => t + v, 0), B = s + 4 + rnd(9);   // more than the first number, never more than all of it
     if(B > s + S || B <= s) continue;
     const terms = [{op:'', n:s}, {op:'−', n:B}].concat(adds.map(n => ({op:'+', n})));
-    return {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
+    // now and then the numbers counting down instead, drawn after the rest, so the others keep their seeds
+    return Math.random() < 0.3 ? genPairsDown() : {kind:'pairs', shape:'regroup', s, B, adds, terms, ans: s + S - B};
   }
+}
+// МБГ Полуфинал 2022, 1 клас, задача 19: 5 − 10 + 5 + 4 + 3 + 2 + 1 — the first number added again and then every number
+// down to 1, the take-away more than the first number, never more than all of it (shape 'down'). The paper shows how
+// to move a take-away to the end first: 1 − 8 + 9 = 1 + 9 − 8.
+function genPairsDown(){
+  const n = 3 + rnd(3), adds = [];
+  for(let i = n; i >= 1; i--) adds.push(i);
+  const S = n*(n + 1)/2, B = n + 1 + rnd(S);
+  const terms = [{op:'', n}, {op:'−', n:B}].concat(adds.map(v => ({op:'+', n:v})));
+  return {kind:'pairs', shape:'down', s:n, B, adds, terms, ans: n + S - B};
 }
 // МБГ Полуфинал 2025, 1 клас, задача 3: 3 − 2 + 3 − 3 + 4 − 4 + 1 — after the first two numbers every number added
 // is taken straight back, so 3 − 2 + 1 is all that is left (shape 'back').
@@ -179,7 +190,10 @@ export function genPairsShort(){
   return {kind:'pairs', shape:'over', k, b, cut: b + over, terms, ans: 10*k - over};
 }
 
-function drawPairs(q){ return chainLine(q.terms); }
+function drawPairs(q){
+  if(q.shape === 'down') return '<div class="ask">' + tr('Например: 1 − 8 + 9 = 1 + 9 − 8. Пресметнете:', 'Наприклад: 1 − 8 + 9 = 1 + 9 − 8. Обчисліть:') + '</div>' + chainLine(q.terms);
+  return chainLine(q.terms);
+}
 function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
@@ -193,7 +207,7 @@ function whyPairs(q, full){
     if(!full) return tr('Събери първо всичко, което се добавя, после всичко, което се маха.', 'Спершу додай усе, що додається, потім усе, що віднімається.');
     return q.a + ' + ' + q.a + ' + ' + q.b + ' + ' + q.b + ' = <b>' + 2*(q.a + q.b) + '</b>, &nbsp;' + q.c + ' + ' + (q.c - q.off) + ' = <b>' + (2*q.c - q.off) + '</b> &nbsp;→&nbsp; ' + 2*(q.a + q.b) + ' − ' + (2*q.c - q.off) + ' = ' + q.ans;
   }
-  if(q.shape === 'regroup'){
+  if(q.shape === 'regroup' || q.shape === 'down'){
     if(!full) return tr('От първото число не може да се извади толкова. Събери първо числата с плюс, после извади.', 'Від першого числа стільки не відняти. Спершу додай числа з плюсом, потім відніми.');
     const S = q.s + q.adds.reduce((t, v) => t + v, 0);
     return q.s + ' + ' + q.adds.join(' + ') + ' − ' + q.B + ' = ' + S + ' − ' + q.B + ' = ' + q.ans;

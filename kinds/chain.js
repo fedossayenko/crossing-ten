@@ -36,6 +36,25 @@ export function genChainShort(){
     if(ok) return {kind:'chain', terms, paired:0, ans:run};
   }
 }
+// МБГ Полуфинал 2022, 1 клас, задача 1: 2 − 0 + 2 − 2 + 2 — five numbers: a start of 1 to 4, then four steps of 0 to 3
+// either way, the walk never under 0 nor over 8 (shape 'five'). Level 155 draws its short walk first and the five now
+// and then after it, so a walk keeps its seed; 224 (the walk past 20) draws from genChainShort as it did.
+export function genChainWalk(){
+  let q; do q = genChainShort(); while(q.shape === 'past');
+  return Math.random() < 0.2 ? genChainFive() : q;
+}
+function genChainFive(){
+  for(;;){
+    const terms = [{op:'', n: 1 + rnd(4)}];
+    let run = terms[0].n;
+    for(let k = 1; k < 5 && run >= 0 && run <= 8; k++){
+      const n = rnd(4), up = Math.random() < 0.5;
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(terms.length === 5 && run >= 0 && run <= 8) return {kind:'chain', shape:'five', terms, paired:0, ans:run};
+  }
+}
 function genChainPast(){
   for(;;){
     const s = 16 + rnd(5), a = rnd(6), end = 21 + rnd(4), b = end - s + a;
@@ -55,7 +74,23 @@ export function genChainLong(){
     terms.push({op: up ? '+' : '−', n});
     run += up ? n : -n;
   }
-  return {kind:'chain', terms, paired:0, ans:run};
+  // now and then six numbers instead, drawn after the seven, so a seven keeps its seed
+  return Math.random() < 0.3 ? genChainSix() : {kind:'chain', terms, paired:0, ans:run};
+}
+// МБГ Полуфинал 2023, 1 клас, задача 2: 15 − 1 + 6 − 2 + 7 − 5 — six numbers: a start of 12…20 and five steps of 1 to 7,
+// the sign mostly turning at each (down, up, down, …), the walk never leaving 0…25 (shape 'six').
+function genChainSix(){
+  for(;;){
+    const terms = [{op:'', n: 12 + rnd(9)}];
+    let run = terms[0].n, up = Math.random() < 0.5;
+    for(let k = 1; k <= 5 && run >= 0 && run <= 25; k++){
+      if(k > 1 && Math.random() < 0.85) up = !up;
+      const n = 1 + rnd(7);
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(terms.length === 6 && run >= 0 && run <= 25) return {kind:'chain', shape:'six', terms, paired:0, ans:run};
+  }
 }
 
 function drawChain(q){ return chainLine(q.terms); }

@@ -59,11 +59,18 @@ function genIneqDigit(){
     const less = Math.random() < 0.6, V = 10*(less ? 5 + rnd(3) : 3 + rnd(3)), start = Math.random() < 0.6 ? 100 : 90;
     const b = 10*(1 + rnd(3)), c = start - V - b;
     if(c < 10 || c > 40) return genIneqDigit();
-    return {kind:'ineq', shape:7, ask:'count', terms:[{op:'', n:start}, {op:'−', n:b}, {op:'−', n:c}], V, less, traps:[less ? 10 - V / 10 : V / 10], ans: less ? 9 - V / 10 : V / 10 - 1};
+    // МБГ Полуфинал 2022, 1 клас, задача 8: 80 − 10 − 10 < □0 — 60 < □0 leaves 7, 8 and 9, so 3. Now and then from 80,
+    // drawn after the rest, so the other questions keep their seeds
+    if(Math.random() < 0.2) for(;;){
+      const less = Math.random() < 0.6, V = 10*(less ? 5 + rnd(3) : 3 + rnd(3)), b = 10*(1 + rnd(3)), c = 80 - V - b;
+      if(c >= 10 && c <= 40) return ineqCount(80, b, c, V, less);
+    }
+    return ineqCount(start, b, c, V, less);
   }
   const more = Math.random() < 0.6, T = 1 + rnd(3), V = 10*T + (more ? 1 : 8), b = 1 + rnd(9), c = 1 + rnd(9);   // V > T□ only for □ = 0, V < T□ only for □ = 9
   return {kind:'ineq', shape:7, ask:'which', terms:[{op:'', n:V + b + c}, {op:'−', n:b}, {op:'−', n:c}], V, more, T, traps: more ? [1, 2, 8] : [8, 7, 0], ans: more ? 0 : 9};
 }
+const ineqCount = (start, b, c, V, less) => ({kind:'ineq', shape:7, ask:'count', terms:[{op:'', n:start}, {op:'−', n:b}, {op:'−', n:c}], V, less, traps:[less ? 10 - V / 10 : V / 10], ans: less ? 9 - V / 10 : V / 10 - 1});
 const ineqDigitText = q => exprText(q.terms) + (q.ask === 'count' ? (q.less ? ' &lt; □0' : ' &gt; □0') : (q.more ? ' &gt; ' : ' &lt; ') + q.T + '□');
 const ineqSmallText = q => ['A + ■ &lt; L', '■ + A &lt; L', 'A − ■ &gt; L'][q.form].replace('A', q.A).replace('L', q.L);
 export function genIneq(){

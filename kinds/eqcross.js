@@ -17,15 +17,23 @@ export function genEqCross(){
     const s = 1 + rnd(9), a = 1 + rnd(20 - s), c = 5 + rnd(16), dot = c - s, r = Math.random();
     const ask = r < 0.45 ? 'minus' : r < 0.65 ? 'twice' : r < 0.85 ? 'plus' : 'dot';
     if(dot < 1 || (ask === 'minus' && dot < s) || (ask === 'plus' && dot + s > 20) || (ask === 'twice' && (2*dot < s || 2*dot > 20))) continue;
+    // now and then ● first in the row instead, drawn after the rest, so the other crosses keep their seeds
+    if(Math.random() < 0.25) return genEqFlip();
     return {kind:'eqcross', a, s, b: a + s, c, dot, ask, ans: ask === 'minus' ? dot - s : ask === 'plus' ? dot + s : ask === 'twice' ? 2*dot - s : dot};
   }
 }
+// МБГ Полуфинал 2022, 1 клас, задача 7: down 6 + ■ = 8, across ● − ■ = 5 — ● stands first in the row, so it is the bigger
+// one: ■ = 2, ● = 5 + 2 = 7, and ● + ■ = 9 (shape 'flip'; ● + ■ stays within 20).
+function genEqFlip(){
+  const s = 1 + rnd(9), a = 1 + rnd(20 - s), c = 1 + rnd(20 - 2*s), dot = c + s, ask = Math.random() < 0.7 ? 'plus' : 'dot';
+  return {kind:'eqcross', shape:'flip', a, s, b: a + s, c, dot, ask, ans: ask === 'plus' ? dot + s : dot};
+}
 const eqCrossAsk = q => q.ask === 'minus' ? '● − ■' : q.ask === 'plus' ? '● + ■' : q.ask === 'twice' ? '● + ● − ■' : '●';
-// the cross: a + ■ = b down the middle column, c − ■ = ● along the middle row, ■ in both
+// the cross: a + ■ = b down the middle column, c − ■ = ● along the middle row ('flip': ● − ■ = c), ■ in both
 function eqCrossSvg(q){
   const u = 34, cell = (i, j, t, tint) => '<rect x="' + (i*u + 2) + '" y="' + (j*u + 2) + '" width="' + (u - 4) + '" height="' + (u - 4) + '" rx="6" fill="' +
     (tint ? 'var(--warmbg)' : 'var(--solid)') + '" stroke="' + (tint ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6"/>' + svgText(i*u + u/2, j*u + u/2 + 6, t, 17, 'var(--ink)');
-  const down = [q.a, '+', '■', '=', q.b], across = [q.c, '−', '■', '=', '●'];
+  const down = [q.a, '+', '■', '=', q.b], across = q.shape === 'flip' ? ['●', '−', '■', '=', q.c] : [q.c, '−', '■', '=', '●'];
   return '<div class="fig"><svg viewBox="0 0 ' + 5*u + ' ' + 5*u + '" style="max-width:190px" role="img" aria-label="' + tr('две равенства на кръст', 'дві рівності хрестом') + '">' +
     down.map((t, j) => j === 2 ? '' : cell(2, j, t)).join('') + across.map((t, i) => cell(i, 2, t, i === 2)).join('') + '</svg></div>';
 }
@@ -41,7 +49,7 @@ function drawEqCross(q){
 }
 function eqEqCross(q){
   if(q.shape === 'stack') return '🌼 + ' + q.s + ' = ' + q.b + ' → 🌼 = ' + q.x + ' → ' + q.x + ' − ' + q.s + ' = ' + q.ans;
-  return q.a + ' + ■ = ' + q.b + ', ' + q.c + ' − ■ = ● → ■ = ' + q.s + ', ● = ' + q.dot + ' → ' + q.ans;
+  return q.a + ' + ■ = ' + q.b + ', ' + (q.shape === 'flip' ? '● − ■ = ' + q.c : q.c + ' − ■ = ●') + ' → ■ = ' + q.s + ', ● = ' + q.dot + ' → ' + q.ans;
 }
 function whyEqCross(q, full){
   if(q.shape === 'stack'){
@@ -50,7 +58,7 @@ function whyEqCross(q, full){
   }
   if(!full) return tr('Започни от равенството, в което има само ■. После ■ ще ти помогне да намериш ●.',
     'Почни з рівності, де є лише ■. Потім ■ допоможе знайти ●.');
-  return q.a + ' + ■ = ' + q.b + ' &nbsp;→&nbsp; ■ = ' + q.b + ' − ' + q.a + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ● = ' + q.c + ' − ' + q.s + ' = <b>' + q.dot + '</b>' +
+  return q.a + ' + ■ = ' + q.b + ' &nbsp;→&nbsp; ■ = ' + q.b + ' − ' + q.a + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + (q.shape === 'flip' ? '● − ' + q.s + ' = ' + q.c + ' &nbsp;→&nbsp; ● = ' + q.c + ' + ' : '● = ' + q.c + ' − ') + q.s + ' = <b>' + q.dot + '</b>' +
     (q.ask === 'dot' ? '' : ' &nbsp;→&nbsp; ' + q.dot + (q.ask === 'twice' ? ' + ' + q.dot + ' − ' : q.ask === 'minus' ? ' − ' : ' + ') + q.s + ' = ' + q.ans);
 }
 KIND.eqcross = { draw:drawEqCross, eq:eqEqCross, why:whyEqCross };

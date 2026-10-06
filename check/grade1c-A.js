@@ -50,7 +50,9 @@
       else if(Math.max(...r) > 20) fail('chain short: leaves 0…20', c);
     }
     // 203: seven numbers, a start of 12…20, steps of 0…5, every running total in 0…24, two step sizes at most
-    const g = Q.raw(203), rg = runs(g.terms), sizes = new Set(g.terms.slice(1).map(t => t.n).filter(n => n));
+    // (six numbers, Полуфинал 2023: check/grade1d-A.js)
+    let g = Q.raw(203); while(g.shape === 'six') g = Q.raw(203);
+    const rg = runs(g.terms), sizes = new Set(g.terms.slice(1).map(t => t.n).filter(n => n));
     if(g.terms.length !== 7 || g.terms[0].n < 12 || g.terms[0].n > 20 || g.terms.slice(1).some(t => t.n > 5) || rg.some(v => v < 0 || v > 24) || sizes.size > 2 || walk(g.terms) !== g.ans) fail('chain long', g);
     if(g.terms.some(t => t.n === 0)) zeros++;
     if(Q.why(g, true).indexOf(rg.join(', ')) < 0) fail('chain long: the hint does not show every running total', g);

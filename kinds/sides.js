@@ -24,6 +24,12 @@ function genSidesTens(){
     const left = [0, 1, 2].map(i => ({op: i ? '+' : '', n: 10*(1 + rnd(4))})), right = [0, 1, 2].map(i => ({op: i ? '+' : '', n: 10*(1 + rnd(4))}));
     const VL = left.reduce((t, s) => t + s.n, 0), VR = right.reduce((t, s) => t + s.n, 0);
     if(VR <= VL || VR > 100) continue;   // within a hundred
+    // МБГ Полуфинал 2022, 1 клас, задача 9: 10 + 20 + 30 + □ = 30 + 20 + 10 — now and then the right side is the left's own
+    // three numbers in another order, so □ = 0; drawn after the rest, so the other questions keep their seeds
+    if(Math.random() < 0.25){
+      const ns = left.map(t => t.n), orders = [[0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].filter(o => o.some((j, i) => ns[j] !== ns[i]));
+      if(orders.length) return {kind:'sides', shape:'tens', sym:'□', left, right: orders[rnd(orders.length)].map((j, i) => ({op: i ? '+' : '', n: ns[j]})), VL, VR: VL, ans: 0};
+    }
     return {kind:'sides', shape:'tens', sym:'□', left, right, VL, VR, ans: VR - VL};
   }
 }
@@ -86,8 +92,10 @@ function whySides(q, full){
       (op === '−' ? P + ' − ' + q.R : q.R + ' − ' + P) + ' = ' + q.ans;
   }
   if(q.shape === 'tens'){
-    if(!full) return tr('Пресметни всяка страна без ' + q.sym + '. С колко дясната е повече?', 'Обчисли кожну сторону без ' + q.sym + '. На скільки права більша?');
-    return tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') + exprText(q.right) + ' = <b>' + q.VR +
+    if(!full) return q.ans ? tr('Пресметни всяка страна без ' + q.sym + '. С колко дясната е повече?', 'Обчисли кожну сторону без ' + q.sym + '. На скільки права більша?')
+      : tr('Сравни числата от двете страни. Какво трябва да добавиш вляво, за да станат равни?', 'Порівняй числа з обох сторін. Що треба додати ліворуч, щоб вони стали рівні?');
+    return (q.ans ? '' : tr('вдясно са същите три числа, само в друг ред', 'праворуч ті самі три числа, лише в іншому порядку') + ' &nbsp;→&nbsp; ') +
+      tr('лявата страна: ', 'ліва сторона: ') + exprText(q.left) + ' = <b>' + q.VL + '</b>, ' + tr('дясната: ', 'права: ') + exprText(q.right) + ' = <b>' + q.VR +
       '</b> &nbsp;→&nbsp; ' + q.VL + ' + ' + q.sym + ' = ' + q.VR + ' &nbsp;→&nbsp; ' + q.sym + ' = ' + q.VR + ' − ' + q.VL + ' = ' + q.ans;
   }
   if(q.shape === 'flip'){

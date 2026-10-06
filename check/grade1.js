@@ -35,7 +35,7 @@
     for(let v = 0; v <= 30; v++) if(L === (s.minus ? R - v : R + v)) fits.push(v);
     if((s.shape === 'same' || s.shape === 'diff') && (fits.length !== 1 || fits[0] !== s.ans || s.ans > 9 || R > 20)) fail('sides:', s);
     // 158: ■ and ● searched for in the two equalities
-    let c = Q.raw(158); while(c.shape === 'stack') c = Q.raw(158);   // one flower in two lines: check/grade1c-A.js
+    let c = Q.raw(158); while(c.shape === 'stack' || c.shape === 'flip') c = Q.raw(158);   // one flower in two lines: check/grade1c-A.js; ● first in the row: check/grade1d-A.js
     let sq = -1; for(let v = 0; v <= 20; v++) if(c.a + v === c.b) sq = v;
     let dot = -1; for(let v = 0; v <= 20; v++) if(c.c - sq === v) dot = v;
     if([dot - sq, dot + sq, dot, dot + dot - sq][['minus', 'plus', 'dot', 'twice'].indexOf(c.ask)] !== c.ans || c.ans < 0 || c.b > 20) fail('eqcross:', c);
