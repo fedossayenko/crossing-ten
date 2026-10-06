@@ -49,7 +49,8 @@
     const ok = Object.keys(rules).filter(r => d.ex.every((v, k) => rules[r](v) === shown[k]));
     if(ok.length !== 1 || ok[0] !== d.rule || rules[d.rule](d.n) !== d.ans) fail('digrule: rules ' + ok, d);
     // blind: the fewest cubes found by trying every hand that could still miss
-    const b = Q.raw(189), k = b.n.length, miss = m => b.diff ? b.n.some(c => c >= m) : m <= k;
+    let b = Q.raw(189); while(b.shape === 'one') b = Q.raw(189);   // the pens, every sure count: check/grade1d-C.js
+    const k = b.n.length, miss = m => b.diff ? b.n.some(c => c >= m) : m <= k;
     let m = 1; while(miss(m)) m++;
     if(m !== b.ans || b.n.reduce((t, v) => t + v, 0) !== b.T) fail('blind', b);
     // bowl: every count of lemons tried against the yellow fruit

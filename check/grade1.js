@@ -235,7 +235,8 @@
     const right = w.options.filter(o => o.text[0] === win + ', ' + (gap === 7 ? 'със' : 'с') + ' ' + gap);
     if(nums.length !== 2 || G === B || right.length !== 1 || w.options[w.pick] !== right[0] || w.ans !== w.pick || new Set(w.options.map(o => o.text[0])).size !== 4) fail('whomore', w);
     // segword: the lengths followed one sentence at a time
-    const g = Q.raw(176), second = g.a + (g.short1 ? -g.d1 : g.d1), third = second + (g.long2 ? g.d2 : -g.d2);
+    let g = Q.raw(176); while(g.shape === 'bars') g = Q.raw(176);   // the bars on a grid: check/grade1d-C.js
+    const second = g.a + (g.short1 ? -g.d1 : g.d1), third = second + (g.long2 ? g.d2 : -g.d2);
     if(third !== g.ans || second < 1 || third < 1 || second > 30 || third > 30) fail('segword', g);
   }
   console.log('МБГ Пролет 2023 and 2025 1 клас: the printed tasks 2023 9, 16, 18 and 2025 9, 14, 16, 17, 19 match the key and their levels ask them; symeq, picdig, tribo, between, whomore and segword worked out again by brute force');

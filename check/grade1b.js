@@ -42,7 +42,8 @@
     const c = Q.raw(i % 2 ? 164 : 201);   // 164 and the shape split from it (201)
     if(c.one && c.shape !== 6){ const fit = run(0, 9).filter(v => c.shape === 7 || (c.shape === 0 ? v <= c.n : v < c.n)); if(fit.length !== c.ans) fail('count one-digit', c); }
     if(c.two){ const fit = run(10, 99).filter(v => v < c.n); if(fit.length !== c.ans) fail('count two-digit', c); }
-    const w = Q.raw(191); let k = 0; for(let d = 2; d <= w.mon[1]; d++) if((Q.DAYS.indexOf(w.d1) + d - 1) % 7 === Q.DAYS.indexOf(w.day)) k++;
+    let w = Q.raw(191); while(w.shape === 'back') w = Q.raw(191);   // back from the last one: check/grade1d-C.js
+    let k = 0; for(let d = 2; d <= w.mon[1]; d++) if((Q.DAYS.indexOf(w.d1) + d - 1) % 7 === Q.DAYS.indexOf(w.day)) k++;
     if(k !== w.ans) fail('weekday after: ' + k, w);
     const r = Q.raw(192); if(r.L.reduce((a, b) => a + b, 0) - r.R.reduce((a, b) => a + b, 0) !== r.ans) fail('near', r);
     const x = Q.raw(193), digs = new Set();
