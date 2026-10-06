@@ -49,6 +49,8 @@ export function go(route, replace){
 // back: to the screen this one was opened from, or to the round when the app was opened straight on it
 export function back(){ if(history.state && history.state.depth > 0) history.back(); else go('play', true); }
 addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
+// A sheet scrolled down: its title bar becomes glass, with the page passing under it (app.css .sheet.scrolled)
+document.addEventListener('scroll', e => { const el = /** @type {HTMLElement} */ (e.target); if(el.classList && el.classList.contains('sheet')) el.classList.toggle('scrolled', el.scrollTop > 6); }, true);
 const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
 
 export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], t0:0, timers:[], touched:false };
