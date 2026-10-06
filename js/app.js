@@ -6,7 +6,7 @@ import { ARCHIVE, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, compAnswer, compEnd, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, compAnswer, compEnd, paintCompCard, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -18,7 +18,7 @@ import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from '.
 const ROUTES = {
   play: null,
   today: { sheet: 'today', show: () => showToday($('todayIn')) },
-  levels: { sheet: 'picker', show: () => { buildPicker(); $('pickWarn').hidden = !midRound(); } },
+  levels: { sheet: 'picker', show: () => { buildPicker(); paintCompCard(); $('pickWarn').hidden = !midRound(); } },   // the paper's card too, however the page is reached
   badges: { sheet: 'stats', show: () => showStats() },
   parents: { sheet: 'parent', show: () => renderParent() },
   players: { sheet: 'players', show: () => paintPlayers() },

@@ -84,9 +84,10 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 }
 .btn.ghost{background:color-mix(in srgb, var(--accent) 11%, transparent); color:var(--accent-ink); box-shadow:none; border:0}
 .chips.filt button,.seg{background:var(--well); box-shadow:none; border:0}
-:root[data-solid] :is(.icon,.levelpill,.who,.read){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+/* every piece of glass: the chrome above, the tab bar, the levels beside the task, a paper's clock and count, the grade menu */
+:root[data-solid] :is(.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 @media (prefers-reduced-transparency:reduce){
-  .icon,.levelpill,.who,.read{background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+  :is(.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 }
 .gcard{border-radius:20px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
 .gcard.list{padding:0; gap:0; overflow:hidden}
@@ -115,6 +116,10 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
   color:var(--muted); padding:0; position:relative; flex:0 0 auto;
 }
 .icon::after{content:''; position:absolute; inset:-3px}
+/* every target reaches 44 px, as the design asks: the smaller pills keep their look and take a larger touch area */
+.read,.chips.filt button,.seg button{position:relative}
+.read::after,.chips.filt button::after,.seg button::after{content:''; position:absolute; inset:-4px -2px}
+.gradesel,.paperset select,.paperset input{min-height:44px}
 .icon svg{width:20px; height:20px; display:block}
 .icon[aria-pressed="true"]{color:var(--accent)}
 .icon.back{width:44px; height:44px}
@@ -882,7 +887,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .tabs{position:fixed; z-index:6; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:520px; margin:0 auto; height:64px;
   border-radius:999px; display:flex; align-items:center; gap:2px; padding:0 6px; box-sizing:border-box;
   background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); box-shadow:var(--glass-shadow)}
-:root[data-solid] .tabs{background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 .tabs button{flex:1 1 0; height:52px; border:0; border-radius:999px; background:none; color:var(--muted); display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:3px; font-size:11px; font-weight:600; min-width:0}
 .tabs svg{width:24px; height:24px}

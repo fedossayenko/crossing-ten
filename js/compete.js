@@ -82,7 +82,7 @@ export function compEnd(){
 
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
-function paintCompCard(){
+export function paintCompCard(){
   const best = LOCAL.rounds.filter(r => r.level === 'comp' && r.max).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
   $('compStart').innerHTML = '<span class="compicon">' + ICON(GLYPH.stopwatch[1]) + '</span><span class="nm"><span class="lab">' +
     t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b>' +

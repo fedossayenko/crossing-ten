@@ -284,7 +284,9 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
 - **R9.9 Notebook extras (Notebook, iPadNotebook) — DONE.** (Also: "Упражни тези" on the parents' board now takes her latest
   three misses of a shape, not the oldest.) "Поправи ги" (all kinds in one round) on the summary; iPad: the summary
   in a left column.
-- **R9.10 Small rules from Style.** `prefers-reduced-transparency` → solid (as the glass setting); one tinted button per
+- **R9.10 Small rules from Style — DONE.** Reduce-transparency (and "solid") now cover every glass piece added since R1;
+  every pill reaches a 44 px touch area; fixed on the way: the levels page reached by its tab drew the paper's card empty.
+  One tinted button per screen holds (the notebook's per-kind buttons are quiet beside "Поправи ги"). `prefers-reduced-transparency` → solid (as the glass setting); one tinted button per
   screen (audit); concentric radii (card 24 → inner 12) and 44 px targets (audit).
 - Parked (needs data we do not have): "N точки на листа" on a paper's task (each printed task's points).
 
