@@ -448,7 +448,15 @@ const server = http.createServer((req, res) => {
     await run(`$('closePlayers').click(); 1`); await new Promise(r => setTimeout(r, 150));
     const nav4 = await page(`({ stats: !$('players').hidden, hash: location.hash, stage: !!$('stage').innerHTML })`);
     expect(nav.a === '#/players' && nav.b === '#/parents' && nav2.stats && !nav2.parent && nav2.hash === '#/players' && nav3.stats && nav3.hash === '#/players' &&
-      !nav4.stats && nav4.hash === '#/play' && nav4.stage, 'screen addresses went wrong: ' + JSON.stringify({ nav, nav2, nav3, nav4 }));
+      !nav4.stats && nav4.hash === '#/play' && nav4.stage, 'screen addresses went wrong: ' + JSON.stringify({ nav, nav2, nav3, nav4 }));    // a tab's screen shows ‹ only when opened from outside the tabs (the round's level pill), not from a tab or Today
+    const arrows = await page(`(() => { const shown = id => !!$(id).offsetParent, d0 = (history.state && history.state.depth) || 0;
+      $('levelPill').click(); const fromRound = shown('closePick');
+      $('tabBadges').click(); const tab = shown('closeStats'), d = history.state.depth - d0;
+      $('tabToday').click(); $('tabBadges').click(); const fromToday = shown('closeStats'), d2 = history.state.depth - d0;
+      $('closeStats').click(); return { fromRound, tab, fromToday, d, d2 }; })()`);
+    await new Promise(r => setTimeout(r, 150));
+    arrows.after = await page(`location.hash`);
+    expect(arrows.fromRound && !arrows.tab && !arrows.fromToday && arrows.d === 1 && arrows.d2 === 1 && arrows.after === '#/play', 'the back arrow on a tab screen went wrong: ' + JSON.stringify(arrows));
   }
   // The look on this device: dark and solid chosen in the grown-ups' settings take effect at once, and come
   // back after a reload before anything is drawn (index.html's data-look script)

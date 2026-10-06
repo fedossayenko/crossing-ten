@@ -36,14 +36,17 @@ export function applyRoute(){
   if(r){ r.show(); $(r.sheet).hidden = false; }
   const tabbed = TABBED.includes(ROUTE);
   $('tabs').hidden = !tabbed; document.body.classList.toggle('tabbed', tabbed);
+  document.body.classList.toggle('pushed', !!(history.state && history.state.pushed));   // a tab's screen has ‹ only when opened from outside the tabs
   if(tabbed) paintTabWeek();
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.r === ROUTE ? 'page' : 'false'));
 }
 // history.state.depth counts the steps the app pushed, so back() never leaves the app
+// From one tab's screen to another is a switch, not a step: nothing to go back to, the tab bar is there.
 export function go(route, replace){
+  replace = replace || (TABBED.includes(route) && TABBED.includes(ROUTE));
   ROUTE = route;
   const depth = (history.state && history.state.depth) || 0;
-  try { history[replace ? 'replaceState' : 'pushState']({ depth: replace ? depth : depth + 1 }, '', '#/' + route); } catch(e){}
+  try { history[replace ? 'replaceState' : 'pushState']({ depth: replace ? depth : depth + 1, pushed: !replace }, '', '#/' + route); } catch(e){}
   applyRoute();
 }
 // back: to the screen this one was opened from, or to the round when the app was opened straight on it
