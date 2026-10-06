@@ -13,16 +13,37 @@ export function genTribo(){
     return {kind:'tribo', t, h, ans: t[h]};
   }
 }
+// МБГ Полуфинал 2025, 1 клас, задача 5: 1, 1, 2, 3, 5, ☺, 13, 21 — each number the sum of the TWO before it:
+// 1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5 … so ☺ = 3 + 5 = 8 (and 5 + 8 = 13). The paper's ☺ stands in for the star.
+export function genFib(){
+  const t = [[1, 1], [1, 2], [0, 1]][rnd(3)];
+  while(t.length < 8) t.push(t[t.length - 1] + t[t.length - 2]);
+  const h = 4 + rnd(3);                            // two worked examples before it at least, one number after
+  return {kind:'tribo', shape:'fib', t, h, ans: t[h]};
+}
 const triboRow = q => q.t.map((v, i) => i === q.h ? '★' : v).join(', ') + ', …';
+const fibRow = q => q.t.map((v, i) => i === q.h ? '☺' : v).join(', ') + ', …';
 function drawTribo(q){
+  if(q.shape === 'fib'){
+    return '<div class="ask">' + tr('Числата следват едно правило. Кое число е скрито под <b>☺</b>?', 'Числа йдуть за одним правилом. Яке число сховане під <b>☺</b>?') + '</div>' +
+      '<div class="seq">' + fibRow(q) + '</div>' +
+      '<div class="line xl"><span class="num">☺ = </span>' + SLOT + '</div>';
+  }
   return '<div class="ask">' + tr('Числата следват едно правило. Кое число е скрито под <b>★</b>?', 'Числа йдуть за одним правилом. Яке число сховане під <b>★</b>?') + '</div>' +
     '<div class="seq">' + triboRow(q) + '</div>' +
     '<div class="line xl"><span class="num">★ = </span>' + SLOT + '</div>';
 }
 function eqTribo(q){
+  if(q.shape === 'fib') return fibRow(q) + ' → ☺ = ' + q.t[q.h - 2] + ' + ' + q.t[q.h - 1] + ' = ' + q.ans;
   return triboRow(q) + ' → ★ = ' + q.t[q.h - 3] + ' + ' + q.t[q.h - 2] + ' + ' + q.t[q.h - 1] + ' = ' + q.ans;
 }
 function whyTribo(q, full){
+  if(q.shape === 'fib'){
+    if(!full) return tr('Събери две съседни числа. Кое число идва след тях?', 'Додай два сусідні числа. Яке число йде після них?');
+    const t = q.t, ex = [2, 3].map(i => t[i - 2] + ' + ' + t[i - 1] + ' = ' + t[i]);
+    return tr('всяко число е сборът на двете преди него: ', 'кожне число — це сума двох чисел перед ним: ') + ex.join(', ') + ', … &nbsp;→&nbsp; ☺ = ' +
+      t[q.h - 2] + ' + ' + t[q.h - 1] + ' = ' + q.ans;
+  }
   if(!full) return tr('Събери няколко съседни числа подред — кое следващо число се получава?', 'Додай кілька сусідніх чисел підряд — яке наступне число виходить?');
   const t = q.t, ex = [3, 4].map(i => t[i - 3] + ' + ' + t[i - 2] + ' + ' + t[i - 1] + ' = ' + t[i]);
   return tr('всяко число е сборът на трите преди него: ', 'кожне число — це сума трьох чисел перед ним: ') + ex.join(', ') + ', … &nbsp;→&nbsp; ★ = ' +

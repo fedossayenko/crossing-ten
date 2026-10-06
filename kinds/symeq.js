@@ -41,7 +41,17 @@ function genSymPart(){
     return {kind:'symeq', shape:'part', rel, o, f, s, T: o + f + s, a: o + f, b: f + s, d: s - o, ans: f};
   }
 }
-export function genSymEq(){ const r = Math.random(); return r < 0.3 ? genSymChain() : r < 0.55 ? genSymTri() : r < 0.8 ? genSymDef() : genSymPart(); }
+// МБГ Полуфинал 2024, 1 клас, задача 9: ▲ + ◆ + ☺ = 12, ▲ + ▲ = 8, ☺ + ☺ + ▲ = 10 — ◆? ▲ + ▲ = 8 gives ▲ = 4,
+// then ☺ + ☺ = 10 − 4 = 6, so ☺ = 3, and ◆ = 12 − 4 − 3 = 5. The paper's own figures, ▲ ◆ ☺.
+function genSymDouble(){
+  for(;;){
+    const x = 2 + rnd(5), y = 1 + rnd(6), z = 1 + rnd(8);
+    if(x === y || y === z || x === z) continue;
+    return {kind:'symeq', shape:'double', x, y, z, s1: x + z + y, s2: 2*x, s3: 2*y + x, ans: z};
+  }
+}
+// 'double' (Полуфинал 2024) takes half of the chain's old share, so the other shapes keep their seeds
+export function genSymEq(){ const r = Math.random(); return r < 0.15 ? genSymChain() : r < 0.3 ? genSymDouble() : r < 0.55 ? genSymTri() : r < 0.8 ? genSymDef() : genSymPart(); }
 
 const SYMS = ['■', '∆', '○'];
 const symDefOf = q => ['□ + □ − ' + q.j, '□ − ' + q.j, '□ + ' + q.j][q.df].replace(' − 0', '');
@@ -49,8 +59,9 @@ const symEqLines = q => q.shape === 'chain'
   ? [Array(q.k).fill('■').join(' + ') + ' = ' + q.s1, '■ + ∆ + ∆ = ' + q.s2, '∆ + ○ + ∆ = ' + q.s3]
   : q.shape === 'def' ? ['□ = ' + q.k, '∆ = ' + symDefOf(q)]
   : q.shape === 'part' ? ['○ + ● + □ = ' + q.T, '○ + ● = ' + q.a, q.rel ? '□ = ○ + ' + q.d : '● + □ = ' + q.b]
+  : q.shape === 'double' ? ['▲ + ◆ + ☺ = ' + q.s1, '▲ + ▲ = ' + q.s2, '☺ + ☺ + ▲ = ' + q.s3]
   : ['■ + ∆ = ' + q.s1, '∆ + ○ = ' + q.s2, '■ + ○ = ' + q.s3];
-const symEqAsk = q => q.shape === 'chain' ? '○' : q.shape === 'def' ? (q.ask ? '□ + ' + q.p + ' + ∆ − ' + q.m : '□ + ∆') : q.shape === 'part' ? '●' : SYMS[q.ask];
+const symEqAsk = q => q.shape === 'chain' ? '○' : q.shape === 'double' ? '◆' : q.shape === 'def' ? (q.ask ? '□ + ' + q.p + ' + ∆ − ' + q.m : '□ + ∆') : q.shape === 'part' ? '●' : SYMS[q.ask];
 function drawSymEq(q){
   return '<div class="ask">' + tr('Еднаквите фигури са едно и също число. Колко е <b>' + symEqAsk(q) + '</b>, ако:',
     'Однакові фігури — це одне й те саме число. Скільки дорівнює <b>' + symEqAsk(q) + '</b>, якщо:') + '</div>' +
@@ -72,6 +83,12 @@ function whySymEq(q, full){
     return '□ = ' + q.T + ' − ' + q.a + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + (q.rel
       ? '○ = ' + q.s + ' − ' + q.d + ' = <b>' + q.o + '</b> &nbsp;→&nbsp; ● = ' + q.a + ' − ' + q.o + ' = ' + q.ans
       : '● = ' + q.b + ' − ' + q.s + ' = ' + q.ans);
+  }
+  if(q.shape === 'double'){
+    if(!full) return tr('Започни от реда, в който има само ▲. После намери ☺, а накрая — ◆.',
+      'Почни з рядка, де є тільки ▲. Потім знайди ☺, а наприкінці — ◆.');
+    return q.x + ' + ' + q.x + ' = ' + q.s2 + ' &nbsp;→&nbsp; ▲ = <b>' + q.x + '</b> &nbsp;→&nbsp; ☺ + ☺ = ' + q.s3 + ' − ' + q.x + ' = ' + 2*q.y +
+      ', ' + q.y + ' + ' + q.y + ' = ' + 2*q.y + ' &nbsp;→&nbsp; ☺ = <b>' + q.y + '</b> &nbsp;→&nbsp; ◆ = ' + q.s1 + ' − ' + q.x + ' − ' + q.y + ' = ' + q.ans;
   }
   if(q.shape === 'chain'){
     if(!full) return tr('Започни от реда, в който има само ■. После всеки следващ ред има само една нова фигура.',
