@@ -236,6 +236,55 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   files cannot be shared. Smoke reads the pixels: the logo square and the mascot's grey fur.
 - smoke.js is rewritten alongside R2–R7, screen by screen.
 
+### Phase R9 — closing the gaps to the design (audit of all 31 artboards, 2026-10-06)
+R0–R8 built every screen and the data behind them; this audit compared each artboard of the canvas with the app
+as it is and lists what is still different. Each step is one commit, verified like the others (check, smoke with a
+test for what changed, screenshots phone / iPad landscape / iPad portrait, light and dark), then deployed.
+
+**Already matching:** navigation and tabs, the round's segments and run, the struck wrong answer, the phone keypad behind
+the hint, Notebook, Weekly card, Welcome (name, mascot, language, grade, sound, read aloud, calmer motion), Players grid
+with grade · rounds and devices, colours/fonts/materials (Style), dark variants, the phone in landscape.
+
+- **R9.1 The task screen (Exercise, Hint, PhoneWord).** Top bar as drawn: back ‹ to Today, the pill with the level and its
+  group on one line ▾, her avatar on the right (switch player); the caption "Напиши отговора и натисни ✓" under the
+  task; the answer box sizes (phone 92×76, iPad 112×92). After a miss: the status card with the mascot and "Не
+  съвсем. <the named mistake>", the "Как да го направиш" card (the split line 42 = 30 + 12 → 12 − 7 = □, the
+  ten-frames, one sentence of method), "първи опит" under the segments. Decision (default in bold): the mock drops
+  the sound and read-aloud buttons — **sound moves to the settings (it is already in her profile); "Прочети ми"
+  stays on the card** (a 2nd-grader reading long tasks needs it).
+- **R9.2 The task screen on iPad (iPad, iPadHint, iPadGeom).** The pill and the segments on one row with "Задача 4 от
+  10 · 3 верни подред" under them; the mascot bottom-left of the task; the keypad a 300 px column at the bottom,
+  76 px keys; "Опитай пак — можеш!" above the keys after a miss; the side panel as drawn (logo, player, the four
+  sections, overall progress, the level's group with status per row, the competition card at the foot).
+- **R9.3 Competition play (Competition, iPadChoice).** The top bar becomes ✕ · the clock pill (stopwatch) · "7 / 20" — no
+  level pill; 20 segments, a skipped one outlined; the note "Нищо не се проверява до края…"; on iPad the options
+  stacked one per row and "МБГ Есен · пробно състезание · една пропусната" under the segments.
+- **R9.4 Results (RoundEnd, iPadRoundEnd, iPadCompEnd).** A missed task as "42 − 17   35 → 25 · <the mistake>";
+  buttons "Нов рунд · Поправи грешката · Напредък"; the paper's end: the score card with its bar, "Упражни N-те
+  сгрешени · Към Днес · Ново състезание", each table row opens its task and solution, the footnote that tasks come
+  from the levels' generators, not the papers.
+- **R9.5 Today (Main, iPadToday, iPadPortrait).** "Започни тук" with "Играй" (and "Друго ниво" on iPad) and the level's
+  description; "Да си припомним · N нива за днес" as rows with their status, and the spacing note (1, 3, 7, 14, 30
+  days); the next-badge card ("Още 3 дни до „Цяла седмица“ · 7 от 16 значки"); "Пробно състезание" inside the
+  competition card; iPad portrait: the week strip (days played) and learned levels; iPad landscape: the sidebar's
+  head (logo, player) and its week block (days in a row, rounds, levels learned, next badge, the countdown).
+- **R9.6 Levels (Levels, iPadLevels).** Title "Нива" with the grade as a menu button; iPad: the filters as a labelled
+  panel (Клас, Състезание, Кръг, Лист, Тема) with "Избраният лист стеснява и пътеката…", the list headed "МБГ Есен ·
+  2 клас · 61 нива"; the "Да си припомним" card on the levels page.
+- **R9.7 Badges (Badges, iPadBadges).** On iPad each badge shows its condition and progress under its name ("214 / 500");
+  the tiles "Рундове · Задачи · Най-дълга серия".
+- **R9.8 Parents (Parents, ParentsMore, iPadParents).** The definition note ("Научено = поне 4 от 5…"); "Упражни тези" under
+  what to practise; the family card with "синхронизирано преди 2 мин · 3 устройства"; on iPad the three-column board
+  (players and the family on the left, the week and groups in the middle, mistakes, practice and settings on the
+  right); "Състезанието тегли от N клас" as a setting.
+- **R9.9 Notebook extras (Notebook, iPadNotebook).** "Поправи ги" (all kinds in one round) on the summary; iPad: the summary
+  in a left column.
+- **R9.10 Small rules from Style.** `prefers-reduced-transparency` → solid (as the glass setting); one tinted button per
+  screen (audit); concentric radii (card 24 → inner 12) and 44 px targets (audit).
+- Parked (needs data we do not have): "N точки на листа" on a paper's task (each printed task's points).
+
+Order: R9.1 → R9.2 → R9.3 → R9.4 (the task screens she uses most), then R9.5 → R9.6 → R9.7 → R9.8 → R9.9 → R9.10.
+
 ### Phase E — as kinds grow
 - **E5.** check.js level loop on worker threads; smoke split across tabs, per-level timeout (#17).
 
