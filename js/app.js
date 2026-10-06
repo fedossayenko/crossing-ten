@@ -36,6 +36,7 @@ export function applyRoute(){
   if(r){ r.show(); $(r.sheet).hidden = false; }
   const tabbed = TABBED.includes(ROUTE);
   $('tabs').hidden = !tabbed; document.body.classList.toggle('tabbed', tabbed);
+  if(tabbed) paintTabWeek();
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.r === ROUTE ? 'page' : 'false'));
 }
 // history.state.depth counts the steps the app pushed, so back() never leaves the app
@@ -917,18 +918,33 @@ async function buildWeek(){
 }
 $('weekName').onchange = buildWeek;
 $('weekGo').onclick = () => { if(WEEK_PNG) shareWeekly(WEEK_PNG, 'desetka-' + dayKey(weekStart(Date.now())) + '.png'); };
+// The sidebar's foot on a wide screen (app.css hides it on a phone): her week, how far overall, the next paper
+function paintTabWeek(){
+  const d = todayData();
+  $('tabWeek').innerHTML = '<b>' + t('thisWeek') + '</b>' + (d.streak > 0 ? '<span>' + t('streakDays', d.streak) + '</span>' : '') +
+    '<span>' + t('rounds', d.week) + '</span><span>' + t('learnedOf', d.learned, d.levels) + '</span>' +
+    (d.badge ? '<span>' + t('badgeLeft', d.badge.left, d.badge.name) + '</span>' : '') +
+    (d.paper ? '<span class="tp"><b>' + esc(d.paper.name) + '</b>' + d.paper.when + ' · ' + t('inDays', d.paper.days) + ' · ' + t('readyPct', d.paper.ready) + '</span>' : '');
+}
+// The badge she is closest to, how much is left, and how many she has
+function nextBadge(st){
+  const earned = BADGES.filter(b => b.has(st)).length;
+  const next = BADGES.filter(b => !b.has(st)).map(b => { const [a, n] = b.prog(st); return { b, a: Math.min(a, n), n }; }).sort((x, y) => y.a / y.n - x.a / x.n)[0];
+  return next ? { name: badgeName(next.b), left: next.n - next.a, earned, total: BADGES.length } : null;
+}
 // Monday 00:00 of this week, local time
 const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
 export function todayData(){
   const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
-  const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
+  const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), desc: levelDesc(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
   const lv = LEVELS.find(l => l.id === S.level);
   return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
     next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
+    days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
     compN: COMP_N, compMin: COMP_MIN };
 }
 // Today's cards: play this level now

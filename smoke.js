@@ -158,9 +158,14 @@ const server = http.createServer((req, res) => {
     card.click(); await tick(); r.trains = !$('picker').hidden && PICK_COMP === 'mbg' && PICK_ROUND === 'autumn';
     set('mbg-autumn', day(-1)); $('tabToday').click(); await tick(); r.past = !document.querySelector('#today .paperday');
     set('', ''); r.cleared = LOCAL.next === undefined;
+    // R9.5: Today as drawn — Play on the start card, the next badge, the week's seven days, the sidebar's week block
+    $('tabToday').click(); await tick();
+    r.today = !!document.querySelector('#today .start .acts .btn') && !!document.querySelector('#today .badgecard') &&
+      document.querySelectorAll('#today .weekstrip .days span').length === 7 && $('tabWeek').textContent.includes(t('thisWeek')) &&
+      (!document.querySelector('#today .duelist') || (!!document.querySelector('#today .duerow[data-lvl]') && $('today').textContent.includes(t('spacing'))));
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
-  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared, 'the next competition went wrong: ' + JSON.stringify(r5));
+  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today, 'the next competition went wrong: ' + JSON.stringify(r5));
   // R6: a task missed as a forgotten borrow lands in the notebook under that mistake, drawn again from its seed;
   // "put right" plays it with new ones, all right puts the kind right, and a week on it asks to be checked again
   const r6 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));

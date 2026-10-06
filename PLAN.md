@@ -266,7 +266,7 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   buttons "Нов рунд · Поправи грешката · Напредък"; the paper's end: the score card with its bar, "Упражни N-те
   сгрешени · Към Днес · Ново състезание", each table row opens its task and solution, the footnote that tasks come
   from the levels' generators, not the papers.
-- **R9.5 Today (Main, iPadToday, iPadPortrait).** "Започни тук" with "Играй" (and "Друго ниво" on iPad) and the level's
+- **R9.5 Today (Main, iPadToday, iPadPortrait) — DONE.** (The practice paper stays its own card under the countdown.) "Започни тук" with "Играй" (and "Друго ниво" on iPad) and the level's
   description; "Да си припомним · N нива за днес" as rows with their status, and the spacing note (1, 3, 7, 14, 30
   days); the next-badge card ("Още 3 дни до „Цяла седмица“ · 7 от 16 значки"); "Пробно състезание" inside the
   competition card; iPad portrait: the week strip (days played) and learned levels; iPad landscape: the sidebar's

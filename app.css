@@ -877,7 +877,14 @@ body.tabbed .sheet-in{padding-bottom:96px}
   .tabs button{flex:none; height:48px; flex-direction:row; justify-content:flex-start; padding:0 16px; gap:12px; font-size:16px}
   body.tabbed .sheet{padding-left:calc(220px + 16px)}   /* the sheet still covers the round behind the glass sidebar */
   body.tabbed .sheet-in{padding-bottom:0}
+  nav.tabs .tabhead{display:flex; align-items:center; gap:10px; padding:0 8px 14px}
+  nav.tabs .tabweek{display:flex; flex-direction:column; gap:4px; margin-top:auto; padding:14px 10px 0; border-top:1px solid var(--line); font-size:13px; color:var(--muted)}
+  .tabs .tabweek b{color:var(--ink); font-size:14px}
+  .tabs .tabweek .tp{display:flex; flex-direction:column; margin-top:6px}
 }
+.tabs .tabhead,.tabs .tabweek{display:none}
+.tabhead .logo{width:32px; height:32px; border-radius:10px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font:500 15px Fredoka,var(--ui-font)}
+.tabhead b{font-size:18px}
 
 /* Today (#/today) */
 .today-bar{align-items:flex-start}
@@ -891,6 +898,26 @@ body.tabbed .sheet-in{padding-bottom:96px}
 #today .nextcard.main .eq{font-size:26px}
 #today .sheet-in{max-width:760px}
 .tcols,.tcol{display:flex; flex-direction:column; gap:14px}
+/* Today, as drawn: the start card with Play (and another level on a wide screen), the levels due as rows, the
+   next badge, and on a tablet the week's days */
+#today .start{flex-wrap:wrap; cursor:pointer; box-sizing:border-box}   /* a div, not a button: border-box, or its padding widens it past 100% */
+#today .start .desc{font-size:14px; color:var(--muted)}
+#today .start .acts{display:flex; gap:10px; flex:1 1 100%}
+#today .start .acts .btn{flex:0 1 auto; min-height:48px; padding:0 28px}
+#today .start .other{display:none}
+@media (min-width:700px){ #today .start .other{display:flex} }
+.duerow{display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:8px 14px; background:none; border:0; border-bottom:1px solid var(--line); color:var(--ink); font:inherit; text-align:left; cursor:pointer}
+.duerow .nm{flex:1; display:flex; flex-direction:column; gap:2px}
+.duerow .eq{font-family:Fredoka,var(--ui-font); font-size:18px}
+.duerow .meta{font-size:13px; color:var(--muted)}
+.duerow > svg{width:20px; height:20px; color:var(--muted)}
+.duelist > :last-child{border-bottom:0}
+.weekstrip{display:none}
+@media (min-width:700px){ .weekstrip{display:flex} }
+.weekstrip .days{display:flex; justify-content:space-between}
+.weekstrip .days span{display:flex; flex-direction:column; align-items:center; gap:4px; font-size:12px; color:var(--muted)}
+.weekstrip .days i{width:30px; height:30px; border-radius:50%; background:var(--well)}
+.weekstrip .days .on i{background:var(--accent)}
 #today .nbcard .eq{font-size:16px}
 /* the mistakes notebook */
 .linkbtn{background:none; border:0; padding:4px 2px; color:var(--accent-ink); font:inherit; font-size:13px; font-weight:600; cursor:pointer}
