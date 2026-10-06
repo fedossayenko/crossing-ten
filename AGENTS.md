@@ -55,3 +55,13 @@ design rules (difficulty rubric, training path) are in `README.md`.
   they run first: their wiring waits in `startCompete()` / `startSync()`, which app.js calls at its end.
   The checks see every export as `APP.x` (and as globals in check/levels.js and check/kinds.js);
   `smoke.js` reads the page through the names app.js puts on `window`.
+
+## How to work
+- Touch only what the task needs: no reformatting, renaming or tidying of the code beside it. Unrelated dead
+  code or a bug you notice goes in your report, not the diff; remove only what your own change left unused.
+- No feature, option or abstraction the task didn't ask for. Match the file you are in, even where you'd write it differently.
+- A bug fix starts with a check that fails: a rule in `check/` (or a step in `smoke.js`) that reproduces it, then the fix.
+- A paper's official answer wins over your reading of its task: find the reading that gives the key, or stop and
+  say so. Never bend a generator or a pin to fit your reading.
+- A request with two readings that would build different things: name both, then pick one and say which (or ask).
+- Several steps: state them first, each with the check that proves it (`2. widen 99 → verify: Зима 2023 task 7 pinned`).
