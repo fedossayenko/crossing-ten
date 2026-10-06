@@ -224,9 +224,11 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   practise" — the level shapes she misses most over 30 days, each with a task of it drawn again from its seed (the old
   D2) — and her grade in the settings (stamped `updated`, so it wins across devices). Players: grade · rounds on each card.
   The list beside the task is folded away by default (a button opens it; remembered per device): she solves with the
-  whole screen. Badges and Welcome already match. **Left: the worker's side** — devices and last sync per family
-  (`sessions.last_seen` + device) and changing the password: a D1 migration on the families' live data, done as its
-  own step with a backup first.
+  whole screen. Badges and Welcome already match. **Worker side — DONE (accae85):** each sync stamps
+  its session (`last_seen`, a device label like "iPad · Safari"); /sync returns the family's devices (the Players screen
+  lists them, this one marked, "· 3 устройства"); POST /password changes a family name's password (old one checked,
+  same lockout). Migration `worker/migrations/0001_sessions_devices.sql` (two added columns) applied 2026-10-06 after a
+  restore-tested `d1 export` backup; rows unchanged (138 rounds, 4 sessions, 8 players).
 - **R8. Weekly card — DONE.** js/weekly.js: the week (rounds, first try, new levels, tasks, the days played, best and
   weakest group) as a 1080×1350 SVG — Fredoka and the page's .cat rules and light palette carried inside it, since an
   SVG drawn as an image sees none of the page — onto a canvas, as a PNG. Parents → "Сподели седмицата": a preview
