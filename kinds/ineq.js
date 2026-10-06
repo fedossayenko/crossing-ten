@@ -38,11 +38,19 @@ export function genIneqWide(){
 // МБГ Пролет 2025, 1 клас, задача 6: how many numbers fit 10 + ■ < 12? ■ is 0 or 1 — 2, because 0 counts.
 // The box added (on either side of the plus) or taken away, all within 20.
 export function genIneqSmall(){
-  if(Math.random() < 0.4) return genIneqDigit();
+  const r = Math.random();
+  if(r < 0.4) return genIneqDigit();
+  if(r >= 0.88) return genIneqBig();
   const form = rnd(3), k = 1 + rnd(6);
   if(form === 2){ const L = rnd(10), A = L + k; return {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k}; }   // A − ■ > L: ■ = 0 … k − 1
   const A = 2 + rnd(13), L = A + k;
   return L > 20 ? genIneqSmall() : {kind:'ineq', shape:6, form, A, L, traps:[k - 1], ans: k};
+}
+// МБГ Полуфинал 2024, 1 клас, задача 5: how many numbers fit 20 + ■ < 24? 0, 1, 2 and 3 — 4. The same box,
+// with bigger numbers: the number added is 15 … 20 and the bound up to 25.
+function genIneqBig(){
+  const form = rnd(2), A = 15 + rnd(6), k = 1 + rnd(Math.min(6, 25 - A));
+  return {kind:'ineq', shape:8, form, A, L: A + k, traps:[k - 1], ans: k};
 }
 // МБГ Пролет 2022, задача 8: how many digits fit 100 − 10 − 20 < □0? 70 < □0 leaves 8 and 9 — 2.
 // Пролет 2021, задача 9: which digit fits 31 − 9 − 1 > 2□? 21 > 2□ leaves only 20, so 0.
@@ -83,7 +91,7 @@ function drawIneq(q){
       : tr('Коя е цифрата, която трябва да поставим вместо □, за да е вярно:', 'Яку цифру треба поставити замість □, щоб було правильно:')) + '</div>' +
       '<div class="given">' + ineqDigitText(q) + '</div><div class="line xl">' + SLOT + '</div>';
   }
-  if(q.shape === 6){
+  if(q.shape === 6 || q.shape === 8){   // 8: the same with bigger numbers
     return '<div class="ask">' + tr('Колко числа можем да поставим вместо ■, за да е вярно?', 'Скільки чисел можна поставити замість ■, щоб було правильно?') + '</div>' +
       '<div class="given">' + ineqSmallText(q) + '</div><div class="line xl">' + SLOT + '</div>';
   }
@@ -117,7 +125,7 @@ function drawIneq(q){
 }
 function eqIneq(q){
   if(q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;
-  if(q.shape === 6) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
+  if(q.shape === 6 || q.shape === 8) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
   if(q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
   if(q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
   if(q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
@@ -133,7 +141,7 @@ function whyIneq(q, full){
     const fit = []; for(let d = 1; d <= 9; d++) if(q.less ? 10*d > q.V : 10*d < q.V) fit.push(d);
     return head + q.V + (q.less ? ' &lt; □0' : ' &gt; □0') + ' &nbsp;→&nbsp; □ = ' + fit.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.shape === 6){
+  if(q.shape === 6 || q.shape === 8){
     if(!full) return tr('Опитвай числата подред, като започнеш от нулата — докога е вярно?', 'Пробуй числа по черзі, починаючи з нуля, — доки правильно?');
     const fit = [...Array(q.ans).keys()];
     return ineqSmallText(q) + ' &nbsp;→&nbsp; ■ &lt; ' + q.ans + ' &nbsp;→&nbsp; ■ = <b>' + fit.join(', ') + '</b> &nbsp;→&nbsp; ' + q.ans;

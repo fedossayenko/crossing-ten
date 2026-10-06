@@ -13,7 +13,22 @@ export function genAsMany(){
     return {kind:'asmany', evenFirst, n, s, E, traps:[s + 2*E - 1], ans: s + 2*E};
   }
 }
+// МБГ Полуфинал 2024, 1 клас, задача 18: the numbers from 2 to ☺ are as many as the numbers from ☺ to 20 — ☺?
+// ☺ = 10 leaves 9 against 11, so one on: ☺ = 11, ten numbers each side (☺ itself counted in both).
+export function genAsManyMid(){
+  for(;;){
+    const a = 1 + rnd(9), b = 14 + rnd(17);
+    if((a + b) % 2) continue;
+    const m = (a + b) / 2;
+    return {kind:'asmany', shape:'mid', a, b, traps: [...new Set([b % 2 ? m - 1 : b / 2, b - a, (b - a) / 2])].filter(v => v !== m), ans: m};
+  }
+}
 function drawAsMany(q){
+  if(q.shape === 'mid'){
+    return '<div class="ask">' + tr('Числата от <span class="num">' + q.a + '</span> до ☺ са толкова, колкото са числата от ☺ до <span class="num">' + q.b + '</span>. Кое число е ☺?',
+      'Чисел від <span class="num">' + q.a + '</span> до ☺ стільки ж, скільки чисел від ☺ до <span class="num">' + q.b + '</span>. Яке число ☺?') + '</div>' +
+      '<div class="line xl"><span class="num">☺ = </span>' + SLOT + '</div>';
+  }
   const [p1, p2] = q.evenFirst ? [tr('Четните', 'Парних'), tr('нечетните', 'непарних')] : [tr('Нечетните', 'Непарних'), tr('четните', 'парних')];
   const x = q.evenFirst ? tr('четното', 'парного') : tr('нечетното', 'непарного');
   return '<div class="ask">' + tr(p1 + ' числа от 1 до <span class="num">' + q.n + '</span> са толкова, колкото ' + p2 + ' числа от <span class="num">' + q.s + '</span> до ' + x + ' число X. Кое е числото X?',
@@ -26,10 +41,18 @@ function asManyRuns(q){
   for(let v = q.s; v <= q.ans; v++) if((v % 2 === 0) !== q.evenFirst) b.push(v);
   return [a, b];
 }
+// ☺ = g: how many from a to g, and from g to b, both ends counted
+const asManyMidTry = (q, g) => '☺ = ' + g + ': ' + q.a + ' … ' + g + ' → <b>' + (g - q.a + 1) + '</b>, ' + g + ' … ' + q.b + ' → <b>' + (q.b - g + 1) + '</b>';
 function eqAsMany(q){
+  if(q.shape === 'mid') return q.a + ' … ' + q.ans + ': ' + (q.ans - q.a + 1) + ', ' + q.ans + ' … ' + q.b + ': ' + (q.b - q.ans + 1) + ' → ' + q.ans;
   const [a, b] = asManyRuns(q); return a.length + ': ' + b.join(', ') + ' → ' + q.ans; 
 }
 function whyAsMany(q, full){
+  if(q.shape === 'mid'){
+    if(!full) return tr('Опитай едно число за ☺ и преброй числата от двете страни — ☺ се брои и в двете. Където са повече, натам премести ☺.',
+      'Спробуй якесь число замість ☺ і порахуй числа з обох боків — ☺ рахується в обох. Де їх більше, туди й посунь ☺.');
+    return tr('☺ се брои и в двете групи. ', '☺ рахується в обох групах. ') + asManyMidTry(q, q.ans - 1) + ' &nbsp;→&nbsp; ' + asManyMidTry(q, q.ans).replace(/<\/b>$/, '</b> ✓') + ' &nbsp;→&nbsp; ☺ = ' + q.ans;
+  }
   if(!full) return tr('Първо преброй числата в първата редица. После изреди толкова от втората — и виж кое число идва след последното.', 'Спершу порахуй числа першого ряду. Потім випиши стільки ж із другого — і подивись, яке число йде після останнього.');
   const [a, b] = asManyRuns(q);
   return a.join(', ') + ' &nbsp;→&nbsp; <b>' + a.length + '</b>; &nbsp;' + b.join(', ') + ' &nbsp;→&nbsp; ' + tr('следващото е ', 'наступне — ') + q.ans;

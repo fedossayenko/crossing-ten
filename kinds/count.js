@@ -67,8 +67,30 @@ export function genCountShort(){
   const lo = natural ? 1 : 0, hi = shape ? n - 1 : n;
   return {kind:'count', shape, sum, natural, two:false, n, lo, hi, ans: sum ? (lo + hi)*(hi - lo + 1)/2 : hi - lo + 1};
 }
+// МБГ Полуфинал 2025, 1 клас, задача 6: Петър meant to write every number from 1 to 12, but wrote only 11, 1, 2,
+// 7, 9, 12 and 8 — how many did he leave out? 12 numbers, 7 of them written: 12 − 7 = 5.
+export function genCountMissed(){
+  const N = 8 + rnd(8), k = 4 + rnd(N - 5), list = shuffle([...Array(N).keys()].map(v => v + 1)).slice(0, k);
+  return {kind:'count', shape:8, N, list, traps:[k, N].filter(v => v !== N - k), ans: N - k};
+}
+// the numbers from 1 to N: the written ones, then the ones left out ringed one by one
+function countMissedSvg(q){
+  const rows = Math.ceil(q.N / 8), X = v => 22 + ((v - 1) % 8) * 28, Y = v => 18 + Math.floor((v - 1) / 8) * 30;
+  let g = '', step = 1;
+  for(let v = 1; v <= q.N; v++){
+    const left = !q.list.includes(v);
+    g += svgText(X(v), Y(v), v, 14, left ? 'var(--warm)' : 'var(--good)') + (left ? '<circle' + popAt(step++) + ' cx="' + X(v) + '" cy="' + (Y(v) - 5) + '" r="12" fill="none" stroke="var(--warm)" stroke-width="2"/>' : '');
+  }
+  g += svgText(120, 22 + rows * 30, q.N + ' − ' + q.list.length + ' = ' + q.ans, 15, 'var(--ink)', popAt(step + 1));
+  return '<svg viewBox="0 0 240 ' + (32 + rows * 30) + '" style="display:block; width:240px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('пропуснатите числа', 'пропущені числа') + '">' + g + '</svg>';
+}
 
 function drawCount(q){
+  if(q.shape === 8){
+    return '<div class="ask">' + tr('Петър искал да запише на дъската всички числа от 1 до <span class="num">' + q.N + '</span>, но записал само ' + q.list.join(', ').replace(/, (\d+)$/, ' и $1') + '. Колко числа е пропуснал да запише?',
+      'Петро хотів записати на дошці всі числа від 1 до <span class="num">' + q.N + '</span>, але записав лише ' + q.list.join(', ').replace(/, (\d+)$/, ' і $1') + '. Скільки чисел він пропустив?') + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.set){
     return '<div class="ask">' + tr('Колко ' + (q.asksSum ? 'е <b>сборът</b> на' : 'са') +
       ' <b>различните</b> цифри?', q.asksSum ? 'Чому дорівнює <b>сума</b> <b>різних</b> цифр?' : 'Скільки <b>різних</b> цифр?') + '</div>' +
@@ -111,6 +133,7 @@ function drawCount(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCount(q){
+  if(q.shape === 8) return '1 … ' + q.N + tr(', записани ', ', записано ') + q.list.length + ' → ' + q.N + ' − ' + q.list.length + ' = ' + q.ans;
   if(q.set) return tr('различни: ', 'різні: ') + q.pool.join(', ') + ' → ' + q.ans;
   if(q.name) return tr('между ' + q.a + ' и ' + q.b + ' → ' + q.lo + ' и ' + q.hi,
                                              'між ' + q.a + ' і ' + q.b + ' → ' + q.lo + ' і ' + q.hi);
@@ -179,6 +202,11 @@ function countSet(q, full){
   return '<svg viewBox="0 -22 240 ' + (full ? 62 : 32) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('различните цифри', 'різні цифри') + '">' + g + '</svg>';
 }
 function whyCount(q, full){
+  if(q.shape === 8){
+    if(!full) return tr('Колко са всички числа, които е искал да запише? А колко е записал?', 'Скільки всього чисел він хотів записати? А скільки записав?');
+    return tr('от 1 до ' + q.N + ' са <b>' + q.N + '</b> числа, записани са <b>' + q.list.length + '</b>', 'від 1 до ' + q.N + ' — <b>' + q.N + '</b> чисел, записано <b>' + q.list.length + '</b>') +
+      ' &nbsp;→&nbsp; ' + q.N + ' − ' + q.list.length + ' = ' + q.ans + countMissedSvg(q);
+  }
   if(q.set){
     if(!full) return tr('Едно и също число, повторено, се брои само веднъж.', 'Те саме число, навіть повторене, рахується лише один раз.');
     return tr('различните са <b>', 'різні — це <b>') + q.pool.join(', ') + '</b> &nbsp;→&nbsp; ' +

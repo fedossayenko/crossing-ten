@@ -199,7 +199,7 @@
 
   for(let i = 0; i < 2000; i++){
     // symeq: every value of each figure from 0 to 20 tried against the three lines
-    let s = Q.raw(160); while(s.shape === 'def' || s.shape === 'part') s = Q.raw(160);   // those two: check/grade1b-C.js
+    let s = Q.raw(160); while(s.shape === 'def' || s.shape === 'part' || s.shape === 'double') s = Q.raw(160);   // those two: check/grade1b-C.js; 'double': check/grade1c-D.js
     const fits = [];
     for(let x = 0; x <= 20; x++) for(let y = 0; y <= 20; y++) for(let z = 0; z <= 20; z++){
       const ok = s.shape === 'chain' ? s.k*x === s.s1 && x + 2*y === s.s2 && 2*y + z === s.s3 : x + y === s.s1 && y + z === s.s2 && x + z === s.s3;
