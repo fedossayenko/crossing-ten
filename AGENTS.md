@@ -30,6 +30,8 @@ design rules (difficulty rubric, training path) are in `README.md`.
   near-duplicate.
 - A new kind file goes into `index.html` (`<script type="module" src=…>`) before `js/questions.js`; its level row goes in
   `js/levels.js` with `gen:` and a `d:` from the rubric in `README.md`.
+  The row carries its own text: `eq:` the name (`{ bg, uk }` when it is words), `desc:{ en, bg, uk }`; its group
+  comes from `op`/`grp` (`groupKey`), named in `groups` in `js/i18n.js`.
 - Pin the worksheet's original instance in `check/papers.js` and add a brute-force check in `check/kinds.js`.
 - A level whose generator draws several `shape`s rates each on its row (`shapes: { name: d }`, the rubric
   in `README.md`); none above the level's `d` (`check/shapes.js`). A harder shape gets a level of its own

@@ -36,8 +36,10 @@ interface Level {
   d: number;
   /** a level that draws several shapes rates each (rubric d), none above the level's own d */
   shapes?: Record<string, number>;
-  eq: string;
-  desc: string;
+  /** its name: one string, or { bg, uk } when Ukrainian words it differently */
+  eq: string | { bg: string; uk: string };
+  /** what it asks, in every language */
+  desc: { en: string; bg: string; uk: string };
   also?: string[];
   gen?: () => Question;
   /** filled in on load: the papers that ask it, and how many of them are dated */

@@ -196,6 +196,10 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   без отговор, points) with its legend, and the best paper before this one or a new record; "Погледни пак" lists
   wrong answers only; the redo pads from the paper's own levels (was: the level picked before it). Smoke plays a
   paper through Next and stops a second one with ✕. Not done: an iPad-wide two-column result (R7, round end).
+- **R4a. Level text and groups — DONE.** C4: each level's name and description, in all three languages, are on its
+  row (`eq` a string or `{ bg, uk }`, `desc:{ en, bg, uk }`); i18n.js 86 → 43 KB. E1: groups are keyed (`groupKey`:
+  the sign for sums, else `grp`), `t('groups')` a map by key; check.js checks every key named in every language and every
+  level in exactly one group.
 - **R4. Levels page** (E1, E2, C4): one row renderer shared with the sidebar; groups keyed by `grp`;
   collapsed groups; status as %; level text from its row.
 - **R5. Today**: start here, `dueList()` of every review due, week numbers, countdown + readiness % (from

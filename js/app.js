@@ -1,6 +1,6 @@
 import { $, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, raw, setW, slipOf, why } from './questions.js';
-import { LEVELS, PICK_GROUPS } from './levels.js';
+import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
@@ -184,7 +184,7 @@ export function statsFrom(rounds){
     if(r.redo) fixed += r.firstTry;                        // mistakes put right in "practise the misses"
     if(r.level === 'comp') comps++;                        // a competition spans many levels: it is no level's record
     else { const L = lvl[r.level] || (lvl[r.level] = {n:0,f:0}); L.n += r.n; L.f += r.firstTry; }
-    (r.levels || [r.level]).forEach(id => { const l = LEVELS.find(x => x.id === id); if(l) grps[PICK_GROUPS.findIndex(g => g.has(l))] = true; });
+    (r.levels || [r.level]).forEach(id => { const l = LEVELS.find(x => x.id === id); if(l) grps[groupKey(l)] = true; });
     (r.seen||[]).forEach(k => { seen[k] = (seen[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].seen++; });
     (r.missed||[]).forEach(k => { miss[k] = (miss[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].miss++; });
     days[r.day] = true;
@@ -209,7 +209,7 @@ export function statsFrom(rounds){
     .sort((x,y) => y.rate - x.rate || y.seen - x.seen).slice(0,6);
   const m = mastery(rounds);
   return { rounds:rounds.length, sums, first, perfect, lvl, byOp, streak, streakBest, trouble, bestRun, clean10, fixed,
-           comps, groups: Object.keys(grps).filter(k => +k >= 0).length, langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
+           comps, groups: Object.keys(grps).filter(k => PICK_GROUPS.some(g => g.key === k)).length, langs: Object.keys(langs).length, curious: LOCAL.whys || 0, throughTen: THROUGH_TEN.filter(id => m[id] && m[id].done).length };
 }
 
 /* ---------- badges ----------
@@ -735,11 +735,11 @@ export function renderParent(){
     tile(LEVELS.filter(l => m[l.id] && m[l.id].done).length + ' / ' + LEVELS.length, t('levelsLearned'));
 
   const month = LOCAL.rounds.filter(r => r.ts > Date.now() - 30*86400000);
-  const byGrp = PICK_GROUPS.map((g, k) => {
+  const byGrp = PICK_GROUPS.map(g => {
     const ids = new Set(LEVELS.filter(g.has).map(l => l.id));
     const rs = month.filter(r => ids.has(r.level));
     const n = rs.reduce((x, r) => x + r.n, 0), f = rs.reduce((x, r) => x + r.firstTry, 0);
-    return { nm: t('groups')[k], n, p: n ? Math.round(100*f/n) : 0 };
+    return { nm: t('groups')[g.key], n, p: n ? Math.round(100*f/n) : 0 };
   }).filter(g => g.n).sort((a, b) => b.p - a.p);
   $('groupWrap').hidden = !byGrp.length;
   $('byGroup').innerHTML = byGrp.map(g => bar(g.nm, g.p)).join('');
@@ -795,7 +795,7 @@ $('homeBtn').onclick = () => go('today', true);
 // a tab swaps the section in place, so the back gesture does not walk through the tabs
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.r, true));
 
-const groupOf = l => { const g = l ? PICK_GROUPS.findIndex(x => x.has(l)) : -1; return g >= 0 ? t('groups')[g] : ''; };
+const groupOf = l => l && t('groups')[groupKey(l)] || '';
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
 export function todayData(){
   const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
@@ -874,9 +874,9 @@ const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paper
 // the picker's filter chip: the short tag and the grade, "Зима 2024 · 2 клас"; the full name is its tooltip
 const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
-  const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), k = PICK_GROUPS.findIndex(g => g.has(l));
+  const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), g = groupOf(l);
   $('levelName').textContent = levelName(l);
-  $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (k >= 0 ? ' · ' + t('groups')[k] : '');
+  $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (g ? ' · ' + g : '');
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
@@ -976,7 +976,6 @@ function buildPicker(){
   const hist = levelHistory(LOCAL.rounds);
   const m = mastery(LOCAL.rounds);
   const done = l => m[l.id] && m[l.id].done;
-  const groupOf = l => PICK_GROUPS.findIndex(g => g.has(l));
   // how hard it is, on the rubric in the README: operations, reading, search,
   // number size and how easy the trap is to miss — five dots
   const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
@@ -1008,11 +1007,11 @@ function buildPicker(){
   // three filters: the grade, the competition (МБГ, Коледно, the basics), and within it one paper
   loadFocus();
   const gradeOk = l => !PICK_GRADE || l.grade === PICK_GRADE, shown = inFocus;
-  const groups = PICK_GROUPS.map((g, k) => ({ k, levels: LEVELS.filter(l => g.has(l) && shown(l)) })).filter(g => g.levels.length);
-  if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = -1;
-  $('pickTopics').innerHTML = '<button data-k="-1" aria-pressed="' + (PICK_TOPIC === -1) + '">' + t('all') + '</button>' +
+  const groups = PICK_GROUPS.map(g => ({ k: g.key, levels: LEVELS.filter(l => g.has(l) && shown(l)) })).filter(g => g.levels.length);
+  if(!groups.some(g => g.k === PICK_TOPIC)) PICK_TOPIC = '';
+  $('pickTopics').innerHTML = '<button data-k="" aria-pressed="' + (PICK_TOPIC === '') + '">' + t('all') + '</button>' +
     groups.map(g => '<button data-k="' + g.k + '" aria-pressed="' + (PICK_TOPIC === g.k) + '">' + t('groups')[g.k] + '</button>').join('');
-  $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = +b.dataset.k; buildPicker(); });
+  $('pickTopics').querySelectorAll('button').forEach(b => b.onclick = () => { PICK_TOPIC = b.dataset.k; buildPicker(); });
   // the rows of chips: grade, then competition, then — when it has more than one — its papers,
   // newest year first, autumn before winter, and the autumn levels with no year last
   const chips = (id, items, cur, pick) => {
@@ -1050,7 +1049,7 @@ function buildPicker(){
   $('nextUp').innerHTML = (nx ? '<button class="gcard nextcard" data-lvl="' + nx.id + '"><span class="nm">' +
       '<span class="lab">' + t(review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
       '<span class="eq">' + levelName(nx) + '</span>' +
-      '<span class="meta"><span>' + t('groups')[groupOf(nx)] + '</span>' + hard(nx) + '</span>' +
+      '<span class="meta"><span>' + groupOf(nx) + '</span>' + hard(nx) + '</span>' +
       (after ? '<span class="meta">' + t('nextAfter', levelName(after)) + '</span>' : '') +
       '</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>'
     : '<div class="gcard advice">' + t('allLearned') + '</div>') +
@@ -1059,10 +1058,10 @@ function buildPicker(){
 
   // a competition picked is something to train for: one path through its levels, easiest first,
   // in the order the suggestion takes them
-  const path = focused() && LEVELS.filter(l => shown(l) && (PICK_TOPIC === -1 || PICK_GROUPS[PICK_TOPIC].has(l))).sort((a, b) => a.d - b.d || b.freq - a.freq);
+  const path = focused() && LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC)).sort((a, b) => a.d - b.d || b.freq - a.freq);
   $('pickAll').innerHTML = path ? '<div class="grouphead"><b>' + t('byDifficulty') + '</b><span>' + t('learnedGroup', path.filter(done).length, path.length) + '</span></div>' +
     '<div class="gcard list">' + path.map(row).join('') + '</div>' :
-    groups.filter(g => PICK_TOPIC === -1 || g.k === PICK_TOPIC).map(g =>
+    groups.filter(g => !PICK_TOPIC || g.k === PICK_TOPIC).map(g =>
     '<div class="grouphead"><b>' + t('groups')[g.k] + '</b><span>' + t('learnedGroup', g.levels.filter(done).length, g.levels.length) + '</span></div>' +
     '<div class="gcard list">' + g.levels.map(row).join('') + '</div>').join('');
   document.querySelectorAll('#picker [data-lvl]').forEach(b => b.onclick = () => {
@@ -1071,7 +1070,7 @@ function buildPicker(){
     newRound();
   });
 }
-let PICK_TOPIC = -1, PICK_FOR = null, PICK_GRADE = 0, PICK_COMP = '', PICK_ROUND = '', PICK_PAPER = '';
+let PICK_TOPIC = '', PICK_FOR = null, PICK_GRADE = 0, PICK_COMP = '', PICK_ROUND = '', PICK_PAPER = '';
 // The picker's filters are her focus, kept on this device: each child starts on her own grade, and a
 // competition picked stays picked — the list and the suggestion keep to it until it is changed.
 function loadFocus(){

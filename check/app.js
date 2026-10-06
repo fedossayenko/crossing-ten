@@ -7,8 +7,8 @@
 // the generators: every level rated, in a known group, and easiest first.
 {
   const block = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
-  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d),(?: shapes:\{[^}]*\},)? eq:.(.*?)., desc/g)]
-    .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] }));
+  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d),(?: shapes:\{[^}]*\},)? eq:(?:'(.*?)'|\{ bg:'(.*?)'.*?\}), desc/g)]
+    .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] || m[7] }));
   if(rows.length !== 57) throw new Error('parsed ' + rows.length + ' levels, expected 57');
   const seen = new Set();
   rows.forEach(r => {
@@ -198,14 +198,18 @@
       }
       n++;
     }
-    if(lang !== 'en') levelIds.forEach(id => { if(!(L.desc || {})[id]) throw new Error(lang + ' has no description for level ' + id); });
-    if(lang === 'uk'){
-      const names = [...js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections')).matchAll(/\{ id:(\d+),.*?eq:'(.*?)'/g)];
-      names.forEach(m => { if(/[А-Яа-я]/.test(m[2]) && !(L.eq || {})[m[1]]) throw new Error('uk has no name for level ' + m[1] + ' ' + m[2]); });
-    }
+    // a level's text is on its row: a description in every language, and a Ukrainian name for every name in words
+    APP.LEVELS.forEach(l => {
+      if(typeof l.desc[lang] !== 'string' || !l.desc[lang]) throw new Error('level ' + l.id + ' has no ' + lang + ' description');
+      if(lang === 'uk' && /[А-Яа-я]/.test(typeof l.eq === 'string' ? l.eq : l.eq.bg) && !(l.eq.uk && /[А-Яа-яІіЇїЄє]/.test(l.eq.uk))) throw new Error('level ' + l.id + ' has no Ukrainian name');
+      if(lang === 'uk' && /[ыъэЪЫЭ]/.test(l.desc.uk + (l.eq.uk || ''))) throw new Error('level ' + l.id + ': Bulgarian or Russian letters in its Ukrainian text');
+    });
   }
-  const groups = (read('js/levels.js').split('const PICK_GROUPS = [')[1].split('];')[0].match(/\{ nm:'/g) || []).length;
-  Object.keys(T.LANGS).forEach(lang => { if(T.TEXT[lang].groups.length !== groups) throw new Error(lang + ' names ' + T.TEXT[lang].groups.length + ' picker groups, the picker has ' + groups); });
+  // every group named in every language by its key, no name left over; every level in exactly one group
+  const keys = APP.PICK_GROUPS.map(g => g.key), groups = keys.length;
+  Object.keys(T.LANGS).forEach(lang => { const named = Object.keys(T.TEXT[lang].groups);
+    if(named.join() !== keys.join()) throw new Error(lang + ' names the groups ' + named.join(' ') + ', the picker has ' + keys.join(' ')); });
+  APP.LEVELS.forEach(l => { if(APP.PICK_GROUPS.filter(g => g.has(l)).length !== 1) throw new Error('level ' + l.id + ' is in ' + APP.PICK_GROUPS.filter(g => g.has(l)).length + ' groups'); });
   const mascots = [...read('js/mascots.js').matchAll(/^  (\w+): \{$/gm)].map(m => m[1]);
   Object.keys(T.LANGS).forEach(lang => mascots.forEach(m => { if(!T.TEXT[lang].mascots[m]) throw new Error(lang + ' has no name for the ' + m); }));
   const used = [...new Set([...(js + src).matchAll(/\bt\('(\w+)'|data-t(?:-aria)?="(\w+)"/g)].map(m => m[1] || m[2]))];
