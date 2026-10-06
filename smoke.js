@@ -358,19 +358,18 @@ const server = http.createServer((req, res) => {
       $('skipBtn').click(); await wait(50); out.afterSkip = S.i; out.skipSeg = !!document.querySelector('#dots .step.skip') && $('qnum').textContent.includes(t('skippedN', 1));
       const order = [];
       for(let step = 0; step < 25 && COMP; step++){
-        const q = S.qs[S.i], right = order.length < 12;
+        const q = S.qs[S.i], right = order.length < 12, at = S.i;
         order.push(S.i);
         if(q.options){
           const id = right ? q.pick : q.options.find(o => o.id !== q.pick).id;
           document.querySelector('#choices .ch[data-o="' + id + '"]').click();
-          await wait(500); if(S.i !== order[order.length - 1]) out.movedAlone = true;   // a choice waits for Next
-          $('nextBtn').click();
+          await wait(200); if(S.i !== at) out.movedAlone = true;   // a choice waits for Next (a typed answer moves on at 150 ms)
+          $('nextBtn').click();   // Next moves on at once
         } else {
           for(let slot = 0; slot < (q.slots || 1); slot++){ [...(right ? String(answers(q)[slot]) : '999')].forEach(K); K('go'); }
+          // a typed answer moves on by itself after 150 ms: wait for the next task, not a fixed time
+          for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
         }
-        // a typed answer moves on by itself after 150 ms: wait for the next task, not a fixed time
-        const at = S.i;
-        for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
       }
       out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
       const r = LOCAL.rounds[LOCAL.rounds.length - 1];

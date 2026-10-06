@@ -12,7 +12,7 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - `check/golden.json` records what every level shows (30 seeds, both languages, hints, solutions, options). A change a child would see fails until recorded with `node check.js --golden`; record only a change you meant, and say which levels moved.
 - Every level gets every per-level rule in `check/levels.js`; a rule that cannot fit a level is lifted in its `NOT` table for that level alone, with the reason.
 - check.js runs the per-level check in worker threads (4 by default, `CHECK_THREADS=n`; `CHECK_SERIAL=1` for one,
-  e.g. to profile; `CHECK_TIME=1` times each file): about 8 s on this machine; smoke.js about 22 s.
+  e.g. to profile; `CHECK_TIME=1` times each file): about 9 s on this machine; smoke.js about 25 s. The two can run at once. Bun runs both but is no faster (measured 2026-10-06): the time is the work and headless Chrome, not the runtime.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local -c wrangler.toml`, then `node worker/test.js`
   and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local -c wrangler.toml --file schema.sql`).
