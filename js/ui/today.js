@@ -39,6 +39,8 @@ function Today(){
           <span class="nm"><span class="lab">${d.paper.name}</span><span class="eq">${d.paper.when}</span><span class="meta">${t('inDays', d.paper.days)}</span></span>
           <span class="ready" title=${t('readyHow')}><b>${d.paper.ready}%</b><span class="track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${d.paper.ready}
             aria-label=${t('readyPct', d.paper.ready)}><i style=${{ width: d.paper.ready + '%' }}></i></span></span></button>`}
+        ${(d.notebook.total > 0 || d.notebook.done.some(x => x.recheck)) && html`<button class="gcard nextcard nbcard" onClick=${() => go('notebook')}>
+          <span class="nm"><span class="lab">${t('notebook')}</span><span class="eq">${d.notebook.total ? t('nbKinds', d.notebook.open.length, d.notebook.total) : t('nbRecheck')}</span></span>${CHEV}</button>`}
         <button class="gcard nextcard comp" onClick=${() => startComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
         <button class="btn ghost" onClick=${() => go('levels', true)}>${t('chooseLevel')}</button>
       </div>

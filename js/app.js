@@ -8,6 +8,7 @@ import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
 import { COMP_MIN, COMP_N, compAnswer, compEnd, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
+import { showNotebook } from './ui/notebook.js';
 import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from './sync.js';
 /* ---------- screens and the address ----------
    Each screen has an address (#/levels, #/badges …), so a reload and the back gesture of an installed app land
@@ -20,6 +21,7 @@ const ROUTES = {
   badges: { sheet: 'stats', show: () => showStats() },
   parents: { sheet: 'parent', show: () => renderParent() },
   players: { sheet: 'players', show: () => paintPlayers() },
+  notebook: { sheet: 'notebook', show: () => showNotebook($('notebookIn')) },
 };
 const routeOfAddress = () => { const r = (location.hash.match(/^#\/([\w-]+)/) || [])[1]; return r && r in ROUTES ? r : 'play'; };
 // The screen showing is kept here, not read back from the address: a browser may drop a history change
@@ -333,7 +335,8 @@ function putCat(slot, m){
 }
 
 /* ---------- round flow ---------- */
-const plainQ = q => q.own ? q : (({ options, pick, pts, lvl, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г
+const plainQ = q => q.own ? q : (({ options, pick, pts, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г; lvl stays, so a task from
+// another level (a paper's redo, the notebook) is logged under its own level and seed
 // comp: a competition's own tasks, which come with their options and points already
 export function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
@@ -578,6 +581,7 @@ export function finish(){
   // Worth another look: what she wrote, what it most likely was, and - on a tap - the way through.
   const missed = S.qs.map((q, k) => ({ q, k })).filter(x => !S.results[x.k] && !S.skipped[x.k]);   // a paper's unanswered tasks are in its table, not mistakes
   $('missWrap').hidden = missed.length === 0;
+  $('toNotebook').onclick = () => go('notebook');
   $('redo').hidden = missed.length === 0;
   $('misslist').innerHTML = missed.map(({ q, k }) => {
     const wrote = S.typed[k] === undefined ? '' : '<span class="wrote">' + t('youWrote', esc(S.typed[k])) +
@@ -595,7 +599,7 @@ export function finish(){
   $('redo').onclick = () => {
     const set = missed.map(x => x.q);
     const want = Math.min(12, Math.max(6, missed.length*2));
-    while(set.length < want) set.push(gen(padFrom[rnd(padFrom.length)]));
+    while(set.length < want){ const lv = padFrom[rnd(padFrom.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
     newRound(shuffle(set));
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
@@ -799,6 +803,48 @@ document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.da
 
 const groupOf = l => l && t('groups')[groupKey(l)] || '';
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
+/* ---------- the mistakes notebook (#/notebook, drawn by js/ui/notebook.js) ----------
+   Her missed tasks of the last 30 days, drawn again from their level and seed, grouped by the mistake slipOf
+   names (else by the level's group). "Put right" plays those very tasks, padded with new ones from their levels;
+   all right first time puts the kind right: its older misses leave the notebook, and a week later it asks to be
+   checked again with new tasks. A round says what it fixed: redo { fix: kind } or { check: kind }. */
+const DAY = 864e5;
+export function notebookData(now = Date.now()){
+  const rounds = LOCAL.rounds.filter(r => r.ts > now - 30*DAY && Array.isArray(r.t));
+  const pass = {};   // the last round that put each kind right, or checked it
+  rounds.forEach(r => { const k = r.redo && (r.redo.fix || r.redo.check); if(k && r.firstTry === r.n && (!pass[k] || pass[k].ts < r.ts)) pass[k] = { ts: r.ts, check: !!r.redo.check }; });
+  const seen = new Map();
+  rounds.forEach(r => r.t.forEach(([lv, , seed, wrote, ok, ans]) => {
+    if(ok !== 0 || wrote == null) return;
+    const l = LEVELS.find(x => x.id === lv);
+    if(!l) return;
+    let q = null;
+    try { if(Number.isInteger(seed)){ const d = seeded(seed, () => raw(lv)); if(JSON.stringify(answer(d)) === JSON.stringify(ans)) q = Object.assign(d, { seed, lvl: lv }); } } catch(e){}   // its generator changed since: shown by its numbers
+    const kind = (q && slipOf(q, String(wrote).split(' · '))) || 'g:' + groupKey(l);
+    if(pass[kind] && pass[kind].ts > r.ts) return;
+    seen.set(lv + ':' + seed, { kind, ts: r.ts, lv, seed, wrote, ans, q, text: q ? eqText(q) : levelName(l) + ' → ' + ans });
+  }));
+  const byKind = {};
+  [...seen.values()].sort((a, b) => b.ts - a.ts).forEach(x => (byKind[x.kind] = byKind[x.kind] || []).push(x));
+  const name = k => k.startsWith('g:') ? t('groups')[k.slice(2)] : t('slip')[k][0];
+  const open = Object.entries(byKind).map(([kind, items]) => ({ kind, name: name(kind), desc: kind.startsWith('g:') ? '' : t('slip')[kind][1], items }))
+    .sort((a, b) => b.items.length - a.items.length);
+  const done = Object.entries(pass).filter(([k, p]) => !byKind[k] && !p.check).map(([kind, p]) => ({ kind, name: name(kind), ts: p.ts, recheck: now - p.ts >= 7*DAY,
+    when: new Date(p.ts).toLocaleDateString(LANG_TAG[LANG], { weekday:'long' }) }));
+  return { open, done, total: open.reduce((s, g) => s + g.items.length, 0) };
+}
+// Put a kind right: its tasks again, and new ones from their levels up to five (at most twelve); or check it, five new
+export function fixKind(kind, check){
+  const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
+  if(!levels.length) return;
+  const set = check ? [] : g.items.filter(x => x.q).map(x => x.q).slice(0, 12);
+  const want = Math.min(12, Math.max(5, set.length));
+  while(set.length < want){ const lv = levels[rnd(levels.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
+  newRound(shuffle(set));
+  S.redo = check ? { check: kind } : { fix: kind };
+}
+// the levels a kind was put right on: from the round that put it right
+const notebookLevels = kind => { const r = [...LOCAL.rounds].reverse().find(r => r.redo && r.redo.fix === kind); return r ? [...new Set(r.t.map(x => x[0]))] : []; };
 // Monday 00:00 of this week, local time
 const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
 export function todayData(){
@@ -810,7 +856,7 @@ export function todayData(){
   return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
     next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
-    week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(),
+    week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     compN: COMP_N, compMin: COMP_MIN };
 }
 // Today's cards: play this level now
@@ -1366,5 +1412,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

@@ -143,7 +143,13 @@ export function tenFrame(q){
 // worth naming to her: a ten taken but not paid back, the small ones digit taken from the
 // big one, a carried ten dropped, or the wrong sign. Worksheet tasks are not guessed at.
 export function slipOf(q, parts){
-  if(q.kind || parts.length !== 1 || parts[0] === '') return null;
+  if(parts.length !== 1 || parts[0] === '') return null;
+  // a ± chain worked left to right: one sign read the other way round
+  if(q.kind === 'chain' && !q.paired && Array.isArray(q.terms)){
+    const v = +parts[0], val = flip => q.terms.reduce((s, x, k) => k === 0 ? x.n : s + ((x.op === '+') !== (k === flip) ? x.n : -x.n), 0);
+    return q.terms.some((x, k) => k > 0 && x.n > 0 && val(k) === v) ? 'chainSign' : null;
+  }
+  if(q.kind) return null;
   const v = +parts[0], ans = answer(q), o = q.a % 10, bo = q.b % 10;
   if(q.op === '-'){
     if(v === q.a + q.b) return 'wrongOp';

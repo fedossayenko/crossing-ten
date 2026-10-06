@@ -212,8 +212,13 @@ provably safe: after it, any change to what a child sees fails unless re-recorde
   learned, each weighing 1 + how many dated papers ask it; a tap opens the levels page focused on that round.
   ≥1100 px: two columns (play on the left; the competition, the paper and the level choice on the right).
   Also fixed: the early-stop competition test assumed its first task was А/Б/В/Г (a flake about one run in three).
-- **R6. Notebook**: from per-task records — slips grouped, examples rebuilt from seeds, "Поправи N"
-  practises those very tasks, fixed → recheck in a week.
+- **R6. Notebook — DONE.** #/notebook (js/ui/notebook.js): the missed tasks of the last 30 days, drawn again from their
+  level and seed (shown by their numbers if the generator changed), grouped by the mistake slipOf names, else by the
+  level's group; "Поправи N" plays those very tasks padded with new ones from their levels to five (≤12); all right first
+  time puts the kind right (its older misses leave; the round logs redo { fix }); a week on it asks to be checked with
+  five new tasks (redo { check }). slipOf also names a sign read backwards in a ± chain. Reached from Today and from
+  the round's end ("В тетрадката"). Fixed on the way: plainQ dropped a task's level, so a paper's redo logged its tasks
+  under the level picked before it.
 - **R7. Round end, Badges, Parents (+ per-shape report, old D2), ParentsMore (grade moves here), Players
   (devices, last sync), Welcome.**
 - **R8. Weekly card**: SVG → canvas → PNG, `navigator.share({files})` built before the tap (iOS user

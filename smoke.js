@@ -155,6 +155,33 @@ const server = http.createServer((req, res) => {
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
   expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared, 'the next competition went wrong: ' + JSON.stringify(r5));
+  // R6: a task missed as a forgotten borrow lands in the notebook under that mistake, drawn again from its seed;
+  // "put right" plays it with new ones, all right puts the kind right, and a week on it asks to be checked again
+  const r6 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    const answerAll = async () => { for(let i = 0; i < 20 && !$('sheet').hidden === false; i++){ const q = S.qs[S.i];
+      if(q.options) document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); else { [...String(answers(q)[0])].forEach(K); K('go'); }
+      await tick(); if(S.settled) K('go'); await tick(); } };
+    const was = LOCAL.choice; LOCAL.choice = false;
+    $('sheet').hidden = true; const q = Object.assign(seeded(11, () => raw(2)), { seed: 11 }), wrong = String(answer(q) + 10);
+    const lvWas = S.level; S.level = 2; newRound([q]); [...wrong].forEach(K); K('go'); [...wrong].forEach(K); K('go'); K('go'); await tick();
+    const d = notebookData(), g = d.open.find(x => x.kind === 'forgotBorrow');
+    const r = { listed: !!g && g.items.some(x => x.seed === 11 && x.wrote === wrong && x.text.includes(String(answer(q)))) };
+    $('toNotebook').click(); await tick();
+    const card = document.querySelector('#notebook .nbkind[data-kind="forgotBorrow"]');
+    r.shown = !$('notebook').hidden && !!card && card.textContent.includes(wrong);
+    card.querySelector('.btn').click(); await tick();
+    r.round = S.qs.length === 5 && S.redo && S.redo.fix === 'forgotBorrow' && S.qs.some(x => x.a === q.a && x.b === q.b) && $('notebook').hidden;
+    await answerAll();
+    const last = LOCAL.rounds[LOCAL.rounds.length - 1], after = notebookData();
+    r.fixed = last.redo && last.redo.fix === 'forgotBorrow' && last.firstTry === 5 && !after.open.some(x => x.kind === 'forgotBorrow') &&
+      after.done.some(x => x.kind === 'forgotBorrow' && !x.recheck);
+    r.recheck = notebookData(Date.now() + 8 * 864e5).done.some(x => x.kind === 'forgotBorrow' && x.recheck);
+    // the tasks of the fixing round are logged under their own level and seed: drawn again, each has its recorded answer
+    r.logged = last.t.every(x => answer(seeded(x[2], () => raw(x[0]))) === x[5]);
+    LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
+    return JSON.stringify(r); })()`) || '{}');
+  expect(r6.listed && r6.shown && r6.round && r6.fixed && r6.recheck && r6.logged, 'the mistakes notebook went wrong: ' + JSON.stringify(r6));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };

@@ -121,7 +121,7 @@
       <div class="gcard list" id="compTable"></div>
     </div>
     <div id="missWrap" hidden>
-      <div class="lab" data-t="worthLook"></div>
+      <div class="gtitle"><b class="lab" data-t="worthLook"></b><button class="linkbtn" id="toNotebook" data-t="inNotebook"></button></div>
       <div class="gcard list" id="misslist"></div>
     </div>
     <div class="stack">
@@ -135,6 +135,9 @@
 </div>
 
 <!-- Progress, for her: badges and how the last rounds went -->
+<!-- the mistakes notebook (#/notebook): drawn by js/ui/notebook.js -->
+<div class="sheet" id="notebook" hidden data-t-aria="notebook"><div class="sheet-in wide" id="notebookIn"></div></div>
+
 <div class="sheet" id="stats" hidden role="dialog" data-t-aria="progress">
   <div class="sheet-in wide">
     <div class="bar">

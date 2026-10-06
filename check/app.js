@@ -238,6 +238,8 @@
   [[{a:42,b:17,op:'-'}, '35', 'forgotBorrow'], [{a:41,b:17,op:'-'}, '36', 'flipped'], [{a:42,b:17,op:'-'}, '59', 'wrongOp'],
    [{a:27,b:15,op:'+'}, '32', 'forgotCarry'], [{a:8,b:5,op:'+'}, '3', 'wrongOpAdd'], [{a:42,b:17,op:'-'}, '26', 'offByOne'],
    [{a:42,b:17,op:'-'}, '52', 'swapped'], [{a:27,b:15,op:'+'}, '24', 'swapped'], [{a:15,b:5,op:'+'}, '2', null],
+   [{kind:'chain', paired:0, terms:[{op:'', n:2}, {op:'+', n:6}, {op:'−', n:5}], ans:3}, '13', 'chainSign'],
+   [{kind:'chain', paired:0, terms:[{op:'', n:2}, {op:'+', n:6}, {op:'−', n:5}], ans:3}, '4', null],
    [{a:42,b:17,op:'-'}, '40', null], [{a:112,b:25,op:'-'}, '97', 'forgotBorrow'], [{kind:'erase', ans:7}, '8', null]
   ].forEach(([q, typed, want]) => {
     const got = Q.slipOf(q, [typed]);
@@ -251,7 +253,7 @@
     const svg = Q.tenFrame({a:40 + o, b:10 + bo, op:'-'}), left = (svg.match(/var\(--accent\)"/g) || []).length, gone = (svg.match(/<path d="M[\d.]+,[\d.]+ L/g) || []).length;
     if(o >= bo ? svg !== '' : left !== 10 - (bo - o) || gone !== bo || /undefined|NaN/.test(svg)) throw new Error('ten-frame for ' + (40+o) + ' − ' + (10+bo) + ': ' + left + ' left, ' + gone + ' crossed out');
   }
-  console.log('mistakes: forgotten borrow, flipped digits, dropped carry, wrong sign, swapped tens and ones and off-by-one are each recognised; ten-frames show the crossing step exactly');
+  console.log('mistakes: forgotten borrow, flipped digits, dropped carry, wrong sign, swapped tens and ones, a sign read backwards in a chain and off-by-one are each recognised; ten-frames show the crossing step exactly');
 }
 
 
