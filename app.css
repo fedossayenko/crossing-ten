@@ -886,6 +886,13 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .weekshare img{width:100%; height:auto; border-radius:16px; box-shadow:0 2px 12px rgba(15,23,31,.12)}
 .weekshare .chk{display:flex; align-items:center; gap:8px; font-weight:600}
 .weekshare .btn{flex:none}
+/* the family's devices on the players' screen; the change-password form in the family card */
+.devlist{display:flex; flex-direction:column}
+.devrow{display:flex; justify-content:space-between; gap:12px; padding:8px 2px; border-top:1px solid var(--line); font-size:14px; font-weight:600}
+.devrow span:last-child{color:var(--muted); font-weight:500}
+.devrow.me span:first-child{color:var(--accent-ink)}
+#passForm input{height:44px; padding:0 14px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:16px}
+#passForm[hidden]{display:none}
 .nbhow{font-size:13px; color:var(--muted); margin:0; padding:0 4px}
 .paperset{display:flex; gap:8px; flex-wrap:wrap}
 .paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:15px; font-weight:600}

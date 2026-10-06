@@ -8,7 +8,8 @@
 //   POST /google {credential}             a Google ID token → {token}; with a Bearer session it
 //                                          links that Google account to the family instead
 //   POST /logout                          ends this session
-//   POST /sync   {since, players, gone, rounds} → {cursor, players, gone, rounds, more, account}
+//   POST /password {old, password}        a family name's new password (old one checked, same lockout)
+//   POST /sync   {since, players, gone, rounds, device} → {cursor, players, gone, rounds, more, account, devices}
 // Sync sends what the server has not seen from this device and replies with what this device
 // has not seen. Rounds carry ids and never change, so merging is a set union (INSERT OR
 // IGNORE). Players are last-write-wins on `updated`; a player's resetAt drops her older
@@ -46,12 +47,16 @@ async function session(db, family){
   await db.prepare('INSERT INTO sessions (hash, family, created) VALUES (?1, ?2, ?3)').bind(await sha256(token), family, Date.now()).run();
   return token;
 }
-async function familyOf(db, req){
+// The calling device's session: its family, and the hash that names the session
+async function sessionOf(db, req){
   const m = (req.headers.get('authorization') || '').match(/^Bearer ([A-Za-z0-9_-]{20,100})$/);
   if(!m) return null;
-  const row = await db.prepare('SELECT family FROM sessions WHERE hash = ?1').bind(await sha256(m[1])).first();
-  return row && row.family;
+  const hash = await sha256(m[1]), row = await db.prepare('SELECT family FROM sessions WHERE hash = ?1').bind(hash).first();
+  return row && { family: row.family, hash };
 }
+const familyOf = async (db, req) => ((await sessionOf(db, req)) || {}).family || null;
+// what a device calls itself: a short line of letters, digits and simple punctuation
+const deviceOf = d => String(d || '').replace(/[^\p{L}\p{N} ·.,()_+-]/gu, '').trim().slice(0, 40);
 const nameOf = async (db, family) => ((await db.prepare('SELECT display FROM accounts WHERE family = ?1').bind(family).first()) || {}).display || null;
 
 // A Google ID token, checked against Google's published keys: signature, audience, issuer, expiry.
@@ -79,7 +84,7 @@ export default {
     const route = new URL(req.url).pathname;
     // Who calls, for Workers Logs (observability in wrangler.toml): the device and where, never the IP.
     console.log(JSON.stringify({ route, ua: req.headers.get('user-agent'), country: req.cf?.country, city: req.cf?.city }));
-    if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync'].includes(route)) return reply(404, { error: 'not found' });
+    if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync', '/password'].includes(route)) return reply(404, { error: 'not found' });
     const text = await req.text();
     if(text.length > MAX_BODY) return reply(413, { error: 'too much at once' });
     let body;
@@ -130,8 +135,25 @@ export default {
       return reply(row ? 200 : 201, { token: await session(db, family), name: await nameOf(db, family) });
     }
 
-    const family = await familyOf(db, req);
+    const me = await sessionOf(db, req), family = me && me.family;
     if(!family) return reply(401, { error: 'login' });
+    if(route === '/password'){
+      // a family name's password, changed from a device already in the family; the old one is checked as at login
+      const a = await db.prepare('SELECT * FROM accounts WHERE family = ?1').bind(family).first();
+      if(!a) return reply(404, { error: 'no account' });      // a family made with Google alone: /signup sets its first one
+      const password = String(body.password || '');
+      if(password.length < 8 || password.length > 200) return reply(400, { error: 'password' });
+      if(a.locked > now) return reply(429, { error: 'locked', retry: Math.ceil((a.locked - now) / 1000) });
+      if(!same(await pbkdf2(String(body.old || ''), a.salt, a.iter), a.hash)){
+        const fails = a.fails + 1, lock = fails >= FAILS;
+        await db.prepare('UPDATE accounts SET fails = ?2, locked = ?3 WHERE name = ?1').bind(a.name, lock ? 0 : fails, lock ? now + LOCK_MS : 0).run();
+        return lock ? reply(429, { error: 'locked', retry: LOCK_MS / 1000 }) : reply(401, { error: 'wrong' });
+      }
+      const salt = b64url(crypto.getRandomValues(new Uint8Array(16)));
+      await db.prepare('UPDATE accounts SET salt = ?2, hash = ?3, iter = ?4, fails = 0, locked = 0 WHERE name = ?1')
+        .bind(a.name, salt, await pbkdf2(password, salt, ITER), ITER).run();
+      return reply(200, {});      // ponytail: the family's other devices stay logged in; end them here if a password ever leaks
+    }
     if(route === '/logout'){
       await db.prepare('DELETE FROM sessions WHERE hash = ?1').bind(await sha256(req.headers.get('authorization').slice(7))).run();
       return reply(200, {});
@@ -164,7 +186,9 @@ export default {
       writes.push(db.prepare('INSERT OR IGNORE INTO rounds (family, player, id, ts, body) VALUES (?1, ?2, ?3, ?4, ?5)')
         .bind(family, x.player, r.id, r.ts, json));
     }
-    if(writes.length) await db.batch(writes);
+    // this device: when it last synced, and what it calls itself
+    writes.push(db.prepare('UPDATE sessions SET last_seen = ?2, device = ?3 WHERE hash = ?1').bind(me.hash, now, deviceOf(body.device)));
+    await db.batch(writes);
     // a reset player keeps no rounds from before her reset
     await db.prepare(`DELETE FROM rounds WHERE family = ?1 AND ts < (SELECT json_extract(body, '$.resetAt') FROM players
       WHERE players.family = rounds.family AND players.id = rounds.player AND gone = 0)`).bind(family).run();
@@ -180,6 +204,9 @@ export default {
       players: people.results.filter(p => !p.gone).map(p => JSON.parse(p.body)),
       gone: people.results.filter(p => p.gone).map(p => ({ id: p.id, updated: p.updated })),
       account: await nameOf(db, family),     // the family name, or null for a family made with Google alone
+      // the family's devices that have synced, latest first; `me` is this one (the session's hash never leaves)
+      devices: (await db.prepare('SELECT device, last_seen, hash = ?2 AS me FROM sessions WHERE family = ?1 AND last_seen > 0 ORDER BY last_seen DESC LIMIT 20')
+        .bind(family, me.hash).all()).results.map(d => ({ device: d.device, last: d.last_seen, me: !!d.me })),
       now
     });
   }

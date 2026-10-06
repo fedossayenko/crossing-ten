@@ -106,13 +106,14 @@ export function syncNow(){
         });
         const batch = out.slice(0, 1500);
         const res = await account('/sync', { since: FAMILY.cursor || 0, players: PLAYERS.list.map(p => Object.assign({ updated:0 }, p)),
-                                            gone: PLAYERS.gone || [], rounds: batch });
+                                            gone: PLAYERS.gone || [], rounds: batch, device: deviceLabel() });
         if(res.status === 401){ FAMILY = null; break; }          // this session was logged out
         if(res.status !== 200) throw new Error('sync ' + res.status);
         const r = res.body;
         batch.forEach(x => (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id));
         reload = mergeFromServer(r) || reload;
         FAMILY.account = r.account;          // null: a family made with Google alone, still without a family name
+        if(r.devices) FAMILY.devices = r.devices;   // the family's devices, latest first (this one marked me)
         FAMILY.cursor = r.cursor;
         if(!r.more && out.length <= batch.length) break;
       }
@@ -145,9 +146,44 @@ export function paintSync(){
   const line = FAMILY.failed ? t('syncFailed') : FAMILY.at ?
     t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing');
   $('synced').textContent = line + builtOn();
-  $('playersSynced').textContent = line;
+  const devs = FAMILY.devices || [];
+  $('playersSynced').textContent = line + (devs.length > 1 ? ' · ' + t('devicesN', devs.length) : '');
+  $('devList').innerHTML = devs.length > 1 ? devs.map(d => '<div class="devrow' + (d.me ? ' me' : '') + '"><span>' + esc(d.device || '?') +
+    (d.me ? ' · ' + t('thisDevice') : '') + '</span><span>' + ago(d.last) + '</span></div>').join('') : '';
+  $('syncChangePass').hidden = !FAMILY.account || !$('passForm').hidden;   // a family name has a password to change
   googleButton($('gLink'));        // logged in, it links a Google account to this family
 }
+// what this device calls itself on the family's list: "iPad · Safari" (an iPad says it is a Mac, but has a touch screen)
+export function deviceLabel(){
+  const ua = navigator.userAgent, mac = /Macintosh/.test(ua);
+  const kind = /iPad/.test(ua) || (mac && navigator.maxTouchPoints > 1) ? 'iPad' : /iPhone/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' :
+    mac ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : '';
+  const app = /Edg\//.test(ua) ? 'Edge' : /Firefox|FxiOS/.test(ua) ? 'Firefox' : /Chrome|CriOS/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : '';
+  return [kind, app].filter(Boolean).join(' · ');
+}
+const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+// "2 minutes ago", in her language, by the browser's own wording
+const ago = ms => { const m = Math.round((ms - Date.now()) / 60000), rtf = new Intl.RelativeTimeFormat(LANG_TAG[LANG], { numeric:'auto' });
+  return Math.abs(m) < 60 ? rtf.format(m, 'minute') : Math.abs(m) < 1440 ? rtf.format(Math.round(m / 60), 'hour') : rtf.format(Math.round(m / 1440), 'day'); };
+
+/* ---------- changing the family's password ---------- */
+$('syncChangePass').onclick = () => {
+  $('passForm').hidden = false; $('syncChangePass').hidden = true; $('passMsg').textContent = '';
+  $('passOld').placeholder = t('oldPass'); $('passNew').placeholder = t('newPass'); $('passOld').value = $('passNew').value = '';
+  $('passOld').focus();
+};
+$('passForm').onsubmit = async e => {
+  e.preventDefault();
+  const old = $('passOld').value, password = $('passNew').value;
+  if(password.length < 8){ $('passMsg').textContent = t('passShort'); return; }
+  $('passGo').disabled = true; $('passMsg').textContent = t('syncing');
+  let r = null;
+  try { r = await account('/password', { old, password }); } catch(e){}
+  $('passGo').disabled = false;
+  if(r && r.status === 200){ $('passForm').hidden = true; paintSync(); say(t('passChanged')); return; }
+  $('passMsg').textContent = !r ? t('syncFailed') : r.status === 429 ? t('locked', Math.ceil((r.body.retry || 900) / 60)) :
+    r.status === 401 ? t('wrongPass') : r.status === 400 ? t('passShort') : t('syncFailed');
+};
 
 /* ---------- logging in ---------- */
 let LOGIN_WELCOME = false, SETTING = false;

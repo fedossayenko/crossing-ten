@@ -195,6 +195,13 @@
           </div>
           <div class="stack" id="syncOnRow" hidden>
             <button class="btn ghost" id="syncSetPass" hidden data-t="setPass"></button>
+            <button class="btn ghost" id="syncChangePass" hidden data-t="changePass"></button>
+            <form class="stack" id="passForm" hidden>
+              <input type="password" id="passOld" autocomplete="current-password" data-t-aria="oldPass">
+              <input type="password" id="passNew" autocomplete="new-password" data-t-aria="newPass">
+              <button class="btn" id="passGo" data-t="changePass"></button>
+              <span class="synced" id="passMsg" role="status"></span>
+            </form>
             <button class="btn ghost" id="syncLeave" data-t="logOut"></button>
           </div>
           <div class="gbtn" id="gLink" hidden></div>
@@ -290,6 +297,7 @@
         <span class="famicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.5-8A6 6 0 0 1 18 9a4 4 0 0 1 0 9H7z"/><path d="M9 14l2 2 4-4"/></svg></span>
         <div class="famtext"><b data-t="familyOn"></b><span class="synced" id="playersSynced"></span></div>
       </div>
+      <div class="devlist" id="devList"></div>
     </div>
     <p class="footnote" data-t="eachKept"></p>
     <button class="btn ghost" id="closePlayers" data-t="back"></button>

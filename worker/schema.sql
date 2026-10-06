@@ -36,11 +36,14 @@ CREATE TABLE IF NOT EXISTS accounts (
   created INTEGER NOT NULL
 );
 
--- A logged-in device: the SHA-256 of its token, never the token itself.
+-- A logged-in device: the SHA-256 of its token, never the token itself; when it last synced and what it
+-- called itself ("iPad · Safari"). An existing database gets the last two from migrations/0001_sessions_devices.sql.
 CREATE TABLE IF NOT EXISTS sessions (
   hash TEXT PRIMARY KEY,
   family TEXT NOT NULL,
-  created INTEGER NOT NULL
+  created INTEGER NOT NULL,
+  last_seen INTEGER NOT NULL DEFAULT 0,
+  device TEXT NOT NULL DEFAULT ''
 );
 
 -- A Google account (its stable `sub`, not its email) that opens a family.

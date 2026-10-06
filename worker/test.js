@@ -108,10 +108,30 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   ok((await call('/logout', {}, B)).status === 200 && (await call('/sync', {}, B)).status === 401, 'a logged-out session should stop working');
   ok((await call('/sync', {}, A)).status === 200, 'logging out one device must leave the other logged in');
 
+  // devices: each sync stamps its device; a family sees its own devices, latest first, this one marked, the name cleaned
+  await call('/sync', { device: 'iPad · Safari' }, A);
+  await call('/sync', { device: 'Phone' }, C);
+  const C2 = (await call('/login', { name: 'other ' + tag, password: 'correct horse' })).body.token;
+  const seen = (await call('/sync', { device: 'iPhone <b>(Chrome)</b>' }, C2)).body.devices;
+  ok(seen.length === 2 && seen[0].me && seen[0].device === 'iPhone b(Chrome)b' && !seen[1].me && seen[1].device === 'Phone' &&
+    seen[0].last >= seen[1].last && !JSON.stringify(seen).includes('hash'), 'a family should see its own devices: ' + JSON.stringify(seen));
+  const mine = (await call('/sync', { device: 'iPad · Safari' }, A)).body.devices;
+  ok(mine.length === 1 && mine[0].device === 'iPad · Safari' && mine[0].me, 'another family\'s devices must not show: ' + JSON.stringify(mine));
+
+  // changing the password: from a logged-in device, the old one checked; the new one opens the family, the old no longer
+  const P = (await signup('pw ' + tag)).body.token;
+  ok((await call('/password', { old: 'correct horse', password: 'new horse 2026' })).status === 401, 'a password change needs a session');
+  ok((await call('/password', { old: 'wrong horse', password: 'new horse 2026' }, P)).status === 401, 'a wrong old password should be refused');
+  ok((await call('/password', { old: 'correct horse', password: 'short' }, P)).body.error === 'password', 'a short new password should be refused');
+  ok((await call('/password', { old: 'correct horse', password: 'new horse 2026' }, P)).status === 200, 'the right old password should change it');
+  ok((await call('/login', { name: 'pw ' + tag, password: 'correct horse' })).status === 401 &&
+     (await call('/login', { name: 'pw ' + tag, password: 'new horse 2026' })).status === 200, 'only the new password should open the family');
+  ok((await call('/sync', {}, P)).status === 200, 'the device that changed it stays logged in');
+
   // an old family code becomes an account and keeps its data; a code is claimed once
   const old = code();
   if(LOCAL){      // plant a family from before accounts, the way the old code-only sync stored it
-    execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--local', '--command',
+    execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--local', '-c', 'wrangler.toml', '--command',
       `INSERT INTO rounds (family, player, id, ts, body) VALUES ('${old}', 'p1', 'old1', 1, '{"id":"old1","ts":1}')`], { cwd: __dirname, stdio: 'ignore' });
   }
   const M = (await signup('migrated ' + tag, { code: old })).body.token;
@@ -138,19 +158,20 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
     // a Google account never seen before starts a new family, which can take a password later
     const N = await call('/google', { credential: googleToken('new-' + tag) });
     ok((await call('/sync', {}, N.body.token)).body.account === null, 'a Google-only family should have no family name yet');
+    ok((await call('/password', { old: 'x', password: 'long enough 1' }, N.body.token)).body.error === 'no account', 'a Google-only family has no password to change');
     ok(N.status === 201 && (await pull(N.body.token)).rounds.length === 0, 'a new Google account should start an empty family');
     await call('/sync', { rounds: [round('n1', 1)] }, N.body.token);
     const NP = (await signup('google family ' + tag, {}, N.body.token)).body.token;
     ok((await call('/sync', {}, N.body.token)).body.account === 'google family ' + tag, 'the Google session should now see the family name');
     ok(NP && (await pull(NP)).rounds.some(r => r.round.id === 'n1'), 'a password added to a Google family should open the same family');
   }
-  console.log('sync: accounts, lockout, ' + (LOCAL ? 'Google, ' : '') + 'migration, merging, paging, last-edit-wins, reset, deletion and family isolation all hold against ' + BASE);
+  console.log('sync: accounts, lockout, a password change, devices, ' + (LOCAL ? 'Google, ' : '') + 'migration, merging, paging, last-edit-wins, reset, deletion and family isolation all hold against ' + BASE);
 })().catch(e => { console.error('sync: FAILED - ' + e.message); process.exitCode = 1; }).finally(() => {
   if(LOCAL) return;
   // a deployed database keeps nothing of the test: its accounts, their families' rows and sessions
   const names = made.map(n => "'" + n.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase().replace(/'/g, "''") + "'").join(',');
   const fams = `(SELECT family FROM accounts WHERE name IN (${names}))`;
-  execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--remote', '--command',
+  execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--remote', '-c', 'wrangler.toml', '--command',
     ['rounds', 'players', 'sessions', 'google'].map(t => `DELETE FROM ${t} WHERE family IN ${fams};`).join(' ') +
     ` DELETE FROM accounts WHERE name IN (${names});`], { cwd: __dirname, stdio: 'inherit' });
 });

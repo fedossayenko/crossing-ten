@@ -466,6 +466,17 @@ const server = http.createServer((req, res) => {
     await open(A); await settle(1500);
     const a2 = await page(`{ name: PLAYER.name, has: LOCAL.rounds.some(r => r.id === '${rb}'), synced: $('synced').textContent }`);
     expect(a2.name === 'Ани' && a2.has, 'device A did not get the name and round from B: ' + JSON.stringify(a2));
+    // the family's devices: both listed on the players' screen, this one marked; then A changes the password,
+    // a wrong current one first
+    await run(`syncNow().then(() => $('who').click()); 1`); await settle(1500);
+    const dv = await page(`{ rows: document.querySelectorAll('#devList .devrow').length, me: document.querySelectorAll('#devList .devrow.me').length,
+      line: $('playersSynced').textContent, two: $('playersSynced').textContent.includes(t('devicesN', 2)) }`);
+    expect(dv.rows === 2 && dv.me === 1 && dv.two, 'the family\'s devices were not listed: ' + JSON.stringify(dv));
+    await run(`$('tabParents').click(); $('syncChangePass').click(); $('passOld').value = 'not-the-pass'; $('passNew').value = 'smoke-pass-2'; $('passGo').click(); 1`); await settle(1500);
+    const pw1 = await page(`{ msg: $('passMsg').textContent === t('wrongPass'), open: !$('passForm').hidden }`);
+    await run(`$('passOld').value = 'smoke-pass'; $('passNew').value = 'smoke-pass-2'; $('passGo').click(); 1`); await settle(1500);
+    const pw2 = await page(`{ closed: $('passForm').hidden, again: !$('syncChangePass').hidden }`);
+    expect(pw1.msg && pw1.open && pw2.closed && pw2.again, 'changing the password went wrong: ' + JSON.stringify({ pw1, pw2 }));
     // A resets her progress; B drops the older rounds on its next sync
     await run(`$('tabBadges').click(); $('reset').click(); $('reset').click(); 1`); await settle(1500);
     await open(B); await settle(2000);
@@ -477,7 +488,7 @@ const server = http.createServer((req, res) => {
     await open(A); await settle(1500);
     const a3 = JSON.parse(await run(`syncNow().then(ok => JSON.stringify({ in: IN(), ok }))`) || '{}');
     expect(!b3.in && b3.login && a3.in && a3.ok, 'logging out went wrong: ' + JSON.stringify({ b3, a3 }));
-    if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, a reset and logout all work');
+    if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, the device list, a password change, a reset and logout all work');
   }
   // Offline, as on a plane: the server gone altogether, a fresh navigation, and a round played from
   // the service worker's copy

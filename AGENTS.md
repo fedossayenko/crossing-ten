@@ -14,8 +14,11 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - check.js runs the per-level check in worker threads (4 by default, `CHECK_THREADS=n`; `CHECK_SERIAL=1` for one,
   e.g. to profile; `CHECK_TIME=1` times each file): about 8 s on this machine; smoke.js about 22 s.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
-- Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local`, then `node worker/test.js`
-  and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local --file schema.sql`).
+- Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local -c wrangler.toml`, then `node worker/test.js`
+  and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local -c wrangler.toml --file schema.sql`).
+  Always `-c wrangler.toml` in `worker/`: wrangler otherwise picks the app's `wrangler.jsonc` one folder up.
+  A schema change is a numbered file in `worker/migrations/` (additive), applied `--local` first, `--remote` after a
+  `wrangler d1 export … --remote` backup; `schema.sql` is the whole schema for a new database.
 - Run them before finishing. None may be weakened to make a change pass.
 - Deploy: `git push` (GitHub Pages, via Actions) and `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
 
