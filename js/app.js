@@ -370,7 +370,7 @@ export function show(){
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
   $('compRow').hidden = !COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
-  $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = !!COMP;
+  $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = $('sideBtn').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options;
   if(q.options) paintChoices();
   $('card').className = 'card';
@@ -662,7 +662,7 @@ export function finish(){
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
   $('again').onclick = COMP ? () => startComp() : () => newRound();
-  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = false; }
+  if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; }
 
   $('sheet').hidden = false;
 }
@@ -1089,6 +1089,11 @@ function paintSide(){
   if(now) now.scrollIntoView({ block:'nearest' });
 }
 const CHEV = '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+// the list beside the task opens on a tap and stays so on this device (off at first: she solves with the whole screen)
+const SIDE_KEY = 'crossingten.side';
+function paintSideOpen(open){ document.body.classList.toggle('sideopen', open); $('sideBtn').setAttribute('aria-pressed', String(open)); }
+try { paintSideOpen(localStorage.getItem(SIDE_KEY) === '1'); } catch(e){ paintSideOpen(false); }
+$('sideBtn').onclick = () => { const open = !document.body.classList.contains('sideopen'); paintSideOpen(open); try { localStorage.setItem(SIDE_KEY, open ? '1' : '0'); } catch(e){} };
 const OPENED = new Map();   // a group she opened or closed on the levels page stays so while the app is open
 function buildPicker(){
   const hist = levelHistory(LOCAL.rounds);

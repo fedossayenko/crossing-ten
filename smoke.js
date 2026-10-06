@@ -136,8 +136,12 @@ const server = http.createServer((req, res) => {
     mine.open = false; mine.dispatchEvent(new Event('toggle')); buildPicker();
     r.kept = !document.querySelector('#pickAll details[data-k="+"]').open;
     document.querySelector('#pickAll details[data-k="+"]').open = true; document.querySelector('#pickAll details[data-k="+"]').dispatchEvent(new Event('toggle'));
+    // folded away at first, so the task has the screen; the button opens it and the device remembers
+    r.closed = !document.body.classList.contains('sideopen'); $('sideBtn').click();
+    r.opens = document.body.classList.contains('sideopen') && localStorage.getItem('crossingten.side') === '1' && $('sideBtn').getAttribute('aria-pressed') === 'true';
+    $('sideBtn').click(); r.closesAgain = !document.body.classList.contains('sideopen') && localStorage.getItem('crossingten.side') === '0';
     S.level = was; paintPill(); return r; })()`);
-  expect(r4.side && r4.open && r4.folded && r4.pct > 0 && r4.kept, 'the levels page or the list beside the task went wrong: ' + JSON.stringify(r4));
+  expect(r4.side && r4.open && r4.folded && r4.pct > 0 && r4.kept && r4.closed && r4.opens && r4.closesAgain, 'the levels page or the list beside the task went wrong: ' + JSON.stringify(r4));
   // R5: a grown-up sets her next competition in the settings; Today counts down to it with how ready she is, and
   // a tap trains for it (the levels page on that round). A day gone by shows nothing.
   const r5 = JSON.parse(await run(`(async () => { const tick = () => new Promise(r => setTimeout(r, 30));

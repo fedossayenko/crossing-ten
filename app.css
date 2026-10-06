@@ -392,13 +392,16 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 .grp[open] .chev{transform:rotate(90deg)}
 /* the levels beside the task: only on a screen wide enough to keep the task and keys their room */
 .side{display:none}
+#sideBtn{display:none}   /* the list is folded away by default: the task has the screen; this opens it on a wide one */
+#sideBtn[aria-pressed="true"]{color:var(--accent)}
 @media (min-width:1100px) and (orientation:landscape){
-  .side:not([hidden]){display:flex; flex-direction:column; gap:8px; position:fixed; z-index:1; left:16px; top:16px; bottom:16px; width:300px;
+  body.sideopen .side:not([hidden]){display:flex; flex-direction:column; gap:8px; position:fixed; z-index:1; left:16px; top:16px; bottom:16px; width:300px;
     overflow:auto; padding:12px 10px; border-radius:28px; background:var(--glass); border:1px solid var(--glass-edge); scrollbar-width:none; box-sizing:border-box}
   .side .pick{min-height:46px; padding:6px 12px}
   .side .pick .desc{display:none}
   .side .btn{flex:none}
-  body:has(.side:not([hidden])) .app{margin-left:332px; margin-right:16px; max-width:none}
+  body.sideopen:has(.side:not([hidden])) .app{margin-left:332px; margin-right:16px; max-width:none}
+  #sideBtn:not([hidden]){display:inline-flex}
 }
 .pick{
   display:flex; align-items:center; gap:12px; background:transparent; border:0; border-bottom:1px solid rgba(22,35,46,.06);
@@ -851,7 +854,7 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .tcols,.tcol{display:flex; flex-direction:column; gap:14px}
 #today .nbcard .eq{font-size:16px}
 /* the mistakes notebook */
-.linkbtn{background:none; border:0; padding:4px 2px; color:var(--accent-ink); font:600 13px var(--ui-font); cursor:pointer}
+.linkbtn{background:none; border:0; padding:4px 2px; color:var(--accent-ink); font:inherit; font-size:13px; font-weight:600; cursor:pointer}
 .nbtotal{flex-direction:row; align-items:baseline; gap:10px}
 .nbtotal .big{font-family:Fredoka,var(--ui-font); font-size:44px; font-weight:500; line-height:1; color:var(--accent-ink)}
 .nbtotal span:last-child{font-weight:600; color:var(--muted)}
@@ -871,7 +874,7 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .nbhead b::first-letter,.nbdone b::first-letter{text-transform:uppercase}   /* the kinds are named in lower case for the parents' list */
 .nbhow{font-size:13px; color:var(--muted); margin:0; padding:0 4px}
 .paperset{display:flex; gap:8px; flex-wrap:wrap}
-.paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:600 15px var(--ui-font)}
+.paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:15px; font-weight:600}
 .paperset input[hidden]{display:none}
 .tcol > .btn{flex:none}
 /* the countdown to her next competition, and how ready she is */
