@@ -33,7 +33,7 @@ export function Badges({ rounds }){
   const next = BADGES.filter(b => !b.has(st)).map(b => { const [a, n] = b.prog(st); return { b, a: Math.min(a, n), n, f: a / n }; })
     .sort((x, y) => y.f - x.f)[0];
   const need = b => { const [a, n] = b.prog(st); return badgeName(b) + ' · ' + badgeNeed(b) + (b.has(st) ? ' ✓' : ' · ' + Math.min(a, n) + ' / ' + n); };
-  const pc = st.sums ? Math.round(100*st.first/st.sums) : 0;
+  const prog = b => { const [a, n] = b.prog(st); return b.has(st) || n <= 1 ? '' : Math.min(a, n) + ' / ' + n; };
   return html`
     ${next && html`<div class="gcard nextbadge"><${Medal} b=${next.b} got=${false}/><div class="nb"><div class="lab">${t('nextBadge')}</div>
       <div class="nbname">${badgeName(next.b)} <span>· ${badgeNeed(next.b)}</span></div>
@@ -43,11 +43,11 @@ export function Badges({ rounds }){
       <div class="gtitle"><b>${t('allBadges')}</b><span>${t('tapBadge')}</span></div>
       <div class="badges">${BADGES.map(b => { const on = b.has(st); return html`
         <button class="badge" key=${b.id} data-b=${b.id} aria-pressed=${String(picked === b)} onClick=${() => pick(b)}
-          aria-label=${badgeName(b) + ' – ' + badgeNeed(b) + ' (' + t(on ? 'earned' : 'notYetEarned') + ')'}><${Medal} b=${b} got=${on}/><span class="nm">${badgeName(b)}</span></button>`; })}
+          aria-label=${badgeName(b) + ' – ' + badgeNeed(b) + ' (' + t(on ? 'earned' : 'notYetEarned') + ')'}><${Medal} b=${b} got=${on}/><span class="nm">${badgeName(b)}</span><span class="cond">${badgeNeed(b)}<b>${prog(b)}</b></span></button>`; })}
       </div>
       <div class="badgeneed" aria-live="polite">${picked ? need(picked) : ''}</div>
     </div>
-    <div class="bigstat"><${Tile} n=${st.sums} label=${t('sumsDone')}/><${Tile} n=${pc + '%'} label=${t('firstTry')}/><${Tile} n=${st.streak} label=${t('daysRow', st.streak)}/></div>`;
+    <div class="bigstat"><${Tile} n=${st.rounds} label=${t('roundsWord', st.rounds)}/><${Tile} n=${st.sums} label=${t('tasksWord', st.sums)}/><${Tile} n=${st.streakBest} label=${t('bestStreak')}/></div>`;
 }
 
 // Draw it into a container (again on every call: Preact keeps what has not changed).

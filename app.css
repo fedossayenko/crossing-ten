@@ -506,6 +506,9 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .badge{display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px; border:0; background:transparent; color:var(--ink); border-radius:12px}
 .badge svg{width:min(66px,100%); height:auto}
 .badge .nm{font-size:11.5px; font-weight:600; line-height:1.2; text-align:center}
+.badge .cond{display:none; font-size:11px; color:var(--muted); line-height:1.25; text-align:center}
+@media (min-width:900px){ .badge .cond{display:block} }
+.badge .cond b{display:block; font-weight:600; color:var(--accent-ink); white-space:nowrap}
 .badge[aria-pressed="true"]{background:var(--well)}
 .badgeneed{font-size:13px; font-weight:600; color:var(--muted); text-align:center; min-height:1.2em}
 .nextbadge{flex-direction:row; align-items:center; gap:14px}

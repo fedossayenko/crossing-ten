@@ -717,10 +717,12 @@ export function renderStats(){
     '<div class="nbname">' + badgeName(next.b) + ' <span>· ' + badgeNeed(next.b) + '</span></div>' +
     '<div class="meter"><span class="track" role="progressbar" aria-valuemin="0" aria-valuemax="' + next.n + '" aria-valuenow="' + next.a +
     '"><i style="width:' + Math.round(100*next.f) + '%"></i></span><span>' + next.a + ' / ' + next.n + '</span></div></div>';
+  // under each name on a wide screen: what it asks, and how far she is ("214 / 500")
+  const prog = b => { const [a, n] = b.prog(st); return b.has(st) || n <= 1 ? '' : Math.min(a, n) + ' / ' + n; };
   $('badges').innerHTML = BADGES.map(b => {
     const on = b.has(st);
     return '<button class="badge" data-b="' + b.id + '" aria-pressed="false" aria-label="' + badgeName(b) + ' – ' + badgeNeed(b) +
-      ' (' + t(on ? 'earned' : 'notYetEarned') + ')">' + medal(b, on) + '<span class="nm">' + badgeName(b) + '</span></button>';
+      ' (' + t(on ? 'earned' : 'notYetEarned') + ')">' + medal(b, on) + '<span class="nm">' + badgeName(b) + '</span><span class="cond">' + badgeNeed(b) + '<b>' + prog(b) + '</b></span></button>';
   }).join('');
   $('badgeNeed').textContent = '';
   $('badges').querySelectorAll('.badge').forEach(el => el.onclick = () => {
@@ -728,8 +730,7 @@ export function renderStats(){
     $('badges').querySelectorAll('.badge').forEach(x => x.setAttribute('aria-pressed', String(x === el)));
     $('badgeNeed').textContent = badgeName(b) + ' · ' + badgeNeed(b) + (b.has(st) ? ' ✓' : ' · ' + Math.min(a, n) + ' / ' + n);
   });
-  const pc = st.sums ? Math.round(100*st.first/st.sums) : 0;
-  $('tiles').innerHTML = tile(st.sums, t('sumsDone')) + tile(pc + '%', t('firstTry')) + tile(st.streak, t('daysRow', st.streak));
+  $('tiles').innerHTML = tile(st.rounds, t('roundsWord', st.rounds)) + tile(st.sums, t('tasksWord', st.sums)) + tile(st.streakBest, t('bestStreak'));
 
   const last = LOCAL.rounds.slice(-12);
   const BW = 18, BG = 7, H = 60;

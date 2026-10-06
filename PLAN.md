@@ -274,7 +274,7 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
 - **R9.6 Levels (Levels, iPadLevels) — DONE.** Title "Нива" with the grade as a menu button; iPad: the filters as a labelled
   panel (Клас, Състезание, Кръг, Лист, Тема) with "Избраният лист стеснява и пътеката…", the list headed "МБГ Есен ·
   2 клас · 61 нива"; the "Да си припомним" card on the levels page.
-- **R9.7 Badges (Badges, iPadBadges).** On iPad each badge shows its condition and progress under its name ("214 / 500");
+- **R9.7 Badges (Badges, iPadBadges) — DONE.** On iPad each badge shows its condition and progress under its name ("214 / 500");
   the tiles "Рундове · Задачи · Най-дълга серия".
 - **R9.8 Parents (Parents, ParentsMore, iPadParents).** The definition note ("Научено = поне 4 от 5…"); "Упражни тези" under
   what to practise; the family card with "синхронизирано преди 2 мин · 3 устройства"; on iPad the three-column board

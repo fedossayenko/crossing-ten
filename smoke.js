@@ -447,7 +447,10 @@ const server = http.createServer((req, res) => {
       const box = $('statsNext'), txt = el => el ? el.textContent.replace(/\\s+/g, ' ').trim() : null, labels = root => [...root.querySelectorAll('.badge')].map(b => b.getAttribute('aria-label'));
       const out = { same: { labels: labels(box).join() === labels($('badges')).join() && labels(box).length === 16,
         next: txt(box.querySelector('.nextbadge')) === txt($('nextBadge')), tiles: txt(box.querySelector('.bigstat')) === txt($('tiles')),
-        medals: box.querySelector('.badge svg').outerHTML.length > 400 } };
+        medals: box.querySelector('.badge svg').outerHTML.length > 400,
+        // R9.7: each badge's condition and progress under its name, the same in both
+        conds: [...box.querySelectorAll('.cond')].map(txt).join('|') === [...$('badges').querySelectorAll('.cond')].map(txt).join('|') && /[0-9]+ [/] [0-9]+/.test($('badges').textContent),
+        tileNames: txt($('tiles')).includes(window.t('bestStreak')) } };
       const pickB = box.querySelectorAll('.badge')[4]; pickB.click(); await new Promise(r => setTimeout(r, 30));
       $('badges').querySelectorAll('.badge')[4].click();
       out.same.tap = txt(box.querySelector('.badgeneed')) === txt($('badgeNeed')) && pickB.getAttribute('aria-pressed') === 'true';
