@@ -12,6 +12,17 @@ function genGrowDiff(){
     return {kind:'grow', shape:'diff', M, S, a, b, mUp, sUp, M2, S2, ans: M2 - S2};
   }
 }
+// МБГ Полуфинал 2022, 1 клас, задача 20: in 8 − 3 the minuend goes down 1 and the subtrahend up 2 — the new
+// difference? 7 − 5 = 2. Level 230, the 1st-grade cousin of 14's 'diff': within 20, every change 1 to 3.
+export function genGrowShort(){
+  for(;;){
+    const M = 6 + rnd(15), S = 2 + rnd(M - 2), a = 1 + rnd(3), b = 1 + rnd(3), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
+    const M2 = mUp ? M + a : M - a, S2 = sUp ? S + b : S - b;
+    if(M2 > 20 || S2 < 1 || M2 - S2 < 0) continue;
+    const slip = M2 - (sUp ? S - b : S + b);   // the subtrahend changed the other way: a bigger subtrahend taken as a bigger difference
+    return {kind:'grow', shape:'diff', M, S, a, b, mUp, sUp, M2, S2, traps: slip >= 0 ? [slip] : [], ans: M2 - S2};
+  }
+}
 // МБГ Пролет 2025, задача 10: in 15 + 18 + 27 + 28 each odd addend is made 3 times smaller. Only 15 and
 // 27 change, to 5 and 9: 5 + 18 + 9 + 28 = 60. Level 135, apart from 14: it needs the times table.
 export function genGrowTimes(){

@@ -23,12 +23,15 @@ function genSumAndDiff(){
 // МБГ Полуфинал 2024, 1 клас, задача 17: two numbers on the board; Иван added them and got 20, Петър took the
 // smaller from the larger and got 4 — which is the larger? Pairs that make 20, from two equal halves out:
 // 10 + 10 differ by 0, 11 + 9 by 2, 12 + 8 by 4 — so 12. Sometimes the smaller is asked.
+// Полуфинал 2023, задача 17, asks it plainly, without the board: the difference of two numbers is 12 and their sum
+// 22 — which is the larger? 17 (17 − 5 = 12, 17 + 5 = 22). The plain wording is drawn after the question is built.
 export function genSumBoard(){
   for(;;){
-    const small = 1 + rnd(9), d = 1 + rnd(10), big = small + d, S = small + big;
-    if(S > 20) continue;
+    const small = 1 + rnd(10), d = 1 + rnd(12), big = small + d, S = small + big;
+    if(S > 22) continue;
     const asksBig = Math.random() < 0.7, ans = asksBig ? big : small;
-    return {kind:'sumdiff', shape:'board', S, d, small, big, asksBig, traps: (S % 2 ? [S - d] : [S / 2, S - d]).filter(v => v !== ans), ans};
+    const q = {kind:'sumdiff', shape:'board', S, d, small, big, asksBig, traps: (S % 2 ? [S - d] : [S / 2, S - d]).filter(v => v !== ans), ans};
+    return Math.random() < 0.3 ? Object.assign(q, {plain: true}) : q;
   }
 }
 export function genSumDiff(){
@@ -40,6 +43,11 @@ export function genSumDiff(){
 }
 
 function drawSumdiff(q){
+  if(q.shape === 'board' && q.plain){
+    return '<div class="ask">' + tr('Разликата на две числа е <span class="num">' + q.d + '</span>, а сборът им е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
+      'Різниця двох чисел дорівнює <span class="num">' + q.d + '</span>, а їхня сума — <span class="num">' + q.S + '</span>. Яке з цих чисел <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 'board'){
     return '<div class="ask">' + tr('На дъската са написани две числа. Иван ги събрал и получил <span class="num">' + q.S + '</span>. Петър извадил по-малкото от по-голямото и получил <span class="num">' + q.d + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'На дошці записано два числа. Іван їх додав і отримав <span class="num">' + q.S + '</span>. Петро відняв від більшого менше й отримав <span class="num">' + q.d + '</span>. Яке з цих чисел <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +

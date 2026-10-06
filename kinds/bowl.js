@@ -3,6 +3,7 @@
 // МБГ Пролет 2022, 1 клас, задача 17: apples and lemons in a bowl; 6 apples, 2 of them yellow; 11 yellow
 // fruit in all — how many fruit? Every lemon is yellow, so the yellow ones that are not apples are the
 // lemons: 11 − 2 = 9, and 6 + 9 = 15. Пролет 2021 asks the same with 8 apples, 5 yellow, 11 yellow: 14.
+// Полуфинал 2022, задача 17: 6 apples, 4 of them yellow, 11 yellow in all — 7 lemons, 13 fruit.
 import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genBowl(){
   for(;;){

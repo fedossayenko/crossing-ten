@@ -3,6 +3,7 @@
 // МБГ Полуфинал 2024, 1 клас, задача 19: white, red and green balloons; 7 are not white, 3 are not red and 6 are not
 // green — how many are red? «7 are not white» is the red and the green together. The three numbers count every
 // colour twice: 7 + 3 + 6 = 16 = 8 + 8, so there are 8 balloons, and the red ones are 8 − 3 = 5.
+// Полуфинал 2023, задача 19: 6 not white, 5 not red, 3 not green — 7 balloons, 7 − 3 = 4 green.
 import { KIND, SLOT, popAt, rnd, tr, ukN } from '../js/core.js';
 // [Bulgarian, Ukrainian, Ukrainian genitive plural, the colour drawn]
 /** @type {[string, string, string, string][]} */
