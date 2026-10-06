@@ -276,7 +276,8 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   2 клас · 61 нива"; the "Да си припомним" card on the levels page.
 - **R9.7 Badges (Badges, iPadBadges) — DONE.** On iPad each badge shows its condition and progress under its name ("214 / 500");
   the tiles "Рундове · Задачи · Най-дълга серия".
-- **R9.8 Parents (Parents, ParentsMore, iPadParents).** The definition note ("Научено = поне 4 от 5…"); "Упражни тези" under
+- **R9.8 Parents (Parents, ParentsMore, iPadParents) — DONE.** (No separate "Състезанието тегли от N клас": the grade setting
+  already decides a paper's levels.) The definition note ("Научено = поне 4 от 5…"); "Упражни тези" under
   what to practise; the family card with "синхронизирано преди 2 мин · 3 устройства"; on iPad the three-column board
   (players and the family on the left, the week and groups in the middle, mistakes, practice and settings on the
   right); "Състезанието тегли от N клас" as a setting.

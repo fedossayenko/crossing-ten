@@ -801,10 +801,16 @@ export function renderParent(){
   const by = {};
   LOCAL.rounds.filter(r => r.ts > Date.now() - 30*DAY && Array.isArray(r.t)).forEach(r => r.t.forEach(([lv, shape, seed, wrote, ok]) => {
     if(ok === -1) return;
-    const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, n: 0, miss: 0, seed: null };
-    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)) x.seed = seed; }
+    const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, n: 0, miss: 0, seed: null, seeds: [] };
+    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)){ x.seed = seed; if(x.seeds.length < 3) x.seeds.push(seed); } }
   }));
   const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
+  // practise these: the very tasks she missed (drawn again from their seeds), and new ones from those levels up to ten
+  $('shapeGo').onclick = () => {
+    const set = worst.flatMap(x => x.seeds.map(seed => { try { return Object.assign(seeded(seed, () => raw(x.lv)), { seed, lvl: x.lv }); } catch(e){ return null; } })).filter(Boolean).slice(0, 10);
+    while(set.length < 10){ const lv = worst[rnd(worst.length)].lv; set.push(Object.assign(gen(lv), { lvl: lv })); }
+    newRound(shuffle(set));
+  };
   $('shapeWrap').hidden = !worst.length;
   $('byShape').innerHTML = worst.map(x => {
     const l = LEVELS.find(y => y.id === x.lv);
@@ -1531,5 +1537,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

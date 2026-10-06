@@ -204,6 +204,15 @@ const server = http.createServer((req, res) => {
     $('tabParents').click(); await tick();
     const r = { week: !bad($('weekCard').textContent) && /[0-9]/.test($('weekCard').textContent) && $('weekCard').textContent.includes(t('thisWeek')),
       shapes: $('shapeWrap').hidden || (!bad($('byShape').textContent) && $('byShape').children.length > 0) };
+    // R9.8: the rule for "learned" under the groups; "practise these" plays a round of the shapes she misses
+    r.rule = $('groupWrap').hidden || $('groupWrap').textContent.includes(t('learnedRuleNote'));
+    { const mk = (seed, ok) => { const q = seeded(seed, () => raw(2)); return [2, null, seed, ok ? null : '1', ok, answer(q)]; };
+      LOCAL.rounds.push({ id: 'shape-test', ts: Date.now(), day: '', level: 2, n: 5, firstTry: 3, t: [mk(7, 0), mk(8, 0), mk(9, 1), mk(10, 1), mk(11, 1)] });
+      renderParent();
+      r.listed = !$('shapeWrap').hidden;
+      $('shapeGo').click(); await tick();
+      r.practise = r.listed && S.qs.length === 10 && $('parent').hidden && S.qs.every(q => Number.isInteger(q.lvl)) && S.qs.some(q => q.seed === 7);
+      LOCAL.rounds = LOCAL.rounds.filter(x => x.id !== 'shape-test'); saveLocal(); $('tabParents').click(); await tick(); }
     const g0 = PLAYER.grade || 2, t0 = Date.now();
     document.querySelector('#gradeSeg [data-g="3"]').click();
     r.grade = PLAYER.grade === 3 && PLAYER.updated >= t0 && document.querySelector('#gradeSeg [data-g="3"]').getAttribute('aria-pressed') === 'true';
@@ -240,7 +249,7 @@ const server = http.createServer((req, res) => {
     r.download = /^desetka-[0-9]{4}-[0-9]{2}-[0-9]{2}[.]png$/.test(got);
     $('weekName').checked = true; return JSON.stringify(r); })()`) || '{}');
   expect(r8.button && r8.png && r8.mascot && r8.renamed && r8.download, 'the weekly card went wrong: ' + JSON.stringify(r8));
-  expect(r7.week && r7.shapes && r7.grade && r7.back && r7.sound && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
+  expect(r7.rule && r7.practise && r7.week && r7.shapes && r7.grade && r7.back && r7.sound && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };

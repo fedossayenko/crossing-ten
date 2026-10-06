@@ -145,7 +145,7 @@ export function paintSync(){
   $('syncCode').textContent = FAMILY.account || FAMILY.name || '';
   const line = FAMILY.failed ? t('syncFailed') : FAMILY.at ?
     t('syncedAt', new Date(FAMILY.at).toLocaleTimeString(LANG_TAG[LANG], { hour:'2-digit', minute:'2-digit' })) : t('syncing');
-  $('synced').textContent = line + builtOn();
+  $('synced').textContent = line + ((FAMILY.devices || []).length > 1 ? ' · ' + t('devicesN', FAMILY.devices.length) : '') + builtOn();
   const devs = FAMILY.devices || [];
   $('playersSynced').textContent = line + (devs.length > 1 ? ' · ' + t('devicesN', devs.length) : '');
   $('devList').innerHTML = devs.length > 1 ? devs.map(d => '<div class="devrow' + (d.me ? ' me' : '') + '"><span>' + esc(d.device || '?') +
