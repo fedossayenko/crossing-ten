@@ -245,7 +245,8 @@ test for what changed, screenshots phone / iPad landscape / iPad portrait, light
 the hint, Notebook, Weekly card, Welcome (name, mascot, language, grade, sound, read aloud, calmer motion), Players grid
 with grade · rounds and devices, colours/fonts/materials (Style), dark variants, the phone in landscape.
 
-- **R9.1 The task screen (Exercise, Hint, PhoneWord).** Top bar as drawn: back ‹ to Today, the pill with the level and its
+- **R9.1 The task screen (Exercise, Hint, PhoneWord) — DONE.** ("втори опит" under the segments after a miss, where the mock
+  says "първи опит": it names the try she is on.) Top bar as drawn: back ‹ to Today, the pill with the level and its
   group on one line ▾, her avatar on the right (switch player); the caption "Напиши отговора и натисни ✓" under the
   task; the answer box sizes (phone 92×76, iPad 112×92). After a miss: the status card with the mascot and "Не
   съвсем. <the named mistake>", the "Как да го направиш" card (the split line 42 = 30 + 12 → 12 − 7 = □, the

@@ -121,14 +121,9 @@ export const sfx = {
   tap(){ if(LOCAL.muted) return; tone(880,0,.045,.05,'sine'); },
   tune(notes, gap){ if(LOCAL.muted) return; notes.forEach((f,k) => tone(f, k*gap, .3, .13)); }
 };
-function paintMute(){
-  const on = !LOCAL.muted;
-  $('muteBtn').setAttribute('aria-pressed', String(on));
-  $('wave1').style.display = on ? '' : 'none';
-  $('wave2').style.display = on ? '' : 'none';
-  $('waveX').style.display = on ? 'none' : '';
-}
-$('muteBtn').onclick = () => { LOCAL.muted = !LOCAL.muted; paintMute(); saveLocal(); if(!LOCAL.muted) sfx.tap(); };
+// Sound on or off: a grown-up's setting (and in her profile), not a button beside the task
+function paintMute(){ document.querySelectorAll('#soundSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.m === '1') === !!LOCAL.muted))); }
+document.querySelectorAll('#soundSeg button').forEach(b => b.onclick = () => { LOCAL.muted = b.dataset.m === '1'; paintMute(); saveLocal(); if(!LOCAL.muted) sfx.tap(); });
 paintMute();
 
 /* ---------- speech ---------- */
@@ -372,7 +367,7 @@ export function show(){
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
   $('compRow').hidden = !COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
   $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = $('sideBtn').hidden = !!COMP;
-  $('choices').hidden = !q.options; $('pad').hidden = !!q.options;
+  $('choices').hidden = !q.options; $('pad').hidden = !!q.options; $('typeHint').hidden = !!q.options || !!COMP;
   if(q.options) paintChoices();
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
@@ -501,13 +496,14 @@ function check(){
     $('verdict').className = 'verdict no';
     $('verdict').textContent = t('notYet');
     const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
-    // one slim line for what she wrote, then the hint with "show the solution" inside it: two boxes, not three
-    $('hint').innerHTML = box('no', '<span class="typed">' + esc(S.typed[S.i]) + '</span>', nudge, t('notThis')) +
+    // her mascot and the mistake named (what she wrote stays struck in its box), then how to do it, with "show the solution"
+    $('hint').innerHTML = '<div class="fb no status">' + mascotSvg(PLAYER.mascot, 'sad') + '<div><b>' + t('notQuite') + '</b> ' + (nudge || t('lookAgain')) + '</div></div>' +
       '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div><span class="tiptext">' + why(q) + '</span>' +
       '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>' +
       (q.options ? '' : '<button class="btn again" id="again">' + t('tryAgain') + ' →</button>');   // a phone hides the keys behind the hint (app.css)
     $('reveal').onclick = e => { e.stopPropagation(); reveal(); };
     if(!q.options) $('again').onclick = e => { e.stopPropagation(); retry(); };
+    $('run').textContent = t('tryTwo');
     $('hint').scrollIntoView({ block:'nearest' });      // a phone in portrait: the hint lands under the question, maybe out of sight
     S.timers.push(setTimeout(() => { if(!S.settled) mood('thinking'); }, 1100));
     if(q.options){ S.parts = S.parts.map(() => ''); S.at = 0; }

@@ -80,7 +80,17 @@ export function eqText(q){
 // plain sum that crosses a ten, the method comes with a picture of it (tenFrame).
 export function why(q, full){
   if(q.kind) return KIND[q.kind].why(q, full);
-  return full ? whySum(q, true) : '<span>' + whySum(q, false) + '</span>' + tenFrame(q);
+  if(full) return whySum(q, true);
+  const how = howSum(q);
+  return '<span>' + whySum(q, false) + '</span>' + tenFrame(q) + (how ? '<span class="how">' + how + '</span>' : '');
+}
+// The method in one sentence, told as the ten-frames draw it: the ones crossed out first, then the rest from the
+// borrowed ten; or the first number made up to ten, and what is left over. Nothing when no ten is crossed.
+function howSum(q){
+  const a = q.a, b = q.b, o = a%10, bo = b%10;
+  if(q.op === '-') return o < bo ? t('crossHow', bo, o) + (b >= 10 ? ' ' + t('thenTake', b - bo, a - o - 10) : '') : '';
+  if(a < 10 && b < 10) return a + b >= 10 ? t('fillHow', a, 10 - a, b - (10 - a)) : '';
+  return o + bo >= 10 ? t('fillHow', o, 10 - o, bo - (10 - o)) : '';
 }
 function whySum(q, full){
   const a = q.a, b = q.b, o = a%10, ten = a-o, bo = b%10, bt = b-bo;
@@ -88,7 +98,8 @@ function whySum(q, full){
     if(o < bo){
       const lend = ten - 10, ones = o + 10;
       const head = a + ' = <b>' + lend + ' + ' + ones + '</b>';
-      return full ? head + ' &nbsp;→&nbsp; ' + ones + ' − ' + bo + ' = ' + (ones-bo) + ', &nbsp;' + lend + ' − ' + bt + ' = ' + (lend-bt) : head;
+      return full ? head + ' &nbsp;→&nbsp; ' + ones + ' − ' + bo + ' = ' + (ones-bo) + ', &nbsp;' + lend + ' − ' + bt + ' = ' + (lend-bt)
+                  : head + ' &nbsp;→&nbsp; ' + ones + ' − ' + bo + ' = <span class="qbox" aria-label="?"></span>';   // her next step, left for her
     }
     return full ? o + ' − ' + bo + ' = ' + (o-bo) + ', &nbsp;' + ten + ' − ' + bt + ' = ' + (ten-bt) + ' &nbsp;' + t('noBorrowNote')
                 : t('noBorrow');

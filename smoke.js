@@ -197,6 +197,10 @@ const server = http.createServer((req, res) => {
     document.querySelector('#gradeSeg [data-g="3"]').click();
     r.grade = PLAYER.grade === 3 && PLAYER.updated >= t0 && document.querySelector('#gradeSeg [data-g="3"]').getAttribute('aria-pressed') === 'true';
     document.querySelector('#gradeSeg [data-g="' + g0 + '"]').click(); r.back = PLAYER.grade === g0;
+    // sound is a grown-up's setting now (no button beside the task)
+    const m0 = !!LOCAL.muted; document.querySelector('#soundSeg [data-m="1"]').click(); const off = LOCAL.muted === true;
+    document.querySelector('#soundSeg [data-m="0"]').click(); r.sound = off && LOCAL.muted === false && !document.getElementById('muteBtn');
+    if(m0) document.querySelector('#soundSeg [data-m="1"]').click();
     $('who').click(); await tick(); r.player = document.querySelector('.pchoose .pmeta').textContent.includes(t('gradeN', g0));
     newRound(); await tick(); finish(); await tick(); r.took = /[0-9]/.test($('scoreSub').textContent) && $('scoreSub').textContent.includes(t('took', 0, 0).replace(/^[0-9 ]+/, '').trim());
     $('sheet').hidden = true; newRound(); await tick();
@@ -225,7 +229,7 @@ const server = http.createServer((req, res) => {
     r.download = /^desetka-[0-9]{4}-[0-9]{2}-[0-9]{2}[.]png$/.test(got);
     $('weekName').checked = true; return JSON.stringify(r); })()`) || '{}');
   expect(r8.button && r8.png && r8.mascot && r8.renamed && r8.download, 'the weekly card went wrong: ' + JSON.stringify(r8));
-  expect(r7.week && r7.shapes && r7.grade && r7.back && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
+  expect(r7.week && r7.shapes && r7.grade && r7.back && r7.sound && r7.player && r7.took, 'the grown-ups, a player card or the round end went wrong: ' + JSON.stringify(r7));
   // the welcome speaks the language she picks at once, and once saved it does not come back
   {
     const uk = await page(`(() => { document.querySelector('#pLang input[value="uk"]').click(); const r = { title: $('editTitle').textContent, save: $('pSave').textContent };
@@ -242,15 +246,21 @@ const server = http.createServer((req, res) => {
     $('sheet').hidden = true; $('stats').hidden = true;
     newRound([{ a:42, b:17, op:'-' }]);
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    const caption = getComputedStyle($('typeHint')).display !== 'none';
     key('3'); key('5'); key('go');
-    const hint = { slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
+    // R9.1: her mascot and the mistake named; the next step left open and the method in a sentence; the caption gone
+    const st = $('hint').querySelector('.fb.no.status'), tip = $('hint').querySelector('.fb.tip');
+    const r91 = { caption, gone: getComputedStyle($('typeHint')).display === 'none', mascot: !!(st && st.querySelector('svg.cat')),
+      notQuite: !!st && st.textContent.startsWith(t('notQuite')), step: !!(tip && tip.querySelector('.qbox')),
+      how: !!tip && tip.querySelector('.how').textContent === t('crossHow', 7, 2) + ' ' + t('thenTake', 10, 30), second: $('run').textContent === t('tryTwo') };
+    const hint = { r91, slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
       struck: $('slot0').classList.contains('no') && $('slot0').textContent === '35' && !!$('again') };   // the miss stays in its box, struck
     key('3'); hint.fresh = !$('slot0').classList.contains('no') && $('slot0').textContent === '3' && !$('card').classList.contains('missed');   // and goes at the next digit
     key('5'); key('go'); key('go');
     return Object.assign(hint, { wrote: ($('misslist').querySelector('.wrote') || {}).textContent || '',
       logged: LOCAL.rounds[LOCAL.rounds.length - 1].slips });
   })()`);
-  expect(slip.slip && slip.frame && slip.struck && slip.fresh && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
+  expect(Object.values(slip.r91 || {}).length === 7 && Object.values(slip.r91).every(Boolean) && slip.slip && slip.frame && slip.struck && slip.fresh && slip.wrote === t_bg_wrote && JSON.stringify(slip.logged) === '["forgotBorrow"]',
     'the forgotten borrow was not named: ' + JSON.stringify(slip));
   // ...and the grown-ups see it: the slip counted, the groups charted, every round in the CSV
   const grown = await page(`(() => { $('tabBadges').click(); $('toParent').click();

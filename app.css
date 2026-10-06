@@ -144,13 +144,11 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 .code{font-family:Fredoka,var(--ui-font); font-weight:500; letter-spacing:.06em; -webkit-user-select:text; user-select:text}
 
 /* header */
-/* the pill and the two buttons share one row; the line under the pill has a row of its own */
-.top{display:grid; grid-template-columns:auto minmax(0,1fr) auto; grid-template-rows:auto auto; column-gap:8px; row-gap:5px; align-content:center}
-.catwrap{width:clamp(66px,22vw,100px); grid-row:1 / 3; align-self:end}
-button.catwrap{background:none; border:0; padding:0; border-radius:18px}
-.topmid{display:contents}
-.top .levelpill{grid-column:2; grid-row:1; align-self:end}
-.top .sub{grid-column:2; grid-row:2; align-self:start}
+/* one row, as drawn: back ‹ (✕ in a paper), the pill with the level and its group, her mascot as the avatar */
+.top{display:flex; align-items:center; gap:10px}
+.top .levelpill{flex:1 1 auto}
+.catwrap{width:48px; height:48px; flex:0 0 auto}
+button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .levelpill{
   display:flex; align-items:center; justify-content:space-between; gap:8px; height:44px; padding:0 14px; border-radius:999px;
   color:var(--ink); font-family:Fredoka,var(--ui-font); font-size:clamp(16px,5vw,20px); font-weight:500; min-width:0;
@@ -158,8 +156,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 }
 .levelpill span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .levelpill svg{width:18px; height:18px; flex:0 0 auto; color:var(--muted)}
-.sub{font-size:12px; font-weight:600; color:var(--muted); padding-left:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.icons{display:flex; gap:6px; grid-column:3; grid-row:1; align-self:end; align-items:center; height:44px}
+.levelpill .sub{flex:1 1 auto; min-width:0; text-align:left; font-family:var(--ui-font); font-size:14px; font-weight:500; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.levelpill #levelName{flex:0 1 auto}
 /* how far through the round: one segment a task, and under it which task and the run of right answers */
 .roundbar{display:flex; flex-direction:column; gap:6px}
 .dots{display:flex; gap:4px}
@@ -348,7 +346,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
   .key{height:clamp(42px,6.6vh,56px); font-size:24px}
   .pad{gap:8px}
   .app{gap:7px}
-  .catwrap{width:clamp(56px,18vw,80px)}
 }
 /* Landscape on a tablet: the keypad sits beside the question instead of under it,
    so the sum gets the height and the keys stay under the thumb. */
@@ -711,7 +708,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:18px}
 }
 /* A short landscape screen: a smaller mascot, so the header takes less of the height. */
 @media (orientation:landscape) and (max-height:640px){
-  .catwrap{width:clamp(48px,9vh,64px)}
   .app{gap:6px}
   .card{gap:6px; padding:10px 16px 12px}
 }
@@ -893,6 +889,14 @@ body.tabbed .sheet-in{padding-bottom:96px}
 .devrow.me span:first-child{color:var(--accent-ink)}
 #passForm input{height:44px; padding:0 14px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:16px}
 #passForm[hidden]{display:none}
+/* under the task: what to do; after a miss, her mascot and the mistake named, then how to do it */
+.typehint{font-size:14px; color:var(--muted); text-align:center}
+.typehint[hidden],.card:has(.fb) .typehint{display:none}
+.fb.status{display:flex; align-items:center; gap:12px; flex-direction:row}
+.fb.status .cat{width:60px; height:auto; flex:0 0 auto}
+.fb.status > div{font-size:16px; line-height:1.35}
+.fb.tip .how{display:block; font-size:15px; color:var(--muted); margin-top:6px; line-height:1.4}
+.qbox{display:inline-block; width:1.6em; height:1.2em; vertical-align:-.2em; border-radius:7px; box-shadow:inset 0 0 0 2px var(--accent)}
 .nbhow{font-size:13px; color:var(--muted); margin:0; padding:0 4px}
 .paperset{display:flex; gap:8px; flex-wrap:wrap}
 .paperset select,.paperset input{height:40px; padding:0 12px; border-radius:12px; border:0; background:var(--well); color:var(--ink); font:inherit; font-size:15px; font-weight:600}
