@@ -271,7 +271,7 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   days); the next-badge card ("Още 3 дни до „Цяла седмица“ · 7 от 16 значки"); "Пробно състезание" inside the
   competition card; iPad portrait: the week strip (days played) and learned levels; iPad landscape: the sidebar's
   head (logo, player) and its week block (days in a row, rounds, levels learned, next badge, the countdown).
-- **R9.6 Levels (Levels, iPadLevels).** Title "Нива" with the grade as a menu button; iPad: the filters as a labelled
+- **R9.6 Levels (Levels, iPadLevels) — DONE.** Title "Нива" with the grade as a menu button; iPad: the filters as a labelled
   panel (Клас, Състезание, Кръг, Лист, Тема) with "Избраният лист стеснява и пътеката…", the list headed "МБГ Есен ·
   2 клас · 61 нива"; the "Да си припомним" card on the levels page.
 - **R9.7 Badges (Badges, iPadBadges).** On iPad each badge shows its condition and progress under its name ("214 / 500");

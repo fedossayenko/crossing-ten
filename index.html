@@ -85,21 +85,24 @@
   <div class="sheet-in wide">
     <div class="bar">
       <button class="icon back" id="closePick" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-      <h1 data-t="chooseLevel"></h1>
-      <span class="who" id="pickWho"></span>
+      <h1 data-t="tabLevels"></h1>
+      <select class="gradesel" id="pickGradeSel" data-t-aria="grade"></select>
     </div>
     <div class="warnline" id="pickWarn" hidden data-t="pickWarn"></div>
     <div class="pickcols">
       <div class="pickside">
-        <div class="chips filt" id="pickGrades" role="group" data-t-aria="allGrades"></div>
-        <div class="chips filt" id="pickComps" role="group" data-t-aria="competition"></div>
-        <div class="chips filt sub" id="pickRounds" role="group" data-t-aria="round"></div>
-        <div class="chips filt sub sub2" id="pickPapers" role="group" data-t-aria="paper"></div>
-        <div class="chips filt" id="pickTopics" role="group" data-t-aria="topic"></div>
+        <!-- the filters, each under its name on a wide screen; the grade is a menu in the bar on a phone -->
+        <div class="fgroup fgrade"><span class="flabel" data-t="grade"></span><div class="chips filt" id="pickGrades" role="group" data-t-aria="allGrades"></div></div>
+        <div class="fgroup"><span class="flabel" data-t="competition"></span><div class="chips filt" id="pickComps" role="group" data-t-aria="competition"></div></div>
+        <div class="fgroup"><span class="flabel" data-t="round"></span><div class="chips filt sub" id="pickRounds" role="group" data-t-aria="round"></div></div>
+        <div class="fgroup"><span class="flabel" data-t="paper"></span><div class="chips filt sub sub2" id="pickPapers" role="group" data-t-aria="paper"></div>
+          <span class="fnote" data-t="paperNote"></span></div>
+        <div class="fgroup"><span class="flabel" data-t="topic"></span><div class="chips filt" id="pickTopics" role="group" data-t-aria="topic"></div></div>
         <div id="nextUp"></div>
+        <button class="gcard nextcard" id="pickDue" hidden></button>
         <button class="gcard compcard" id="compStart"></button>
       </div>
-      <div id="pickAll"></div>
+      <div class="pickmain"><div class="listhead" id="pickHead"></div><div id="pickAll"></div></div>
     </div>
   </div>
 </div>

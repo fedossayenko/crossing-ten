@@ -1210,7 +1210,6 @@ function buildPicker(){
   };
   const row = l => levelRow(l, m, hist, (l.src === 'basics' ? (PICK_COMP ? '' : ' <span class="gtag gb">' + t('basics') + '</span>') : PICK_GRADE ? '' : ' <span class="gtag g' + l.grade + '">' + t('gradeN', l.grade) + '</span>') + paperTags(l));
 
-  $('pickWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   // topics: every group, as filter chips that wrap rather than scroll
   // three filters: the grade, the competition (МБГ, Коледно, the basics), and within it one paper
   loadFocus();
@@ -1228,7 +1227,11 @@ function buildPicker(){
     $(id).querySelectorAll('button').forEach(b => b.onclick = () => { pick(b.dataset.v); buildPicker(); saveFocus(); });
   };
   const grades = [...new Set(LEVELS.map(l => l.grade))].sort();
-  chips('pickGrades', [['0', t('allGrades')]].concat(grades.map(g => [String(g), t('gradeN', g)])), String(PICK_GRADE), v => { PICK_GRADE = +v; PICK_ROUND = PICK_PAPER = ''; });
+  const gradeItems = [['0', t('allGrades')]].concat(grades.map(g => [String(g), t('gradeN', g)])), pickGrade = v => { PICK_GRADE = +v; PICK_ROUND = PICK_PAPER = ''; };
+  chips('pickGrades', gradeItems, String(PICK_GRADE), pickGrade);
+  // the same choice as a menu in the bar (a phone shows this one)
+  $('pickGradeSel').innerHTML = gradeItems.map(([v, label]) => '<option value="' + v + '"' + (v === String(PICK_GRADE) ? ' selected' : '') + '>' + label + '</option>').join('');
+  $('pickGradeSel').onchange = () => { pickGrade($('pickGradeSel').value); buildPicker(); saveFocus(); };
   const inGrade = LEVELS.filter(gradeOk), comps = [...new Set(inGrade.flatMap(l => l.papers.map(compOf)))].sort((a, b) => +(a !== 'basics') - +(b !== 'basics') || +(a !== 'mbg') - +(b !== 'mbg'));
   if(PICK_COMP && !comps.includes(PICK_COMP)) PICK_COMP = PICK_PAPER = '';
   chips('pickComps', [['', t('all')]].concat(comps.map(c => [c, c === 'basics' ? t('basics') : t('comps')[c]])), PICK_COMP, v => { PICK_COMP = v; PICK_ROUND = PICK_PAPER = ''; });
@@ -1264,6 +1267,14 @@ function buildPicker(){
     '<div class="progress"><span class="track"><i style="width:' + Math.round(100*learned/scope.length) + '%"></i></span><span>' +
     t('learnedOf', learned, scope.length) + '</span></div>';
 
+  // the list's head: what is chosen and how many levels it holds; and the reviews waiting
+  const listed = LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC));
+  $('pickHead').textContent = [PICK_COMP ? t('comps')[PICK_COMP] + (PICK_ROUND ? ' ' + t('mbgRounds')[PICK_ROUND] : '') : '', PICK_GRADE ? t('gradeN', PICK_GRADE) : t('allGrades'),
+    PICK_TOPIC ? t('groups')[PICK_TOPIC] : '', t('levelsN', listed.length)].filter(Boolean).join(' · ');
+  const due = LEVELS.filter(l => dueReview(m, l.id, Date.now()));
+  $('pickDue').hidden = !due.length;
+  $('pickDue').innerHTML = '<span class="nm"><span class="lab">' + t('forToday') + '</span><span class="eq">' + t('dueLearned', due.length) + '</span></span>' + CHEV;
+  $('pickDue').onclick = () => { if(due.length){ S.level = due[0].id; paintPill(); newRound(); } };
   // a competition picked is something to train for: one path through its levels, easiest first,
   // in the order the suggestion takes them
   const path = focused() && LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC)).sort((a, b) => a.d - b.d || b.freq - a.freq);
