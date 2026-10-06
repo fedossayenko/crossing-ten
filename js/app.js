@@ -589,7 +589,7 @@ export function finish(){
   $('redo').textContent = COMP ? t('fixWrongN', missed.length) : t('fixMiss', missed.length);
   $('again').textContent = t(COMP ? 'newComp' : 'newRound');
   $('toStats').textContent = t(COMP ? 'backToday' : 'progress');
-  $('toStats').onclick = COMP ? () => go('today', true) : () => go('badges');
+  $('toStats').onclick = COMP ? () => { newRound(); go('today', true); } : () => go('badges');   // newRound closes the results; they would cover Today
   $('scoreBar').hidden = !COMP;
   // as drawn: the task, what she wrote struck → the answer, and what the mistake most likely was
   $('misslist').innerHTML = missed.map(({ q, k }) => {
@@ -938,6 +938,7 @@ $('weekGo').onclick = () => { if(WEEK_PNG) shareWeekly(WEEK_PNG, 'desetka-' + da
 // The sidebar's foot on a wide screen (app.css hides it on a phone): her week, how far overall, the next paper
 function paintTabWeek(){
   const d = todayData();
+  $('tabWho').innerHTML = mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER));
   $('tabWeek').innerHTML = '<b>' + t('thisWeek') + '</b>' + (d.streak > 0 ? '<span>' + t('streakDays', d.streak) + '</span>' : '') +
     '<span>' + t('rounds', d.week) + '</span><span>' + t('learnedOf', d.learned, d.levels) + '</span>' +
     (d.badge ? '<span>' + t('badgeLeft', d.badge.left, d.badge.name) + '</span>' : '') +
@@ -1195,8 +1196,8 @@ function paintSide(){
   const learned = LEVELS.filter(x => m[x.id] && m[x.id].done).length;
   // as drawn: the app and who plays, the four sections (the tab bar's own buttons), how far overall, the level's group,
   // and the practice paper at the foot
-  $('side').innerHTML = '<div class="sidehead"><span class="logo">10</span><b>' + t('appName') + '</b><span class="sidewho">' + mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER)) + '</span></div>' +
-    '<nav class="sidenav">' + [...document.querySelectorAll('#tabs button')].map(b => '<button data-r="' + b.dataset.r + '">' + b.innerHTML + '</button>').join('') + '</nav>' +
+  $('side').innerHTML = '<div class="tabhead"><span class="logo" aria-hidden="true">10</span><b>' + t('appName') + '</b><button class="sidewho">' + mascotSvg(PLAYER.mascot) + esc(playerName(PLAYER)) + '</button></div>' +
+    '<nav class="sidenav">' + [...document.querySelectorAll('#tabs > button')].map(b => '<button data-r="' + b.dataset.r + '">' + b.innerHTML + '</button>').join('') + '</nav>' +
     '<div class="progress"><span class="track"><i style="width:' + Math.round(100 * learned / LEVELS.length) + '%"></i></span><span>' + t('learnedOf', learned, LEVELS.length) + '</span></div>' +
     '<div class="grouphead"><b>' + groupOf(l) + '</b><span>' + t('learnedGroup', mine.filter(x => m[x.id] && m[x.id].done).length, mine.length) + '</span></div>' +
     '<div class="gcard list">' + mine.map(x => levelRow(x, m, hist)).join('') + '</div>' +
@@ -1454,6 +1455,7 @@ $('pDelete').onclick = () => {
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
 $('who').onclick = openPlayers;
+$('tabWho').onclick = openPlayers;
 $('parentBtn').onclick = () => go('parents');
 $('closePlayers').onclick = () => { chose(); back(); };
 

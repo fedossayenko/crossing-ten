@@ -7,6 +7,7 @@
   --ground:#F0F4F7; --ink:#0F171F; --muted:#555F69; --line:#DCE2E8; --well:rgba(15,23,31,.06);
   --accent:#006AC0; --accent-ink:#00569F; --accentbg:#D9EAFC; --warm:#F5AE39; --good:#14874E; --bad:#CC3E35;
   --goodbg:#DAF7E3; --goodline:#A3DDB8; --badbg:#FFE7E3; --warmbg:#FDECD1; --warmink:#894C06;
+  --glass-fill:linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.42));
   --glass:rgba(255,255,255,.66); --glass-edge:rgba(255,255,255,.9); --solid:#FFFFFF; --key:#FFFFFF;
   --glass-shadow:inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(15,23,31,.07), 0 0 0 .5px rgba(15,23,31,.14), 0 10px 28px rgba(15,23,31,.10);
   --surface-shadow:0 0 0 .5px rgba(15,23,31,.07), 0 2px 10px rgba(15,23,31,.05);
@@ -21,6 +22,7 @@
     --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
     --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
     --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --warmbg:#3A2C17; --warmink:#F6D39C;
+    --glass-fill:linear-gradient(135deg, rgba(62,72,86,.66), rgba(24,30,38,.46));
     --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
     --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
     --surface-shadow:0 0 0 .5px rgba(0,0,0,.5), 0 2px 10px rgba(0,0,0,.25);
@@ -34,6 +36,7 @@
   --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
   --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
   --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --warmbg:#3A2C17; --warmink:#F6D39C;
+  --glass-fill:linear-gradient(135deg, rgba(62,72,86,.66), rgba(24,30,38,.46));
   --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
   --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
   --surface-shadow:0 0 0 .5px rgba(0,0,0,.5), 0 2px 10px rgba(0,0,0,.25);
@@ -78,8 +81,11 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
    page, hence the setting. */
 .card,.gcard,.tile,.pchoose,.ptile .pedit{background:var(--card); box-shadow:var(--surface-shadow); border:0}
 .key{background:var(--key); box-shadow:var(--key-shadow); border:0}
-.icon,.levelpill,.who,.read{
-  background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
+/* Glass, as the design draws it: a 135° sheen over a blur of what is behind, a bright top edge, a dark lower one and a
+   hairline. Over a plain ground a blur alone shows nothing — the sheen and the edges are what read as glass. (The
+   refraction of iOS 26's "liquid glass" is not something Safari lets a page draw.) */
+.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel{
+  background:var(--glass-fill); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
   box-shadow:var(--glass-shadow); border:0;
 }
 .btn.ghost{background:color-mix(in srgb, var(--accent) 11%, transparent); color:var(--accent-ink); box-shadow:none; border:0}
@@ -403,7 +409,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .listhead{font-size:13px; font-weight:600; color:var(--muted); padding:0 4px}
 .flabel,.fnote{display:none}
 .fgroup:has(> .chips[hidden]){display:none}
-.gradesel{margin-left:auto; flex:0 0 auto; width:auto; height:40px; padding:0 12px; border-radius:999px; border:1px solid var(--glass-edge); background:var(--glass); color:var(--ink); font:inherit; font-size:15px; font-weight:600}
+.gradesel{margin-left:auto; flex:0 0 auto; width:auto; height:40px; padding:0 12px; border-radius:999px; color:var(--ink); font:inherit; font-size:15px; font-weight:600}
 @media (max-width:899px){ .fgrade{display:none} }
 @media (min-width:900px){
   .gradesel{display:none}
@@ -429,17 +435,12 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 #sideBtn[aria-pressed="true"]{color:var(--accent)}
 @media (min-width:1100px) and (orientation:landscape){
   body.sideopen .side:not([hidden]){display:flex; flex-direction:column; gap:8px; position:fixed; z-index:1; left:16px; top:16px; bottom:16px; width:300px;
-    overflow:auto; padding:12px 10px; border-radius:28px; background:var(--glass); border:1px solid var(--glass-edge); scrollbar-width:none; box-sizing:border-box}
+    overflow:auto; padding:12px 10px; border-radius:28px; scrollbar-width:none; box-sizing:border-box}
   .side .pick{min-height:46px; padding:6px 12px}
+  .side .tabhead{display:flex; align-items:center; gap:10px; padding:4px 6px 8px}
   .side .pick .desc{display:none}
-  .sidehead{display:flex; align-items:center; gap:10px; padding:4px 6px}
-  .sidehead .logo{width:36px; height:36px; border-radius:11px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font:500 17px Fredoka,var(--ui-font)}
-  .sidehead b{font-size:19px}
-  .sidewho{margin-left:auto; display:flex; align-items:center; gap:6px; font-weight:600; font-size:14px; cursor:pointer}
-  .sidewho .cat{width:30px; height:auto}
   .sidenav{display:flex; flex-direction:column; gap:2px}
-  .sidenav button{display:flex; align-items:center; gap:12px; min-height:44px; padding:0 12px; border-radius:14px; background:none; border:0; color:var(--ink); font:inherit; font-size:15px; font-weight:600; text-align:left}
-  .sidenav button svg{width:22px; height:22px; color:var(--muted)}
+  .sidenav button{display:flex; align-items:center; background:none; border:0; color:var(--muted); font:inherit; text-align:left}
   .side .progress{padding:2px 6px}
   .side .sidecomp{flex:none}
   .side .btn{flex:none}
@@ -736,7 +737,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 /* a paper's top bar: ✕, its clock, how many answered; its segments mark answered (accent) and skipped (outlined) */
 .comptop{flex:1 1 auto; display:flex; gap:10px; min-width:0}
 .comptop[hidden]{display:none}
-.clockpill,.countpill{display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 16px; border-radius:999px; background:var(--glass); border:1px solid var(--glass-edge);
+.clockpill,.countpill{display:inline-flex; align-items:center; gap:8px; height:44px; padding:0 16px; border-radius:999px;
   font-family:Fredoka,var(--ui-font); font-variant-numeric:tabular-nums; color:var(--ink)}
 .clockpill{flex:1 1 auto; font-size:22px; font-weight:500}
 .clockpill svg{width:22px; height:22px; color:var(--accent-ink)}
@@ -886,7 +887,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
    Badges and Parents; the round has the screen to itself. */
 .tabs{position:fixed; z-index:6; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:520px; margin:0 auto; height:64px;
   border-radius:999px; display:flex; align-items:center; gap:2px; padding:0 6px; box-sizing:border-box;
-  background:var(--glass); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%); box-shadow:var(--glass-shadow)}
+}
 .tabs button{flex:1 1 0; height:52px; border:0; border-radius:999px; background:none; color:var(--muted); display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:3px; font-size:11px; font-weight:600; min-width:0}
 .tabs svg{width:24px; height:24px}
@@ -900,19 +901,24 @@ body.tabbed .sheet-in{padding-bottom:96px}
   body.tabbed .sheet-in{padding-bottom:72px}
 }
 @media (min-width:900px){
-  .tabs{top:0; bottom:0; left:0; right:auto; width:220px; height:auto; max-width:none; margin:0; border-radius:0; flex-direction:column;
-    align-items:stretch; justify-content:flex-start; padding:calc(24px + env(safe-area-inset-top)) 12px 24px; gap:6px}
-  .tabs button{flex:none; height:48px; flex-direction:row; justify-content:flex-start; padding:0 16px; gap:12px; font-size:16px}
-  body.tabbed .sheet{padding-left:calc(220px + 16px)}   /* the sheet still covers the round behind the glass sidebar */
+  /* the sidebar is one panel wherever she is (Today, Levels…, or beside a task: .side): floating glass, 300 px,
+     the app and who plays at the top, then the four sections in the same rows */
+  .tabs{top:calc(16px + env(safe-area-inset-top)); bottom:16px; left:16px; right:auto; width:300px; height:auto; max-width:none; margin:0; border-radius:28px;
+    flex-direction:column; align-items:stretch; justify-content:flex-start; padding:12px 10px; gap:2px}
+  .tabs button,.side .sidenav button{flex:none; height:44px; flex-direction:row; justify-content:flex-start; padding:0 12px; gap:12px; font-size:15px; font-weight:600; border-radius:14px}
+  .tabs svg,.side .sidenav svg{width:22px; height:22px}
+  body.tabbed .sheet{padding-left:calc(16px + 300px + 16px)}   /* the sheet still covers the round behind the glass sidebar */
   body.tabbed .sheet-in{padding-bottom:0}
-  nav.tabs .tabhead{display:flex; align-items:center; gap:10px; padding:0 8px 14px}
+  nav.tabs .tabhead{display:flex; align-items:center; gap:10px; padding:4px 6px 8px}
   nav.tabs .tabweek{display:flex; flex-direction:column; gap:4px; margin-top:auto; padding:14px 10px 0; border-top:1px solid var(--line); font-size:13px; color:var(--muted)}
   .tabs .tabweek b{color:var(--ink); font-size:14px}
   .tabs .tabweek .tp{display:flex; flex-direction:column; margin-top:6px}
 }
 .tabs .tabhead,.tabs .tabweek{display:none}
-.tabhead .logo{width:32px; height:32px; border-radius:10px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font:500 15px Fredoka,var(--ui-font)}
-.tabhead b{font-size:18px}
+.tabhead .logo{width:36px; height:36px; border-radius:11px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font:500 17px Fredoka,var(--ui-font)}
+.tabhead b{font-size:19px}
+.tabhead .sidewho{margin-left:auto; display:flex; align-items:center; gap:6px; font-weight:600; font-size:14px; background:none; border:0; color:var(--ink); padding:0; height:auto}
+.tabhead .sidewho .cat{width:30px; height:auto}
 
 /* Today (#/today) */
 .today-bar{align-items:flex-start}

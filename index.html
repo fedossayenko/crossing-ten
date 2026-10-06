@@ -73,7 +73,7 @@
 
 <!-- The sections: a tab bar on a phone, a sidebar on a wide screen; shown on Today, Levels, Badges and Parents -->
 <nav class="tabs" id="tabs" hidden data-t-aria="sections">
-  <div class="tabhead" aria-hidden="true"><span class="logo">10</span><b data-t="appName"></b></div>
+  <div class="tabhead"><span class="logo" aria-hidden="true">10</span><b data-t="appName"></b><button class="sidewho" id="tabWho" data-t-aria="changePlayer"></button></div>
   <button data-r="today" id="tabToday"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tabToday"></span></button>
   <button data-r="levels" id="tabLevels"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg><span data-t="tabLevels"></span></button>
   <button data-r="badges" id="tabBadges"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-2 7 5.5-3 5.5 3-2-7"/></svg><span data-t="badges"></span></button>

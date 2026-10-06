@@ -395,12 +395,16 @@ const server = http.createServer((req, res) => {
       const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&
         $('compTable').querySelectorAll('.crow.skip').length === 19 && !$('compBest').hidden && !$('homeBtn').hidden;
+      // "Назад към Днес" from a paper's end: the results close and Today is what shows (they used to stay over it)
+      $('toStats').click(); await wait(50);
+      out.backToday = $('sheet').hidden && !$('today').hidden && location.hash === '#/today' && COMP === null && S.i === 0;
+      newRound(); await wait(50);   // back on a round, where the next checks start
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
-      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end, 'the competition went wrong: ' + JSON.stringify(cp));
+      cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
   }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task
