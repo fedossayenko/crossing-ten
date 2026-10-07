@@ -1,4 +1,5 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
+// Level 233 (3rd grade): two flowers, two lines with counts (genFlowerEq, shapes 'sum' and 'diff').
 import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
 export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
@@ -45,7 +46,64 @@ export function genFruitEq(){
   }
 }
 
+// МБГ Есен 2024, 3 клас, задача 6 (level 233, shape 'sum'): 4 · ❀ + 3 · ❁, if ❀ + ❁ = 8 and 3 · ❀ + 2 · ❁ = 17 — the two
+// lines added together are 4 · ❀ + 3 · ❁ = 25. Есен 2023, задача 5 (shape 'diff'): ❀ − ❁, if ❀ + ❁ = 10 and ❀ + 3 · ❁ = 16 —
+// the second line has 2 · ❁ = 6 more, so ❁ = 3, ❀ = 7 and 7 − 3 = 4. x is ❀, y is ❁; cx and cy their counts in the second line.
+export function genFlowerEq(){
+  for(;;){
+    const x = 1 + rnd(9), y = 1 + rnd(9);
+    if(x === y) continue;
+    if(Math.random() < 0.5){
+      const cx = 2 + rnd(3), cy = 2 + rnd(3);
+      if(cx === cy) continue;
+      const T = cx*x + cy*y, ans = T + x + y;
+      return {kind:'fruiteq', shape:'sum', x, y, cx, cy, S: x + y, T, traps:[T], ans};
+    }
+    // one flower once and the other k times, so the lines differ by k − 1 of that one
+    const k = 2 + rnd(3), onX = rnd(2) === 1, cx = onX ? k : 1, cy = onX ? 1 : k, T = cx*x + cy*y, ans = Math.abs(x - y);
+    return {kind:'fruiteq', shape:'diff', x, y, cx, cy, S: x + y, T,
+            traps: [T - x - y, Math.max(x, y)].filter((v, i, all) => v !== ans && all.indexOf(v) === i), ans};
+  }
+}
+// ❀ and ❁ as the papers print them: five round petals, and eight narrow ones
+const FLOWER = [
+  [0, 1, 2, 3, 4].map(i => { const t = (i*72 - 90)*Math.PI/180; return '<circle cx="' + (5.4*Math.cos(t)).toFixed(1) + '" cy="' + (5.4*Math.sin(t)).toFixed(1) + '" r="4.5" fill="var(--rose)"/>'; }).join('') +
+    '<circle r="3.2" fill="var(--warm)"/>',
+  [0, 1, 2, 3, 4, 5, 6, 7].map(i => '<ellipse cy="-5.6" rx="2.4" ry="4.8" fill="var(--grape)" transform="rotate(' + i*45 + ')"/>').join('') +
+    '<circle r="3" fill="var(--lemon)"/>'
+];
+const flo = i => '<svg class="ic" viewBox="-11 -11 22 22" aria-hidden="true">' + FLOWER[i] + '</svg>';
+const floTerm = (n, i) => (n === 1 ? '' : n + ' · ') + flo(i);
+// what is asked: the two lines added, or the larger flower less the smaller
+const floAsk = q => q.shape === 'sum' ? floTerm(q.cx + 1, 0) + ' + ' + floTerm(q.cy + 1, 1) : q.x > q.y ? flo(0) + ' − ' + flo(1) : flo(1) + ' − ' + flo(0);
+function drawFlowerEq(q){
+  return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + floAsk(q) + tr(', ако', ', якщо') + '</div>' +
+    '<div class="eqs"><span>' + flo(0) + ' + ' + flo(1) + ' = ' + q.S + '</span>' +
+    '<span>' + floTerm(q.cx, 0) + ' + ' + floTerm(q.cy, 1) + ' = ' + q.T + '</span></div>' +
+    '<div class="line md">' + SLOT + '</div>';
+}
+// the summary line is plain text (it is shown with textContent), so it names the numbers, not the flowers
+function eqFlowerEq(q){
+  if(q.shape === 'sum') return q.T + ' + ' + q.S + ' = ' + q.ans;
+  const big = Math.max(q.x, q.y), small = Math.min(q.x, q.y), m = Math.max(q.cx, q.cy) - 1;
+  return (m === 1 ? q.T + ' − ' + q.S : '(' + q.T + ' − ' + q.S + ') : ' + m) + ' = ' + (q.cx > 1 ? q.x : q.y) + ' → ' + big + ' − ' + small + ' = ' + q.ans;
+}
+function whyFlowerEq(q, full){
+  if(q.shape === 'sum'){
+    if(!full) return tr('Събери двете равенства.', 'Додай дві рівності.');
+    return floTerm(q.cx, 0) + ' + ' + floTerm(q.cy, 1) + ' = ' + q.T + tr(' и ', ' і ') + flo(0) + ' + ' + flo(1) + ' = ' + q.S + ' &nbsp;→&nbsp; ' +
+      tr('събрани: ', 'разом: ') + floAsk(q) + ' = ' + q.T + ' + ' + q.S + ' = ' + q.ans;
+  }
+  if(!full) return tr('Извади първото равенство от второто.', 'Відніми першу рівність від другої.');
+  // i: the flower counted k times in the second line; 1 − i: the other
+  const i = q.cx > 1 ? 0 : 1, k = i ? q.cy : q.cx, v = [q.x, q.y], D = q.T - q.S;
+  return (k - 1 === 1 ? '' : (k - 1) + ' · ') + flo(i) + ' = ' + q.T + ' − ' + q.S + ' = ' + D + ' &nbsp;→&nbsp; ' +
+    (k - 1 === 1 ? '' : flo(i) + ' = ' + D + ' : ' + (k - 1) + ' = <b>' + v[i] + '</b> &nbsp;→&nbsp; ') +
+    flo(1 - i) + ' = ' + q.S + ' − ' + v[i] + ' = <b>' + v[1 - i] + '</b> &nbsp;→&nbsp; ' + Math.max(q.x, q.y) + ' − ' + Math.min(q.x, q.y) + ' = ' + q.ans;
+}
+
 function drawFruiteq(q){
+  if(q.shape) return drawFlowerEq(q);
   if(q.tri){
     const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
     return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="fig"><svg viewBox="0 0 160 100" style="max-width:220px" role="img" aria-label="' + tr('три равенства с фигури', 'три рівності з фігурами') + '">' +
@@ -77,11 +135,13 @@ function drawFruiteq(q){
     '<div class="line md">' + SLOT + '</div>';
 }
 function eqFruiteq(q){
+  if(q.shape) return eqFlowerEq(q);
   if(q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
   if(q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
   return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
 }
 function whyFruiteq(q, full){
+  if(q.shape) return whyFlowerEq(q, full);
   if(q.tri){
     if(!full) return tr('Събери трите реда. Колко пъти е вътре всяка фигура?', 'Додай три рядки. Скільки разів у них кожна фігура?');
     return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + (q.s1 + q.s2 + q.s3) + tr(' — всяка фигура по два пъти', ' — кожна фігура двічі') + ' &nbsp;→&nbsp; ' + (q.s1 + q.s2 + q.s3) + ' : 2 = ' + q.ans;

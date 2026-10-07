@@ -27,7 +27,7 @@ import { genDigProd, genDigSum } from '../kinds/digprod.js';
 import { genZeros } from '../kinds/zeros.js';
 import { genPmGap } from '../kinds/pmgap.js';
 import { genTwoSigns } from '../kinds/twosigns.js';
-import { genEraseMul } from '../kinds/erasemul.js';
+import { genEraseMul, genEraseNear } from '../kinds/erasemul.js';
 import { genOddProd } from '../kinds/oddprod.js';
 import { genDigIneq } from '../kinds/digineq.js';
 import { genStar } from '../kinds/star.js';
@@ -45,7 +45,7 @@ import { genSums, genSumsTwo } from '../kinds/sums.js';
 import { genSeq } from '../kinds/seq.js';
 import { genGapSum, genMissing, genTurns } from '../kinds/missing.js';
 import { genFruit } from '../kinds/fruit.js';
-import { genFruitEq } from '../kinds/fruiteq.js';
+import { genFlowerEq, genFruitEq } from '../kinds/fruiteq.js';
 import { genTerm } from '../kinds/term.js';
 import { genTrees } from '../kinds/trees.js';
 import { genRibbon } from '../kinds/ribbon.js';
@@ -118,7 +118,7 @@ import { genGarland } from '../kinds/garland.js';
 import { genDice } from '../kinds/dice.js';
 import { genTimes } from '../kinds/times.js';
 import { genRepAdd } from '../kinds/repadd.js';
-import { genMulBr } from '../kinds/mulbr.js';
+import { genMulBr, genMulBrPlus } from '../kinds/mulbr.js';
 import { genProd3, genProdOf } from '../kinds/prodof.js';
 import { genCountX } from '../kinds/countx.js';
 import { genTimesW } from '../kinds/timesw.js';
@@ -171,6 +171,8 @@ import { genDistPts } from '../kinds/distpts.js';
 import { genNotColor } from '../kinds/notcolor.js';
 import { genNest } from '../kinds/nest.js';
 import { genKeepDig } from '../kinds/keepdig.js';
+import { genBackX } from '../kinds/backx.js';
+import { genRegroup } from '../kinds/regroup.js';
 
 // A level's generator kept to some of its shapes, or without some: a shape harder than its level gets a
 // level of its own (check/shapes.js).
@@ -195,10 +197,11 @@ export const LEVELS = [
   { id:83, op:'w', grp:'chain', needs:[8, 141], src:'mbg-winter-2024', d:2, eq:'(…) · 0', desc:{ en:'One bracket comes to 0, so the long one needs no working', bg:'Едната скоба е 0, така че дългата не се смята', uk:'Одна дужка дорівнює 0, тож довгу не треба рахувати' }, gen:genZeroFac },
   { id:50, op:'w', grp:'chain', needs:[9], d:5, eq:{ bg:'Плюс или минус', uk:'Плюс чи мінус' }, desc:{ en:'Choose the signs in a run — how many can be minus', bg:'Избери знаците в редицата — колко може да са минус', uk:'Обери знаки в ряду — скільки може бути мінусів' }, also:['mbg-autumn-2022-2'], gen:genSigns },
   { id:74, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:2, eq:{ bg:'Знакът ◎', uk:'Знак ◎' }, desc:{ en:'A new sign, defined by an example, then used', bg:'Нов знак, обяснен с пример — после го използвай', uk:'Новий знак, пояснений прикладом — потім використай його' }, gen:genCircOp },
-  { id:59, op:'w', grp:'chain', needs:[9], grade:3, src:'mbg-autumn-2025', d:2, eq:'20 − 2 · 5', desc:{ en:'Multiplication first, then + and − left to right', bg:'Първо умножението, после + и − отляво надясно', uk:'Спершу множення, потім + і − зліва направо' }, gen:genMulMix },
-  { id:61, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:2, eq:'… · 0 …', desc:{ en:'A long expression where every product with a 0 is 0', bg:'Дълъг израз, в който всяко произведение с 0 е 0', uk:'Довгий вираз, у якому кожен добуток з 0 дорівнює 0' }, gen:genZeros },
+  { id:59, op:'w', grp:'chain', needs:[9], grade:3, src:'mbg-autumn-2025', d:2, shapes:{ '-':2, zero:2 }, eq:'20 − 2 · 5', desc:{ en:'Multiplication first, then + and − left to right', bg:'Първо умножението, после + и − отляво надясно', uk:'Спершу множення, потім + і − зліва направо' }, also:['mbg-autumn-2024-3', 'mbg-autumn-2023-3'], gen:genMulMix },
+  { id:61, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:2, shapes:{ '-':2, div:2, sub:2 }, eq:'… · 0 …', desc:{ en:'A long expression where every product with a 0 is 0', bg:'Дълъг израз, в който всяко произведение с 0 е 0', uk:'Довгий вираз, у якому кожен добуток з 0 дорівнює 0' }, also:['mbg-autumn-2024-3', 'mbg-autumn-2023-3'], gen:genZeros },
+  { id:231, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2024', d:2, eq:'(3 − 1) · (3 − 2) + 1', desc:{ en:'Three brackets multiplied, then a number added — a bracket may be 0', bg:'Три скоби се умножават, после се събира с число — някоя скоба може да е 0', uk:'Три дужки перемножуються, потім додається число — якась дужка може дорівнювати 0' }, also:['mbg-autumn-2023-3'], gen:genMulBrPlus },
   { id:77, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Изтрих и записах', uk:'Стер і записав' }, desc:{ en:'Numbers rewritten in two steps, then added', bg:'Числата се преписват на две стъпки, после се събират', uk:'Числа переписуються у два кроки, потім додаються' }, gen:genRewrite },
-  { id:63, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Два знака', uk:'Два знаки' }, desc:{ en:'Which two different signs make the equality true', bg:'Кои два различни знака правят равенството вярно', uk:'Які два різні знаки роблять рівність правильною' }, gen:genTwoSigns },
+  { id:63, op:'w', grp:'chain', needs:[59], grade:3, src:'mbg-autumn-2025', d:4, shapes:{ '-':4, prod:4, two:3 }, eq:{ bg:'Два знака', uk:'Два знаки' }, desc:{ en:'Which two different signs make the equality true', bg:'Кои два различни знака правят равенството вярно', uk:'Які два різні знаки роблять рівність правильною' }, also:['mbg-autumn-2024-3', 'mbg-autumn-2023-3'], gen:genTwoSigns },
   { id:36, op:'w', grp:'count', d:3, eq:{ bg:'Бонбони', uk:'Цукерки' }, desc:{ en:'Ways to share sweets so everyone gets one', bg:'Начини да разделиш бонбоните, така че всеки да получи поне един', uk:'Способи поділити цукерки, щоб кожен отримав хоча б одну' }, also:['mbg-autumn-2024-2'], gen:genCandy },
   { id:12, op:'w', grp:'count', d:3, shapes:{ '0':3, '1':3, '2':3, '3':2, '4':3, '5':3 }, eq:{ bg:'Колко? Сбор?', uk:'Скільки? Сума?' }, desc:{ en:'How many — or the sum — of a range given by a condition', bg:'Колко са — или какъв е сборът им — числата, които отговарят на условие', uk:'Скільки чисел — або яка їхня сума — задовольняють умову' }, also:['mbg-winter-2023-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2024-2', 'mbg-autumn-2025-2', 'mbg-winter-2024-2'], gen:genCount },
   { id:132, op:'w', grp:'count', needs:[12, 141], src:'mbg-spring-2025', d:3, eq:{ bg:'< 50 − 10 · 2', uk:'< 50 − 10 · 2' }, desc:{ en:'Two-digit numbers under a bound that has to be worked out first', bg:'Двуцифрените числа под граница, която първо трябва да се пресметне', uk:'Двоцифрові числа під межею, яку спершу треба обчислити' }, gen:genCountX },
@@ -234,6 +237,7 @@ export const LEVELS = [
   { id:66, op:'w', grp:'num', needs:[59], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Цифрата на единиците', uk:'Цифра одиниць' }, desc:{ en:'Two numbers a set distance apart — which digits their product can end in', bg:'Две числа на дадена разлика — на какво може да завършва произведението им', uk:'Два числа із заданою різницею — якою цифрою може закінчуватися їхній добуток' }, gen:genOddProd },
   { id:76, op:'w', grp:'num', needs:[59], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Кое не е избрано?', uk:'Яке не вибрано?' }, desc:{ en:'Leave one number out so the rest add to a multiple — maybe two ways', bg:'Остави едно число, така че сборът на другите да се дели — понякога по два начина', uk:'Залиш одне число, щоб сума решти ділилася — іноді двома способами' }, gen:genDropOne },
   { id:67, op:'w', grp:'num', needs:[60], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Произведение на цифрите', uk:'Добуток цифр' }, desc:{ en:'The largest or smallest three-digit number by its digits\' product — 0 counts', bg:'Най-голямото или най-малкото трицифрено число по произведението на цифрите — и 0 се брои', uk:'Найбільше чи найменше тризначне число за добутком цифр — і 0 рахується' }, gen:genDigSum },
+  { id:232, op:'w', grp:'num', needs:[44, 59], grade:3, src:'mbg-autumn-2024', d:4, eq:{ bg:'Най-близо до', uk:'Найближче до' }, desc:{ en:'Erase two digits from a product to come as close as possible to a number', bg:'Изтрий две цифри от произведение, така че да стане възможно най-близо до дадено число', uk:'Зітри дві цифри в добутку, щоб вийшло якомога ближче до заданого числа' }, gen:genEraseNear },
   { id:64, op:'w', grp:'num', needs:[44, 59], grade:3, src:'mbg-autumn-2025', d:5, eq:{ bg:'Изтрий цифри', uk:'Зітри цифри' }, desc:{ en:'Erase three digits from a product to reach a number', bg:'Изтрий три цифри от произведение, за да стане даденото число', uk:'Зітри три цифри в добутку, щоб вийшло задане число' }, gen:genEraseMul },
   { id:82, op:'w', grp:'seq', needs:[27], src:'mbg-winter-2024', d:4, eq:'0, 3, 6, …, x', desc:{ en:'The last number of a run, from how many digits it takes', bg:'Последното число от редица — по броя на цифрите', uk:'Останнє число послідовності — за кількістю цифр' }, also:['mbg-winter-2020-2', 'mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2'], gen:genStepDig },
   { id:86, op:'w', grp:'seq', src:'mbg-winter-2024', d:3, eq:{ bg:'Пирамида от кутии', uk:'Піраміда з ящиків' }, desc:{ en:'Rows of boxes that grow by the same amount each time', bg:'Редове кутии, които растат с едно и също число', uk:'Ряди ящиків, що більшають на одне й те саме число' }, gen:genPyramid },
@@ -255,7 +259,10 @@ export const LEVELS = [
   { id:110, op:'w', grp:'find', needs:[11], src:'mbg-winter-2020', d:4, eq:{ bg:'Изтритата цифра', uk:'Стерта цифра' }, desc:{ en:'A sum that went wrong when one digit was rubbed out', bg:'Сбор, развален от една изтрита цифра', uk:'Сума, зіпсована однією стертою цифрою' }, gen:genEraseDig },
   { id:81, op:'w', grp:'find', needs:[11], src:'mbg-winter-2024', d:3, eq:{ bg:'88 − ■ = 88 − 11', uk:'88 − ■ = 88 − 11' }, desc:{ en:'The box read off an equality, then used', bg:'Числото в квадратчето се чете от равенството, после се използва', uk:'Число в квадратику читається з рівності, потім використовується' }, gen:genSameSub },
   { id:92, op:'w', grp:'find', needs:[30], src:'kms-2025', d:2, eq:{ bg:'Най-малкото умаляемо', uk:'Найменше зменшуване' }, desc:{ en:'The smallest a number can be, given a difference — 0 counts', bg:'Най-малкото число при дадена разлика — и 0 се брои', uk:'Найменше число за даною різницею — і 0 рахується' }, gen:genMinuend },
+  { id:235, op:'w', grp:'find', needs:[59], grade:3, src:'mbg-autumn-2023', d:2, eq:'2 · 2 · 3 = 4 · N', desc:{ en:'Group the factors on the left to find the one missing on the right', bg:'Групирай множителите отляво, за да намериш липсващия отдясно', uk:'Згрупуй множники зліва, щоб знайти пропущений справа' }, gen:genRegroup },
   { id:68, op:'w', grp:'find', needs:[11, 53], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Числото A', uk:'Число A' }, desc:{ en:'The one number from given digits that makes an inequality true', bg:'Единственото число от дадените цифри, за което неравенството е вярно', uk:'Єдине число із заданих цифр, для якого нерівність правильна' }, gen:genDigIneq },
+  { id:233, op:'w', grp:'find', needs:[29], grade:3, src:'mbg-autumn-2024', d:3, shapes:{ sum:3, diff:3 }, eq:{ bg:'Две цветя', uk:'Дві квітки' }, desc:{ en:'Two flowers, two equations — a sum or a difference of them', bg:'Две цветя, две равенства — пресметни сбор или разлика с тях', uk:'Дві квітки, дві рівності — обчисли суму чи різницю з ними' }, also:['mbg-autumn-2023-3'], gen:genFlowerEq },
+  { id:234, op:'w', grp:'find', needs:[59], grade:3, src:'mbg-autumn-2024', d:3, shapes:{ num:3, sum:3 }, eq:'((x : 2) · 4) · 8', desc:{ en:'Undo the steps from the end to find x — the right side may need working out first', bg:'Върни стъпките отзад напред, за да намериш x — понякога първо се пресмята дясната страна', uk:'Поверни кроки з кінця, щоб знайти x — іноді спершу треба обчислити праву частину' }, also:['mbg-autumn-2023-3'], gen:genBackX },
   { id:75, op:'w', grp:'find', needs:[11], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Кръстът', uk:'Хрест' }, desc:{ en:'Rows and columns multiply to the shaded numbers — find the one missing', bg:'Редове и колони се умножават до оцветените числа — намери липсващото', uk:'Рядки й стовпці множаться до зафарбованих чисел — знайди відсутнє' }, gen:genProdGrid },
   { id:28, op:'w', grp:'word', d:2, shapes:{ '-':2, rest:2 }, eq:{ bg:'Ябълки и круши', uk:'Яблука і груші' }, desc:{ en:'Count two groups, then add to reach a difference', bg:'Преброй двете групи и добави, за да стигнеш разликата', uk:'Порахуй дві групи й додай, щоб отримати різницю' }, also:['mbg-autumn-2024-2', 'mbg-autumn-2019-2'], gen:genFruit },
   { id:38, op:'w', grp:'word', d:3, shapes:{ '-':3, gave:3 }, eq:{ bg:'Моливи', uk:'Олівці' }, desc:{ en:'Colours counted by what they are not', bg:'Цветове, броени по това, което не са', uk:'Кольори, пораховані через те, чим вони не є' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-winter-2024-2'], gen:genPencils },
