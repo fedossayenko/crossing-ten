@@ -77,7 +77,7 @@ import { genZeroFac } from '../kinds/zerofac.js';
 import { genSqOff } from '../kinds/sqoff.js';
 import { genPinwheel } from '../kinds/pinwheel.js';
 import { genPyramid } from '../kinds/pyramid.js';
-import { genBalloons } from '../kinds/balloons.js';
+import { genBalloons, genBalloons3 } from '../kinds/balloons.js';
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
@@ -109,7 +109,7 @@ import { genRing } from '../kinds/ring.js';
 import { genCuckoo } from '../kinds/cuckoo.js';
 import { genLeast3 } from '../kinds/least3.js';
 import { genNuts, genNutsLeast } from '../kinds/nuts.js';
-import { genAndMore } from '../kinds/andmore.js';
+import { genAndMore, genFishers } from '../kinds/andmore.js';
 import { genLanterns } from '../kinds/lanterns.js';
 import { genFigCount, genVTri } from '../kinds/vtri.js';
 import { genNumPyr } from '../kinds/numpyr.js';
@@ -171,6 +171,10 @@ import { genDistPts } from '../kinds/distpts.js';
 import { genNotColor } from '../kinds/notcolor.js';
 import { genNest } from '../kinds/nest.js';
 import { genKeepDig } from '../kinds/keepdig.js';
+import { genPlusAll } from '../kinds/plusall.js';
+import { genFloors } from '../kinds/floors.js';
+import { genLegs } from '../kinds/legs.js';
+import { genAgeSum } from '../kinds/agesum.js';
 
 // A level's generator kept to some of its shapes, or without some: a shape harder than its level gets a
 // level of its own (check/shapes.js).
@@ -301,7 +305,13 @@ export const LEVELS = [
   { id:146, op:'w', grp:'word', needs:[96, 141], src:'kms-2023', d:5, shapes:{ '0':4, '1':4, '2':2, '3':4 }, eq:{ bg:'Играчките за елха', uk:'Іграшки на ялинку' }, desc:{ en:'Toys made day by day: the days, the weekday, the boxes and the money', bg:'Играчки ден след ден: дните, денят от седмицата, кутиите и парите', uk:'Іграшки день за днем: дні, день тижня, коробки й гроші' }, gen:genToys },
   { id:154, op:'w', grp:'word', needs:[98, 141], src:'kms-2022', d:5, shapes:{ '0':3, '1':2, '2':5, '3':5 }, eq:{ bg:'Лифтът', uk:'Підйомник' }, desc:{ en:'Walking, a lift, a slope and a rest — the minutes and the clock', bg:'Пеш, с лифт, по наклона и почивка — минутите и часът', uk:'Пішки, підйомником, схилом і відпочинок — хвилини й час' }, gen:genLiftDay },
   { id:62, op:'w', grp:'word', needs:[10, 59], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'+ 9 и − 9', uk:'+ 9 і − 9' }, desc:{ en:'Two long expressions that differ only at the end', bg:'Два дълги израза, които се различават само в края', uk:'Два довгі вирази, що різняться лише в кінці' }, gen:genPmGap },
+  { id:261, op:'w', grp:'word', needs:[141], grade:3, src:'mbg-autumn-2024', d:3, eq:{ bg:'Колко са числата?', uk:'Скільки чисел?' }, desc:{ en:'Every number made bigger or smaller by the same amount: how many numbers', bg:'Всяко число е увеличено или намалено с едно и също: колко са числата', uk:'Кожне число збільшене чи зменшене на те саме: скільки всього чисел' }, gen:genPlusAll },
+  { id:262, op:'w', grp:'word', needs:[87], grade:3, src:'mbg-autumn-2024', d:3, eq:{ bg:'Балоните по два', uk:'Кульки по дві' }, desc:{ en:'A total shared out: a few with several each, the rest with two or more', bg:'Общ брой: няколко деца с по много, останалите с по два или повече', uk:'Разом: кілька дітей мають по багато, решта — по дві чи більше' }, gen:genBalloons3 },
+  { id:264, op:'w', grp:'word', needs:[141], grade:3, src:'mbg-autumn-2024', also:['mbg-autumn-2023-3'], d:3, shapes:{ legs:3, humps:3 }, eq:{ bg:'Крака и гърбици', uk:'Ноги й горби' }, desc:{ en:'So many legs or humps on each animal — spiders and beetles, or camels — all of them added', bg:'По толкова крака или гърбици на всяко животно — паяци и бръмбари или камили — всички заедно', uk:'Стільки ніг чи горбів у кожної тварини — павуки й жуки або верблюди — усі разом' }, gen:genLegs },
+  { id:265, op:'w', grp:'word', needs:[119], grade:3, src:'mbg-autumn-2023', d:3, eq:{ bg:'Рибарите', uk:'Рибалки' }, desc:{ en:'All but one caught the same, the last as much as they did together: the whole catch', bg:'Всички без един уловили по толкова, последният — колкото тях заедно: целият улов', uk:'Усі, крім одного, зловили порівну, останній — стільки, скільки вони разом: увесь улов' }, gen:genFishers },
+  { id:266, op:'w', grp:'word', needs:[141], grade:3, src:'mbg-autumn-2023', d:3, eq:{ bg:'Сборът на годините', uk:'Сума років' }, desc:{ en:'Children\'s ages added up: in how many years — or how many years ago — they make a number', bg:'Годините на няколко деца, събрани: след колко години — или преди колко — стават толкова', uk:'Вік кількох дітей разом: через скільки років — або скільки років тому — це буде стільки' }, gen:genAgeSum },
   { id:78, op:'w', grp:'word', needs:[39], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Портокалите', uk:'Апельсини' }, desc:{ en:'Sharing out two ways: short with one, exact with the other', bg:'Раздаване по два начина: с едното не стигат, с другото е точно', uk:'Роздати двома способами: одним бракує, другим — рівно' }, gen:genTwoShare },
+  { id:263, op:'w', grp:'word', needs:[133], grade:3, src:'mbg-autumn-2024', d:4, eq:{ bg:'Етажите', uk:'Поверхи' }, desc:{ en:'A block of flats: so many times more floors above mine than below — or the other way round: which floor is mine', bg:'Блок: над моя етаж има няколко пъти повече етажи, отколкото под него — или обратно: на кой етаж съм', uk:'Будинок: над моїм поверхом у кілька разів більше поверхів, ніж під ним, — або навпаки: на якому я поверсі' }, gen:genFloors },
   { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:{ en:'Along a line, right then left — how far apart?', bg:'По права, надясно и после наляво — колко са далеч?', uk:'Уздовж прямої, праворуч, потім ліворуч — яка відстань?' }, also:['mbg-autumn-2025-2'], gen:genLine },
   { id:40, op:'w', grp:'geo', d:3, shapes:{ '-':2, ruler:2, units:3 }, eq:'AD = ?', desc:{ en:'Overlapping lengths along a line', bg:'Застъпващи се отсечки по права', uk:'Відрізки на прямій, що перекриваються' }, also:['mbg-autumn-2021-2', 'mbg-autumn-2023-2', 'mbg-spring-2025-2'], gen:genSeg },
   { id:32, op:'w', grp:'geo', d:3, shapes:{ '0':2, '1':2, '2':2, '3':2, '4':3, '5':3 }, eq:{ bg:'Ленти', uk:'Стрічки' }, desc:{ en:'Centimetres, decimetres and metres', bg:'Сантиметри, дециметри и метри', uk:'Сантиметри, дециметри й метри' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2024-2', 'mbg-autumn-2019-2'], gen:without(genRibbon, '6', '7') },
