@@ -40,6 +40,24 @@
   pin('Есен 2023 task 10', 235, {kind:'regroup', f:[2, 2, 3, 3, 4], lens:[2, 2, 1], hide:2, shown:[4, 9], traps:[144], ans:4}, [4], 'Кое е числото N, ако 2 · 2 · 3 · 3 · 4 = 4 · 9 · N');
   // the 6 and the 1 of task 5 by hand: one digit from each two-digit number, 30, 12, 90, 36
   if(Q.eraseWays([13, 52, 6], 2).map(w => w.vals.reduce((a, b) => a*b, 1)).sort((a, b) => a - b).join() !== '12,30,36,90') throw new Error('Есен 2024 task 5: 13 · 52 · 6 should make 12, 30, 36, 90');
+  // erasemul 'near' by brute force: every two of the digits erased, and the ways that come closest to T. The text does not
+  // say every number keeps a digit, so it is read both ways: a number left with none is not allowed, or (drop) it drops
+  // out and the rest are multiplied, as "25 · 1 ·" for 25 · 31 · 4. The answer has to be the same, and one, either way.
+  const nearBrute = (nums, T, drop) => {
+    const digs = nums.map(String), flat = [], all = [];
+    digs.forEach((d, k) => d.split('').forEach((_, j) => flat.push([k, j])));
+    for(let x = 0; x < flat.length; x++) for(let y = x + 1; y < flat.length; y++){
+      const left = digs.map((d, k) => d.split('').filter((_, j) => !(flat[x][0] === k && flat[x][1] === j) && !(flat[y][0] === k && flat[y][1] === j)).join(''));
+      if(!drop && left.some(d => d === '')) continue;
+      all.push({ p: left.filter(d => d !== '').reduce((u, d) => u*+d, 1), gone: +digs[flat[x][0]][flat[x][1]] + +digs[flat[y][0]][flat[y][1]] });
+    }
+    const min = Math.min(...all.map(w => Math.abs(w.p - T)));
+    return { all, min, close: all.filter(w => Math.abs(w.p - T) === min) };
+  };
+  {
+    const keep = nearBrute([13, 52, 6], 35, false), drop = nearBrute([13, 52, 6], 35, true);
+    if(keep.min !== 1 || keep.close.some(w => w.p !== 36 || w.gone !== 6) || drop.close.some(w => w.gone !== 6)) throw new Error('Есен 2024 task 5: 13 · 52 · 6 near 35 should erase digits adding to 6, read either way');
+  }
 
   // task 4 (2024) and 3 (2023): the А/Б/В/Г options are the app's own (the paper's answer is written in), so the printed
   // question is everything else: the numbers, the right side, and the one pair of signs that fits it
@@ -78,18 +96,12 @@
     if(s.shape === 'prod'){ seen.prod++; if(s.fac.length < 3 || s.fac.some(f => f < 2 || f > 7) || s.fac.reduce((x, y) => x*y, 1) !== s.val) fail('twosigns prod', s); }
     if(s.shape === 'two'){ seen.two++; if(s.c !== 0 || /\+ 0\)/.test(text(Q.drawQ(s)))) fail('twosigns two', s); }
     // 232: every way of erasing two of the digits, tried; T is not reached, one product is closest, and every way to it
-    // erases the same digits' sum
+    // erases the same digits' sum; and with an emptied number allowed to drop out, the closest ways still erase that sum
     const n = Q.raw(232); seen.near++;
     {
-      const digs = n.nums.map(String), all = [];
-      const flat = []; digs.forEach((d, k) => d.split('').forEach((c, j) => flat.push([k, j])));
-      for(let x = 0; x < flat.length; x++) for(let y = x + 1; y < flat.length; y++){
-        const left = digs.map((d, k) => d.split('').filter((_, j) => !(flat[x][0] === k && flat[x][1] === j) && !(flat[y][0] === k && flat[y][1] === j)).join(''));
-        if(left.some(d => d === '')) continue;
-        all.push({ p: left.reduce((u, d) => u*+d, 1), gone: +digs[flat[x][0]][flat[x][1]] + +digs[flat[y][0]][flat[y][1]] });
-      }
-      const min = Math.min(...all.map(w => Math.abs(w.p - n.T))), close = all.filter(w => Math.abs(w.p - n.T) === min);
+      const { all, min, close } = nearBrute(n.nums, n.T, false), drop = nearBrute(n.nums, n.T, true);
       if(min === 0 || new Set(close.map(w => w.p)).size !== 1 || close.some(w => w.gone !== n.ans) || close[0].p !== n.best) fail('erasemul near: ' + JSON.stringify(all), n);
+      if(drop.close.some(w => w.gone !== n.ans)) fail('erasemul near, an emptied number dropped: the closest ways ' + JSON.stringify(drop.close), n);
     }
     // 233: every ❀ and ❁ from 0 to 40 tried against both lines; one pair fits, and it gives the answer
     const f = Q.raw(233); seen[f.shape]++;
