@@ -90,14 +90,34 @@
     let hold = 0;
     for(let x1 = 1; x1 <= t.W; x1++) for(let x2 = x1; x2 <= t.W; x2++) for(let y1 = 1; y1 <= t.H; y1++) for(let y2 = y1; y2 <= t.H; y2++) if(x1 <= t.c && t.c <= x2 && y1 <= t.r && t.r <= y2) hold++;
     if(hold !== t.ans || t.W > 5 || t.H > 3 || hold > 24) fail('rects in: ' + hold, t);
+    // 257 and 19's ant: the worked picture puts the ant in the square the question shows it in (the question counts
+    // its row from the bottom), and every small grid's rectangle holds it, each rectangle once
+    let a19 = Q.raw(19); while(a19.shape !== 0) a19 = Q.raw(19);
+    [t, a19, {kind:'rects', shape:4, W:3, H:2, c:1, r:2, wide:3, tall:2, traps:[5], ans:6}].forEach(q => {
+      const ant = Q.drawQ(q).match(/translate\(([\d.]+) ([\d.]+)\)/), col = +ant[1] / 36 + 0.5, row = +ant[2] / 36 + 0.5;
+      const minis = [...Q.why(q, true).matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="[\d.]+" height="[\d.]+" fill="none" stroke="var\(--line\)"\/>.*?<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" fill="rgba\(47,111,143,.18\)"[^>]*\/><circle cx="([\d.]+)" cy="([\d.]+)"/g)]
+        .map(m => m.slice(1).map(Number)).map(([gx, gy, hx, hy, hw, hh, cx, cy]) => ({ col: Math.floor((cx - gx) / 9) + 1, row: Math.floor((cy - gy) / 9) + 1,
+          inside: hx < cx && cx < hx + hw && hy < cy && cy < hy + hh, box: [hx - gx, hy - gy, hw, hh].join() }));
+      if(col !== q.c || row !== q.H - q.r + 1 || minis.length !== q.ans || new Set(minis.map(m => m.box)).size !== q.ans ||
+         minis.some(m => m.col !== col || m.row !== row || !m.inside)) fail('rects: the worked picture does not put the ant where the question does (row ' + row + ' from the top)', q);
+    });
     // 258: every split of the figures into triangles and squares tried
     const f = Q.raw(258), fits = [];
     for(let k = 0; k <= f.n; k++) if(3*k + 4*(f.n - k) === f.V) fits.push(f.askT ? k : f.n - k);
     if(fits.join() !== String(f.ans) || f.t < 1 || f.s < 1) fail('nocommon: ' + fits, f);
+    // the worked line names one square or one triangle in the singular, in both languages
+    try {
+      [['bg', 'значиквадрат' + (f.s === 1 ? 'ъте' : 'итеса') + f.s, f.t === 1 ? 'триъгълникът:' : 'триъгълниците:'],
+       ['uk', 'отже,квадрат' + (f.s === 1 ? '' : 'ів') + '—' + f.s, f.t === 1 ? 'трикутник:' : 'трикутників:']].forEach(([l, sq, tri]) => {
+        APP.LANG = l;
+        const w = strip(Q.why(f, true));
+        if(!w.includes(sq) || f.askT !== w.includes(tri)) fail('nocommon (' + l + '): the count is not worded «' + sq + '» / «' + tri + '»: ' + w, f);
+      });
+    } finally { APP.LANG = 'bg'; }
     // 259: the pieces of the two circles shown, and of the worked picture, counted from the chords as drawn
     const k = Q.raw(259), shown = chords(Q.drawQ(k)), worked = chords(Q.why(k, true));
     if(shown.length !== 1 + k.k || pieces(shown.slice(0, 1), 0) !== 2 || pieces(shown.slice(1), 108) !== 1 + k.k*(k.k + 1) / 2 || pieces(worked, 0) !== k.ans || worked.length !== k.n) fail('circcut: the drawn cuts make ' + pieces(worked, 0), k);
   }
   if(!seen.mm || !seen.cmmm) throw new Error('rectdm 251 never draws both sides: ' + JSON.stringify(seen));
-  console.log('МБГ Есен 2024 and 2023, 3 клас, the geometry: 2024 tasks 11, 12, 13, 14, 18 and 2023 tasks 11, 12, 13, 14, 15 match the key (6, 16, 32, 4, 11; 6, 22, 50, 5, 4) and their levels ask them exactly; sides read back, squares laid out, outlines counted on a grid, squares and splits tried, points placed, rectangles and chords counted again');
+  console.log('МБГ Есен 2024 and 2023, 3 клас, the geometry: 2024 tasks 11, 12, 13, 14, 18 and 2023 tasks 11, 12, 13, 14, 15 match the key (6, 16, 32, 4, 11; 6, 22, 50, 5, 4) and their levels ask them exactly; sides read back, squares laid out, outlines counted on a grid, squares and splits tried, points placed, rectangles and chords counted again, the ant where the question puts it (257 and 19), one square or triangle named in the singular');
 }
