@@ -30,6 +30,18 @@ export function genRectsAnts(){
     return {kind:'rects', shape:3, n, ants, runs, all, free, traps:[all, k], ans: all - free};
   }
 }
+// Level 257. МБГ Есен 2023, 3 клас, задача 11: «В колко правоъгълника е мравката?» — a grid 3 wide and 2 high, the ant in
+// the top left square: 3 ways across times 2 up and down, 6. The 3rd grade gets grids up to 5 by 3 with the ant anywhere, so
+// the two counts are multiplied; asked in the 3rd-grade paper's words, worked as level 19's ant. At most 24 of them, as
+// on level 19, so the worked picture (every one drawn small) stays readable on a phone.
+export function genRectsIn(){
+  for(;;){
+    const W = 3 + rnd(3), H = 2 + rnd(2), c = 1 + rnd(W), r = 1 + rnd(H), wide = c*(W - c + 1), tall = r*(H - r + 1);
+    if(wide*tall > 24) continue;
+    // the slip: the ways across and the ways up and down added, not multiplied
+    return {kind:'rects', shape:4, W, H, c, r, wide, tall, traps: [wide + tall].filter(v => v !== wide*tall), ans: wide*tall};
+  }
+}
 export function genRects(){
   if(Math.random() < 0.2) return genRectsVsSq();
   if(Math.random() < 0.32){
@@ -56,6 +68,11 @@ export function genRects(){
 }
 
 function drawRects(q){
+  if(q.shape === 4){
+    return '<div class="ask">' + tr('В колко правоъгълника е мравката? (Квадратът е правоъгълник.)',
+      'У скількох прямокутниках є мурашка? (Квадрат — це прямокутник.)') + '</div>' +
+      gridSvg(q.W, q.H, q.c, q.r) + '<div class="line md">' + SLOT + '</div>';
+  }
   if(q.shape === 3){
     return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има <b>поне една</b> мравка?',
       'Скільки всього на рисунку прямокутників, у яких є <b>хоча б одна</b> мурашка?') + '</div>' +

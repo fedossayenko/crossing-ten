@@ -29,7 +29,20 @@ export function genRectDm(){
     return {kind:'rectdm', a, b, P, ans: P / 10};
   }
 }
+// Level 251. МБГ Есен 2024, 3 клас, задача 11: a square's side is 15 мм — how many сантиметри round? 4 · 15 = 60 мм = 6 см.
+// Есен 2023, 3 клас, задача 12: the side is 5 см и 5 мм, that is 55 мм; 4 · 55 = 220 мм = 22 см. A side ending in
+// 5 мм makes the four sides whole сантиметри. The slips: the 5 мм dropped (4 · 5 = 20), or the perimeter left in мм.
+export function genSqPerimMm(){
+  const cmmm = Math.random() < 0.5, s = cmmm ? 10*(1 + rnd(9)) + 5 : 10*rnd(10) + 5;
+  return {kind:'rectdm', shape: cmmm ? 'cmmm' : 'mm', s, traps: cmmm ? [4*Math.floor(s / 10), 4*s] : [4*s], ans: 4*s / 10};
+}
+const sqMmSide = (q, and) => q.shape === 'mm' ? q.s + '&nbsp;мм' : Math.floor(q.s / 10) + '&nbsp;см ' + and + ' ' + q.s % 10 + '&nbsp;мм';
 function drawRectDm(q){
+  if(q.shape === 'mm' || q.shape === 'cmmm'){
+    return '<div class="ask">' + tr('Страната на квадрат е <span class="num">' + sqMmSide(q, 'и') + '</span>. Колко <b>сантиметра</b> е обиколката на квадрата?',
+      'Сторона квадрата — <span class="num">' + sqMmSide(q, 'і') + '</span>. Скільки <b>сантиметрів</b> становить периметр квадрата?') + '</div>' +
+      '<div class="line xl">' + SLOT + CM + '</div>';
+  }
   if(q.shape === 2){
     return '<div class="ask">' + tr('Една от страните на правоъгълник е <span class="num">' + q.a + '&nbsp;см</span>, а другата е с <span class="num">' + q.d + '&nbsp;см</span> по-дълга. Колко сантиметра е обиколката на правоъгълника?',
       'Одна зі сторін прямокутника — <span class="num">' + q.a + '&nbsp;см</span>, а інша на <span class="num">' + q.d + '&nbsp;см</span> довша. Скільки сантиметрів становить периметр прямокутника?') + '</div>' +
@@ -55,11 +68,19 @@ function rectSameSvg(q){
     svgText((X + w/2).toFixed(1), (Y + h + 17).toFixed(1), q.b, 13, 'var(--warm)', popAt(3)) + svgText((X + w + 12).toFixed(1), (Y + h/2 + 5).toFixed(1), q.a, 13, 'var(--ink)', popAt(4)) + '</svg>';
 }
 function eqRectDm(q){
+  if(q.shape === 'mm') return '4 · ' + q.s + ' = ' + 4*q.s + ' мм = ' + q.ans + ' см';
+  if(q.shape === 'cmmm') return Math.floor(q.s / 10) + ' см ' + q.s % 10 + ' мм = ' + q.s + ' мм, 4 · ' + q.s + ' = ' + 4*q.s + ' мм = ' + q.ans + ' см';
   if(q.shape === 2) return q.a + ' + ' + q.d + ' = ' + q.b + ', ' + rectSides(q);
   if(q.shape === 1) return q.a + ' + ' + q.d + ' ' + q.dU + ' = ' + q.b + ' ' + q.base + ', 2 · (' + q.a + ' + ' + q.b + ') = ' + q.P + ' ' + q.base + ' = ' + q.ans + ' ' + q.to;
   return '2 · (' + q.a + ' + ' + q.b + ') = ' + q.P + ' см = ' + q.ans + ' дм';
 }
 function whyRectDm(q, full){
+  if(q.shape === 'mm' || q.shape === 'cmmm'){
+    if(!full) return tr('Обиколката на квадрата е четири пъти страната му. Първо всичко в милиметри — после колко сантиметра прави.',
+      'Периметр квадрата — це чотири його сторони. Спершу все в міліметрах — потім скільки це сантиметрів.');
+    return (q.shape === 'cmmm' ? Math.floor(q.s / 10) + ' см = ' + 10*Math.floor(q.s / 10) + ' мм, ' + 10*Math.floor(q.s / 10) + ' + ' + q.s % 10 + ' = <b>' + q.s + '</b> мм &nbsp;→&nbsp; ' : '') +
+      '4 · ' + q.s + ' = <b>' + 4*q.s + '</b> мм &nbsp;→&nbsp; 10 мм = 1 см' + tr(', значи ', ', отже ') + 4*q.s + ' мм = ' + q.ans + ' см';
+  }
   if(q.shape === 2){
     if(!full) return tr('Първо намери другата страна. Обиколката е сборът от четирите страни.', 'Спершу знайди іншу сторону. Периметр — це сума чотирьох сторін.');
     return tr('другата страна: ', 'інша сторона: ') + q.a + ' + ' + q.d + ' = <b>' + q.b + '</b> см' + rectSameSvg(q) + tr('обиколката: ', 'периметр: ') + rectSides(q) + ' см';

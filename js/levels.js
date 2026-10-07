@@ -17,7 +17,7 @@ import { genSumBoard, genSumDiff } from '../kinds/sumdiff.js';
 import { genDigits } from '../kinds/digits.js';
 import { genDigitBelow, genDigitFreq, genDigitOmit, genDigitRun } from '../kinds/dcount.js';
 import { genBucket } from '../kinds/bucket.js';
-import { genRects, genRectsAnts } from '../kinds/rects.js';
+import { genRects, genRectsAnts, genRectsIn } from '../kinds/rects.js';
 import { genLine } from '../kinds/line.js';
 import { genShared } from '../kinds/shared.js';
 import { genStep } from '../kinds/step.js';
@@ -35,6 +35,10 @@ import { genSegPts } from '../kinds/segpts.js';
 import { genMidPt } from '../kinds/midpt.js';
 import { genTriVsSq } from '../kinds/trisq.js';
 import { genPlates } from '../kinds/tiles.js';
+import { genSqGlue, genSqSplit } from '../kinds/sqsplit.js';
+import { genSegNum } from '../kinds/segnum.js';
+import { genNoCommon } from '../kinds/nocommon.js';
+import { genCircCut } from '../kinds/circcut.js';
 import { genCircOp } from '../kinds/circop.js';
 import { genProdGrid } from '../kinds/prodgrid.js';
 import { genDropOne } from '../kinds/dropone.js';
@@ -63,7 +67,7 @@ import { genTens } from '../kinds/tens.js';
 import { genSigns } from '../kinds/signs.js';
 import { genBoth } from '../kinds/both.js';
 import { genShort } from '../kinds/short.js';
-import { genSeg, genSegShort } from '../kinds/seg.js';
+import { genSeg, genSegMid, genSegShort } from '../kinds/seg.js';
 import { genThree } from '../kinds/three.js';
 import { genCats } from '../kinds/cats.js';
 import { genCoins } from '../kinds/coins.js';
@@ -81,7 +85,7 @@ import { genBalloons } from '../kinds/balloons.js';
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
-import { genRectDm, genRectLonger, genRectSame } from '../kinds/rectdm.js';
+import { genRectDm, genRectLonger, genRectSame, genSqPerimMm } from '../kinds/rectdm.js';
 import { genMinuend } from '../kinds/minuend.js';
 import { genConsec } from '../kinds/consec.js';
 import { genDigitBlocks, genWordPos } from '../kinds/wordpos.js';
@@ -123,7 +127,7 @@ import { genProd3, genProdOf } from '../kinds/prodof.js';
 import { genCountX } from '../kinds/countx.js';
 import { genTimesW } from '../kinds/timesw.js';
 import { genAsMany, genAsManyMid } from '../kinds/asmany.js';
-import { genCutSq } from '../kinds/cutsq.js';
+import { genCutSq, genCutSq3 } from '../kinds/cutsq.js';
 import { genThread } from '../kinds/thread.js';
 import { genDiag } from '../kinds/diag.js';
 import { genIneqSum } from '../kinds/ineqsum.js';
@@ -354,9 +358,18 @@ export const LEVELS = [
   { id:153, op:'w', grp:'geo', needs:[21], src:'kms-2022', d:4, eq:{ bg:'Квадрат и правоъгълник', uk:'Квадрат і прямокутник' }, desc:{ en:'Equal perimeters, and a rectangle pinned down by its sides', bg:'Равни обиколки и правоъгълник, определен от страните си', uk:'Рівні периметри й прямокутник, визначений своїми сторонами' }, gen:genSqRect },
   { id:71, op:'w', grp:'geo', needs:[20], grade:3, src:'mbg-autumn-2025', d:1, eq:{ bg:'Селищата', uk:'Села' }, desc:{ en:'A midpoint, and a place a few kilometres from it', bg:'Средата на пътя и място на няколко километра от нея', uk:'Середина дороги й місце за кілька кілометрів від неї' }, gen:genMidPt },
   { id:70, op:'w', grp:'geo', needs:[31], grade:3, src:'mbg-autumn-2025', d:2, eq:{ bg:'Точки на отсечка', uk:'Точки на відрізку' }, desc:{ en:'Points that cut a segment into equal parts, plus a piece beyond', bg:'Точки делят отсечка на равни части, и още едно парче след тях', uk:'Точки ділять відрізок на рівні частини, і ще шматок після них' }, gen:genSegPts },
+  { id:251, op:'w', grp:'geo', needs:[91], grade:3, src:'mbg-autumn-2024', also:['mbg-autumn-2023-3'], d:2, shapes:{ mm:2, cmmm:2 }, eq:{ bg:'Страна в мм', uk:'Сторона в мм' }, desc:{ en:'A square\'s side in millimetres, or centimetres and millimetres — its perimeter in centimetres', bg:'Страна на квадрат в милиметри или в сантиметри и милиметри — обиколката в сантиметри', uk:'Сторона квадрата в міліметрах або в сантиметрах і міліметрах — периметр у сантиметрах' }, gen:genSqPerimMm },
+  { id:252, op:'w', grp:'geo', needs:[137], grade:3, src:'mbg-autumn-2024', d:2, eq:{ bg:'Колко квадратчета?', uk:'Скільки квадратиків?' }, desc:{ en:'The most small squares cut from a square or a rectangle — a strip left over is wasted', bg:'Най-много квадратчета, изрязани от квадрат или правоъгълник — остатъкът се губи', uk:'Найбільше квадратиків, вирізаних із квадрата чи прямокутника — залишок пропадає' }, gen:genCutSq3 },
   { id:72, op:'w', grp:'geo', needs:[21], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Триъгълник и квадрат', uk:'Трикутник і квадрат' }, desc:{ en:'A triangle\'s side against a square\'s perimeter, in millimetres', bg:'Страна на триъгълник срещу обиколка на квадрат — в милиметри', uk:'Сторона трикутника проти периметра квадрата — у міліметрах' }, gen:genTriVsSq },
+  { id:253, op:'w', grp:'geo', needs:[22], grade:3, src:'mbg-autumn-2024', d:3, eq:{ bg:'Квадрат и ивица', uk:'Квадрат і смужка' }, desc:{ en:'A square and a rectangle known by their perimeters, put side by side — the new perimeter', bg:'Квадрат и правоъгълник, дадени с обиколките си, долепени един до друг — новата обиколка', uk:'Квадрат і прямокутник, задані периметрами, складені поруч — новий периметр' }, gen:genSqGlue },
+  { id:255, op:'w', grp:'geo', needs:[71], grade:3, src:'mbg-autumn-2024', d:3, eq:'AM = MD', desc:{ en:'Three pieces in mixed units, the midpoint of the whole, and how far it is from a point', bg:'Три отсечки в различни мерки, средата на цялата и колко е от нея до точка', uk:'Три відрізки в різних одиницях, середина всього відрізка і відстань від неї до точки' }, gen:genSegMid },
+  { id:256, op:'w', grp:'geo', needs:[70], grade:3, src:'mbg-autumn-2023', d:3, eq:{ bg:'Номерирани точки', uk:'Пронумеровані точки' }, desc:{ en:'Numbered points cut a segment into equal parts; a point halfway between two of them', bg:'Номерирани точки делят отсечка на равни части; точка по средата между две от тях', uk:'Пронумеровані точки ділять відрізок на рівні частини; точка посередині між двома з них' }, gen:genSegNum },
+  { id:257, op:'w', grp:'geo', needs:[19], grade:3, src:'mbg-autumn-2023', d:3, eq:{ bg:'В колко правоъгълника?', uk:'У скількох прямокутниках?' }, desc:{ en:'How many rectangles of a grid hold the ant — the ways across times the ways up and down', bg:'В колко правоъгълника на мрежата е мравката — начините по ширина, умножени по начините по височина', uk:'У скількох прямокутниках сітки є мурашка — способи вшир, помножені на способи вгору й униз' }, gen:genRectsIn },
   { id:73, op:'w', grp:'geo', needs:[21], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Плочки', uk:'Плитки' }, desc:{ en:'Rectangles made of two squares, and the big rectangle they tile', bg:'Правоъгълници от по два квадрата и големият правоъгълник от тях', uk:'Прямокутники з двох квадратів і великий прямокутник із них' }, gen:genPlates },
   { id:69, op:'w', grp:'geo', needs:[21], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Звезда', uk:'Зірка' }, desc:{ en:'Equilateral triangles on the sides of a square, and the square\'s perimeter', bg:'Равностранни триъгълници върху страните на квадрат — и обиколката на квадрата', uk:'Рівносторонні трикутники на сторонах квадрата — і периметр квадрата' }, gen:genStar },
+  { id:254, op:'w', grp:'geo', needs:[253], grade:3, src:'mbg-autumn-2023', d:4, eq:{ bg:'Квадрат на две части', uk:'Квадрат на дві частини' }, desc:{ en:'A square cut into two rectangles: its side from their perimeters', bg:'Квадрат, разделен на два правоъгълника: страната му по обиколките им', uk:'Квадрат, поділений на два прямокутники: його сторона за їхніми периметрами' }, gen:genSqSplit },
+  { id:258, op:'w', grp:'geo', needs:[143], grade:3, src:'mbg-autumn-2023', d:4, eq:{ bg:'Без общ връх', uk:'Без спільної вершини' }, desc:{ en:'Triangles and squares with no vertex in common: how many of one kind, from the vertices in all', bg:'Триъгълници и квадрати без общ връх: колко са от единия вид по общия брой върхове', uk:'Трикутники й квадрати без спільних вершин: скільки фігур одного виду за загальною кількістю вершин' }, gen:genNoCommon },
+  { id:259, op:'w', grp:'geo', grade:3, src:'mbg-autumn-2024', d:4, eq:{ bg:'Разрязан кръг', uk:'Розрізаний круг' }, desc:{ en:'The most pieces a circle makes with so many straight cuts', bg:'На колко най-много части се разрязва кръг с толкова разрязвания', uk:'На скільки найбільше частин можна розрізати круг стількома розрізами' }, gen:genCircCut },
   // 1st grade: МБГ Пролет 2025 and 2023, rated against each other on a 1st-grade scale
   { id:155, op:'w', grp:'chain', grade:1, src:'mbg-spring-2025', also:['mbg-spring-2023-1', 'mbg-spring-2022-1', 'mbg-spring-2021-1', 'mbg-semifinal-2025-1', 'mbg-semifinal-2022-1'], d:1, shapes:{ '-':1, five:1 }, eq:'2 − 0 − 2 + 5', desc:{ en:'A short chain of + and −, worked left to right', bg:'Кратка верига от + и −, сметната отляво надясно', uk:'Короткий ланцюжок із + і −, зліва направо' }, gen:genChainWalk },
   { id:224, op:'w', grp:'chain', grade:1, src:'mbg-semifinal-2024', also:['mbg-semifinal-2023-1'], needs:[155], d:2, eq:'20 − 2 + 4', desc:{ en:'A short chain that goes past 20', bg:'Кратка верига, която минава 20', uk:'Короткий ланцюжок, що виходить за 20' }, gen:only(genChainShort, 'past') },
