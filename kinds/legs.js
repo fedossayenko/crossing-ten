@@ -34,7 +34,8 @@ function legsSvg(){
     '<g' + popAt(1) + '>' + sp + '</g><g' + popAt(2) + '>' + bt + '</g>' +
     cap(80, tr('Всеки паяк', 'Кожен павук'), tr('има 8 крака', 'має 8 ніг')) + cap(240, tr('Всеки бръмбар', 'Кожен жук'), tr('има 6 крака', 'має 6 ніг')) + '</svg></div>';
 }
-const LEGS_TIMES_BG = {2:'два', 3:'три'}, LEGS_TIMES_UK = {2:'удвічі', 3:'утричі'};
+// the Ukrainian always comes after «і», a vowel, so вдвічі, not удвічі
+const LEGS_TIMES_BG = {2:'два', 3:'три'}, LEGS_TIMES_UK = {2:'вдвічі', 3:'втричі'};
 function drawLegs(q){
   if(q.shape === 'humps'){
     const [given, other] = q.two ? [tr('двугърби', 'двогорбих'), tr('едногърби', 'одногорбих')] : [tr('едногърби', 'одногорбих'), tr('двугърби', 'двогорбих')];
