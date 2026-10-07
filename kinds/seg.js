@@ -3,7 +3,7 @@
 // Задача 11: four points in a row, measured in overlapping pieces.
 // МБГ Пролет 2025, задача 11: AB = 41 мм, BC = 2 см, CD = 39 мм, and AD asked in дециметри. All in
 // millimetres first: 41 + 20 + 39 = 100 мм, which is 1 дм.
-import { CM, KIND, SLOT, lineSvg, rnd, tr } from '../js/core.js';
+import { CM, KIND, SLOT, lineSvg, rnd, shuffle, tr } from '../js/core.js';
 function genSegUnits(){
   for(;;){
     const cm = 1 + rnd(5), ab = 11 + rnd(60), cd = 100*(1 + rnd(2)) - ab - 10*cm;
@@ -29,6 +29,22 @@ export function genSegShort(){
   if(Math.random() > 0.6) return {kind:'seg', shape:'cbov', p, q, r, AB: p + q, CD: q + r, AD: p + q + r, traps:[p + 2*q + r, r], ans: q};
   return {kind:'seg', shape:'cb', p, q, r, AD: p + q + r, traps:[p + q + r - p, p + r], ans: q};
 }
+// Level 255. МБГ Есен 2024, 3 клас, задача 14: A, B, C, D in a row, AB = 1 дм, BC = 60 мм, CD = 12 см, and M (not drawn)
+// with AM = MD; MB in сантиметри. All in сантиметри, AD = 10 + 6 + 12 = 28, so AM = 14 and MB = 14 − 10 = 4. Each piece
+// gets one of the three units; M falls between B and C, and the question asks MB or MC.
+const SEG_MID_U = { дм:10, см:1, мм:0.1 };
+export function genSegMid(){
+  for(;;){
+    const units = shuffle(['дм', 'мм', 'см']), cm = units.map(u => u === 'дм' ? 10*(1 + rnd(3)) : u === 'мм' ? 2 + rnd(8) : 3 + rnd(23));
+    const [ab, bc, cd] = cm, AD = ab + bc + cd, half = AD / 2, toB = Math.random() < 0.6;
+    // M strictly between B and C, and no two points drawn too close together
+    if(AD % 2 || cm.some(v => 7*v < AD) || 15*(half - ab) < AD || 15*(ab + bc - half) < AD) continue;
+    const ans = toB ? half - ab : ab + bc - half;
+    // the slips: stopping at AM, or measuring to the other one of B and C
+    return {kind:'seg', shape:'mid', units, cm, AD, toB, traps: [half, toB ? ab + bc - half : half - ab].filter(v => v !== ans), ans};
+  }
+}
+const segMidGiven = q => ['AB', 'BC', 'CD'].map((s, i) => s + ' = <span class="num">' + Math.round(q.cm[i] / SEG_MID_U[q.units[i]]) + '&nbsp;' + q.units[i] + '</span>');
 // Задача 14: the segments are not given, they are read off the ruler — the length is the
 // difference of the two marks, not the mark the segment ends at.
 function genRuler(){
@@ -88,7 +104,20 @@ function segSvg(q){
     '</svg></div>';
 }
 
+// the four points to scale, named above as on the paper; M is not drawn
+function segMidSvg(q){
+  const W = 236, at = v => (14 + v / q.AD * (W - 28)).toFixed(1), xs = [0, q.cm[0], q.cm[0] + q.cm[1], q.AD];
+  return '<div class="fig wide"><svg viewBox="0 -24 ' + W + ' 34" role="img" aria-label="' + tr('четири точки върху отсечка', 'чотири точки на відрізку') + '">' +
+    '<line x1="' + at(0) + '" y1="0" x2="' + at(q.AD) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
+    xs.map((v, i) => '<circle cx="' + at(v) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + at(v) + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + 'ABCD'[i] + '</text>').join('') + '</svg></div>';
+}
 function drawSeg(q){
+  if(q.shape === 'mid'){
+    const g = segMidGiven(q), ask = q.toB ? 'MB' : 'MC';
+    return '<div class="ask">' + tr('Ако ' + g[0] + ', ' + g[1] + ', ' + g[2] + ' и AM = MD, пресметнете в <b>сантиметри</b> дължината на отсечката <b>' + ask + '</b>.',
+      'Якщо ' + g[0] + ', ' + g[1] + ', ' + g[2] + ' і AM = MD, обчисліть у <b>сантиметрах</b> довжину відрізка <b>' + ask + '</b>.') + '</div>' +
+      segMidSvg(q) + '<div class="line md">' + SLOT + CM + '</div>';
+  }
   if(q.shape === 'units'){
     return '<div class="ask">' + tr('Намерете в <b>дециметри</b> дължината на отсечката AD, ако AB = <span class="num">' + q.ab + '</span> мм, BC = <span class="num">' + q.cm + '</span> см и CD = <span class="num">' + q.cd + '</span> мм.',
       'Знайдіть у <b>дециметрах</b> довжину відрізка AD, якщо AB = <span class="num">' + q.ab + '</span> мм, BC = <span class="num">' + q.cm + '</span> см і CD = <span class="num">' + q.cd + '</span> мм.') + '</div>' +
@@ -118,7 +147,9 @@ function drawSeg(q){
     q.CD + u + ' &nbsp; CB = ' + q.q + u + '</div>' +
     '<div class="line md">' + SLOT + (q.mm ? ' <span class="unit">мм</span>' : CM) + '</div>';
 }
+const segMidLast = q => q.toB ? (q.AD / 2) + ' − ' + q.cm[0] : (q.cm[0] + q.cm[1]) + ' − ' + (q.AD / 2);
 function eqSeg(q){
+  if(q.shape === 'mid') return q.cm.join(' + ') + ' = ' + q.AD + ', ' + q.AD + ' : 2 = ' + q.AD / 2 + ', ' + segMidLast(q) + ' = ' + q.ans + ' см';
   if(q.shape === 'units') return q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = ' + (q.ans*100) + ' мм = ' + q.ans + ' дм';
   if(q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
   if(q.shape === 'cb') return 'AD ' + q.AD + ', AC ' + q.p + ', BD ' + q.r + ' → CB ' + q.ans;
@@ -126,6 +157,15 @@ function eqSeg(q){
   return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
 }
 function whySeg(q, full){
+  if(q.shape === 'mid'){
+    if(!full) return tr('Първо трите отсечки в сантиметри и цялата AD. Точката M е по средата на AD.', 'Спершу три відрізки в сантиметрах і весь AD. Точка M — посередині AD.');
+    const half = q.AD / 2, [ab, bc] = q.cm, ask = q.toB ? 'MB' : 'MC', to = q.units.map((u, i) => u === 'см' ? '' : Math.round(q.cm[i] / SEG_MID_U[u]) + ' ' + u + ' = ' + q.cm[i] + ' см').filter(Boolean);
+    return to.join(', ') + ' &nbsp;→&nbsp; AD = ' + q.cm.join(' + ') + ' = <b>' + q.AD + '</b> см &nbsp;→&nbsp; AM = MD = ' + q.AD + ' : 2 = <b>' + half + '</b> см &nbsp;→&nbsp; ' +
+      ask + (q.toB ? ' = AM − AB = ' : ' = AC − AM = ') + segMidLast(q) + ' = ' + q.ans + ' см' +
+      lineSvg([{at:0, name:'A'}, {at:ab, name:'B'}, {at:ab + bc, name:'C'}, {at:q.AD, name:'D'}, {at:half, name:'M', col:'var(--warm)', step:4}],
+        [{from:0, to:q.AD, row:-2, label:'AD ' + q.AD, step:1}, {from:0, to:half, row:1, label:'AM ' + half, col:'var(--accent)', step:3},
+         {from:half, to:q.toB ? ab : ab + bc, row:2, label:ask + ' ' + q.ans, col:'var(--warm)', step:5}], 0, q.AD, tr('отсечките от A до D', 'відрізки від A до D'));
+  }
   if(q.shape === 'units'){
     if(!full) return tr('Първо всичко в милиметри: колко милиметра е един сантиметър, и колко — един дециметър?', 'Спершу все в міліметрах: скільки міліметрів в одному сантиметрі, а скільки — в одному дециметрі?');
     return q.cm + ' см = <b>' + 10*q.cm + '</b> мм &nbsp;→&nbsp; ' + q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = <b>' + q.ans*100 + '</b> мм &nbsp;→&nbsp; ' + tr('100 мм = 1 дм, значи ', '100 мм = 1 дм, отже ') + q.ans;

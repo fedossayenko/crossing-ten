@@ -14,6 +14,20 @@ export function genCutSq(){
     return {kind:'cutsq', s, sq, W, H, traps: Number.isInteger(W*H / (s*s)) ? [] : [Math.round(W*H / (s*s))], ans};
   }
 }
+// Level 252. МБГ Есен 2024, 3 клас, задача 12: squares of side 3 см from a square of side 12 см — 4 rows of 4, 16.
+// The 3rd grade asks it with the whole times table: small squares up to 9 см, up to 9 of them along a side.
+export function genCutSq3(){
+  for(;;){
+    const s = 2 + rnd(8), sq = Math.random() < 0.5, exact = Math.random() < 0.7;
+    const m = 3 + rnd(7), n = sq ? m : 3 + rnd(7);
+    const W = m*s + (exact ? 0 : rnd(s)), H = sq ? W : n*s + (exact ? 0 : rnd(s));
+    if(!exact && W % s === 0 && H % s === 0) continue;
+    if(!sq && W === H || W > 60 || H > 60) continue;           // a «rectangle» with equal sides would be the square
+    // the slip: the sheet's area shared out as if the strips left over could be used
+    const ans = Math.floor(W / s)*Math.floor(H / s), area = Math.round(W*H / (s*s));
+    return {kind:'cutsq', s, sq, W, H, traps: area === ans ? [] : [area], ans};
+  }
+}
 function drawCutSq(q){
   const from = q.sq ? tr('квадрат със страна <span class="num">' + q.W + '</span> см', 'квадрата зі стороною <span class="num">' + q.W + '</span> см')
                     : tr('правоъгълник със страни <span class="num">' + q.W + '</span> см и <span class="num">' + q.H + '</span> см', 'прямокутника зі сторонами <span class="num">' + q.W + '</span> см і <span class="num">' + q.H + '</span> см');
