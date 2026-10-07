@@ -7,7 +7,7 @@ level in Chrome.
 
 The plain sums (Take away, Add: 6 levels) are **Основи**, basics under everything. Every other
 level is modelled on a task from **Математика без граници (МБГ), autumn round**: 51
-from the 2nd-grade paper and 20 from the 3rd-grade one, the whole paper, tasks 1–20 (multiplication first,
+from the 2nd-grade paper and 20 from the 3rd-grade one (Есен 2025), the whole paper, tasks 1–20 (multiplication first,
 digits of the smallest three-digit number, products with a 0, two expressions that differ only
 at the end, which two signs make an equality true, erasing digits from a product, how many
 sums two two-digit numbers make, the digits a product can end in, a number by its digits'
@@ -145,7 +145,7 @@ repeating row, segments with a worked example (both papers' task 14), squares in
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
-(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 3 клас), tags
+(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 2025 3 клас), tags
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
