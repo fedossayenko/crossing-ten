@@ -12,6 +12,14 @@
   const calc = e => Function('return ' + e.replace(/·/g, '*').replace(/−/g, '-').replace(/:/g, '/'))();
 
   const ABC_SEEN = {};   // each form searched once
+  // 244: the property asked, read off the question as drawn
+  const leastHas = q => {
+    const ask = part(q, 'ask'), k = (ask.match(/(?:се дели на|завършва на) (\d)\?/) || [])[1];
+    return /два равни множителя/.test(ask) ? v => { for(let M = 1; M*M <= v; M++) if(M*M === v) return true; return false; }
+      : /се дели на/.test(ask) ? v => v % +k === 0
+      : /завършва на/.test(ask) ? v => String(v).endsWith(k)
+      : /две еднакви цифри/.test(ask) ? v => String(v).length === 2 && String(v)[0] === String(v)[1] : fail('sqsum: what is asked', q);
+  };
   // Each kind's answer found another way. Each returns the answers it finds, sorted.
   const BRUTE = {
     // every pair of numbers below a thousand with the asked parity and difference, by their products' last digits
@@ -20,17 +28,21 @@
       for(let x = 0; x < 1000; x++) if(q.par === 'all' || x % 2 === (q.par === 'odd' ? 1 : 0)) ends.add(x*(x + q.d) % 10);
       return [...ends].sort((a, b) => a - b);
     },
-    // every digit put in the boxes of the inequality as it is drawn
+    // every digit put in the boxes of the inequality as it is drawn; the one that fits, or the largest or smallest asked for
     boxdig: q => {
-      const t = part(q, 'given');
+      const t = part(q, 'given'), ask = part(q, 'ask');
       if((t.match(/□/g) || []).length !== 2) fail('boxdig: two boxes', q);
-      return [...Array(10).keys()].filter(x => calc(t.replace(/□/g, String(x)).replace('=', '===')));
+      const fit = [...Array(10).keys()].filter(x => calc(t.replace(/□/g, String(x)).replace('=', '===')));
+      if(!fit.length || fit.length === 10) fail('boxdig: every digit fits, or none', q);
+      return /най-голямата/.test(ask) ? [fit[fit.length - 1]] : /най-малката/.test(ask) ? [fit[0]] : fit;
     },
-    // the sum as drawn, and the number that times itself makes it; from a start, the numbers added on until one does
+    // the sum as drawn, and the number that times itself makes it; from a start, the numbers added on until a sum has
+    // the property asked (within 100)
     sqsum: q => {
       if(q.shape === 'least'){
         if(!part(q, 'ask').includes('N > ' + q.a + ',')) fail('sqsum: not N > ' + q.a, q);
-        for(let N = q.a + 1, s = q.a + N; N < 100; N++, s += N) for(let M = 1; M*M <= s; M++) if(M*M === s) return M === q.M ? [N] : fail('sqsum: M is ' + M, q);
+        const has = leastHas(q);
+        for(let N = q.a + 1, s = q.a + N; s <= 100; N++, s += N) if(has(s)) return N >= q.a + 2 && s === q.S ? [N] : fail('sqsum: the sum ' + s + ' at ' + N, q);
         return [];
       }
       const t = part(q, 'given'), s = calc(t.split('=')[0]), terms = t.split('=')[0].split('+').map(Number);
@@ -78,7 +90,7 @@
         if(hits.includes(0)) fail('swapone: a number would become 0', q);
         if(hits.length > 1 || (hits[0] || 0) !== q.to[i]) fail('swapone: place ' + i + ' takes ' + hits, q);
         (hits.length ? can : cannot).push(v); });
-      if(new Set(can).size !== can.length || can.some(v => cannot.includes(v))) fail('swapone: the numbers that can change do not read one way', q);
+      if(new Set(can).size !== can.length || can.some(v => cannot.includes(v)) || can.length < 2) fail('swapone: the numbers that can change do not read one way, or are fewer than two', q);
       return [can.reduce((s, v) => s + v, 0)];
     },
   };
@@ -104,12 +116,13 @@
   pin('Есен 2024 task 7', 241, {kind:'oddprod', shape:'any', par:'even', d:2, pairs:[[0, 2], [2, 4], [4, 6], [6, 8], [8, 10]], slots:3, ans:0, alt:[4, 8]}, [0, 4, 8],
     'Кои са възможните цифри на единиците на произведението на две последователни четни числа?');
   // □ is the units digit of both numbers (2024) and a factor of both products (2023)
-  pin('Есен 2024 task 8', 242, {kind:'boxdig', shape:'last', a:20, b:22, p:1, r:1, rel:'<', traps:[1], ans:0}, [0],
-    ['Коя цифра трябва да поставим вместо □, така че да е вярно?', '20□ + 22□ < 201 + 221']);
-  pin('Есен 2023 task 8', 242, {kind:'boxdig', shape:'mul', a:20, b:23, p:1, r:1, rel:'<', traps:[1], ans:0}, [0],
+  // (one question of about 90 000 the level asks: the search, only after a generator change, gets 2e6 tries)
+  pin('Есен 2024 task 8', 242, {kind:'boxdig', shape:'last', a:20, b:22, p:1, r:1, rel:'<', ask:'one', traps:[1], ans:0}, [0],
+    ['Коя цифра трябва да поставим вместо □, така че да е вярно?', '20□ + 22□ < 201 + 221'], 2e6);
+  pin('Есен 2023 task 8', 242, {kind:'boxdig', shape:'mul', a:20, b:23, p:1, r:1, rel:'<', ask:'one', traps:[1], ans:0}, [0],
     ['Коя цифра трябва да поставим вместо □, така че да е вярно?', '20 · □ + 23 · □ < 20 · 1 + 23 · 1']);
   pin('Есен 2024 task 19', 243, {kind:'sqsum', shape:'odd', k:8, traps:[64], ans:8}, [8], ['Пресметнете M, ако', '1 + 3 + 5 + 7 + 9 + 11 + 13 + 15 = M · M']);
-  pin('Есен 2023 task 16', 244, {kind:'sqsum', shape:'least', a:1, N:8, M:6, traps:[6], ans:8}, [8],
+  pin('Есен 2023 task 16', 244, {kind:'sqsum', shape:'least', a:1, prop:'sq', k:null, N:8, S:36, traps:[6], ans:8}, [8],
     ['Кое е най-малкото естествено число N, N > 1, за което сборът от всички естествени числа от 1 до N е число, което е произведение на два равни множителя?', '1 + 2 + 3 + … + N = M · M']);
   // the overlined ABC and DE: a three-digit and a two-digit number
   pin('Есен 2024 task 20', 245, {kind:'abcde', lens:[3, 2], max:false, dig:[1, 0, 3, 2, 4], traps:[136], ans:127}, [127],
@@ -119,7 +132,7 @@
     ['Кое е пропуснатото число?', '11 11 12 14 21 41 22 44 31 91 32 ? 41 161 42 164']);
   pin('Есен 2023 task 7', 247, {kind:'missing', shape:'many', run:[3, 6, 9, 12, 15, 18, 21, 24, 27, 30], traps:[6, 10], ans:5}, [5], ['Колко числа са пропуснати?', '3, 6, 9, …, 27, 30']);
   // 6 → 9, 3 → 2, 10 → 8; the 2 · 2 would have to make 5 and 10 : □ would have to make 4
-  pin('Есен 2023 task 18', 248, {kind:'swapone', n:[6, 3, 2, 2, 10, 2], by:1, V:1, to:[9, 2, 0, 0, 8, 0], traps:[25, 16], ans:19}, [19],
+  pin('Есен 2023 task 18', 248, {kind:'swapone', n:[6, 3, 2, 2, 10, 2], by:1, V:1, to:[9, 2, 0, 0, 8, 0], traps:[16, 25], ans:19}, [19],
     ['В израза', '6 : 3 + 2 · 2 − 10 : 2', 'заменете точно едно от участващите числа с друго число, така че първоначалната стойност на израза да се увеличи с 1. Колко е сборът на числата в израза, които е възможно да се заменят?']);
 
   // every level's own questions, worked out again; each shape and form met
@@ -132,12 +145,12 @@
       if(q.shape !== 'any' || q.slots !== 3) fail('oddprod: three digits, any numbers', q);
     }
     if(q.kind === 'boxdig'){
-      see('boxdig ' + q.shape + ' ' + q.rel);
+      see('boxdig ' + q.shape + ' ' + q.rel + ' ' + q.ask);
       if(q.traps.includes(q.ans) || q.traps[0] < 0 || q.traps[0] > 9) fail('boxdig: the slip', q);
     }
     if(q.kind === 'sqsum'){
-      see('sqsum ' + q.shape + (q.shape === 'least' ? ' ' + q.a : ''));
-      if(q.shape === 'least' && Math.round(Math.sqrt(q.a))**2 === q.a && !/,но|,але/.test(strip(Q.why(q, true)))) fail('sqsum: a start that is a square is not said not to count', q);
+      see('sqsum ' + q.shape + (q.shape === 'least' ? ' ' + q.prop : ''));
+      if(q.shape === 'least' && leastHas(q)(q.a) && !/,ноN>|,алеN>/.test(strip(Q.why(q, true)))) fail('sqsum: a start that fits is not said not to count', q);
     }
     if(q.kind === 'abcde'){
       see('abcde ' + q.lens + (q.max ? ' max' : ' min'));
@@ -160,9 +173,26 @@
       if(q.to[2] || q.to[3]) see('swapone ' + q.by + ' factor');
     }
   }});
-  ['oddprod even 2', 'oddprod odd 2', 'oddprod all 1', 'oddprod even 4', 'oddprod odd 4', 'boxdig last <', 'boxdig last >', 'boxdig last =', 'boxdig mul <', 'boxdig mul >', 'boxdig mul =',
-   'sqsum odd', 'sqsum updown', 'sqsum least 1', 'sqsum least 4', 'sqsum least 9', 'abcde 3,2 min', 'abcde 2,2 max', 'abcde 3,1 max', 'tabrule sq', 'tabrule dbl', 'missing many',
+  ['oddprod even 2', 'oddprod odd 2', 'oddprod all 1', 'oddprod even 4', 'oddprod odd 4', 'boxdig last < one', 'boxdig mul < one', 'boxdig last < max', 'boxdig mul < max',
+   'boxdig last > min', 'boxdig mul > min', 'boxdig last > one', 'boxdig last = one', 'boxdig mul = one',
+   'sqsum odd', 'sqsum updown', 'sqsum least sq', 'sqsum least div', 'sqsum least end', 'sqsum least twin', 'abcde 3,2 min', 'abcde 2,2 max', 'abcde 3,1 max', 'tabrule sq', 'tabrule dbl', 'missing many',
    'swapone 1', 'swapone 1 divisor', 'swapone -1 divisor', 'swapone 2 factor'].forEach(k => { if(!seen[k]) throw new Error('never drawn in 400 questions a level: ' + k + ' ' + JSON.stringify(seen)); });
+
+  // Nothing on the surface gives the answer away: 3000 questions of a level, the same ones every run.
+  const draw = id => Array.from({length: 3000}, (_, i) => seeded(i + 1, () => Q.raw(id)));
+  { // 248: a divisor or a factor can change in most questions, and the two dividends alone are the answer in few
+    const qs = draw(248), inner = qs.filter(q => q.to[1] || q.to[2] || q.to[3] || q.to[5]).length / qs.length, ae = qs.filter(q => q.ans === q.n[0] + q.n[4]).length / qs.length;
+    if(inner < 0.6 || ae > 0.25) throw new Error('swapone: a divisor or a factor can change in ' + Math.round(100*inner) + '% of the questions (want 60% or more), the two dividends are the answer in ' + Math.round(100*ae) + '% (want 25% or less)');
+  }
+  { // 242: each sign has several answers
+    const by = {};
+    draw(242).forEach(q => (by[q.rel] = by[q.rel] || new Set()).add(q.ans));
+    ['<', '>', '='].forEach(rel => { if(!by[rel] || by[rel].size < 4) throw new Error('boxdig: with ' + rel + ' the answer is only ever ' + [...(by[rel] || [])]); });
+  }
+  { // 244: thirty different questions or more, the printed one not one in ten
+    const qs = draw(244), kinds = new Set(qs.map(q => q.a + ' ' + q.prop + ' ' + q.k)), printed = qs.filter(q => q.a === 1 && q.prop === 'sq').length / qs.length;
+    if(kinds.size < 30 || printed > 0.1) throw new Error('sqsum least: ' + kinds.size + ' different questions (want 30 or more), the printed one ' + Math.round(100*printed) + '% of them');
+  }
   console.log('МБГ Есен 2024 and 2023, 3 клас: 2024 tasks 7, 8, 19, 20 and 2023 tasks 6, 7, 8, 16, 18 match the key (0, 4, 8; 0; 8; 127; 94; 5; 0; 8; 19) and are asked exactly by their levels; ' +
     Object.values(seen).reduce((a, b) => a + b, 0) + ' more worked out again: products by every pair under 1000, boxes by every digit, sums by every M, letters by every pair of numbers, the table by a family of rules, the gap by counting on, every number of the expression changed to 0 … 300');
 }
