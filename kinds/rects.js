@@ -118,7 +118,7 @@ function eqRects(q){
 // count is the columns times the rows, and the table shows it.
 function rectsAntSvg(q){
   const s = 9, tw = q.W * s, th = q.H * s, gx = 10, gy = 10, ext = (n, k) => { const out = []; for(let a = 1; a <= k; a++) for(let b = k; b <= n; b++) out.push([a, b]); return out; };
-  const across = ext(q.W, q.c), down = ext(q.H, q.r);
+  const top = q.H - q.r + 1, across = ext(q.W, q.c), down = ext(q.H, top);   // r counts from the bottom, as gridSvg draws it
   let g = '', k = 0;
   down.forEach(([r1, r2], i) => across.forEach(([c1, c2], j) => {
     const x = j * (tw + gx), y = i * (th + gy);
@@ -127,7 +127,7 @@ function rectsAntSvg(q){
     for(let b = 1; b < q.H; b++) cells += '<line x1="' + x + '" y1="' + (y + b * s) + '" x2="' + (x + tw) + '" y2="' + (y + b * s) + '"/>';
     g += '<g' + popAt(1 + k++ * 0.25) + '><rect x="' + x + '" y="' + y + '" width="' + tw + '" height="' + th + '" fill="none" stroke="var(--line)"/><g stroke="var(--line)" stroke-width=".6">' + cells + '</g>' +
       '<rect x="' + (x + (c1 - 1) * s) + '" y="' + (y + (r1 - 1) * s) + '" width="' + (c2 - c1 + 1) * s + '" height="' + (r2 - r1 + 1) * s + '" fill="rgba(47,111,143,.18)" stroke="var(--accent)" stroke-width="1.6"/>' +
-      '<circle cx="' + (x + (q.c - 0.5) * s) + '" cy="' + (y + (q.r - 0.5) * s) + '" r="2.4" fill="var(--warm)"/></g>';
+      '<circle cx="' + (x + (q.c - 0.5) * s) + '" cy="' + (y + (top - 0.5) * s) + '" r="2.4" fill="var(--warm)"/></g>';
   }));
   const W = across.length * (tw + gx) - gx, H = down.length * (th + gy) - gy;
   g += svgText(W / 2, H + 22, q.wide + ' × ' + q.tall + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k * 0.25));
