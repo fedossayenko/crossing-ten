@@ -142,10 +142,21 @@ so most tasks are tags or a new shape on a level already there (each new shape d
 seeds mostly keep theirs); six new levels, 225–230: the sum of the missing pair, two runs taking turns, the digits in a
 repeating row, segments with a worked example (both papers' task 14), squares in a strip, and the new difference.
 
+The **autumn round, 3rd grade, 2024 and 2023** (tags `mbg-autumn-2024-3` and `mbg-autumn-2023-3`; the 3rd-grade paper
+already in, levels 59–78, is Есен 2025) are in whole, pinned in check/grade3b-A/B/C/D.js (split by kind). A 3rd-grade
+task is always a 3rd-grade level, even where a 2nd-grade level asks the same idea (the picker shows one grade at a time):
+59, 61 and 63 grew shapes (a product by 0, division among the year's digits, two signs with a product on the right, each
+drawn after the old question); 28 new levels hold the rest — 231–235 the expressions (three brackets plus a number,
+nearest by erasing two digits, two flowers, x worked back, regrouped factors), 241–248 digits and numbers (units digits
+of a product, one digit in two places, sums equal to M · M, the smallest ABC + DE, a table of squared digits, how many
+numbers the dots hide, change one number), 251–259 geometry (a square's side in mm, squares cut from a sheet, a square
+and a strip, a segment in three units, numbered points, ants, figures with no common vertex, a circle cut by lines) and
+261–266 word problems (each number raised, balloons, floors, legs and humps, fishermen, ages added up).
+
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
-(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 2025 3 клас), tags
+(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 2025, 2024 and 2023 3 клас), tags
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
