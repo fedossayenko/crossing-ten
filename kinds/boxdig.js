@@ -2,9 +2,10 @@
 
 // МБГ Есен 2024, 3 клас, задача 8: 20□ + 22□ < 201 + 221. □ is the units digit of both numbers, so the left side is
 // 200 + 220 + □ + □ and the right one 200 + 220 + 1 + 1: □ + □ < 2, only □ = 0. Есен 2023, задача 8: 20 · □ + 23 · □ <
-// 20 · 1 + 23 · 1 — □ is a factor of both, 43 · □ < 43 · 1, so □ = 0 again. The same comparison the other way (>) leaves
-// only 9, and an equality the one digit between the two on the right (as factors, by round numbers: 20 · □ + 30 · □ =
-// 20 · 7 + 30 · 2 = 200, □ = 4). Whatever the sign, exactly one digit fits.
+// 20 · 1 + 23 · 1 — □ is a factor of both, 43 · □ < 43 · 1, so □ = 0 again. A < that only one digit fits is always 0 (and
+// a > always 9), so the level mostly asks the largest digit that fits a < (□ + □ < 9: 4) and the smallest that fits a >,
+// the right side's digits free; an equality has its one digit between the two on the right (as factors, by round
+// numbers: 20 · □ + 30 · □ = 20 · 7 + 30 · 2 = 200, □ = 4). Whatever the sign, the answer can be any digit.
 import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const BOX = '<span class="circle">□</span>';
 // in the numbers the box stands for a digit, so it is drawn as big as one (the numbers' font has a small □)
@@ -15,18 +16,22 @@ const boxL = (q, x) => q.shape === 'mul' ? q.a*x + q.b*x : 10*q.a + x + 10*q.b +
 const boxR = q => q.shape === 'mul' ? q.a*q.p + q.b*q.r : 10*q.a + q.p + 10*q.b + q.r;
 const boxHolds = (q, x) => q.rel === '<' ? boxL(q, x) < boxR(q) : q.rel === '>' ? boxL(q, x) > boxR(q) : boxL(q, x) === boxR(q);
 export function genBoxDig(){
-  const mul = Math.random() < 0.5, r0 = Math.random(), rel = r0 < 0.5 ? '<' : r0 < 0.75 ? '=' : '>';
+  const mul = Math.random() < 0.5, r0 = Math.random(), rel = r0 < 0.4 ? '<' : r0 < 0.7 ? '>' : '=';
+  // 'one': the one digit that fits (the papers' question); 'max' / 'min': the largest that fits a <, the smallest a >
+  const ask = rel === '=' || Math.random() < 0.25 ? 'one' : rel === '<' ? 'max' : 'min';
   for(;;){
     // as factors an equality needs round numbers (20 and 30), or only the digit on the right itself fits
     const round = mul && rel === '=', a = round ? 10 + 10*rnd(5) : 10 + rnd(30), b = round ? 10 + 10*rnd(5) : 10 + rnd(30);
     const p = rnd(10), r = rnd(10);
     // as factors no 0 on the right (20 · 0 reads as a slip); with < that leaves the paper's 20 · 1 + 23 · 1
     if(a === b || rel === '=' && p === r || mul && !(p && r)) continue;
-    const q = {kind:'boxdig', shape: mul ? 'mul' : 'last', a, b, p, r, rel};
+    const q = {kind:'boxdig', shape: mul ? 'mul' : 'last', a, b, p, r, rel, ask};
     const fit = [...Array(10).keys()].filter(x => boxHolds(q, x));
-    if(fit.length !== 1) continue;
-    // the slips: 1 copied from the right (it is 0), 8 (it is 9), one of the two digits on the right (the one between them)
-    return Object.assign(q, {traps:[rel === '<' ? fit[0] + 1 : rel === '>' ? fit[0] - 1 : p], ans: fit[0]});
+    // some digit fits and some does not: «the largest» is never just 9
+    if(!fit.length || fit.length === 10 || ask === 'one' && fit.length !== 1) continue;
+    const x = ask === 'min' ? fit[0] : fit[fit.length - 1];
+    // the slips: the next digit, where the two sides are equal or just past it; one of the two digits on the right
+    return Object.assign(q, {traps:[rel === '<' ? x + 1 : rel === '>' ? x - 1 : p], ans: x});
   }
 }
 function boxText(q){
@@ -34,7 +39,10 @@ function boxText(q){
   return q.a + DIG + ' + ' + q.b + DIG + ' ' + REL[q.rel] + ' ' + (10*q.a + q.p) + ' + ' + (10*q.b + q.r);
 }
 function drawBoxDig(q){
-  return '<div class="ask">' + tr('Коя цифра трябва да поставим вместо ' + BOX + ', така че да е вярно?', 'Яку цифру треба поставити замість ' + BOX + ', щоб було правильно?') + '</div>' +
+  const ask = q.ask === 'one' ? tr('Коя цифра трябва да поставим вместо ' + BOX + ', така че да е вярно?', 'Яку цифру треба поставити замість ' + BOX + ', щоб було правильно?')
+    : tr('Коя е <b>най-' + (q.ask === 'max' ? 'голямата' : 'малката') + '</b> цифра, която можем да поставим вместо ' + BOX + ', така че да е вярно?',
+         'Яку <b>най' + (q.ask === 'max' ? 'більшу' : 'меншу') + '</b> цифру можна поставити замість ' + BOX + ', щоб було правильно?');
+  return '<div class="ask">' + ask + '</div>' +
     '<div class="given" style="text-wrap:balance">' + boxText(q) + '</div>' +
     '<div class="line xl">' + DIG + ' = ' + SLOT + '</div>';
 }
