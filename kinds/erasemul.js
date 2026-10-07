@@ -5,13 +5,14 @@
 // of the erased digits. With the three 1s gone it is 2 · 3 · 4 = 24, so 3. Each number keeps a
 // digit, every way of erasing is tried, and all the ways that reach the target erase the same sum.
 import { KIND, SLOT, rnd, tr } from '../js/core.js';
-export function eraseWays(nums, k){
+// drop: a number may lose all its digits too, and then it is left out of vals (the product of the rest)
+export function eraseWays(nums, k, drop){
   const per = nums.map(n => {
     const s = String(n), out = [];
-    for(let m = 0; m < (1 << s.length) - 1; m++){             // m: which digits go; never all of them
+    for(let m = 0; m < (1 << s.length) - (drop ? 0 : 1); m++){   // m: which digits go; never all of them, unless drop
       let keep = '', gone = [];
       for(let i = 0; i < s.length; i++) (m & (1 << i)) ? gone.push(+s[i]) : keep += s[i];
-      out.push({ v: +keep, gone });
+      out.push({ v: keep === '' ? null : +keep, gone });
     }
     return out;
   });
@@ -19,7 +20,7 @@ export function eraseWays(nums, k){
   (function walk(i, vals, gone){
     if(gone.length > k) return;
     if(i === nums.length){ if(gone.length === k) ways.push({ vals, gone }); return; }
-    per[i].forEach(o => walk(i + 1, vals.concat(o.v), gone.concat(o.gone)));
+    per[i].forEach(o => walk(i + 1, o.v === null ? vals : vals.concat(o.v), gone.concat(o.gone)));
   })(0, [], []);
   return ways;
 }
@@ -37,7 +38,9 @@ export function genEraseMul(){
 // МБГ Есен 2024, 3 клас, задача 5 (level 232, shape 'near'): erase two digits in 13 · 52 · 6 so the result is as close
 // as possible to 35; the sum of the erased digits. The 6 cannot go (nothing would be left of it), so one digit goes from
 // each two-digit number: 30, 12, 90 or 36, and 36 is the closest, with the 1 and the 5 gone: 6. T is never reached
-// exactly, one product alone is closest, and every way to it erases the same sum.
+// exactly, one product alone is closest, and every way to it erases the same sum. The text does not say that every
+// number keeps a digit, so the answer must also stand when an emptied number drops out (25 · 31 · 4 near 25 would
+// be 2 · 3 · 4 = 24, erasing 6, but 25 · 1 = 25 erasing 7): every way closest then still erases the same sum.
 const prodOf = a => a.reduce((x, y) => x*y, 1), sumOf = a => a.reduce((x, y) => x + y, 0);
 export function genEraseNear(){
   for(;;){
@@ -47,6 +50,8 @@ export function genEraseNear(){
     const dist = ways.map(x => Math.abs(prodOf(x.vals) - T)), min = Math.min(...dist);
     const near = ways.filter((_, i) => dist[i] === min);
     if(T < 2 || min === 0 || near.some(x => prodOf(x.vals) !== best || sumOf(x.gone) !== sumOf(w.gone))) continue;
+    const any = eraseWays(nums, 2, true), dAny = any.map(x => Math.abs(prodOf(x.vals) - T)), minAny = Math.min(...dAny);
+    if(any.some((x, i) => dAny[i] === minAny && sumOf(x.gone) !== sumOf(w.gone))) continue;
     // the closest product itself, and the erased sum of the runner-up
     const next = ways.filter((_, i) => dist[i] > min).sort((x, y) => Math.abs(prodOf(x.vals) - T) - Math.abs(prodOf(y.vals) - T))[0];
     const traps = [best, next ? sumOf(next.gone) : -1].filter((v, i, all) => v >= 0 && v < 1000 && v !== sumOf(w.gone) && all.indexOf(v) === i);
