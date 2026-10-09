@@ -3,7 +3,7 @@
 // Задача 5: a four by four sudoku. Every row, every column and every bold two by two box
 // holds 1, 2, 3 and 4 exactly once. Two empty cells are named and their sum is asked.
 // Cells are counted 0..15, reading across.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 export function sudokuFits(g, at, v){
   const r = (at / 4) | 0, c = at % 4, br = r - r % 2, bc = c - c % 2;
   for(let i = 0; i < 4; i++) if(g[r*4 + i] === v || g[i*4 + c] === v) return false;
@@ -95,6 +95,26 @@ function whySudoku(q, full){
   // the whole solved grid, so she can see where her own filling went wrong
   const rows = [0,1,2,3].map(r => q.sol.slice(r*4, r*4 + 4).join(''));
   return tr('решението е <b>', 'розв’язок: <b>') + rows.join(' / ') + '</b> &nbsp;→&nbsp; X = ' + q.sol[q.X] + ', Y = ' +
-    q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans;
+    q.sol[q.Y] + ' &nbsp;→&nbsp; ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans + sudokuSolvedSvg(q);
+}
+// The solved grid: the given numbers in grey, the ones she fills in blue, X and Y on orange with their letter in the corner.
+function sudokuSolvedSvg(q){
+  const u = 34, P = 4;
+  let marks = '', cells = '', lines = '', k = 0;
+  for(let i = 0; i < 16; i++){
+    const r = (i / 4) | 0, c = i % 4, x = P + c*u, y = P + r*u, xy = i === q.X || i === q.Y;
+    if(xy) marks += '<rect x="' + x + '" y="' + y + '" width="' + u + '" height="' + u + '" fill="var(--warm)" fill-opacity=".3"/>' +
+      svgText(x + 8, y + 12, i === q.X ? 'X' : 'Y', 11, 'var(--warmink)');
+    cells += svgText(x + u/2, y + u/2 + 7, q.sol[i], 19, xy ? 'var(--ink)' : q.g[i] ? 'var(--muted)' : 'var(--accent)', q.g[i] ? '' : popAt(1 + k++*0.3));
+  }
+  for(let j = 0; j <= 4; j++){
+    const w = j % 2 === 0 ? 2.5 : 1, at = P + j*u;
+    lines += '<line x1="' + at + '" y1="' + P + '" x2="' + at + '" y2="' + (P + 4*u) + '" stroke-width="' + w + '"/>' +
+             '<line x1="' + P + '" y1="' + at + '" x2="' + (P + 4*u) + '" y2="' + at + '" stroke-width="' + w + '"/>';
+  }
+  const S = 4*u + 2*P;
+  return '<svg viewBox="' + (-(230 - S)/2) + ' 0 230 ' + (S + 30) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('решеното судоку', 'розв’язане судоку') + '">' + marks + '<g stroke="var(--ink)" stroke-linecap="square">' + lines + '</g>' + cells +
+    svgText(S/2, S + 22, 'X + Y = ' + q.sol[q.X] + ' + ' + q.sol[q.Y] + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k*0.3)) + '</svg>';
 }
 KIND.sudoku = { draw:drawSudoku, eq:eqSudoku, why:whySudoku };

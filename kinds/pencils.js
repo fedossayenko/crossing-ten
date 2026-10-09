@@ -1,7 +1,7 @@
 // Question kind 'pencils': level 38 Моливи — Colours counted by what they are not.
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
-import { KIND, NAMES, SLOT, UK_PLURAL, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, NAMES, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
 // Задача 10: the other colour is the whole minus the named one, and then two lots are
 // given away — three plain steps, with only the first one needing any thought.
@@ -72,6 +72,35 @@ function eqPencils(q){
     q.T + ' ' + pencilsUkPencils(q.T) + ', ' + q.notA + ' — не ' + pencilsUkCol[q.col[0][0]][1] + ', ' +
     q.b + ' — ' + pencilsUkCol[q.col[1][0]][1]) + ' → ' + q.ans;
 }
+// The picture: all the pencils as one bar, a part in each colour. 'gave': the other colour's part under a
+// bracket, the pencils given away dashed and taken off it, what is left the answer. The colour-by-negation
+// question: «not <colour>» is a bracket over the other two colours together, so the one asked is that bracket
+// less the part that is given. Drawn to scale past a fixed minimum, so a part of 2 holds its label. The hint
+// (the negation question only) draws the bar and the bracket in words, with no numbers.
+const PENCIL_INK = {'жълти':'var(--pear)', 'зелени':'var(--good)', 'сини':'var(--accent)', 'червени':'var(--bad)'};
+function pencilsSvg(q, full){
+  const parts = q.shape === 'gave' ? [[q.a, 0], [q.g1, 1, 1], [q.g2, 1, 1], [q.ans, 1]] : [[q.a, 0], [q.b, 1], [q.c, 2]];
+  const sum = parts.reduce((t, p) => t + p[0], 0), u = (230 - 26 * parts.length) / sum, X = [15];
+  parts.forEach(p => X.push(X[X.length - 1] + (full ? 26 + p[0] * u : 230 / parts.length)));
+  const ink = i => PENCIL_INK[q.col[i][0]], not0 = tr('не са ' + q.col[0][0], 'не ' + pencilsUkCol[q.col[0][0]][1]);
+  const bracket = (x1, x2, y, up, label, words) => '<path d="M' + x1.toFixed(1) + ',' + (y + (up ? 6 : -6)) + ' V' + y + ' H' + x2.toFixed(1) + ' v' + (up ? 6 : -6) +
+    '" stroke="var(--muted)" stroke-width="2" fill="none"/>' + (words ? svgText(((x1 + x2) / 2).toFixed(1), y - 21, words, 11, 'var(--muted)') : '') +
+    svgText(((x1 + x2) / 2).toFixed(1), up ? y - 6 : y + 16, label, 13, 'var(--muted)');
+  let g = '';
+  parts.forEach(([v, c, gone], i) => { g += '<rect x="' + X[i].toFixed(1) + '" y="48" width="' + (X[i + 1] - X[i]).toFixed(1) + '" height="28" rx="6" fill="' + (gone ? 'none' : ink(c)) +
+    '" fill-opacity=".22" stroke="' + ink(c) + '" stroke-width="2"' + (gone ? ' stroke-dasharray="5 3"' : '') + '/>'; });
+  if(!full) return pencilsWrap(g + bracket(X[1], X[3], 38, true, not0) + bracket(X[0], X[3], 86, false, tr('всички', 'усі')), 92, 16);
+  const gave = q.shape === 'gave';
+  g += bracket(X[1], X[parts.length], 38, true, gave ? q.rest : q.notA, gave ? tr(q.col[1][0], pencilsUkCol[q.col[1][0]][2]) : not0) +
+    bracket(X[0], X[parts.length], 86, false, q.T);
+  parts.forEach(([v, c, gone], i) => { const last = i === parts.length - 1;
+    g += svgText(((X[i] + X[i + 1]) / 2).toFixed(1), 67, (gone ? '−' : '') + v, last ? 15 : 13, last ? 'var(--ink)' : 'var(--muted)', popAt(1 + i)); });
+  return pencilsWrap(g + svgText(130, 130, (gave ? q.rest + ' − ' + (q.g1 + q.g2) : q.notA + ' − ' + q.b) + ' = ' + q.ans, 15, 'var(--ink)', popAt(1 + parts.length)), 140);
+  function pencilsWrap(body, h, top){
+    return '<svg viewBox="0 ' + (top || 0) + ' 260 ' + h + '" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+      tr('моливите по цветове', 'олівці за кольорами') + '">' + body + '</svg>';
+  }
+}
 function whyPencils(q, full){
   if(q.shape === 'gave'){
     if(!full) return tr('Първо колко са останалите на цвят, чак после кой колко е подарил.',
@@ -82,14 +111,14 @@ function whyPencils(q, full){
     return tr(q.col[1][0] + ' са ', pencilsUkCol[q.col[1][0]][2] + ' — ') + q.T + ' − ' + q.a + ' = <b>' + q.rest +
       tr('</b> &nbsp;→&nbsp; подарени са ', '</b> &nbsp;→&nbsp; подаровано ') +
       q.g1 + ' + ' + q.g2 + ' = <b>' + (q.g1 + q.g2) + '</b>' + aside + ' &nbsp;→&nbsp; ' + q.rest +
-      ' − ' + (q.g1 + q.g2) + ' = ' + q.ans;
+      ' − ' + (q.g1 + q.g2) + ' = ' + q.ans + pencilsSvg(q, true);
   }
   const c0 = pencilsUkCol[q.col[0][0]];
   if(!full) return tr('„Не са ' + q.col[0][0] + '" значи всички останали цветове заедно.',
-    '«Не ' + c0[1] + '» — це всі інші кольори разом.');
+    '«Не ' + c0[1] + '» — це всі інші кольори разом.') + pencilsSvg(q, false);
   return tr('<b>' + q.notA + '</b> не са ' + q.col[0][0] + ', значи ' + q.col[0][0] + ' са ',
     '<b>' + q.notA + '</b> — не ' + c0[1] + ', отже ' + c0[2] + ' — ') +
     q.T + ' − ' + q.notA + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' +
-    tr(q.col[2][0] + ' са ', pencilsUkCol[q.col[2][0]][2] + ' — ') + q.notA + ' − ' + q.b + ' = ' + q.ans;
+    tr(q.col[2][0] + ' са ', pencilsUkCol[q.col[2][0]][2] + ' — ') + q.notA + ' − ' + q.b + ' = ' + q.ans + pencilsSvg(q, true);
 }
 KIND.pencils = { draw:drawPencils, eq:eqPencils, why:whyPencils };

@@ -1,5 +1,5 @@
 // Question kind 'multiple': level 49 Кратни — The smallest count that splits into equal parts both ways.
-import { BGNUM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
@@ -44,16 +44,38 @@ function eqMultiple(q){
   return tr('кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N,
                                       'кратне ' + q.p + ' і ' + q.r + ', більше за ' + q.N) + ' → ' + q.ans;
 }
+// The picture: the numbers in rows of ten, as on a hundred chart. One that divides by the first count is
+// ringed, one that divides by the second sits on a warm square, so the ones that split both ways carry both
+// marks. The garden question starts a row before the bound, greys the numbers up to it (too few) and ends
+// on the answer, the first number past it with both marks.
+function multipleSvg(q){
+  const C = 24, count = q.shape === 'count', from = count ? 1 : Math.max(0, Math.floor((q.N - 1) / 10) - 1) * 10 + 1, end = count ? q.N : q.ans;
+  let g = '', k = 0;
+  for(let v = from; v <= end; v++){
+    const x = ((v - 1) % 10) * C + C/2, y = Math.floor((v - from) / 10) * C + C/2, low = !count && v <= q.N, both = v % q.L === 0;
+    const cell = (v % q.r ? '' : '<rect x="' + (x - 10.5) + '" y="' + (y - 10.5) + '" width="21" height="21" rx="5" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="1.5"/>') +
+      (v % q.p ? '' : '<circle cx="' + x + '" cy="' + y + '" r="9" fill="none" stroke="var(--accent)" stroke-width="2"/>') +
+      svgText(x, y + 4, v, 11, low ? 'var(--muted)' : both ? 'var(--good)' : 'var(--ink)');
+    g += both && !low ? '<g' + popAt(1 + k++) + '>' + cell + '</g>' : low ? '<g opacity=".45">' + cell + '</g>' : cell;
+  }
+  const h = Math.ceil((end - from + 1) / 10) * C, by = tr('дели се на ', 'ділиться на ');
+  const note = (x, t) => '<text x="' + x + '" y="' + (h + 20) + '" font-size="11" font-weight="800" fill="var(--muted)">' + t + '</text>';   // left-aligned beside its mark
+  g += '<circle cx="26" cy="' + (h + 16) + '" r="8" fill="none" stroke="var(--accent)" stroke-width="2"/>' + note(39, by + q.p) +
+    '<rect x="128" y="' + (h + 7.5) + '" width="17" height="17" rx="4" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="1.5"/>' + note(152, by + q.r);
+  g += svgText(120, h + 46, count ? q.list.join(', ') + ' → ' + q.ans : tr('първото над ' + q.N + ': ', 'перше більше за ' + q.N + ': ') + q.ans, 15, 'var(--ink)', popAt(2 + k));
+  return '<svg viewBox="-4 -4 248 ' + (h + 58) + '" style="display:block; width:270px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('числата, които се делят и на двата броя', 'числа, що діляться на обидві кількості') + '">' + g + '</svg>';
+}
 function whyMultiple(q, full){
   if(q.shape === 'count'){
     if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой — и на двата.', 'Сума однакових доданків означає, що число ділиться націло на їхню кількість — на обидві.');
-    return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; на <b>', 'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; на <b>') + q.L + '</b> &nbsp;→&nbsp; ' + q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+    return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; на <b>', 'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; на <b>') + q.L + '</b> &nbsp;→&nbsp; ' + q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans + multipleSvg(q);
   }
   if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой.',
                       'Сума однакових доданків означає, що число ділиться націло на їхню кількість.');
   return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; значи се дели на <b>',
             'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; отже, ділиться на <b>') + q.L +
     '</b> &nbsp;→&nbsp; ' + [q.L*(q.ans/q.L - 1), q.ans].join(', ') +
-    tr(' — първото над ' + q.N + ' е ', ' — перше більше за ' + q.N + ': ') + q.ans;
+    tr(' — първото над ' + q.N + ' е ', ' — перше більше за ' + q.N + ': ') + q.ans + multipleSvg(q);
 }
 KIND.multiple = { draw:drawMultiple, eq:eqMultiple, why:whyMultiple };

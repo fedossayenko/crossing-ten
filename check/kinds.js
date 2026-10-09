@@ -1344,6 +1344,8 @@ for(let i = 0; i < 4000; i++){
 }
 if(lastNum(why({kind:'bucket', p:3, q:5, V:14, ans:3}, true)) !== 3)
   throw new Error('a 14-litre vessel with a 3 or 5 litre bucket takes 3 fills');
+if(/прелива/.test(why({kind:'bucket', p:2, q:9, V:18, ans:2}, true)))
+  throw new Error('two 9-litre fills make an 18-litre vessel exactly full, it does not overflow');
 console.log('which bucket: the vessel overflows for one size and not the other, worksheet instance gives 3');
 
 // задача 17: the most or the fewest of one weekday in a run of days

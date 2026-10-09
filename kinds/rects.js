@@ -154,6 +154,25 @@ function rectsStripSvg(q){
   return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8)*1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('всички правоъгълници с мравка', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
 }
+// The strip of squares: every rectangle that counts, each on its own copy of the strip, a row for each length,
+// its perimeter under it; the rows added up.
+function rectsSumSvg(q){
+  const s = q.n === 3 ? 20 : 15, tw = q.n*s, gx = 12, gy = 30;
+  let g = '', k = 0, W = 0;
+  q.parts.forEach(([L, count, per], j) => { for(let i = 1; i <= count; i++){
+    const x = (i - 1)*(tw + gx), y = j*(s + gy);
+    let cells = '';
+    for(let a = 1; a < q.n; a++) cells += '<line x1="' + (x + a*s) + '" y1="' + y + '" x2="' + (x + a*s) + '" y2="' + (y + s) + '"/>';
+    g += '<g' + popAt(1 + k++*0.4) + '><rect x="' + x + '" y="' + y + '" width="' + tw + '" height="' + s + '" fill="none" stroke="var(--muted)"/><g stroke="var(--muted)" stroke-width=".7">' + cells + '</g>' +
+      '<rect x="' + (x + (i - 1)*s) + '" y="' + y + '" width="' + L*s + '" height="' + s + '" fill="rgba(47,111,143,.18)" stroke="var(--accent)" stroke-width="1.8"/>' +
+      svgText(x + tw/2, y + s + 15, per, 12, 'var(--accent)') + '</g>';
+    W = Math.max(W, x + tw);
+  } });
+  const H = q.parts.length*(s + gy) - gy + 18, VW = Math.max(W, 250);
+  g += svgText(W/2, H + 20, q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k*0.4));
+  return '<svg viewBox="' + (-(VW - W)/2 - 4) + ' -4 ' + (VW + 8) + ' ' + (H + 32) + '" style="display:block; width:' + Math.round((VW + 8)*1.1) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('правоъгълниците и обиколките им', 'прямокутники та їхні периметри') + '">' + g + '</svg>';
+}
 function whyRects(q, full){
   if(q.shape === 3){
     if(!full) return tr('Брой правоъгълниците от едно, две, три и повече квадратчета — само тези, в които има мравка.',
@@ -170,10 +189,12 @@ function whyRects(q, full){
         : tr(', от тях не са квадрати ', ', з них не квадратів ') + q.all + ' − ' + q.sq + ' = <b>' + q.other + '</b> &nbsp;→&nbsp; ' + Math.max(q.sq, q.other) + ' − ' + Math.min(q.sq, q.other) + ' = ' + q.ans);
   }
   if(q.shape === 1){
-    if(!full) return tr('Брой всички правоъгълници, не само квадратчетата поотделно.',
+    if(!full) return q.squares ? tr('Квадрати са само отделните квадратчета: две или повече заедно правят правоъгълник, който не е квадрат.',
+      'Квадрати — лише окремі квадратики: два чи більше разом утворюють прямокутник, який не є квадратом.')
+      : tr('Брой всички правоъгълници, не само квадратчетата поотделно.',
       'Рахуй усі прямокутники, а не лише окремі квадратики.');
     return q.parts.map(pt => pt[1] + tr(' на ширина ', ' завширшки ') + (pt[0]*q.s) + tr(' см, обиколка ', ' см, периметр ') + pt[2]).join('; &nbsp;') +
-      ' &nbsp;→&nbsp; ' + q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans;
+      ' &nbsp;→&nbsp; ' + q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans + rectsSumSvg(q);
   }
   if(!full) return tr('Правоъгълникът може да е от едно или от повече квадратчета.',
     'Прямокутник може складатися з одного або з кількох квадратиків.');
