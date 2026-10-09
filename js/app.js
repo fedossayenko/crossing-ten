@@ -39,6 +39,7 @@ export function applyRoute(){
   document.body.classList.toggle('pushed', !!(history.state && history.state.pushed));   // a tab's screen has ‹ only when opened from outside the tabs
   if(tabbed) paintTabWeek();
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.r === ROUTE ? 'page' : 'false'));
+  keepAwake();   // the screen stays on only for a task
 }
 // history.state.depth counts the steps the app pushed, so back() never leaves the app
 // From one tab's screen to another is a switch, not a step: nothing to go back to, the tab bar is there.
@@ -354,6 +355,7 @@ export function newRound(qs, comp){
 // Nobody has pressed anything for a while: the mascot nods off, and wakes at the next key.
 let napTimer = null, yawnTimer = null;
 function wake(){
+  keepAwake();
   clearTimeout(napTimer);
   if($('cat').dataset.mood === 'sleepy') mood('idle');
   napTimer = setTimeout(() => { if(!S.settled) mood('sleepy'); }, 45000);
@@ -364,6 +366,21 @@ function wake(){
     setTimeout(() => { if($('cat').dataset.mood === 'yawn') mood('idle'); }, 2400);
   }, 30000);
 }
+// The screen stays on while a task is up: a paper runs 90 minutes, and she may think a long while without a tap.
+// Everywhere else, on the round's end, and after 15 minutes with no key, the iPad sleeps as it always did.
+// iPadOS drops the lock whenever the app is hidden, so it is asked for again on the way back; it may also refuse
+// (Low Power Mode; a home-screen app before iPadOS 18.4), and then nothing changes.
+let awake = null, awakeIdle = 0;   // the wake lock (a promise of it, or of null), and the timer that lets the screen sleep
+function keepAwake(){
+  clearTimeout(awakeIdle);
+  if(ROUTE !== 'play' || !$('sheet').hidden || document.visibilityState !== 'visible') return letSleep();
+  awakeIdle = setTimeout(letSleep, 15 * 60000);
+  if(awake || !navigator.wakeLock) return;
+  const p = awake = navigator.wakeLock.request('screen')
+    .then(l => { l.addEventListener('release', () => { if(awake === p) awake = null; }); return l; }, () => { if(awake === p) awake = null; return null; });
+}
+function letSleep(){ const p = awake; awake = null; if(p) p.then(l => l && l.release()); }
+document.addEventListener('visibilitychange', keepAwake);
 export function show(){
   const q = S.qs[S.i];
   S.parts = Array(q.slots || 1).fill(''); S.at = 0;
@@ -686,6 +703,7 @@ export function finish(){
   if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; $('levelPill').hidden = false; $('compTop').hidden = true; }
 
   $('sheet').hidden = false;
+  keepAwake();   // the round is over: the iPad may sleep again
 }
 
 /* ---------- progress ---------- */

@@ -494,6 +494,21 @@ const server = http.createServer((req, res) => {
     console.log('smoke: R0 trial — the Preact badges screen matches the hand-built one; re-render ' + r0.rerenderMs + ' ms, hand-built ' + r0.legacyMs + ' ms');
     await cmd('Page.navigate', { url }); await settle();
   }
+  // The screen is kept on while a task is up and let go elsewhere: a stand-in wake lock counts what is held
+  {
+    const wl = JSON.parse(await run(`(async () => {
+      let held = 0, asked = 0; const tick = () => new Promise(r => setTimeout(r, 30));
+      $('homeBtn').click(); await tick();   // from Today, which lets go of whatever the page held before the stand-in
+      Object.defineProperty(navigator, 'wakeLock', { configurable: true, value: { request: async () => { asked++; held++;
+        const l = new EventTarget(); l.release = async () => { held--; l.dispatchEvent(new Event('release')); }; return l; } } });
+      const out = {};
+      newRound(); await tick(); out.task = held;
+      $('homeBtn').click(); await tick(); out.today = held;
+      newRound(); await tick(); out.again = held;
+      finish(); await tick(); out.end = held; out.asked = asked;
+      newRound(); delete navigator.wakeLock; return JSON.stringify(out); })()`) || '{}');
+    expect(wl.task === 1 && wl.today === 0 && wl.again === 1 && wl.end === 0 && wl.asked === 2, 'the wake lock is not held on a task only: ' + JSON.stringify(wl));
+  }
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){
