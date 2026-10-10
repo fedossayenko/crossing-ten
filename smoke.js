@@ -285,7 +285,7 @@ const server = http.createServer((req, res) => {
       notQuite: !!st && st.textContent.startsWith(t('notQuite')), step: !!(tip && tip.querySelector('.qbox')),
       how: !!tip && tip.querySelector('.how').textContent === t('crossHow', 7, 2) + ' ' + t('thenTake', 10, 30), second: $('run').textContent === t('tryTwo') };
     const hint = { r91, slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
-      struck: $('slot0').classList.contains('no') && $('slot0').textContent === '35' && !!$('again') };   // the miss stays in its box, struck
+      struck: $('slot0').classList.contains('no') && $('slot0').textContent === '35' && !!$('retryBtn') };   // the miss stays in its box, struck
     key('3'); hint.fresh = !$('slot0').classList.contains('no') && $('slot0').textContent === '3' && !$('card').classList.contains('missed');   // and goes at the next digit
     key('5'); key('go'); key('go');
     return Object.assign(hint, { wrote: ($('misslist').querySelector('.wrote') || {}).textContent || '',

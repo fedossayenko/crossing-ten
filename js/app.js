@@ -500,9 +500,9 @@ function check(){
     $('hint').innerHTML = '<div class="fb no status">' + mascotSvg(PLAYER.mascot, 'sad') + '<div><b>' + t('notQuite') + '</b> ' + (nudge || t('lookAgain')) + '</div></div>' +
       '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div><span class="tiptext">' + why(q) + '</span>' +
       '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>' +
-      (q.options ? '' : '<button class="btn again" id="again">' + t('tryAgain') + ' →</button>');   // a phone hides the keys behind the hint (app.css)
+      (q.options ? '' : '<button class="btn again" id="retryBtn">' + t('tryAgain') + ' →</button>');   // a phone hides the keys behind the hint (app.css)
     $('reveal').onclick = e => { e.stopPropagation(); reveal(); };
-    if(!q.options) $('again').onclick = e => { e.stopPropagation(); retry(); };
+    if(!q.options) $('retryBtn').onclick = e => { e.stopPropagation(); retry(); };
     $('run').textContent = t('tryTwo');
     $('hint').scrollIntoView({ block:'nearest' });      // a phone in portrait: the hint lands under the question, maybe out of sight
     S.timers.push(setTimeout(() => { if(!S.settled) mood('thinking'); }, 1100));
@@ -585,7 +585,7 @@ export function finish(){
   $('redo').textContent = COMP ? t('fixWrongN', missed.length) : t('fixMiss', missed.length);
   $('again').textContent = t(COMP ? 'newComp' : 'newRound');
   $('toStats').textContent = t(COMP ? 'backToday' : 'progress');
-  $('toStats').onclick = COMP ? () => { newRound(); go('today', true); } : () => go('badges');   // newRound closes the results; they would cover Today
+  $('toStats').onclick = COMP ? () => { newRound(); go('today', true); } : () => { newRound(); go('badges'); };   // newRound closes the results; they would cover the tab screens
   $('scoreBar').hidden = !COMP;
   // as drawn: the task, what she wrote struck → the answer, and what the mistake most likely was
   $('misslist').innerHTML = missed.map(({ q, k }) => {
@@ -655,6 +655,7 @@ export function finish(){
   saveLocal();
   setW(weightsFrom(LOCAL.rounds));
   syncSoon();
+  if(!IN()) $('synced').textContent = heldHere() + builtOn();   // signed out, this line counts her rounds: keep it current
   paintSide();
 
   // a level learned this very round
@@ -1388,6 +1389,7 @@ function openEdit(p, welcome){
            : { id:'p' + Date.now().toString(36), name:'', lang:LANG, grade:2,
                mascot: Object.keys(MASCOTS).find(k => taken.indexOf(k) < 0) || 'cat' };
   const kept = p ? storeOf(p) : { muted:false, calm:false };
+  document.body.classList.toggle('welcome', WELCOME);   // the first-run form stands alone: no tab bar under it (app.css)
   $('editTitle').textContent = p ? t('profile') : t('newPlayer');
   $('pName').value = EDIT.name;
   $('pName').placeholder = p ? playerName(p) : t('playerN', PLAYERS.list.length + 1);
@@ -1461,6 +1463,13 @@ $('again').onclick = () => newRound();
 $('card').addEventListener('click', () => { if(S.settled) next(); });
 document.addEventListener('keydown', e => {
   if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input')) return;
+  if(!$('choices').hidden){   // А/Б/В/Г: a letter picks (Cyrillic or Latin), Enter moves on; a typed digit is no answer here
+    const k = e.key.toUpperCase(), id = Math.max('АБВГДЕ'.indexOf(k), 'ABCDEF'.indexOf(k));
+    const b = id >= 0 && /** @type {HTMLButtonElement | null} */ ($('choices').querySelector('.ch[data-o="' + id + '"]'));
+    if(b) b.click();
+    else if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); if(!$('nextBtn').hidden) $('nextBtn').click(); else if(S.settled) next(); }
+    return;
+  }
   if(e.key >= '0' && e.key <= '9') press(e.key);
   else if(e.key === 'Backspace') press('del');
   else if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press('go'); }
