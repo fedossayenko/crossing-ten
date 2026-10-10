@@ -57,11 +57,11 @@ addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
 document.addEventListener('scroll', e => { const el = /** @type {HTMLElement} */ (e.target); if(el.classList && el.classList.contains('sheet')) el.classList.toggle('scrolled', el.scrollTop > 6); }, true);
 const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
 
-export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], t0:0, timers:[], touched:false };
+export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], t0:0, timers:[] };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-export let LOCAL = { rounds:[], muted:false, speak:true, n:10, calm:false, whys:0, choice:false, next:/** @type {{ at:string, date:string } | undefined} */ (undefined) };
+export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:false, next:/** @type {{ at:string, date:string } | undefined} */ (undefined) };
 // a competition under way (js/compete.js), and its clock
 export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
@@ -133,31 +133,6 @@ export const sfx = {
 function paintMute(){ document.querySelectorAll('#soundSeg button').forEach(b => b.setAttribute('aria-pressed', String((b.dataset.m === '1') === !!LOCAL.muted))); }
 document.querySelectorAll('#soundSeg button').forEach(b => b.onclick = () => { LOCAL.muted = b.dataset.m === '1'; paintMute(); saveLocal(); if(!LOCAL.muted) sfx.tap(); });
 paintMute();
-
-/* ---------- speech ---------- */
-const CAN_SPEAK = 'speechSynthesis' in window;
-if(!CAN_SPEAK) $('readBtn').hidden = true;
-function sayWords(q){ return q.a + t(q.op === '-' ? 'minus' : 'plus') + q.b; }
-// A plain sum is read on its own when it appears (if her profile says so); any task is read
-// on "read it to me". Task text is Bulgarian for an English player, so it is read in Bulgarian.
-function speak(q, force){
-  if(!CAN_SPEAK || !q || (!force && (!LOCAL.speak || q.kind || !S.touched))) return;
-  const text = q.kind ? $('stage').innerText.replace(/[□■◯○●△▲★☆?]/g, ' ').replace(/\s+/g, ' ').trim() : sayWords(q);
-  try {
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text), cat = $('cat');
-    u.lang = q.kind && LANG === 'en' ? 'bg-BG' : LANG_TAG[LANG]; u.rate = .8; u.pitch = 1.05;
-    u.onstart = () => { if(!REDUCED) cat.dataset.talk = ''; };       // the mascot reads it to her
-    u.onend = u.onerror = () => { delete cat.dataset.talk; };
-    speechSynthesis.speak(u);
-  } catch(e){}
-}
-$('readBtn').onclick = e => { e.stopPropagation(); speak(S.qs[S.i], true); };
-$('stage').addEventListener('click', e => {
-  if(S.settled || S.qs[S.i].kind || e.target.closest('button')) return;    // settled: the card handler advances instead
-  e.stopPropagation();
-  speak(S.qs[S.i], true);
-});
 
 /* ---------- facts, weights, stats ---------- */
 function factLabel(key){
@@ -334,7 +309,7 @@ function confetti(n, spread){
 }
 function putCat(slot, m){
   const big = $('cat').cloneNode(true);
-  big.removeAttribute('id'); big.dataset.mood = m; delete big.dataset.talk; delete big.dataset.fidget;
+  big.removeAttribute('id'); big.dataset.mood = m; delete big.dataset.fidget;
   $(slot).replaceChildren(big);
 }
 
@@ -400,7 +375,6 @@ export function show(){
   mood(S.i === 0 ? 'tilt' : 'idle');                // a wave hello at the start of a round
   if(S.i === 0) S.timers.push(setTimeout(() => { if(!S.settled && $('cat').dataset.mood === 'tilt') mood('idle'); }, 1400));
   paintSlot(); paintDots(); wake();
-  speak(q);
   saveRound();
 }
 // The round so far, kept at the start of every task: an iPad drops a home-screen app it is not
@@ -444,7 +418,6 @@ function paintDots(){
   $('run').textContent = run >= 2 ? t('inARow', run) : '';
 }
 function press(k){
-  S.touched = true;
   wake();
   // Settled: any key moves on, but a digit must not be eaten by the advance —
   // it is the first digit of the next answer.
@@ -478,7 +451,7 @@ function paintChoices(){
   $('choices').querySelectorAll('.ch').forEach(b => b.onclick = e => { e.stopPropagation(); choose(+b.dataset.o); });   // not also the card's "tap to go on"
 }
 function choose(id){
-  S.touched = true; wake();
+  wake();
   if(S.settled){ next(); return; }
   const q = S.qs[S.i];
   S.parts = [String(q.options[id].v)];
@@ -1375,7 +1348,7 @@ function switchTo(id){ PLAYERS.cur = id; savePlayers(); chose(); history.replace
 // A player's saved log and settings (the current player's are LOCAL).
 function storeOf(p){
   if(p.id === PLAYER.id) return LOCAL;
-  let s = { rounds:[], muted:false, speak:true, n:10 };
+  let s = { rounds:[], muted:false, n:10 };
   try { s = Object.assign(s, JSON.parse(localStorage.getItem(roundsKey(p))) || {}); } catch(e){}
   s.rounds = unionRounds(ARCH[p.id] || [], s.rounds);
   return s;
@@ -1414,11 +1387,11 @@ function openEdit(p, welcome){
   EDIT = p ? Object.assign({}, p)
            : { id:'p' + Date.now().toString(36), name:'', lang:LANG, grade:2,
                mascot: Object.keys(MASCOTS).find(k => taken.indexOf(k) < 0) || 'cat' };
-  const kept = p ? storeOf(p) : { muted:false, speak:true, calm:false };
+  const kept = p ? storeOf(p) : { muted:false, calm:false };
   $('editTitle').textContent = p ? t('profile') : t('newPlayer');
   $('pName').value = EDIT.name;
   $('pName').placeholder = p ? playerName(p) : t('playerN', PLAYERS.list.length + 1);
-  $('pSound').checked = !kept.muted; $('pSpeak').checked = kept.speak !== false; $('pCalm').checked = !!kept.calm;
+  $('pSound').checked = !kept.muted; $('pCalm').checked = !!kept.calm;
   $('pDelete').parentNode.hidden = !p || PLAYERS.list.length < 2 || WELCOME;
   $('pCancel').hidden = WELCOME;
   paintWelcome();
@@ -1455,9 +1428,9 @@ $('pSave').onclick = () => {
   const old = PLAYERS.list.find(p => p.id === EDIT.id);
   if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
   savePlayers();
-  // her settings travel with her log: sound, reading aloud, and calmer animation
+  // her settings travel with her log: sound and calmer animation
   const kept = storeOf(EDIT);
-  kept.muted = !$('pSound').checked; kept.speak = $('pSpeak').checked; kept.calm = $('pCalm').checked;
+  kept.muted = !$('pSound').checked; kept.calm = $('pCalm').checked;
   if(EDIT.id === PLAYER.id) saveLocal();
   else saveStore(roundsKey(EDIT), kept);
   // A new player starts playing at once; the current one reloads to wear the change.

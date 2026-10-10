@@ -45,7 +45,7 @@ export function weeklySvg(d, withName, font = ''){
       txt(cx, 1110, 32, x.label, { anchor: 'middle', fill: '#555F69' }); }).join('');
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">' +
     '<style>' + (font ? '@font-face{font-family:Fredoka;src:url(' + font + ') format("woff2");font-weight:300 700}' : '') +
-    catCss() + '.cat [class*="only-"],.cat .talkmouth,.cat .arm,.cat .fx{display:none}.cat .only-happy{display:inline}.cat *{animation:none!important}</style>' +   // its happy face, standing still
+    catCss() + '.cat [class*="only-"],.cat .arm,.cat .fx{display:none}.cat .only-happy{display:inline}.cat *{animation:none!important}</style>' +   // its happy face, standing still
     '<rect width="' + W + '" height="' + H + '" fill="#F0F4F7"/>' +
     '<rect x="40" y="40" width="' + (W - 80) + '" height="' + (H - 80) + '" rx="64" fill="#FFFFFF"/>' + cat +
     txt(100, 190, 66, withName && d.name ? t('weekOf', d.name) : t('weekPlain'), { w: 700 }) +

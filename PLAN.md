@@ -252,7 +252,7 @@ with grade · rounds and devices, colours/fonts/materials (Style), dark variants
   съвсем. <the named mistake>", the "Как да го направиш" card (the split line 42 = 30 + 12 → 12 − 7 = □, the
   ten-frames, one sentence of method), "първи опит" under the segments. Decision (default in bold): the mock drops
   the sound and read-aloud buttons — **sound moves to the settings (it is already in her profile); "Прочети ми"
-  stays on the card** (a 2nd-grader reading long tasks needs it).
+  stays on the card** (a 2nd-grader reading long tasks needs it). Read-aloud was later removed entirely (2026-10-10, the owner's call).
 - **R9.2 The task screen on iPad (iPad, iPadHint, iPadGeom) — DONE.** (Fixed on the way: the panel drew during module load and
   called two helpers defined later — a reload mid-round stopped the app; esc and playerName are hoisted now.) The pill and the segments on one row with "Задача 4 от
   10 · 3 верни подред" under them; the mascot bottom-left of the task; the keypad a 300 px column at the bottom,
@@ -298,7 +298,7 @@ Order: R9.1 → R9.2 → R9.3 → R9.4 (the task screens she uses most), then R9
 ### Decisions for you (defaults in bold)
 - Framework for the shell: **Preact + htm, if R0 confirms**; else plain view functions.
 - The mock drops mute, stats and read-aloud from the task screen: **keep read-aloud in the pill's menu,
-  mute in settings**.
+  mute in settings**. (Read-aloud removed entirely 2026-10-10.)
 - The mock drops "Покажи решението" after a miss: **keep it, under the hint**.
 - Launch: **Today** (the mock) instead of straight into a round (today) — a saved round still resumes.
 

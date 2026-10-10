@@ -95,15 +95,14 @@ const FACE_MORE =
   '<path d="M120,113 v5 M115,125 a5,3.5 0 1 0 10,0 a5,3.5 0 1 0 -10,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
   '<g class="zz"><path d="M212,2 A12,12 0 0 0 212,26 A16,16 0 0 1 212,2 Z" fill="var(--warm)"/>' +
   '<path d="M194,40 l2,5 5,2 -5,2 -2,5 -2,-5 -5,-2 5,-2 Z M228,36 l1.6,4 4,1.6 -4,1.6 -1.6,4 -1.6,-4 -4,-1.6 4,-1.6 Z" fill="var(--grape)"/></g></g>';
-// star: three right in a row, the eyes turn to stars; yawn: before she nods off; talk: while the task is read aloud
+// star: three right in a row, the eyes turn to stars; yawn: before she nods off
 const STAR_EYE = (x, y) => '<path d="M' + x + ',' + (y - 15) + ' l4.4,9 9.9,1.4 -7.2,7 1.7,9.8 -8.8,-4.6 -8.8,4.6 1.7,-9.8 -7.2,-7 9.9,-1.4 Z" fill="var(--warm)" stroke="#15181d" stroke-width="2" stroke-linejoin="round"/>';
 const FACE_NEW =
   // the dance winks: the right eye stays open while the left one is a happy arc
   '<g class="only-wink"><ellipse cx="143" cy="85" rx="15.5" ry="17.5" fill="var(--eye)"/><ellipse cx="143" cy="85" rx="4.4" ry="12" fill="#15181d"/><circle cx="139" cy="79" r="3.2" fill="#fff" opacity=".9"/></g>' +
   '<g class="only-star"><g class="stareye">' + STAR_EYE(97, 86) + '</g><g class="stareye b">' + STAR_EYE(143, 86) + '</g></g>' +
   '<g class="only-yawn"><path d="M83,84 q14,-6 28,0 M129,84 q14,-6 28,0" stroke="#15181d" stroke-width="5" stroke-linecap="round" fill="none"/>' +
-  '<ellipse class="yawnmouth" cx="120" cy="131" rx="13" ry="15" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/></g>' +
-  '<ellipse class="talkmouth" cx="120" cy="122" rx="6.5" ry="6" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/>';
+  '<ellipse class="yawnmouth" cx="120" cy="131" rx="13" ry="15" fill="#15181d" stroke="var(--fur-dark)" stroke-width="2.5"/></g>';
 // proud: a level learned — a medal on the chest, under the head so every animal wears it the same
 const MEDAL = '<g class="only-proud medal"><path d="M108,128 L114,150 M132,128 L126,150" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/>' +
   '<circle cx="120" cy="160" r="14" fill="var(--warm)" stroke="#15181d" stroke-width="2.5"/><path d="M120,151 l2.6,5.4 5.9,.8 -4.3,4.1 1,5.8 -5.2,-2.8 -5.2,2.8 1,-5.8 -4.3,-4.1 5.9,-.8 Z" fill="#fff" opacity=".9"/></g>';

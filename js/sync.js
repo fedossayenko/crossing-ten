@@ -35,7 +35,7 @@ function keepRounds(p, rounds){
   rounds = rounds.sort((a, b) => a.ts - b.ts);
   if(p.id === PLAYER.id){ LOCAL.rounds = rounds; saveLocal(); setW(weightsFrom(LOCAL.rounds)); return; }
   ARCH[p.id] = rounds;
-  let kept = { muted:false, speak:true, n:10 };
+  let kept = { muted:false, n:10 };
   try { kept = JSON.parse(localStorage.getItem(roundsKey(p))) || kept; } catch(e){}
   saveStore(roundsKey(p), Object.assign(kept, { rounds }));
 }

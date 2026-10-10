@@ -84,16 +84,16 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 /* Glass, as the design draws it: a 135° sheen over a blur of what is behind, a bright top edge, a dark lower one and a
    hairline. Over a plain ground a blur alone shows nothing — the sheen and the edges are what read as glass. (The
    refraction of iOS 26's "liquid glass" is not something Safari lets a page draw.) */
-.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel{
+.icon,.levelpill,.who,.tabs,.side,.clockpill,.countpill,.gradesel{
   background:var(--glass-fill); -webkit-backdrop-filter:blur(24px) saturate(180%); backdrop-filter:blur(24px) saturate(180%);
   box-shadow:var(--glass-shadow); border:0;
 }
 .btn.ghost{background:color-mix(in srgb, var(--accent) 11%, transparent); color:var(--accent-ink); box-shadow:none; border:0}
 .chips.filt button,.seg{background:var(--well); box-shadow:none; border:0}
 /* every piece of glass: the chrome above, the tab bar, the levels beside the task, a paper's clock and count, the grade menu */
-:root[data-solid] :is(.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+:root[data-solid] :is(.icon,.levelpill,.who,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 @media (prefers-reduced-transparency:reduce){
-  :is(.icon,.levelpill,.who,.read,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
+  :is(.icon,.levelpill,.who,.tabs,.side,.clockpill,.countpill,.gradesel){background:var(--solid); -webkit-backdrop-filter:none; backdrop-filter:none}
 }
 .gcard{border-radius:20px; padding:14px 16px; display:flex; flex-direction:column; gap:10px}
 .gcard.list{padding:0; gap:0; overflow:hidden}
@@ -123,8 +123,8 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 }
 .icon::after{content:''; position:absolute; inset:-3px}
 /* every target reaches 44 px, as the design asks: the smaller pills keep their look and take a larger touch area */
-.read,.chips.filt button,.seg button{position:relative}
-.read::after,.chips.filt button::after,.seg button::after{content:''; position:absolute; inset:-4px -2px}
+.chips.filt button,.seg button{position:relative}
+.chips.filt button::after,.seg button::after{content:''; position:absolute; inset:-4px -2px}
 .gradesel,.paperset select,.paperset input{min-height:44px}
 .icon svg{width:20px; height:20px; display:block}
 .icon[aria-pressed="true"]{color:var(--accent)}
@@ -183,10 +183,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
   flex:1; min-height:0; border-radius:24px; display:flex; flex-direction:column; gap:10px;
   padding:14px 18px 16px; position:relative; overflow:hidden;
 }
-.cardtop{display:flex; align-items:center; justify-content:flex-end; gap:10px; flex:0 0 auto}
 .qnum{font-size:12px; font-weight:600; color:var(--muted)}
-.read{height:36px; padding:0 12px; border-radius:999px; color:var(--accent-ink); display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600}
-.read svg{width:18px; height:18px}
 /* The card centres this; when a long question outgrows it, this scrolls rather than
    letting the card clip it. */
 .card-in{
@@ -628,8 +625,8 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .cat[data-mood="sleepy"] .only-sleep .zz{animation:rise 3.6s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.975) translateY(2px)}}
 /* more life: star eyes for a run of right answers, a yawn before the nap, proud with a medal for a level
-   learned, a mouth that moves while the task is read aloud, and small moves while she thinks (data-fidget) */
-.cat .only-star,.cat .only-yawn,.cat .only-proud,.cat .talkmouth{display:none}
+   learned, and small moves while she thinks (data-fidget) */
+.cat .only-star,.cat .only-yawn,.cat .only-proud{display:none}
 .cat[data-mood="star"] .only-star,.cat[data-mood="star"] .m-happy{display:inline}
 .cat[data-mood="star"] .whole{animation:hop .66s ease}
 .cat .stareye{transform-origin:50% 50%; animation:twinkle 1.2s ease-in-out infinite}
@@ -648,9 +645,6 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @keyframes chinup{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg) translateY(-3px)}}
 @keyframes medalin{from{opacity:0; transform:translateY(-14px) scale(.5)}to{opacity:1; transform:none}}
 @keyframes swing{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
-.cat[data-talk]:is([data-mood="idle"],[data-mood="nod"],[data-mood="tilt"],[data-mood="thinking"]) .talkmouth{display:inline; transform-origin:50% 30%; animation:talk .32s ease-in-out infinite alternate}
-.cat[data-talk]:is([data-mood="idle"],[data-mood="nod"],[data-mood="tilt"],[data-mood="thinking"]) .m-idle{display:none}
-@keyframes talk{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
 .cat[data-fidget="look"] .pupil{animation:look 1.6s ease-in-out}
 @keyframes look{0%,100%{transform:translateX(0)}25%,40%{transform:translateX(-5px)}60%,75%{transform:translateX(5px)}}
 .cat[data-fidget="ear"] .ear-r{animation:twitch .45s ease-in-out}
