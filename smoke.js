@@ -280,11 +280,11 @@ const server = http.createServer((req, res) => {
     const caption = getComputedStyle($('typeHint')).display !== 'none';
     key('3'); key('5'); key('go');
     // R9.1: her mascot and the mistake named; the next step left open and the method in a sentence; the caption gone
-    const st = $('hint').querySelector('.fb.no.status'), tip = $('hint').querySelector('.fb.tip');
+    const st = $('hint').querySelector('.fb.status'), tip = $('hint').querySelector('.fb.tip');
     const r91 = { caption, gone: getComputedStyle($('typeHint')).display === 'none', mascot: !!(st && st.querySelector('svg.cat')),
       notQuite: !!st && st.textContent.startsWith(t('notQuite')), step: !!(tip && tip.querySelector('.qbox')),
       how: !!tip && tip.querySelector('.how').textContent === t('crossHow', 7, 2) + ' ' + t('thenTake', 10, 30), second: $('run').textContent === t('tryTwo') };
-    const hint = { r91, slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.no'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
+    const hint = { r91, slip: /махна ли я от десетиците/.test($('hint').textContent) && !!$('hint').querySelector('.fb.status'), frame: !!$('hint').querySelector('.fb.tip .tenframe'),
       struck: $('slot0').classList.contains('no') && $('slot0').textContent === '35' && !!$('retryBtn') };   // the miss stays in its box, struck
     key('3'); hint.fresh = !$('slot0').classList.contains('no') && $('slot0').textContent === '3' && !$('card').classList.contains('missed');   // and goes at the next digit
     key('5'); key('go'); key('go');
@@ -338,7 +338,7 @@ const server = http.createServer((req, res) => {
       const wrong = q.options.find(o => o.id !== q.pick).id;
       document.querySelector('#choices .ch[data-o="' + wrong + '"]').click(); await wait(100);
       shown.crossed = document.querySelector('#choices .ch[data-o="' + wrong + '"]').disabled;
-      shown.hint = !!document.querySelector('#hint .fb.no');
+      shown.hint = !!document.querySelector('#hint .fb.status');
       document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(100);
       shown.settled = S.settled; shown.dbg = [S.i, q.pick, S.parts, S.tries, S.revealed, JSON.stringify(q.options), q === S.qs[S.i]]; shown.green = !!document.querySelector('#choices .ch.ok');
       $('ansSeg').querySelector('[data-c="0"]').click(); newRound(); await wait(100);

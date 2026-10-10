@@ -410,7 +410,7 @@ function paintDots(){
   }
   $('dots').innerHTML = S.qs.map((_, k) => {
     const r = S.results[k];
-    return '<span class="step ' + (r === true ? 'ok' : r === false ? 'no' : '') + ' ' + (k === S.i ? 'now' : '') + '"></span>';
+    return '<span class="step ' + (r === true ? 'ok' : r === false ? (S.second?.[k] ? 'second' : 'no') : '') + ' ' + (k === S.i ? 'now' : '') + '"></span>';
   }).join('');
   $('dots').setAttribute('aria-label', t('taskOf', S.i + 1, S.qs.length));
   let run = 0;   // right first time, in a row, up to now
@@ -420,8 +420,9 @@ function paintDots(){
 function press(k){
   wake();
   // Settled: any key moves on, but a digit must not be eaten by the advance —
-  // it is the first digit of the next answer.
+  // it is the first digit of the next answer. A shown solution waits for →: a stray digit must not skip it.
   if(S.settled){
+    if(S.revealed && k !== 'go') return;
     next();
     if(k >= '0' && k <= '9'){ S.parts[0] = k; sfx.tap(); paintSlot(); }
     return;
@@ -440,8 +441,7 @@ function press(k){
   if(S.parts[S.at].length < 3){ S.parts[S.at] += k; mood('idle'); fidget('ear'); sfx.tap(); paintSlot(); }
 }
 // The feedback under the question: a coloured box with a mark and a word, never colour alone.
-const MARK = { ok:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>',
-               no:'<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' };
+const MARK = { ok:'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>' };
 const box = (kind, head, body, side) => '<div class="fb ' + kind + '"><div class="fbhead"><span class="mark">' + MARK[kind] + '</span>' +
   head + (side ? '<span class="v">' + side + '</span>' : '') + '</div>' + (body ? '<div>' + body + '</div>' : '') + '</div>';
 // A tap on А/Б/В/Г is the same as typing that number and pressing ✓.
@@ -497,7 +497,7 @@ function check(){
     $('verdict').textContent = t('notYet');
     const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
     // her mascot and the mistake named (what she wrote stays struck in its box), then how to do it, with "show the solution"
-    $('hint').innerHTML = '<div class="fb no status">' + mascotSvg(PLAYER.mascot, 'sad') + '<div><b>' + t('notQuite') + '</b> ' + (nudge || t('lookAgain')) + '</div></div>' +
+    $('hint').innerHTML = '<div class="fb status">' + mascotSvg(PLAYER.mascot, 'thinking') + '<div><b>' + t('notQuite') + '</b> ' + (nudge || t('lookAgain')) + '</div></div>' +
       '<div class="fb tip"><div class="tiplab">' + t('hintLabel') + '</div><div><span class="tiptext">' + why(q) + '</span>' +
       '<button class="btn ghost reveal" id="reveal">' + t('showSolution') + '</button></div></div>' +
       (q.options ? '' : '<button class="btn again" id="retryBtn">' + t('tryAgain') + ' →</button>');   // a phone hides the keys behind the hint (app.css)
@@ -524,9 +524,11 @@ function reveal(){
   S.revealed = true; S.settled = true; S.wrong = false;
   $('card').classList.remove('missed');
   S.parts = answers(q).slice(0, S.parts.length).map(String);
-  $('verdict').className = 'verdict no';
+  $('verdict').className = 'verdict';
   $('verdict').textContent = eqText(q);
-  $('hint').innerHTML = box('no', eqText(q), why(q, true));
+  // how it is done, not a second "wrong": what she wrote struck, the task with its answer, the way through
+  const wrote = !q.options && S.typed[S.i];
+  $('hint').innerHTML = '<div class="fb how"><div class="fbhead">' + (wrote ? '<s>' + esc(wrote) + '</s> → ' : '') + '<span class="right">' + eqText(q) + '</span></div><div>' + why(q, true) + '</div></div>';
   $('hint').scrollIntoView({ block:'nearest' });
   $('go').textContent = '→';
   mood('nod');

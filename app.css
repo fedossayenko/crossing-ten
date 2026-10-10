@@ -6,7 +6,7 @@
   --ui-font:-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", system-ui, sans-serif;
   --ground:#F0F4F7; --ink:#0F171F; --muted:#555F69; --line:#DCE2E8; --well:rgba(15,23,31,.06);
   --accent:#006AC0; --accent-ink:#00569F; --accentbg:#D9EAFC; --warm:#F5AE39; --good:#14874E; --bad:#CC3E35;
-  --goodbg:#DAF7E3; --goodline:#A3DDB8; --badbg:#FFE7E3; --badink:#B3312A; --warmbg:#FDECD1; --warmink:#894C06;
+  --goodbg:#DAF7E3; --goodline:#A3DDB8; --goodink:#0D7040; --badbg:#FFE7E3; --badink:#B3312A; --warmbg:#FDECD1; --warmink:#894C06;
   --glass-fill:linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.42));
   --glass:rgba(255,255,255,.66); --glass-edge:rgba(255,255,255,.9); --solid:#FFFFFF; --key:#FFFFFF;
   --glass-shadow:inset 0 1px 0 rgba(255,255,255,1), inset 0 -1px 0 rgba(15,23,31,.07), 0 0 0 .5px rgba(15,23,31,.14), 0 10px 28px rgba(15,23,31,.10);
@@ -21,7 +21,7 @@
   :root:not([data-theme="light"]){
     --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
     --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
-    --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --badink:#F0857A; --warmbg:#3A2C17; --warmink:#F6D39C;
+    --goodbg:#173A2A; --goodline:#2C5E46; --goodink:#4CC38A; --badbg:#3A201D; --badink:#F0857A; --warmbg:#3A2C17; --warmink:#F6D39C;
     --glass-fill:linear-gradient(135deg, rgba(62,72,86,.66), rgba(24,30,38,.46));
     --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
     --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
@@ -35,7 +35,7 @@
 :root[data-theme="dark"]{
   --ground:#0E1318; --ink:#ECEFF2; --muted:#ACB2B9; --line:#2A323A; --well:rgba(255,255,255,.07);
   --accent:#4BAEED; --accent-ink:#7CC4F3; --accentbg:#16324A; --warm:#F9B64F; --good:#4CC38A; --bad:#F0857A;
-  --goodbg:#173A2A; --goodline:#2C5E46; --badbg:#3A201D; --badink:#F0857A; --warmbg:#3A2C17; --warmink:#F6D39C;
+  --goodbg:#173A2A; --goodline:#2C5E46; --goodink:#4CC38A; --badbg:#3A201D; --badink:#F0857A; --warmbg:#3A2C17; --warmink:#F6D39C;
   --glass-fill:linear-gradient(135deg, rgba(62,72,86,.66), rgba(24,30,38,.46));
   --glass:rgba(34,42,50,.70); --glass-edge:rgba(255,255,255,.10); --solid:#1A2026; --key:#1E252C; --dotoff:rgba(255,255,255,.18);
   --glass-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 -1px 0 rgba(0,0,0,.35), 0 0 0 .5px rgba(0,0,0,.5), 0 10px 28px rgba(0,0,0,.35);
@@ -100,7 +100,7 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 .gtitle{display:flex; align-items:baseline; justify-content:space-between; gap:10px}
 .gtitle b{font-size:14px; font-weight:700}
 .gtitle span{font-size:11.5px; font-weight:600; color:var(--muted)}
-.lab{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.lab{font-size:13px; font-weight:700; color:var(--muted)}
 
 /* buttons: capsules, one tinted main action, glass for the rest */
 .btn{
@@ -173,7 +173,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .roundbar{display:flex; flex-direction:column; gap:6px}
 .dots{display:flex; gap:4px}
 .step{flex:1; height:6px; border-radius:999px; background:color-mix(in srgb, var(--ink) 13%, transparent)}
-.step.ok{background:var(--good)} .step.no{background:var(--bad)}
+.step.ok{background:var(--good)} .step.no{background:var(--bad)} .step.second{background:var(--warm)}   /* right on the second try */
 .step.now{background:var(--solid); box-shadow:inset 0 0 0 2px var(--accent)}
 .segline{display:flex; justify-content:space-between; gap:10px; padding:0 2px}
 .segline .run{font-size:12px; font-weight:600; color:var(--accent-ink)}
@@ -208,7 +208,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .slot.no{border-color:var(--bad); background:var(--badbg); color:var(--bad); text-decoration:line-through; text-decoration-thickness:.08em}
 @keyframes blink{50%{opacity:0}}
 .stage{display:flex; flex-direction:column; align-items:center; gap:9px; max-width:100%}
-.ask{font-size:clamp(15px,4.2vw,20px); font-weight:700; line-height:1.45; text-align:center; text-wrap:balance; max-width:30ch}
+.ask{font-size:clamp(15px,4.2vw,20px); font-weight:500; line-height:1.45; text-align:start; text-wrap:balance; max-width:30ch}
 /* an iPad or laptop: a long story in 30 characters a line becomes a tall thin column; 44 still reads as one paragraph */
 @media (min-width:600px){ .ask{max-width:44ch} }
 .ask .num{font-family:Fredoka,sans-serif; font-weight:500; letter-spacing:.02em; white-space:nowrap}
@@ -320,9 +320,11 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .fb .fbhead{display:flex; align-items:center; gap:10px; font-weight:700}
 .fb .fbhead .v{margin-left:auto; font-size:13.5px}
 .fb .mark{width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; flex:0 0 auto; font-size:14px}
-.fb.no{background:var(--badbg); border:2px solid var(--bad)} .fb.no .mark{background:var(--bad)} .fb.no .v{color:var(--bad)}
+/* a shown solution: how it is done, in neutral grey - what she wrote struck, the task with its answer in green */
+.fb.how{background:var(--well)} .fb.how .fbhead{font-family:Fredoka,var(--ui-font); font-size:18px; font-weight:500; flex-wrap:wrap; gap:6px}
+.fb.how s{color:var(--badink); text-decoration-thickness:2px} .fb.how .right{color:var(--goodink)}
 .fb.ok{background:var(--goodbg); border:2px solid var(--goodline)} .fb.ok .mark{background:var(--good)} .fb.ok .v{color:var(--good)}
-.fb.tip{background:var(--warmbg)} .fb.tip .tiplab{font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--warmink)}
+.fb.tip{background:var(--warmbg)} .fb.tip .tiplab{font-size:13px; font-weight:700; color:var(--warmink)}
 .fb b{color:inherit}
 .fb.tip b,.fb.ok b{color:var(--warmink)}
 .fb .typed{font-family:Fredoka,var(--ui-font); font-size:20px; font-weight:500}
@@ -350,7 +352,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @media (orientation:portrait) and (max-height:900px){
   .card{gap:6px; padding:10px 14px 12px}
   .card-in{gap:6px}
-  .ask{font-size:clamp(14px,3.9vw,18px); line-height:1.34}
+  .ask{font-size:clamp(16px,4.4vw,19px); line-height:1.4}
   .fig svg{height:clamp(62px,13vh,120px)}
   .key{height:clamp(42px,6.6vh,56px); font-size:24px}
   .pad{gap:8px}
@@ -417,7 +419,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @media (min-width:900px){
   .gradesel{display:none}
   .fgroup{display:flex; flex-direction:column; gap:6px}
-  .flabel{display:block; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+  .flabel{display:block; font-size:13px; font-weight:700; color:var(--muted)}
   .fnote{display:block; font-size:12.5px; color:var(--muted)}
   .chips.filt.sub,.chips.filt.sub2{margin-left:0; padding-left:0; border-left:0}
 }
@@ -831,9 +833,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 }
 @media (min-width:900px) and (max-height:600px){ .pickside{position:static} }   /* taller than the window: scroll with the list */
 /* the first-miss feedback, compact: the wrong answer on one slim line, the solution button inside the hint */
-.hint .fb.no{padding:5px 12px}
-.hint .fb.no .mark{width:22px; height:22px}
-.hint .fb.no .typed{font-size:18px}
+.hint .fb.status{padding:2px 4px}   /* the first miss: her mascot and one line, no box around it */
 .fb.tip .tiptext{flex:1 1 180px}
 .fb.tip .reveal{min-height:36px; padding:0 14px; font-size:13px; flex:0 0 auto}
 /* A phone or narrow window, upright: while a hint is showing, the keys and the drawing give up some
@@ -1032,7 +1032,7 @@ button.crow{width:100%; background:none; border:0; color:var(--ink); font:inheri
 /* the countdown to her next competition, and how ready she is */
 .paperday{display:flex; flex-direction:row; align-items:center; gap:14px; width:100%; text-align:left; padding:14px 16px; color:var(--ink); font:inherit; cursor:pointer}
 .paperday .nm{flex:1; display:flex; flex-direction:column; gap:3px; min-width:0}
-.paperday .lab{color:var(--warmink); font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase}
+.paperday .lab{color:var(--warmink); font-size:13px; font-weight:700}
 .paperday .eq{font-size:17px; font-weight:700}
 .paperday .meta{font-size:13px; font-weight:600; color:var(--muted)}
 .paperday .ready{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:0 0 96px}
