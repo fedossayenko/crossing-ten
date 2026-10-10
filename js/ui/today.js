@@ -7,6 +7,7 @@ import htm from '../vendor/htm.js';
 import { go, playLevel, todayData, trainFor } from '../app.js';
 import { startComp } from '../compete.js';
 import { LANG, LANG_TAG, t } from '../i18n.js';
+import { mascotSvg } from '../mascots.js';
 
 const html = htm.bind(h);
 const CHEV = html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`;
@@ -25,7 +26,7 @@ function Today(){
   const d = todayData();
   const date = new Date().toLocaleDateString(LANG_TAG[LANG], { weekday: 'long', day: 'numeric', month: 'long' });
   return html`
-    <div class="bar today-bar"><div class="hello"><h1>${t('helloName', d.name)}</h1><div class="date">${date}</div></div></div>
+    <div class="bar today-bar"><div class="hello"><h1>${t('helloName', d.name)}</h1><div class="date">${date}</div></div><span class="hellocat" dangerouslySetInnerHTML=${{ __html: mascotSvg(d.mascot) }}></span></div>
     <div class="chiprow">
       ${d.streak > 0 && html`<span class="pill warm">${t('streakDays', d.streak)}</span>`}
       <span class="pill">${t('roundsToday', d.roundsToday)}</span>

@@ -958,7 +958,7 @@ export function todayData(){
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
   const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), desc: levelDesc(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
   const lv = LEVELS.find(l => l.id === S.level);
-  return { name: playerName(PLAYER), streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
+  return { name: playerName(PLAYER), mascot: PLAYER.mascot, streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
     next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),

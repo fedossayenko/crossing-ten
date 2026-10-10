@@ -931,6 +931,7 @@ body.welcome .tabs{display:none}   /* the first-run form (app.js openEdit) */
 .today-bar{align-items:flex-start}
 .today-bar .hello h1{font-size:30px; letter-spacing:-.01em}
 .today-bar .date{color:var(--muted); font-size:15px; margin-top:2px}
+.today-bar .hellocat{margin-left:auto; flex:0 0 auto; width:72px} .today-bar .hellocat .cat{display:block; width:100%; height:auto}   /* her mascot says hello too */
 .chiprow{display:flex; gap:8px; flex-wrap:wrap}
 .chiprow .pill{font-size:14px; padding:6px 12px; background:var(--well); color:var(--muted)}
 .chiprow .pill.warm{background:var(--warmbg); color:var(--warmink)}
