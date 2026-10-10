@@ -129,6 +129,7 @@ h1{margin:0; font-size:24px; font-weight:700; line-height:1.15}
 .icon svg{width:20px; height:20px; display:block}
 .icon[aria-pressed="true"]{color:var(--accent)}
 .icon.back{width:44px; height:44px}
+.sheet:focus{outline:none}   /* focused on opening (app.js paintInert), for keyboards and screen readers, not drawn */
 .chips{display:flex; gap:8px; flex-wrap:wrap}
 .chips.filt button{min-height:38px; padding:0 14px; border-radius:999px; font-size:14px; font-weight:600; color:var(--ink)}
 .chips.filt button[aria-pressed="true"]{background:color-mix(in srgb, var(--accent) 16%, transparent); border-color:var(--accent); color:var(--accent-ink)}

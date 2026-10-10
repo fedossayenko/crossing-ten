@@ -1464,7 +1464,25 @@ $('closePlayers').onclick = () => { chose(); back(); };
 $('pad').addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
 $('again').onclick = () => newRound();
 $('card').addEventListener('click', () => { if(S.settled) next(); });
+// A sheet up: the task under it is out of reach (no Tab into the hidden keys), and focus starts in the sheet
+// that just opened, where a keyboard or a screen reader should be.
+const SHEETS = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.sheet')]);
+let shown = new Set();
+const paintInert = () => {
+  const open = new Set(SHEETS.filter(s => !s.hidden));
+  /** @type {HTMLElement} */ (document.querySelector('.app')).inert = open.size > 0;
+  open.forEach(s => { if(!shown.has(s)){ s.tabIndex = -1; s.focus({ preventScroll: true }); } });
+  shown = open;
+};
+const sheetWatch = new MutationObserver(paintInert);
+SHEETS.forEach(s => sheetWatch.observe(s, { attributes: true, attributeFilter: ['hidden'] }));
+paintInert();
 document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){   // the sheet's own ‹, where it shows one
+    const b = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.sheet:not([hidden]) .back')]).reverse().find(x => x.offsetParent);
+    if(b) b.click();
+    return;
+  }
   if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input')) return;
   if(!$('choices').hidden){   // А/Б/В/Г: a letter picks (Cyrillic or Latin), Enter moves on; a typed digit is no answer here
     const k = e.key.toUpperCase(), id = Math.max('АБВГДЕ'.indexOf(k), 'ABCDEF'.indexOf(k));
