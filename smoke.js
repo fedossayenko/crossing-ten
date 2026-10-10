@@ -105,15 +105,15 @@ const server = http.createServer((req, res) => {
   // A first launch is one Bulgarian player with the cat, and asks nothing.
   const first = await page('{ lang: document.documentElement.lang, again: $("again").textContent, players: $("players").hidden, n: PLAYERS.list.length, welcome: !$("playerEdit").hidden && $("editTitle").textContent, rounds: LOCAL.rounds.length }');
   expect(first.lang === 'bg' && first.again === 'Нов рунд' && first.players && first.n === 1 && first.welcome === 'Добре дошли!', 'first launch is not one Bulgarian player: ' + JSON.stringify(first));
-  // the picker opens on her grade; МБГ opens a row of its papers; a paper shows only its own levels,
+  // the picker opens on her grade; МБГ opens a row of its rounds, a round its years; a paper shows only its own levels,
   // and «Есен · други» only the autumn levels no year claims; a round picked is kept as her focus —
   // after a relaunch too — with its levels easiest first and the suggestion inside it
   const filt = await page(`(() => { PICK_FOR = null; delete LOCAL.focus; buildPicker(); const ids = () => [...document.querySelectorAll('#pickAll .pick')].map(b => +b.dataset.lvl);
     const r = { grade: document.querySelector('#pickGrades [aria-pressed="true"]').dataset.v, papersHidden: $('pickPapers').hidden, g2: ids().every(id => LEVELS.find(l => l.id === id).grade === 2) };
-    document.querySelector('#pickComps [data-v="mbg"]').click(); r.papersShown = !$('pickPapers').hidden;
+    document.querySelector('#pickComps [data-v="mbg"]').click(); r.papersWait = $('pickPapers').hidden;   // one row at a time
     r.rounds = !$('pickRounds').hidden; document.querySelector('#pickRounds [data-v="winter"]').click();
     r.winter = ids().length > 0 && ids().every(id => LEVELS.find(l => l.id === id).papers.some(p => p.startsWith('mbg-winter')));
-    document.querySelector('#pickRounds [data-v=""]').click();
+    document.querySelector('#pickRounds [data-v="autumn"]').click(); r.papersShown = !$('pickPapers').hidden;
     document.querySelector('#pickPapers [data-v="mbg-autumn-2024-2"]').click(); r.y24 = ids().every(id => LEVELS.find(l => l.id === id).papers.includes('mbg-autumn-2024-2')) && ids().length;
     const other = document.querySelector('#pickPapers [data-v="mbg-autumn-2"]');   // shown only while some autumn level has no year
     r.other = other ? (other.click(), ids().every(id => !LEVELS.find(l => l.id === id).papers.some(p => /^mbg-autumn-\\d{4}/.test(p))) && ids().length) :
@@ -126,7 +126,7 @@ const server = http.createServer((req, res) => {
     document.querySelector('#pickGrades [data-v="1"]').click(); PICK_FOR = null; buildPicker();
     r.grade1 = PICK_GRADE === 1 && LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl).grade === 1;
     document.querySelector('#pickGrades [data-v="2"]').click(); return r; })()`);
-  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus && filt.grade1, 'the picker filters are wrong: ' + JSON.stringify(filt));
+  expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersWait && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus && filt.grade1, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // R4: the list beside the task holds the played level's group with it marked; on the levels page its group is
   // open and others folded, a fold she makes is kept, and a level played shows its first-try share
   const r4 = await page(`(() => { const was = S.level; S.level = 5; paintPill(); PICK_FOR = null; delete LOCAL.focus; buildPicker();

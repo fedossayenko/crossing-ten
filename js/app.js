@@ -1179,7 +1179,7 @@ const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? ''
 function levelStatus(l, m, hist){
   if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
   const h = hist[l.id];
-  if(!h) return '<span class="isnew">' + t('isNew') + '</span>';
+  if(!h) return LOCAL.rounds.length ? '<span class="isnew">' + t('isNew') + '</span>' : '';   // before her first round every level is new: no tag on each
   const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
   return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + ago(h.last.ts) + '</i></span>';
 }
@@ -1263,7 +1263,8 @@ function buildPicker(){
   if(PICK_PAPER && !papers.includes(PICK_PAPER)) PICK_PAPER = '';
   // with a round picked, its papers are just years
   const paperLabel = p => (PICK_ROUND ? String(yearOf(p) || t('otherYears')) : t('paperTag')[paperSrc(p)]) + (PICK_GRADE ? '' : ' · ' + t('gradeN', paperGrade(p)));
-  chips('pickPapers', papers.length > 1 ? [['', t('all')]].concat(papers.map(p => [p, paperLabel(p), paperName(p)])) : [], PICK_PAPER, v => { PICK_PAPER = v; });
+  // one row at a time: with rounds to choose from, the years wait for a round
+  chips('pickPapers', papers.length > 1 && (PICK_ROUND || PICK_PAPER || rounds.length < 2) ? [['', t('all')]].concat(papers.map(p => [p, paperLabel(p), paperName(p)])) : [], PICK_PAPER, v => { PICK_PAPER = v; });
 
   // start here / try this next: the recommendation, and what it opens up after
   const lastRound = LOCAL.rounds[LOCAL.rounds.length - 1];
@@ -1395,7 +1396,7 @@ function openEdit(p, welcome){
   $('editTitle').textContent = p ? t('profile') : t('newPlayer');
   $('pName').value = EDIT.name;
   $('pName').placeholder = p ? playerName(p) : t('playerN', PLAYERS.list.length + 1);
-  $('pSound').checked = !kept.muted; $('pCalm').checked = !!kept.calm;
+  $('pCalm').checked = !!kept.calm;
   $('pDelete').parentNode.hidden = !p || PLAYERS.list.length < 2 || WELCOME;
   $('pCancel').hidden = WELCOME;
   paintWelcome();
@@ -1432,9 +1433,9 @@ $('pSave').onclick = () => {
   const old = PLAYERS.list.find(p => p.id === EDIT.id);
   if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
   savePlayers();
-  // her settings travel with her log: sound and calmer animation
+  // her settings travel with her log: calmer animation (sound is set under Parents)
   const kept = storeOf(EDIT);
-  kept.muted = !$('pSound').checked; kept.calm = $('pCalm').checked;
+  kept.calm = $('pCalm').checked;
   if(EDIT.id === PLAYER.id) saveLocal();
   else saveStore(roundsKey(EDIT), kept);
   // A new player starts playing at once; the current one reloads to wear the change.
