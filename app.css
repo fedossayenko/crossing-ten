@@ -602,6 +602,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .field input{font:inherit; font-size:18px; font-weight:600; color:var(--ink); background:var(--well); border:1px solid var(--glass-edge);
   border-radius:12px; padding:0 14px; height:48px; box-sizing:border-box; width:100%; -webkit-user-select:text; user-select:text}
 .field input:focus{border-color:var(--accent); outline:none}
+.field input::placeholder{color:var(--muted); opacity:1}   /* the browser grey is 4.1:1 on the well */
 .mascots{display:flex; gap:10px; flex-wrap:wrap}
 .mchoice{width:60px; height:60px; border-radius:50%; border:3px solid var(--glass-edge); background:var(--well); padding:0; display:flex; align-items:center; justify-content:center; overflow:hidden}
 .mchoice[aria-checked="true"]{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 16%, transparent)}
@@ -898,7 +899,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .tabs button{flex:1 1 0; height:52px; border:0; border-radius:999px; background:none; color:var(--muted); display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:3px; font-size:11px; font-weight:600; min-width:0}
 .tabs svg{width:24px; height:24px}
-.tabs button[aria-current="page"]{background:color-mix(in srgb, var(--accent) 13%, transparent); color:var(--accent)}
+.tabs button[aria-current="page"]{background:color-mix(in srgb, var(--accent) 13%, transparent); color:var(--accent-ink)}   /* --accent on the pill is 4.2:1, --accent-ink 5.7:1 */
 body.tabbed:not(.pushed) .sheet .bar > .back{display:none}   /* a tab's own screen: the tab bar, no ‹ (app.js go) */
 body.tabbed .sheet-in{padding-bottom:96px}
 /* a short screen (a phone on its side): the compact bar iOS uses there, the label beside the icon */
