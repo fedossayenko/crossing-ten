@@ -1,6 +1,6 @@
 // The mascots. Every animal shares one face - eyes, brows, mouths and sparks sit in the
 // same place on all of them - so the moods in app.css (idle, happy, sad, nod, tilt,
-// wiggle, dance, party) move any of them. An animal is only its fur: tail, body, paws,
+// wiggle, dance, party, eat) move any of them. An animal is only its fur: tail, body, paws,
 // ears and head, plus the colours the shared face borrows (--eye for the iris,
 // --fur-dark for the mouth and brows). Drawn after the design canvas's mascot sheet.
 export const MASCOTS = {
@@ -110,7 +110,29 @@ const MOUTHS =
   '<path class="only-idle m-idle" d="M120,113 v5 M120,118 q-1,7 -10,7 M120,118 q1,7 10,7" stroke="var(--fur-dark)" stroke-width="2.8" stroke-linecap="round" fill="none"/>' +
   '<g class="only-happy m-happy"><path d="M107,119 q13,4 26,0 q-2,15 -13,15 q-11,0 -13,-15 Z" fill="#15181d"/>' +
   '<path d="M113,129 q7,-5 14,0 q-2,5 -7,5 q-5,0 -7,-5 Z" fill="#E8838A"/></g>' +
-  '<path class="only-sad" d="M120,113 v5 M109,128 q11,-9 22,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>';
+  '<path class="only-sad" d="M120,113 v5 M109,128 q11,-9 22,0" stroke="var(--fur-dark)" stroke-width="3" stroke-linecap="round" fill="none"/>' +
+  '<ellipse class="only-eat chew" cx="120" cy="123" rx="6.5" ry="4.5" fill="#15181d"/>';
+// eat: two right answers in a row earn a treat, each animal its own, held under the chin in both paws and eaten
+// in three bites, left to right (.b1–.b3)
+const FOOD = {
+  cat:   // a fish
+    '<g class="bite b1"><path d="M101,128 C88,128 80,135 80,143 C80,151 88,158 101,158 Z" fill="#7FB0D6"/><circle cx="90" cy="140" r="3" fill="#15181d"/><path d="M97,133 q-4,10 0,20" stroke="#5E93BD" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>' +
+    '<g class="bite b2"><path d="M100,128 H141 V158 H100 Z" fill="#7FB0D6"/><path d="M112,132 v22 M122,132 v22 M132,132 v22" stroke="#5E93BD" stroke-width="3" stroke-linecap="round"/></g>' +
+    '<g class="bite b3"><path d="M140,128 Q152,134 152,143 Q152,152 140,158 Z" fill="#7FB0D6"/><path d="M148,143 L164,129 Q159,143 164,157 Z" fill="#5E93BD"/></g>',
+  fox:   // cheese, as in the crow's fable
+    '<g class="bite b1"><path d="M80,128 L108,134.3 V158 H80 Z" fill="#F2C14E"/><circle cx="90" cy="147" r="4" fill="#D9A23A"/><circle cx="100" cy="139" r="2.5" fill="#D9A23A"/></g>' +
+    '<g class="bite b2"><path d="M107,134 L135,140.4 V158 H107 Z" fill="#F2C14E"/><circle cx="121" cy="150" r="3.5" fill="#D9A23A"/></g>' +
+    '<g class="bite b3"><path d="M134,140 L160,146 V158 H134 Z" fill="#F2C14E"/><circle cx="147" cy="152" r="2.5" fill="#D9A23A"/></g>',
+  owl:   // three berries
+    '<g class="bite b1"><circle cx="93" cy="145" r="13" fill="#7A4FA8"/><circle cx="88" cy="140" r="3" fill="#fff" opacity=".6"/></g>' +
+    '<g class="bite b2"><circle cx="120" cy="141" r="13.5" fill="#7A4FA8"/><circle cx="115" cy="136" r="3" fill="#fff" opacity=".6"/></g>' +
+    '<g class="bite b3"><circle cx="147" cy="145" r="13" fill="#7A4FA8"/><circle cx="142" cy="140" r="3" fill="#fff" opacity=".6"/></g>',
+  bun:   // a carrot, its leaves last
+    '<g class="bite b1"><path d="M78,143 L104,133 V153 Z" fill="#EE8A3C"/></g>' +
+    '<g class="bite b2"><path d="M103,133 L130,130 V156 L103,153 Z" fill="#EE8A3C"/><path d="M110,139 l7,2 M113,148 l7,-2" stroke="#C96A26" stroke-width="2.5" stroke-linecap="round"/></g>' +
+    '<g class="bite b3"><path d="M129,130 Q144,130 144,143 Q144,156 129,156 Z" fill="#EE8A3C"/><path d="M142,138 Q152,124 165,124 M142,143 Q156,138 167,146 M142,141 Q148,121 156,113" stroke="#5FAE5A" stroke-width="4.5" stroke-linecap="round" fill="none"/></g>'
+};
+const HOLD = (x, y) => '<circle cx="' + x + '" cy="' + y + '" r="10" fill="var(--paw)"/><circle cx="' + x + '" cy="' + (y + 2) + '" r="3.2" fill="var(--pad)"/>';
 const PAW = (x, y) => '<circle cx="' + x + '" cy="' + y + '" r="14" fill="var(--paw)"/><circle cx="' + x + '" cy="' + (y + 3) + '" r="4.2" fill="var(--pad)"/>' +
   [-6, 0, 6].map(d => '<circle cx="' + (x + d) + '" cy="' + (y - 5 + Math.abs(d) / 3) + '" r="2.2" fill="var(--pad)"/>').join('');
 const LEG = d => '<path d="' + d + '" stroke="var(--arm)" stroke-width="20" stroke-linecap="round" fill="none"/>';
@@ -118,12 +140,14 @@ const ARMS =
   '<g class="arm arm-up-l">' + LEG('M86,156 Q62,140 50,104') + PAW(48, 98) + '</g>' +
   '<g class="arm arm-up-r">' + LEG('M154,156 Q178,140 190,104') + PAW(192, 98) + '</g>' +
   '<g class="arm arm-chin">' + LEG('M82,174 Q86,162 98,154') + PAW(100, 150) + '</g>';
+const EAT = food => '<g class="arm arm-eat">' + LEG('M78,182 Q76,170 88,162') + LEG('M162,182 Q164,170 152,162') + food + HOLD(90, 160) + HOLD(150, 160) + '</g>';
 // Around the animal, not on it: burst lines for a right answer, music notes and motion arcs for a dance
 const NOTE = (x, y, c) => '<g class="note"><g transform="translate(' + x + ' ' + y + ')"><ellipse cx="-4" cy="0" rx="6" ry="4.6" transform="rotate(-20 -4 0)" fill="' + c + '"/>' +
   '<path d="M1.5,-1 v-22 q7,3 9,10" stroke="' + c + '" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>';
 const FX =
   '<g class="fx fx-burst"><path d="M34,52 l-11,-6 M30,68 h-13 M40,36 l-6,-10 M206,52 l11,-6 M210,68 h13 M200,36 l6,-10" stroke="var(--warm)" stroke-width="4.5" stroke-linecap="round"/></g>' +
   '<g class="fx fx-notes">' + NOTE(26, 52, 'var(--accent)') + NOTE(222, 40, 'var(--bad)') + '</g>' +
+  '<g class="fx fx-crumbs"><circle cx="106" cy="131" r="3" fill="var(--warm)"/><circle cx="134" cy="132" r="2.6" fill="var(--warm)"/><circle cx="119" cy="130" r="2.4" fill="var(--warm)"/></g>' +
   '<g class="fx fx-arcs"><path d="M44,150 q-8,15 0,30 M32,144 q-12,21 0,42 M196,150 q8,15 0,30 M208,144 q12,21 0,42" stroke="var(--good)" stroke-width="4" stroke-linecap="round" fill="none"/></g>';
 function mascotInner(key){
   const m = MASCOTS[key] || MASCOTS.cat;
@@ -131,7 +155,7 @@ function mascotInner(key){
     '<g class="body">' + m.body + '<g class="paw paw-l">' + m.pawL + '</g><g class="paw paw-r">' + m.pawR + '</g>' + MEDAL + '</g>' +
     // the head a size up, round its own centre: rounder, younger proportions
     '<g class="head"><g transform="translate(120 90) scale(1.08) translate(-120 -90)"><g class="ear ear-l">' + m.earL + '</g><g class="ear ear-r">' + m.earR + '</g>' +
-    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + FX + '</g>';
+    m.head + FACE + FACE_MORE + FACE_NEW + m.nose + MOUTHS + m.whiskers + '</g></g>' + ARMS + EAT(FOOD[key] || FOOD.cat) + FX + '</g>';
 }
 // A whole mascot as markup, for the player tiles and the mascot choice.
 export const mascotSvg = (key, mood) => { const m = MASCOTS[key] || MASCOTS.cat;

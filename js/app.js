@@ -471,17 +471,18 @@ function check(){
     $('verdict').className = 'verdict ok';
     $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
     const shown = why(q, true);
-    $('hint').innerHTML = box('ok', t(quick ? 'yes' : 'gotIt'), shown);
-    $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
-    // a run of right answers: five in a row dances, three get star eyes
+    // a run of right answers: five in a row dances, three get star eyes, two earn a treat, eaten beside the praise
     const run = n => quick && S.results.length >= n && S.results.slice(-n).every(Boolean);
-    mood(run(5) ? 'wiggle' : run(3) ? 'star' : 'happy');
+    const cheer = run(5) ? 'wiggle' : run(3) ? 'star' : run(2) ? 'eat' : 'happy';
+    $('hint').innerHTML = cheer === 'eat' ? '<div class="treat">' + mascotSvg(PLAYER.mascot, 'eat') + box('ok', t('yes'), shown) + '</div>' : box('ok', t(quick ? 'yes' : 'gotIt'), shown);
+    $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
+    mood(cheer === 'eat' ? 'happy' : cheer);
     quick ? sfx.good() : sfx.ok();
     S.settled = true;
     $('go').textContent = '→';
     paintDots();
-    // a solution picture plays step by step and is there to be looked at: it waits for her tap on → or the card
-    if(!shown.includes('<svg')) S.timers.push(setTimeout(next, quick ? 1900 : 2700));
+    // a solution picture plays step by step and is there to be looked at: it waits for her tap on → or the card; a treat is eaten to the end
+    if(!shown.includes('<svg')) S.timers.push(setTimeout(next, cheer === 'eat' ? 2800 : quick ? 1900 : 2700));
     return;
   }
   S.results[S.i] = false;

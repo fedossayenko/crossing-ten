@@ -659,6 +659,30 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @keyframes twitch{0%,100%{transform:rotate(0)}35%{transform:rotate(-14deg)}65%{transform:rotate(4deg)}}
 .cat[data-fidget="flick"] .tail{animation:flick .7s ease-in-out}
 @keyframes flick{0%,100%{transform:rotate(0)}30%{transform:rotate(-16deg)}60%{transform:rotate(9deg)}}
+/* eat: two right in a row earn a treat — her animal's own, raised in both paws, three bites with crumbs, chewing,
+   then a smile; with less motion she just holds it. Drawn beside the praise (.treat), so a wide iPad shows it too */
+.cat .only-eat{display:none}
+.cat[data-mood="eat"] :is(.only-eat,.only-happy,.arm-eat,.fx-crumbs){display:inline}
+.cat[data-mood="eat"] .arm-eat{animation:eatarms 2.6s ease both}
+.cat[data-mood="eat"] .bite{transform-origin:50% 50%; animation:bite .22s ease-in .75s both}
+.cat[data-mood="eat"] .bite.b2{animation-delay:1.25s} .cat[data-mood="eat"] .bite.b3{animation-delay:1.75s}
+.cat[data-mood="eat"] .head{animation:munch .5s ease-in-out .55s 3}
+.cat[data-mood="eat"] .chew{transform-origin:50% 50%; animation:chew .5s ease-in-out .55s 3, gone .2s 2.15s both}
+.cat[data-mood="eat"] .m-happy{opacity:0; animation:eatdone 2.6s linear both}
+.cat[data-mood="eat"] .fx-crumbs circle{opacity:0; animation:crumb .55s ease-out .75s both}
+.cat[data-mood="eat"] .fx-crumbs circle:nth-child(2){animation-delay:1.25s} .cat[data-mood="eat"] .fx-crumbs circle:nth-child(3){animation-delay:1.75s}
+.cat[data-mood="eat"] .ear-l{transform:rotate(7deg)} .cat[data-mood="eat"] .ear-r{transform:rotate(-7deg)}
+.cat[data-mood="eat"] .tail{animation-duration:1.6s}
+@keyframes eatarms{0%{opacity:0; transform:translateY(18px)}12%,80%{opacity:1; transform:none}94%,100%{opacity:0; transform:translateY(14px)}}
+@keyframes bite{to{opacity:0; transform:scale(.3)}}
+@keyframes munch{0%,100%{transform:none}45%{transform:translateY(4px) rotate(-2deg)}}
+@keyframes chew{0%,100%{transform:scaleY(.35)}45%{transform:scaleY(1)}}
+@keyframes gone{to{opacity:0}}
+@keyframes eatdone{0%,84%{opacity:0}100%{opacity:1}}
+@keyframes crumb{0%{opacity:0; transform:none}25%{opacity:1}100%{opacity:0; transform:translateY(16px)}}
+.treat{display:flex; align-items:center; gap:12px}
+.treat > .cat{width:clamp(72px,20vw,110px); flex:0 0 auto}
+.treat > .fb{flex:1 1 auto; min-width:0}
 
 /* iPad: the same screens in two columns */
 @media (min-width:900px){

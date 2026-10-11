@@ -174,6 +174,15 @@ const server = http.createServer((req, res) => {
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
   expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today, 'the next competition went wrong: ' + JSON.stringify(r5));
+  // two right in a row earn a treat: her mascot eats it beside the praise; the third gets star eyes, not another treat
+  const treat = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 5;
+    newRound([{ a:27, b:15, op:'+' }, { a:38, b:24, op:'+' }, { a:46, b:17, op:'+' }]);
+    const r = [];
+    for(const v of ['42', '62', '63']){ [...v].forEach(K); K('go'); await tick();
+      r.push((document.querySelector('#hint .treat .cat') || {}).dataset?.mood || $('cat').dataset.mood); if(r.length < 3) K('go'); await tick(); }
+    LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(r); })()`));
+  expect(treat.join() === 'happy,eat,star', 'two right in a row should earn the mascot a treat: ' + JSON.stringify(treat));
   // R6: a task missed as a forgotten borrow lands in the notebook under that mistake, drawn again from its seed;
   // "put right" plays it with new ones, all right puts the kind right, and a week on it asks to be checked again
   const r6 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
