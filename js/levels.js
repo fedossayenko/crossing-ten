@@ -121,7 +121,7 @@ import { genAges } from '../kinds/ages.js';
 import { genGarland } from '../kinds/garland.js';
 import { genDice } from '../kinds/dice.js';
 import { genTimes } from '../kinds/times.js';
-import { genUnits } from '../kinds/units.js';
+import { genUnits, genUnitsWide } from '../kinds/units.js';
 import { genRepAdd } from '../kinds/repadd.js';
 import { genMulBr, genMulBrPlus } from '../kinds/mulbr.js';
 import { genProd3, genProdOf } from '../kinds/prodof.js';
@@ -202,7 +202,8 @@ export const LEVELS = [
   { id:5, op:'+', needs:[4], d:2, eq:'27 + 15', desc:{ en:'Two digits plus two, with a carry', bg:'Двуцифрено плюс двуцифрено, с пренасяне', uk:'Двоцифрове плюс двоцифрове, з перенесенням' } },
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:{ en:'Crossing a hundred', bg:'През стотицата', uk:'Через сотню' } },
   { id:141, op:'x', needs:[6], src:'basics', d:3, eq:{ bg:'6 · 7', uk:'6 · 7' }, desc:{ en:'The times table, and division read back from it', bg:'Таблицата за умножение и делението, прочетено наобратно', uk:'Таблиця множення і ділення, прочитане навпаки' }, gen:genTimes },
-  { id:267, op:'w', grp:'geo', src:'basics', d:2, shapes:{ down:2, up:2, join:2, split:2 }, eq:{ bg:'1 дм = 10 см', uk:'1 дм = 10 см' }, desc:{ en:'Millimetres, centimetres, decimetres and metres, one into another', bg:'Милиметри, сантиметри, дециметри и метри: от една мярка в друга', uk:'Міліметри, сантиметри, дециметри й метри: з однієї міри в іншу' }, gen:genUnits },
+  { id:267, op:'w', grp:'geo', src:'basics', d:2, shapes:{ down:1, up:2, join:2, split:2 }, eq:{ bg:'1 дм = 10 см', uk:'1 дм = 10 см' }, desc:{ en:'Centimetres, decimetres and metres, one into another', bg:'Сантиметри, дециметри и метри: от една мярка в друга', uk:'Сантиметри, дециметри й метри: з однієї міри в іншу' }, gen:genUnits },
+  { id:268, op:'w', grp:'geo', needs:[267], src:'basics', d:2, shapes:{ down:2, up:2, join:2, split:2 }, eq:{ bg:'1 м = 100 см', uk:'1 м = 100 см' }, desc:{ en:'Millimetres too, and a hundred centimetres to a metre: 1 м 5 см is 105 см', bg:'И милиметри, и сто сантиметра в метъра: 1 м 5 см са 105 см', uk:'І міліметри, і сто сантиметрів у метрі: 1 м 5 см — це 105 см' }, gen:genUnitsWide },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:{ en:'A long chain of + and −, worked left to right', bg:'Дълга верижка от + и −, отляво надясно', uk:'Довгий ланцюжок з + і −, зліва направо' }, also:['mbg-autumn-2024-2', 'mbg-autumn-2025-2'], gen:genChain },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, shapes:{ cancel:2, ones:2, run:3, sub:2, tens:2 }, eq:'1 + 9 + 2 + 8', desc:{ en:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', bg:'Верижки, които се опростяват с групиране — в десетици, двойки ± или числа, които се унищожават', uk:'Ланцюжки, що спрощуються групуванням — у десятки, пари ± або доданки, що скорочуються' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2024-2', 'mbg-autumn-2025-2'], gen:genPairs },
   { id:79, op:'w', grp:'chain', needs:[9], src:'mbg-winter-2024', d:4, shapes:{ '0':2, '1':3, '2':2, '3':4, '4':4 }, eq:'1 + 49 + 2 + 48', desc:{ en:'Numbers that pair up into a round fifty, then used', bg:'Числа, които се събират по две в кръгло число — после се използват', uk:'Числа, що попарно дають кругле число, — потім використовуються' }, also:['mbg-winter-2020-2', 'mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2'], gen:genFifty },

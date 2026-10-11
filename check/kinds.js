@@ -1543,18 +1543,22 @@ for(let i = 0; i < 3000; i++){
 if(candyWays(5, 3).length !== 6) throw new Error('worksheet instance of задача 16 should be 6');
 console.log('sharing sweets: the count matches the listed ways, worksheet instance gives 6');
 
-// level 267: read the drawn equation back with the answer in its box — both sides the same length in мм
+// levels 267 and 268: read the drawn equation back with the answer in its box — both sides the same length in мм;
+// 267 keeps to the 2nd grade's см, дм and м with answers under 100, 268 has the мм and the hundreds
 {
-  const MM = { мм:1, см:10, дм:100, м:1000 }, seen = new Set();
+  const MM = { мм:1, см:10, дм:100, м:1000 };
   const mm = s => [...s.matchAll(/(\d+)\s*(мм|см|дм|м)/g)].reduce((t, m) => t + +m[1]*MM[m[2]], 0);
-  for(let i = 0; i < 3000; i++){
-    const q = raw(267), [l, r] = strip(drawQ(q).replace(SLOT, String(q.ans))).split('=');
-    seen.add(q.shape + ' ' + q.big + q.small);
-    if(!l || !r || mm(l) !== mm(r) || mm(l) === 0) throw new Error('units: the two sides differ ' + strip(drawQ(q)) + ' → ' + q.ans);
-    if(q.ans > 999 || [1, 10, 100].includes(q.ans)) throw new Error('units: an answer past 999, or one the nudge names ' + JSON.stringify(q));
-    if(q.big === 'м' && q.small === 'мм' || q.big === 'дм' && q.small === 'мм' && (q.shape === 'join' || q.shape === 'split')) throw new Error('units: a pair it never asks ' + JSON.stringify(q));
+  for(const [L, pairs, most] of [[267, ['дмсм', 'мдм'], 99], [268, ['сммм', 'мсм', 'дммм'], 999]]){
+    const seen = new Set();
+    for(let i = 0; i < 3000; i++){
+      const q = raw(L), [l, r] = strip(drawQ(q).replace(SLOT, String(q.ans))).split('=');
+      seen.add(q.shape + ' ' + q.big + q.small);
+      if(!l || !r || mm(l) !== mm(r) || mm(l) === 0) throw new Error('units: the two sides differ ' + strip(drawQ(q)) + ' → ' + q.ans);
+      if(q.ans > most || [1, 10, 100].includes(q.ans)) throw new Error('units ' + L + ': an answer past ' + most + ', or one the nudge names ' + JSON.stringify(q));
+      if(!pairs.includes(q.big + q.small) || q.big + q.small === 'дммм' && (q.shape === 'join' || q.shape === 'split')) throw new Error('units ' + L + ': a pair it never asks ' + JSON.stringify(q));
+    }
+    if(seen.size !== 2*pairs.length + 2*pairs.filter(p => p !== 'дммм').length) throw new Error('units ' + L + ': not every shape and pair turns up: ' + [...seen].join(', '));
   }
-  if(seen.size !== 2*5 + 2*4) throw new Error('units: not every shape and pair turns up: ' + [...seen].join(', '));
 }
 if(lastNum(why({kind:'units', shape:'join', big:'м', small:'см', k:100, a:1, b:5, ans:105}, true)) !== 105)
   throw new Error('1 м 5 см is 105 см, not 15');

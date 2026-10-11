@@ -1,24 +1,30 @@
-// Question kind 'units': level 267 1 дм = 10 см — Millimetres, centimetres, decimetres and metres, one into another.
+// Question kind 'units': level 267 1 дм = 10 см — Centimetres, decimetres and metres, one into another;
+// level 268 1 м = 100 см — and millimetres, and a hundred to a metre.
 
 // The drill under Ленти, Гирлянди and the perimeters in мм: 1 м = 10 дм, 1 дм = 10 см, 1 см = 10 мм, written the
 // way the textbook does, «3 дм 4 см». Down to a smaller unit, up to a bigger one, two units joined into one
-// (1 м 5 см is 105 см, not 15) and one split into two. Never м to мм: a thousand is past the 2nd grade's numbers.
-// No answer is 1, 10 or 100, the numbers the first-miss nudge names.
+// (1 м 5 см is 105 см, not 15) and one split into two. In the school's order: the 2nd grade has см, дм and м with
+// numbers to 100 (level 267); мм and numbers to 1000 are the 3rd grade's, though МБГ Зима asks мм in the 2nd
+// (level 268, after 267). Never м to мм: a thousand is past even that. No answer is 1, 10 or 100, the numbers
+// the first-miss nudge names.
 import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const UNIT_MM = { мм:1, см:10, дм:100, м:1000 };
 // one, counted (after a number or колко), plural; Ukrainian one, counted
 const UNIT_W = { мм:['милиметър', 'милиметра', 'милиметри', 'міліметр', 'міліметрів'], см:['сантиметър', 'сантиметра', 'сантиметри', 'сантиметр', 'сантиметрів'],
   дм:['дециметър', 'дециметра', 'дециметри', 'дециметр', 'дециметрів'], м:['метър', 'метра', 'метри', 'метр', 'метрів'] };
-// bigger and smaller unit; the last one (дм to мм) is only asked one way, never joined or split
-const UNIT_PAIRS = [['дм', 'см'], ['см', 'мм'], ['м', 'дм'], ['м', 'см'], ['дм', 'мм']];
-export function genUnits(){
+// bigger and smaller unit; the first two of each are also joined and split (дм and мм only one way)
+const UNIT_EASY = [['дм', 'см'], ['м', 'дм']], UNIT_WIDE = [['см', 'мм'], ['м', 'см'], ['дм', 'мм']];
+export function genUnits(){ return unitsFrom(UNIT_EASY); }
+export function genUnitsWide(){ return unitsFrom(UNIT_WIDE); }
+function unitsFrom(pairs){
   for(;;){
     const r = Math.random(), shape = r < 0.3 ? 'down' : r < 0.55 ? 'up' : r < 0.8 ? 'join' : 'split';
-    const [big, small] = UNIT_PAIRS[rnd(shape === 'down' || shape === 'up' ? 5 : 4)], k = UNIT_MM[big] / UNIT_MM[small];
+    const [big, small] = pairs[rnd(shape === 'down' || shape === 'up' ? pairs.length : 2)], k = UNIT_MM[big] / UNIT_MM[small];
     const a = 1 + rnd(9), b = 1 + rnd(k - 1), askBig = Math.random() < 0.5;
-    // the slips: ten where it is a hundred, «1 м 5 см» read as 15, the ones digit of 25 kept as 5
+    // the slips: the wrong way (30 см as 300 дм, seen on Ленти) or ten where it is a hundred,
+    // «1 м 5 см» read as 15, the ones digit of 25 kept as 5
     const q = shape === 'down' ? {kind:'units', shape, big, small, k, a, ans: a*k, traps:[a*(k === 100 ? 10 : 100)]}
-      : shape === 'up' ? {kind:'units', shape, big, small, k, a, ans: a, traps:[a*k / 10]}
+      : shape === 'up' ? {kind:'units', shape, big, small, k, a, ans: a, traps:[a*(k === 100 ? 10 : 100)]}
       : shape === 'join' ? {kind:'units', shape, big, small, k, a, b, ans: a*k + b, traps:[k === 100 && b < 10 ? 10*a + b : a + b]}
       : {kind:'units', shape, big, small, k, a, b, askBig, ans: askBig ? a : b, traps:[askBig ? Math.floor((a*k + b) / 10) : b % 10]};
     if(q.ans === 1 || q.ans === 10 || q.ans === 100) continue;
