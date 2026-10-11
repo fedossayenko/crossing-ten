@@ -1287,7 +1287,7 @@ function buildPicker(){
 
   // the list's head: what is chosen and how many levels it holds; and the reviews waiting
   const listed = LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC));
-  $('pickHead').textContent = [PICK_COMP ? t('comps')[PICK_COMP] + (PICK_ROUND ? ' ' + t('mbgRounds')[PICK_ROUND] : '') : '', PICK_GRADE ? t('gradeN', PICK_GRADE) : t('allGrades'),
+  $('pickHead').textContent = [PICK_COMP ? (PICK_COMP === 'basics' ? t('basics') : t('comps')[PICK_COMP]) + (PICK_ROUND ? ' ' + t('mbgRounds')[PICK_ROUND] : '') : '', PICK_GRADE ? t('gradeN', PICK_GRADE) : t('allGrades'),
     PICK_TOPIC ? t('groups')[PICK_TOPIC] : '', t('levelsN', listed.length)].filter(Boolean).join(' · ');
   const due = LEVELS.filter(l => dueReview(m, l.id, Date.now()));
   $('pickDue').hidden = !due.length;
