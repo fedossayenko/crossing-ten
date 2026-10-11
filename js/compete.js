@@ -13,9 +13,9 @@ import { t } from './i18n.js';
 import { withChoices } from './choice.js';
 import { COMP, GLYPH, LOCAL, S, clearTimers, compTick, finish, newRound, setComp, sfx, show } from './app.js';
 export const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
-// Plain sums (the Take away and Add groups) are drill, not olympiad tasks: a paper leaves them out.
+// The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
 // A paper is for the player's own grade (her profile's, 2nd by default).
-const olympiad = () => LEVELS.filter(l => l.op !== '-' && l.op !== '+' && l.op !== 'x' && l.grade === (PLAYER.grade || 2));
+const olympiad = () => LEVELS.filter(l => l.src !== 'basics' && l.grade === (PLAYER.grade || 2));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 export function compTasks(){
   const out = [], used = new Set(), OLYMPIAD = olympiad();
