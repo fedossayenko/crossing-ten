@@ -87,7 +87,8 @@ export function compEnd(){
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){
-  const best = LOCAL.rounds.filter(r => r.level === 'comp' && r.max).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+  // a paper marked the old way (3–5 points a task, some А/Б/В/Г) doesn't compare: only those at 2 points a task
+  const best = LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
   $('compStart').innerHTML = '<span class="compicon">' + ICON(GLYPH.stopwatch[1]) + '</span><span class="nm"><span class="lab">' +
     t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b>' +
     (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');

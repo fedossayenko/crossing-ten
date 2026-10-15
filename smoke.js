@@ -397,7 +397,9 @@ const server = http.createServer((req, res) => {
           $('toStats').textContent === t('backToday') && row.getAttribute('aria-expanded') === 'true' && !row.nextElementSibling.hidden && row.nextElementSibling.textContent.length > 3; }
       out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
       out.cps = [...$('compTable').querySelectorAll('.crow .cp')].reduce((a, e) => a + +e.textContent, 0);   // each row: the points it got
-      // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
+      // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown;
+      // a paper marked the old way (3–5 points a task, some А/Б/В/Г) is no paper to beat: its 60 / 64 is not the best so far
+      const old = Object.assign({}, LOCAL.rounds[LOCAL.rounds.length - 1], { id: 'old', pts: 60, max: 64 }); LOCAL.rounds.push(old);
       $('sheet').hidden = true; window.confirm = () => true;
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
       { const q = S.qs[S.i];   // the first task right, as А/Б/В/Г or typed (a task with several boxes stays typed)
@@ -407,8 +409,11 @@ const server = http.createServer((req, res) => {
       const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&
         $('compTable').querySelectorAll('.crow.skip').length === 19 && !$('compBest').hidden && !$('homeBtn').hidden;
+      out.oldBest = $('compBest').textContent === t('compBest', 24, 40);
       // a paper whose hour ran out while the app was hidden (an iPad put away for hours): its time is the hour, not the hours
-      $('sheet').hidden = true; $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
+      $('sheet').hidden = true; $('levelPill').click(); await wait(100);
+      out.oldCard = $('compStart').textContent.includes(t('compBest', 24, 40)); LOCAL.rounds.splice(LOCAL.rounds.indexOf(old), 1);
+      $('compStart').click(); await wait(100);
       COMP.t0 -= 3 * 3600e3; COMP.end = COMP.t0 + 3600e3;
       for(let i = 0; i < 100 && COMP; i++) await wait(50);   // the clock's next tick ends it
       out.expired = COMP === null && LOCAL.rounds[LOCAL.rounds.length - 1].secs === 3600 && $('scoreSub').textContent.includes('60:00');
@@ -430,7 +435,7 @@ const server = http.createServer((req, res) => {
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
-      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastAgain &&
+      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastAgain && cp.oldBest && cp.oldCard &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);

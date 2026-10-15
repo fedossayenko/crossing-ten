@@ -629,7 +629,7 @@ export function finish(){
       const open = b.getAttribute('aria-expanded') !== 'true';
       b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
     });
-    const prev = LOCAL.rounds.filter(r => r.level === 'comp' && r.max).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+    const prev = LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
     if(prev){
       $('compBest').hidden = false;
       $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
