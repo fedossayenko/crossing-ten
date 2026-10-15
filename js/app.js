@@ -1262,8 +1262,8 @@ function buildPicker(){
   const papers = ofComp.filter(p => !PICK_ROUND || roundOf(p) === PICK_ROUND)
     .sort((a, b) => +!yearOf(a) - +!yearOf(b) || yearOf(b) - yearOf(a) || ROUNDS.findIndex(r => a.includes(r)) - ROUNDS.findIndex(r => b.includes(r)) || paperGrade(a) - paperGrade(b));
   if(PICK_PAPER && !papers.includes(PICK_PAPER)) PICK_PAPER = '';
-  // with a round picked, its papers are just years
-  const paperLabel = p => (PICK_ROUND ? String(yearOf(p) || t('otherYears')) : t('paperTag')[paperSrc(p)]) + (PICK_GRADE ? '' : ' · ' + t('gradeN', paperGrade(p)));
+  // with a round picked, its papers are just years (a forecast keeps its word after the year: «2026 · прогноза»)
+  const paperLabel = p => (PICK_ROUND ? (yearOf(p) ? t('paperTag')[paperSrc(p)].replace(/^\D+/, '') : t('otherYears')) : t('paperTag')[paperSrc(p)]) + (PICK_GRADE ? '' : ' · ' + t('gradeN', paperGrade(p)));
   // one row at a time: with rounds to choose from, the years wait for a round
   chips('pickPapers', papers.length > 1 && (PICK_ROUND || PICK_PAPER || rounds.length < 2) ? [['', t('all')]].concat(papers.map(p => [p, paperLabel(p), paperName(p)])) : [], PICK_PAPER, v => { PICK_PAPER = v; });
 

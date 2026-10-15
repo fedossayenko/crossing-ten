@@ -1,4 +1,4 @@
-// Question kind 'pmgap': level 62 + 9 и − 9 — Two long expressions that differ only at the end.
+// Question kind 'pmgap': level 62 + 9 и − 9 and level 270 Еднакво начало — Two long expressions that differ only at the end.
 
 // МБГ Есен, 3 клас, задача 4: how much bigger 9 · 7 + 7 · 5 + 9 is than 9 · 7 + 7 · 5 − 9.
 // The shared start never needs working out: one is 9 above it and the other 9 below, 18 apart.
@@ -16,7 +16,18 @@ export function genPmGap(){
             traps: [both ? e + f : e, X + e].filter(v => v !== ans && v < 1000)};
   }
 }
-const pmHead = q => q.a + ' · ' + q.b + ' + ' + q.c + ' · ' + q.d;
+// 2nd grade, level 270 (shape 'add'): no × yet, so the shared start is a sum — 35 + 27 + 9 against 35 + 27 − 9.
+export function genPmGapAdd(){
+  for(;;){
+    const a = 11 + rnd(50), b = 11 + rnd(30), e = 2 + rnd(8), both = Math.random() < 0.25;
+    const f = Math.random() < 0.6 && !both ? e : 2 + rnd(8);
+    if((both && e <= f) || a + b + Math.max(e, f) > 100) continue;
+    const ans = both ? e - f : e + f;
+    return {kind:'pmgap', shape:'add', a, b, e, f, both, flip: Math.random() < 0.3, ans,
+            traps: [both ? e + f : e, a + b + e].filter(v => v !== ans && v < 1000)};
+  }
+}
+const pmHead = q => q.shape === 'add' ? q.a + ' + ' + q.b : q.a + ' · ' + q.b + ' + ' + q.c + ' · ' + q.d;
 export const pmBig = q => pmHead(q) + ' + ' + q.e, pmSmall = q => pmHead(q) + (q.both ? ' + ' : ' − ') + q.f;
 function drawPmGap(q){
   const B = '<span class="num">' + pmBig(q) + '</span>', S = '<span class="num">' + pmSmall(q) + '</span>';
