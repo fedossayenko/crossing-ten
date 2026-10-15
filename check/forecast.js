@@ -9,7 +9,8 @@
   const calc = e => Function('return ' + strip(e).replace(/−/g, '-'))();
   const TAG = 'mbg-autumn-forecast2026-2';
   // its slots: what every year asks, and what the papers around it suggest is coming
-  const want = [8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 21, 22, 24, 25, 27, 31, 32, 269, 270, 271, 272, 273];
+  // (29, 48, 95, 102: types on the 1 клас Есен 2025 paper the same children sat, as 2024's grade 1 pair sums came back in 2025's grade 2)
+  const want = [8, 9, 10, 11, 12, 13, 15, 16, 17, 18, 21, 22, 24, 25, 27, 29, 31, 32, 48, 95, 102, 269, 270, 271, 272, 273];
   const got = Q.LEVELS.filter(l => l.papers.includes(TAG)).map(l => l.id).sort((a, b) => a - b);
   if(got.join() !== want.join()) throw new Error('the forecast holds levels ' + got + ', expected ' + want);
   if(Q.LEVELS.some(l => l.papers.includes(TAG) && l.grade !== 2)) throw new Error('a forecast level is not 2nd grade');
