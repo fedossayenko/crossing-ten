@@ -357,12 +357,13 @@ const server = http.createServer((req, res) => {
       return JSON.stringify(shown); })()`) || '{}');
     expect(ch.opts === 4 && ch.pad && ch.choices && ch.crossed && ch.hint && ch.settled && ch.green && ch.back, 'multiple choice went wrong: ' + JSON.stringify(ch));
 
-    // A competition: 20 tasks, 15 of them А/Б/В/Г; one skipped comes back last; 12 right; points at the end.
+    // A competition, as МБГ sets its papers: 20 tasks, all typed (a kind whose answer is a word keeps its own А/Б/В/Г),
+    // 2 points each; one skipped comes back last; 12 right make 24 of 40, and the table's points add up to them.
     const cp = JSON.parse(await run(`(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
-      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options).length, drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
+      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
         header: $('levelName').textContent + ' ' + $('sub').textContent,
         chip: /[0-9]/.test(($('run').querySelector('.ptschip') || {}).textContent || ''), quitShown: !$('quitBtn').hidden && $('homeBtn').hidden };
       out.top = !$('compTop').hidden && $('levelPill').hidden && document.querySelectorAll('#dots .step').length === 20 && !$('compNote').hidden;
@@ -395,6 +396,7 @@ const server = http.createServer((req, res) => {
         out.end = !$('scoreBar').hidden && parseInt($('scoreBar').firstElementChild.style.width) >= 0 && $('again').textContent === t('newComp') &&
           $('toStats').textContent === t('backToday') && row.getAttribute('aria-expanded') === 'true' && !row.nextElementSibling.hidden && row.nextElementSibling.textContent.length > 3; }
       out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
+      out.cps = [...$('compTable').querySelectorAll('.crow .cp')].reduce((a, e) => a + +e.textContent, 0);   // each row: the points it got
       // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown
       $('sheet').hidden = true; window.confirm = () => true;
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
@@ -405,14 +407,30 @@ const server = http.createServer((req, res) => {
       const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&
         $('compTable').querySelectorAll('.crow.skip').length === 19 && !$('compBest').hidden && !$('homeBtn').hidden;
+      // a paper whose hour ran out while the app was hidden (an iPad put away for hours): its time is the hour, not the hours
+      $('sheet').hidden = true; $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
+      COMP.t0 -= 3 * 3600e3; COMP.end = COMP.t0 + 3600e3;
+      for(let i = 0; i < 100 && COMP; i++) await wait(50);   // the clock's next tick ends it
+      out.expired = COMP === null && LOCAL.rounds[LOCAL.rounds.length - 1].secs === 3600 && $('scoreSub').textContent.includes('60:00');
       // "Назад към Днес" from a paper's end: the results close and Today is what shows (they used to stay over it)
       $('toStats').click(); await wait(50);
       out.backToday = $('sheet').hidden && !$('today').hidden && location.hash === '#/today' && COMP === null && S.i === 0;
+      // the forecast paper, on Today for a 2nd-grader (she is a 3rd-grader here: not for her): one task from each of the
+      // forecast's levels, all typed, under the forecast's name; «Ново състезание» at its end sits the same paper again
+      out.notG3 = !document.querySelector('#today .comp.forecast');
+      const g = PLAYER.grade; PLAYER.grade = 2; $('tabToday').click(); await wait(50);
+      const fc = () => !!COMP && S.qs.length === 20 && new Set(S.qs.map(q => q.lvl)).size === 20 && $('levelName').textContent === t('papers')['mbg-autumn-forecast2026'] &&
+        S.qs.every(q => !q.options && q.pts === 2 && LEVELS.find(l => l.id === q.lvl).papers.includes('mbg-autumn-forecast2026-2'));
+      document.querySelector('#today .comp.forecast').click(); await wait(100);
+      out.forecast = fc(); $('quitBtn').click(); await wait(50);
+      $('again').click(); await wait(100); out.forecastAgain = fc(); $('quitBtn').click(); await wait(50);
+      $('toStats').click(); await wait(50); PLAYER.grade = g;
       newRound(); await wait(50);   // back on a round, where the next checks start
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
-    expect(cp.n === 20 && cp.drill === 0 && cp.choice >= 12 && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
+    expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
+      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastAgain &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);

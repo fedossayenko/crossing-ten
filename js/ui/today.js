@@ -1,6 +1,6 @@
 // Today (#/today), the home screen of the Десетка 2026 redesign: hello, the streak and the rounds played today and
 // this week, the level to play now (or the round to go back to), every level due again, the countdown to her next
-// competition with how ready she is, and the practice paper. Two columns on a wide screen (app.css).
+// competition with how ready she is, and the practice papers (one drawn afresh, the forecast's). Two columns on a wide screen (app.css).
 // app.js gathers the data (todayData) and does the playing; this only draws. Same classes as the picker's cards.
 import { h, render } from '../vendor/preact.js';
 import htm from '../vendor/htm.js';
@@ -56,6 +56,7 @@ function Today(){
           <div class="days">${d.days.map(x => html`<span class=${x.played ? 'on' : ''}><i></i>${x.label}</span>`)}</div>
         </div>
         <button class="gcard nextcard comp" onClick=${() => startComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
+        ${d.forecast && html`<button class="gcard nextcard comp forecast" onClick=${() => startComp('forecast')}><span class="nm"><span class="lab">${t('papers')['mbg-autumn-forecast2026']}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>`}
       </div>
     </div>`;
 }

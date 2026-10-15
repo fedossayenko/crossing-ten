@@ -1,6 +1,6 @@
 /* ---------- competition ----------
-   An МБГ-style paper: 20 olympiad-style tasks in an hour, easiest first, each worth its difficulty in points.
-   The first 15 are А/Б/В/Г and the last 5 are typed, as on the real paper. Nothing is marked
+   An МБГ paper as its rules have set it since 2018: 20 tasks in an hour, easiest first, every answer typed,
+   2 points for a right answer, 1 for at least half of a task's several answers (mbgPts). Nothing is marked
    until the end, or until the clock runs out; a skipped task comes back after the others.
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
@@ -10,14 +10,18 @@ import { accepts, seededRaw, slipOf } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { t } from './i18n.js';
-import { withChoices } from './choice.js';
 import { COMP, GLYPH, LOCAL, S, clearTimers, compTick, finish, newRound, setComp, sfx, show } from './app.js';
-export const COMP_N = 20, COMP_CHOICE = 15, COMP_MIN = 60;
+export const COMP_N = 20, COMP_MIN = 60;
+// МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
+// (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
+export const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
+const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kind whose answer is a word keeps its own А/Б/В/Г
 // The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
 // A paper is for the player's own grade (her profile's, 2nd by default).
 const olympiad = () => LEVELS.filter(l => l.src !== 'basics' && l.grade === (PLAYER.grade || 2));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
-export function compTasks(){
+export function compTasks(paper){
+  if(paper === 'forecast') return FORECAST.map(task);
   const out = [], used = new Set(), OLYMPIAD = olympiad();
   let lastGrp = null;
   for(let i = 0; i < COMP_N; i++){
@@ -30,26 +34,26 @@ export function compTasks(){
     let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0));
     const l = pool.find(l => (w -= 1 + l.freq) < 0);
     used.add(l.id); lastGrp = l.grp;
-    const q = Object.assign(seededRaw(l.id), { lvl: l.id, pts: Math.min(5, Math.max(1, l.d)) });
-    out.push(i < COMP_CHOICE ? withChoices(q) : q);
+    out.push(task(l.id));
   }
   return out;
 }
 export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 export const compLeft = () => compTime(COMP.end - Date.now());
 
-export function startComp(){
-  const qs = compTasks(), now = Date.now();
+// paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
+export function startComp(paper){
+  const qs = compTasks(paper), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
   clearInterval(compTick);
-  setComp({ t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
+  setComp({ paper, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
     if(!COMP){ clearInterval(compTick); return; }
     const c = $('compClock');
     if(c) c.textContent = compLeft();
     if(Date.now() >= COMP.end) compEnd();
   }, 1000));
   newRound(qs, true);
-  $('levelName').textContent = t('compName');
+  $('levelName').textContent = paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
   $('sub').textContent = t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle');   // a paper mixes levels from every paper of her grade
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.

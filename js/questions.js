@@ -62,6 +62,15 @@ export function accepts(q, parts){
   if(n === 1) return want.indexOf(got[0]) >= 0;
   return want.length === n && got.every((v, i) => want.indexOf(v) >= 0 && got.indexOf(v) === i);
 }
+// A competition's marks, by МБГ's rules: 2 points for the answer; 1 when a task has several answers and at least
+// half of them are given; 0 otherwise. Its other 1 point, the answer written beside one wrong one, is that same case
+// here: there are as many boxes as answers.
+export function mbgPts(q, parts){
+  if(!parts) return 0;
+  if(accepts(q, parts)) return 2;
+  const want = answers(q), found = new Set(parts.map(Number).filter(v => want.indexOf(v) >= 0)).size;
+  return (q.slots || 1) > 1 && 2 * found >= (q.slots || 1) ? 1 : 0;
+}
 
 export function drawQ(q){
   if(!q.kind){

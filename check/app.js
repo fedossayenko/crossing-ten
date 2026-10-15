@@ -281,3 +281,19 @@
   if(slipsOffered < asked / 2) throw new Error('the lost-or-gained ten is offered too rarely: ' + slipsOffered + ' of ' + asked);
   console.log('multiple choice: ' + asked + ' questions asked as А/Б/В/Г, each with one right option, in order, a ten-off slip among them in ' + Math.round(100 * slipsOffered / asked) + '%');
 }
+
+/* A competition is marked as МБГ marks its papers: 2 points for the answer; 1 when a task has several answers and
+   at least half of them are given (one right beside one wrong is that case too, the boxes being as many as the answers);
+   0 for anything else, an unanswered task included. */
+{
+  const Q = APP;
+  const one = { kind:'erase', ans:7 }, two = { kind:'weekday', slots:2, ans:4, alt:[5] }, three = { kind:'place', slots:3, ans:7, alt:[9, 11] };
+  [[one, ['7'], 2], [one, ['8'], 0], [one, undefined, 0],
+   [two, ['5', '4'], 2], [two, ['4', '9'], 1], [two, ['4', '4'], 1], [two, ['6', '9'], 0],
+   [three, ['11', '7', '9'], 2], [three, ['7', '9', '1'], 1], [three, ['7', '1', '2'], 0], [three, ['7', '7', '7'], 0]
+  ].forEach(([q, parts, want]) => {
+    const got = Q.mbgPts(q, parts);
+    if(got !== want) throw new Error('МБГ marking: ' + JSON.stringify(parts) + ' for ' + Q.answers(q).join(' · ') + ' gets ' + got + ' points, not ' + want);
+  });
+  console.log('МБГ marking: 2 points for the answer, 1 for at least half of a task\'s several answers, 0 otherwise');
+}

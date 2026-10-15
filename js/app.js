@@ -1,5 +1,5 @@
 import { $, rnd, seeded, shuffle } from './core.js';
-import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, raw, setW, slipOf, why } from './questions.js';
+import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds } from './archive.js';
@@ -552,12 +552,12 @@ export function finish(){
   const lv = LEVELS.find(l => l.id === S.level) || { eq:'' };
   let best = 0, run = 0;
   S.results.forEach(r => { run = r ? run+1 : 0; if(run > best) best = run; });
-  // a competition counts points, each task worth its difficulty
-  const pts = COMP ? S.qs.reduce((a, q, k) => a + (S.results[k] ? q.pts : 0), 0) : got;
+  // a competition counts points as МБГ marks them; its time stops at the hour, even if the app was away for longer
+  const pts = COMP ? S.qs.reduce((a, q, k) => a + mbgPts(q, COMP.ans[k]), 0) : got;
   const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
   $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
-  const secs = Math.round((Date.now() - S.t0) / 1000);
-  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(Date.now() - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
+  const secs = Math.round((Date.now() - S.t0) / 1000), ended = COMP ? Math.min(Date.now(), COMP.end) : Date.now();
+  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(ended - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
   const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
   if(COMP) /** @type {HTMLElement} */ ($('scoreBar').firstElementChild).style.width = Math.round(100 * pts / max) + '%';
@@ -622,7 +622,7 @@ export function finish(){
       const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
         t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
       return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
-        '</span><span class="co">' + said + '</span><span class="cp">' + q.pts + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
+        '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
     }).join('');
     // a row opens its task and how it is solved
     $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
@@ -642,7 +642,7 @@ export function finish(){
     id: 'r' + now + '_' + Math.random().toString(36).slice(2,7),
     ts: now, day: dayKey(now),
     level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
-    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: Math.round((now - (COMP ? COMP.t0 : S.t0)) / 1000),
+    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: Math.round((Math.min(now, COMP ? COMP.end : now) - (COMP ? COMP.t0 : S.t0)) / 1000),
     levels: COMP ? S.qs.map(q => q.lvl) : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
@@ -676,7 +676,8 @@ export function finish(){
     return '<div class="newbadge">' + medal(b, true) + '<div><b>' + badgeName(b) + '</b><span>' + t('newBadge') + '</span></div></div>';
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
-  $('again').onclick = COMP ? () => startComp() : () => newRound();
+  const paper = COMP && COMP.paper;   // a new paper of the same kind: the forecast's again, or one drawn afresh
+  $('again').onclick = COMP ? () => startComp(paper) : () => newRound();
   if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; $('levelPill').hidden = false; $('compTop').hidden = true; }
 
   $('sheet').hidden = false;
@@ -964,7 +965,7 @@ export function todayData(){
     next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
-    compN: COMP_N, compMin: COMP_MIN };
+    compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
 }
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }

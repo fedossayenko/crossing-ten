@@ -229,12 +229,16 @@ They are made when the round is built and go in order of size, as on a paper; a 
 tap crosses that option out and shows the same hint as a wrong typed answer. How many
 options there are comes from the data (`q.options`), not from the screen.
 
-**Choose a level → Competition** is an МБГ-style paper: 20 tasks in 60 minutes, easiest
-first (four bands of five, difficulty 2–3 up to 4–5, no two in a row from one group), none of
-them plain sums from the Take away and Add groups, which are drill rather than olympiad tasks; each
-worth its difficulty in points. Tasks 1–15 are А/Б/В/Г and 16–20 are typed, as on the real
-paper. Nothing is marked until the end or until the clock runs out, and **Skip for now**
-sends a task to the back of the queue. The tasks come from the levels' own generators,
+**Choose a level → Competition** is an МБГ paper as its rules have set it since 2018: 20 tasks
+in 60 minutes, easiest first (four bands of five, difficulty 2–3 up to 4–5, no two in a row from
+one group), none of them plain sums from the Take away and Add groups, which are drill rather than
+olympiad tasks. Every answer is typed (a kind whose answer is a word keeps its own А/Б/В/Г) and
+marked as МБГ marks it (`mbgPts`): 2 points for a right answer, 1 for at least half of a task's
+several answers, 0 otherwise, 40 in all. The time used is shown, since МБГ ranks a tie by it, and
+it stops at the hour. Nothing is marked until the end or until the clock runs out, and **Skip for now**
+sends a task to the back of the queue. Today also offers a 2nd-grader the forecast's paper for
+МБГ Есен 2026: a task from each `FORECAST` level in `js/compete.js`, in the forecast's order,
+with new numbers every time. The tasks come from the levels' own generators,
 never from the competitions' papers, which are copyrighted. A paper is saved as one round
 with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round.
 Two badges go with it: **Състезател** (finish a competition) and **Изследовател** (tasks
