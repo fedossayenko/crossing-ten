@@ -81,7 +81,7 @@ import { genZeroFac } from '../kinds/zerofac.js';
 import { genSqOff } from '../kinds/sqoff.js';
 import { genPinwheel } from '../kinds/pinwheel.js';
 import { genPyramid } from '../kinds/pyramid.js';
-import { genBalloons, genBalloons3 } from '../kinds/balloons.js';
+import { genBalloons, genBalloons3, genBalloonsOne } from '../kinds/balloons.js';
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
@@ -139,7 +139,10 @@ import { genFilms } from '../kinds/films.js';
 import { genRests } from '../kinds/rests.js';
 import { genToys } from '../kinds/toys.js';
 import { genNoTrue } from '../kinds/notrue.js';
-import { genBuyLeft } from '../kinds/buyleft.js';
+import { genBuyLeft, genBuyMix } from '../kinds/buyleft.js';
+import { genCuts } from '../kinds/cuts.js';
+import { genTogether } from '../kinds/together.js';
+import { genOutfits } from '../kinds/outfits.js';
 import { genClockMin } from '../kinds/clockmin.js';
 import { genBothSeq } from '../kinds/bothseq.js';
 import { genDateSpan } from '../kinds/datespan.js';
@@ -335,6 +338,11 @@ export const LEVELS = [
   { id:98, op:'w', grp:'word', needs:[10], src:'kms-2025', d:5, shapes:{ '0':4, '1':4, '2':4 }, eq:{ bg:'Градът на Дядо Коледа', uk:'Місто Діда Мороза' }, desc:{ en:'A route, a ticket table, and the change counted out', bg:'Път, таблица с билети и рестото, преброено по монети', uk:'Шлях, таблиця квитків і решта, порахована монетами' }, gen:genSanta },
   { id:126, op:'w', grp:'word', needs:[125], src:'kms-2024', d:5, shapes:{ '0':4, '1':4, '2':4, '3':5 }, eq:{ bg:'Гирляндите', uk:'Гірлянди' }, desc:{ en:'Garlands from a table of lengths, and the shapes laid out of them', bg:'Гирлянди по таблица с дължини и фигурите, наредени от тях', uk:'Гірлянди за таблицею довжин і фігури, викладені з них' }, gen:genGarland },
   { id:148, op:'w', grp:'word', needs:[2], src:'kms-2022', d:2, eq:{ bg:'Колко останаха?', uk:'Скільки лишилося?' }, desc:{ en:'Money, a few things at one price, and what is left', bg:'Пари, няколко неща на една цена и какво остава', uk:'Гроші, кілька речей за однією ціною і що залишилося' }, gen:genBuyLeft },
+  { id:291, op:'w', grp:'word', src:'ach-2024', d:2, shapes:{ cut:2, pieces:2, between:2 }, eq:{ bg:'Разрези', uk:'Розрізи' }, desc:{ en:'Cuts and pieces, and bushes between trees: one more, or one fewer', bg:'Разрези и парчета, храсти между дървета: с едно повече или с едно по-малко', uk:'Розрізи й шматки, кущі між деревами: на один більше або на один менше' }, also:['ach-2026-2'], gen:genCuts },
+  { id:292, op:'w', grp:'word', src:'ach-2026', d:2, shapes:{ eggs:2, shirts:2, one:2 }, eq:{ bg:'Едновременно', uk:'Одночасно' }, desc:{ en:'Things done at once take as long as one; one after another, the times add up', bg:'Правени едновременно, нещата траят колкото едно; едно след друго — времената се събират', uk:'Те, що робиться одночасно, триває як одне; одне за одним — час додається' }, gen:genTogether },
+  { id:293, op:'w', grp:'word', src:'ach-2023', d:2, shapes:{ shoes:2, week:2, rest:2 }, eq:{ bg:'Един и другите', uk:'Один та інші' }, desc:{ en:'One with so many, the others with one or two each: the total, or how many have one', bg:'Един с толкова, другите по един или два: колко общо или колко имат по един', uk:'Один має стільки, інші по одному чи по два: скільки разом або скільки мають по одному' }, also:['ach-2025-2', 'ach-2026-2'], gen:genBalloonsOne },
+  { id:294, op:'w', grp:'count', src:'ach-2023', d:2, eq:{ bg:'Тоалети', uk:'Комплекти одягу' }, desc:{ en:'Every top with every bottom: how many different outfits', bg:'Всяка горна дреха с всяка долна: колко различни тоалета', uk:'Кожна верхня річ з кожною нижньою: скільки різних комплектів' }, gen:genOutfits },
+  { id:295, op:'w', grp:'word', needs:[148], src:'ach-2023', d:3, eq:{ bg:'Рестото', uk:'Решта' }, desc:{ en:'One lev spent on three different things, two or three of one of them: the change', bg:'Един лев за три различни неща, от едното две или три: рестото', uk:'Один лев на три різні речі, однієї з них дві чи три: решта' }, gen:genBuyMix },
   { id:149, op:'w', grp:'word', src:'kms-2022', d:2, eq:{ bg:'До новата година', uk:'До нового року' }, desc:{ en:'Minutes from a clock time to the next full hour', bg:'Минутите от даден час до следващия кръгъл час', uk:'Хвилини від певного часу до наступної повної години' }, gen:genClockMin },
   { id:145, op:'w', grp:'word', needs:[31, 141], src:'kms-2023', d:3, eq:{ bg:'Почивките', uk:'Перерви' }, desc:{ en:'Groups of work with a rest between them: one rest fewer than groups', bg:'Работа на групи с почивка между тях — почивките са с една по-малко', uk:'Робота групами з відпочинком між ними — перерв на одну менше' }, gen:genRests },
   { id:144, op:'w', grp:'word', needs:[48], src:'kms-2023', d:4, eq:{ bg:'Филмите', uk:'Фільми' }, desc:{ en:'Who acted in which film: count the films, not the parts', bg:'Кой в кой филм е участвал: броят се филмите, не ролите', uk:'Хто в якому фільмі знімався: рахуються фільми, а не ролі' }, gen:genFilms },
