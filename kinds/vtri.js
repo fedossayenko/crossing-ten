@@ -4,7 +4,7 @@
 // cross. A triangle with a corner at A has its other two corners on two different lines through
 // A, and those two corners joined by a third line: 3 on the top side, 3 on the bottom, 1 on each
 // end — 8. Each figure is its points and its lines, a line listing every point on it in order.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
 export const VTRI = [
   { pts:{a:[0,0], b:[2,0], c:[4,0], d:[0,2], e:[2,2], f:[4,2], o:[2,1]},                         // the paper's
     lines:['abc', 'def', 'ad', 'cf', 'boe', 'aof', 'doc'] },
@@ -30,6 +30,31 @@ export function genVTri(){
     if(n < 3) continue;
     return {kind:'vtri', f, V, ans: n};
   }
+}
+// Level 284 Елхичката. Аз и числата 2025, задача 1: a fir tree of three triangles, each one's top poking up into the one
+// above. Three big triangles — and where each top pokes in, the base above cuts off a small one: 3 + 2 = 5. A tree of n
+// has n big and n − 1 small. The trap is to count only the big ones (shape 'tree').
+export function genTreeCount(){
+  const n = 2 + rnd(4);
+  return {kind:'vtri', shape:'tree', n, traps:[n, n - 1, 2*n].filter(v => v !== 2*n - 1), ans: 2*n - 1};
+}
+// the tree's triangles, top down: [apex x, apex y, half width, height]; each top 16 above the base over it
+const treeTris = n => Array.from({ length: n }, (_, i) => [70, 8 + i*30, 34 + 8*i, 46]);
+function treeSvg(q, full){
+  const T = treeTris(q.n), H = 8 + (q.n - 1)*30 + 46 + 8, tri = t => { const [x, y, h, d] = t; return 'M' + x + ' ' + y + 'L' + (x + h) + ' ' + (y + d) + 'L' + (x - h) + ' ' + (y + d) + 'Z'; };
+  // the small one under each base: the top of the next triangle, down to that base
+  const small = T.slice(1).map(([x, y, h, d], i) => { const by = T[i][1] + T[i][3], k = (by - y) / d * h; return 'M' + x + ' ' + y + 'L' + (x + k) + ' ' + by + 'L' + (x - k) + ' ' + by + 'Z'; });
+  return '<svg viewBox="0 0 140 ' + H + '"' + (full ? ' style="display:block; height:' + Math.min(170, H*1.2) + 'px; margin:6px auto 0"' : '') + ' role="img" aria-label="' + tr('елха от триъгълници', 'ялинка з трикутників') + '">' +
+    (full ? small.map((d, i) => '<path d="' + d + '" fill="var(--warm)" opacity="0.45"' + popAt(i + 1) + '/>').join('') : '') +
+    T.map(t => '<path d="' + tri(t) + '" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>').join('') + '</svg>';
+}
+function drawTree(q){
+  return '<div class="ask">' + tr('Колко са <b>триъгълниците</b> в елхичката?', 'Скільки <b>трикутників</b> у ялинці?') + '</div><div class="fig">' + treeSvg(q, false) + '</div><div class="line xl">' + SLOT + '</div>';
+}
+function whyTree(q, full){
+  if(!full) return tr('Не само големите: виж къде върхът на всеки триъгълник влиза в този над него.', 'Не лише великі: подивись, де верхівка кожного трикутника заходить у той, що над ним.');
+  return tr('големи: <b>', 'великих: <b>') + q.n + tr('</b>; малки, където върхът влиза в триъгълника отгоре: <b>', '</b>; малих, де верхівка заходить у трикутник згори: <b>') + (q.n - 1) + '</b>' + treeSvg(q, true) +
+    q.n + ' + ' + (q.n - 1) + ' = ' + q.ans;
 }
 function vtriSvg(q){
   const F = VTRI[q.f], u = 44, P = n => F.pts[n].map(v => v*u);
@@ -89,6 +114,7 @@ function figSvg(q){
     F.lines.map(l => { const [x1, y1] = P(l[0]), [x2, y2] = P(l[l.length - 1]); return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>'; }).join('') + '</svg></div>';
 }
 function drawVTri(q){
+  if(q.shape === 'tree') return drawTree(q);
   if(q.shape === 'count'){
     const ask = [tr('Колко са <b>триъгълниците</b> на чертежа?', 'Скільки <b>трикутників</b> на рисунку?'), tr('Колко са <b>квадратите</b> на чертежа?', 'Скільки <b>квадратів</b> на рисунку?'),
       tr('С колко броят на триъгълниците е по-голям от броя на квадратите?', 'На скільки трикутників більше, ніж квадратів?')][q.asks];
@@ -98,10 +124,12 @@ function drawVTri(q){
     vtriSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqVTri(q){
+  if(q.shape === 'tree') return tr('големи ', 'великих ') + q.n + tr(', малки ', ', малих ') + (q.n - 1) + ' → ' + q.ans;
   if(q.shape === 'count') return tr('триъгълници ', 'трикутників ') + q.tri + tr(', квадрати ', ', квадратів ') + q.sq + ' → ' + q.ans;
   return tr('триъгълници с връх A → ', 'трикутників з вершиною A → ') + q.ans;
 }
 function whyVTri(q, full){
+  if(q.shape === 'tree') return whyTree(q, full);
   if(q.shape === 'count'){
     if(!full) return tr('Брой по големина: първо най-малките, после съставените от няколко. И големият квадрат се брои.', 'Рахуй за розміром: спершу найменші, потім складені з кількох. І великий квадрат теж рахується.');
     return tr('триъгълници: <b>', 'трикутників: <b>') + q.tri + tr('</b>, квадрати: <b>', '</b>, квадратів: <b>') + q.sq + '</b>' + (q.asks === 2 ? ' &nbsp;→&nbsp; ' + q.tri + ' − ' + q.sq + ' = ' + q.ans : '');

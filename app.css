@@ -749,6 +749,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .ch .lt{width:32px; height:32px; border-radius:50%; background:rgba(47,111,143,.16); color:var(--accent-ink); display:inline-flex;
   align-items:center; justify-content:center; font-size:15px; font-weight:700; flex:0 0 auto}
 .ch .v{font-family:Fredoka,var(--ui-font); font-size:26px; font-weight:500; font-variant-numeric:tabular-nums}
+.choices:has(.vw){grid-template-columns:1fr}   /* answers that are long words (the kinds of triangle): one under another */
 .ch[aria-pressed="true"]{border-color:var(--accent)}
 .ch.ok{border-color:var(--good); background:var(--goodbg)} .ch.ok .lt{background:var(--good); color:#fff}
 .ch.no{opacity:.5} .ch.no .v{text-decoration:line-through}

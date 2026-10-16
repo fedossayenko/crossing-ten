@@ -7,7 +7,66 @@
 // perimeters add to 9 дм. Four legs are 60, so the two bases are 90 − 60 = 30: 14 and 16.
 // Коледно 2023, задача 4: an ant walks ABCA twice (equilateral, side 4 м), a tortoise walks MEKME round an
 // isosceles MEK (base ME 3 м, legs 5 м) — four sides, not five. 24 against 16: 8 м more.
+// Level 282 Обиколка на триъгълник, the plain sums under all that: Аз и числата 2022, задача 7 (shape 'sum'): the
+// scalene triangle of задача 6, sides 4, 6 and 5 см — 4 + 6 + 5 = 15. Аз и числата 2025, задача 4 (shape 'eq'): an
+// equilateral triangle with side 2 см — three equal sides, 2 + 2 + 2 = 6. Аз и числата 2026, задача 8 (shape 'back'):
+// the perimeter 21 см, two sides 5 и 9 — the third is 21 − 5 − 9 = 7; 2023, задача 9, the same about a triangular tree,
+// 68 м with sides 16 и 26: 26. The slips: one side taken away, not both; a side for the perimeter; four sides for three.
 import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { triSideSvg } from './tritype.js';
+// the triangle's sides as [base, left, right]: the longest across, so it stands
+const triPerimSides = s => { const x = s.slice().sort((p, q) => q - p); return [x[0], x[1], x[2]]; };
+export function genTriPerim(){
+  for(;;){
+    const r = Math.random(), shape = r < 0.35 ? 'sum' : r < 0.6 ? 'eq' : 'back', u = Math.random() < 0.75 ? 'см' : Math.random() < 0.5 ? 'дм' : 'м';
+    if(shape === 'eq'){
+      const a = 2 + rnd(29);
+      return {kind:'isoperim', shape, u, a, traps:[2*a, 4*a, a].filter(v => v !== 3*a), ans: 3*a};
+    }
+    const a = 2 + rnd(35), b = 2 + rnd(35), c = 2 + rnd(35), P = a + b + c, x = Math.max(a, b, c);
+    const h = P / 2, area = Math.sqrt(Math.max(0, h*(h - a)*(h - b)*(h - c)));
+    if(P > 100 || 2*x >= P - 1 || 2*area / x < 0.25*x) continue;   // a real triangle, not one so flat it draws as a line
+    if(shape === 'sum') return {kind:'isoperim', shape, u, s:[a, b, c], traps:[a + b, a + b + c + Math.min(a, b, c)].filter(v => v !== P), ans: P};
+    const tree = Math.random() < 0.25;
+    return {kind:'isoperim', shape, u: tree ? 'м' : u, tree, P, a, b, traps:[P - a, P - b, a + b].filter(v => v !== c), ans: c};
+  }
+}
+const TRI_UW = { см:['сантиметра', 'сантиметрів'], дм:['дециметра', 'дециметрів'], м:['метра', 'метрів'] };
+const triLen = (n, u) => '<span class="num">' + n + '&nbsp;' + u + '</span>';
+function drawTriPerim(q){
+  const w = TRI_UW[q.u], line = '<div class="line md">' + SLOT + ' <span class="unit">' + q.u + '</span></div>';
+  if(q.shape === 'eq') return '<div class="ask">' + tr('Страната на равностранен триъгълник е ' + triLen(q.a, q.u) + '. Колко ' + w[0] + ' е обиколката на триъгълника?',
+    'Сторона рівностороннього трикутника — ' + triLen(q.a, q.u) + '. Скільки ' + w[1] + ' становить периметр трикутника?') + '</div>' + line;
+  if(q.shape === 'sum') return '<div class="ask">' + tr('Страните на триъгълник са ' + triLen(q.s[0], q.u) + ', ' + triLen(q.s[1], q.u) + ' и ' + triLen(q.s[2], q.u) + '. Колко ' + w[0] + ' е обиколката на триъгълника?',
+    'Сторони трикутника — ' + triLen(q.s[0], q.u) + ', ' + triLen(q.s[1], q.u) + ' і ' + triLen(q.s[2], q.u) + '. Скільки ' + w[1] + ' становить периметр трикутника?') + '</div>' +
+    '<div class="fig small">' + triSideSvg(triPerimSides(q.s), triPerimSides(q.s).map(v => v + ' ' + q.u)) + '</div>' + line;
+  if(q.tree) return '<div class="ask">' + tr('Във вълшебния Триъгълен град растяло триъгълно дърво, което имало обиколка ' + triLen(q.P, 'м') + '. Ако едната му страна е ' + triLen(q.a, 'м') +
+    ', а другата — ' + triLen(q.b, 'м') + ', колко метра е третата страна?',
+    'У чарівному Трикутному місті росло трикутне дерево з периметром ' + triLen(q.P, 'м') + '. Якщо одна його сторона — ' + triLen(q.a, 'м') +
+    ', а друга — ' + triLen(q.b, 'м') + ', то скільки метрів третя сторона?') + '</div>' + line;
+  return '<div class="ask">' + tr('Триъгълник има обиколка ' + triLen(q.P, q.u) + '. Едната му страна е ' + triLen(q.a, q.u) + ', а втората — ' + triLen(q.b, q.u) + '. Колко ' + w[0] + ' е дължината на третата страна?',
+    'Периметр трикутника — ' + triLen(q.P, q.u) + '. Одна його сторона — ' + triLen(q.a, q.u) + ', а друга — ' + triLen(q.b, q.u) + '. Скільки ' + w[1] + ' довжина третьої сторони?') + '</div>' + line;
+}
+function eqTriPerim(q){
+  if(q.shape === 'eq') return q.a + ' + ' + q.a + ' + ' + q.a + ' = ' + q.ans + ' ' + q.u;
+  if(q.shape === 'sum') return q.s.join(' + ') + ' = ' + q.ans + ' ' + q.u;
+  return q.P + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans + ' ' + q.u;
+}
+function whyTriPerim(q, full){
+  const fig = (s, last) => '<div class="fig small">' + triSideSvg(s, s.map(v => v + ' ' + q.u), { last, hot: last }) + '</div>';
+  if(q.shape === 'eq'){
+    if(!full) return tr('Обиколката е сборът на трите страни. Колко дълги са другите две?', 'Периметр — це сума трьох сторін. Яка довжина двох інших?');
+    return tr('равностранен: и трите страни са по ', 'рівносторонній: усі три сторони по ') + q.a + ' ' + q.u + fig([q.a, q.a, q.a]) + q.a + ' + ' + q.a + ' + ' + q.a + ' = <b>' + q.ans + '</b> ' + q.u;
+  }
+  if(q.shape === 'sum'){
+    if(!full) return tr('Обиколката е сборът на трите страни.', 'Периметр — це сума трьох сторін.');
+    return q.s.join(' + ') + ' = <b>' + q.ans + '</b> ' + q.u;
+  }
+  if(!full) return tr('Обиколката е сборът на трите страни. Махни от нея двете, които знаеш.', 'Периметр — це сума трьох сторін. Відніми від нього дві, які знаєш.');
+  const s = [q.a, q.b, q.ans], o = triPerimSides(s), last = o.indexOf(q.ans);
+  return tr('двете известни заедно: ', 'дві відомі разом: ') + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + (q.a + q.b) + ' = <b>' + q.ans + '</b> ' + q.u +
+    '<br>' + fig(o, last);
+}
 const ISO_ROUTES = ['MEKM', 'MEKME', 'MKEM', 'MKEMK', 'EKMEK', 'KMEKM'];
 function isoRouteLen(q){ let t = 0; for(let i = 1; i < q.route.length; i++) t += 'ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg; return t; }
 function genIsoRoute(){
@@ -61,6 +120,7 @@ export function genIsoPerim(){
   }
 }
 function drawIsoPerim(q){
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return drawTriPerim(q);
   if(q.shape === 2){
     const times = ['', 'веднъж', 'два пъти', 'три пъти'][q.laps], timesUk = ['', 'один раз', 'двічі', 'тричі'][q.laps];
     return '<div class="ask">' + tr('Мравка изминала ' + times + ' пътечката <b>ABCA</b> (триъгълник ABC е равностранен). Костенурка се разходила по равнобедрения триъгълник MEK по следния начин: <b>' + q.route.split('').join('') + '</b>. Колко метра повече е изминало едното животно от другото?',
@@ -86,12 +146,14 @@ function drawIsoPerim(q){
     '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqIsoPerim(q){
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return eqTriPerim(q);
   if(q.shape === 2) return q.laps + ' · ' + 3*q.a + ' = ' + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
   if(q.shape === 3) return q.b + ' + 2 · ' + tr('бедро', 'бічна') + ' = ' + q.P + ' → ' + q.ans;
   if(q.shape === 1) return q.T + ' − 4 · ' + q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' → ' + q.ans;
   return q.P + ' : 4 = ' + q.s + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
 }
 function whyIsoPerim(q, full){
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return whyTriPerim(q, full);
   if(q.shape === 2){
     if(!full) return tr('Колко отсечки има всеки път и колко е дълга всяка? Внимавай кои страни на MEK са равни.', 'Скільки відрізків у кожному шляху і яка довжина кожного? Зверни увагу, які сторони MEK рівні.');
     const segs = []; for(let i = 1; i < q.route.length; i++) segs.push('ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg);

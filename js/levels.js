@@ -85,13 +85,15 @@ import { genBalloons, genBalloons3, genBalloonsOne } from '../kinds/balloons.js'
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
-import { genRectDm, genRectLonger, genRectSame, genSqPerimMm } from '../kinds/rectdm.js';
+import { genRectDm, genRectLonger, genRectPool, genRectSame, genSqPerimMm } from '../kinds/rectdm.js';
+import { genUnitCmp } from '../kinds/unitcmp.js';
+import { genTriType } from '../kinds/tritype.js';
 import { genMinuend } from '../kinds/minuend.js';
 import { genConsec } from '../kinds/consec.js';
 import { genDigitBlocks, genWordPos } from '../kinds/wordpos.js';
 import { genDiffSeq } from '../kinds/diffseq.js';
 import { genDaily } from '../kinds/daily.js';
-import { genIsoPerim, genTwoIso } from '../kinds/isoperim.js';
+import { genIsoPerim, genTriPerim, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
 import { genBrackets } from '../kinds/brackets.js';
 import { genMagic } from '../kinds/magic.js';
@@ -117,7 +119,7 @@ import { genAndMore, genFishers, genThreeGroups } from '../kinds/andmore.js';
 import { genEqualize } from '../kinds/equalize.js';
 import { genShelf } from '../kinds/shelf.js';
 import { genLanterns } from '../kinds/lanterns.js';
-import { genFigCount, genVTri } from '../kinds/vtri.js';
+import { genFigCount, genTreeCount, genVTri } from '../kinds/vtri.js';
 import { genNumPyr } from '../kinds/numpyr.js';
 import { genAges } from '../kinds/ages.js';
 import { genGarland } from '../kinds/garland.js';
@@ -207,7 +209,7 @@ export const LEVELS = [
   { id:5, op:'+', needs:[4], d:2, eq:'27 + 15', desc:{ en:'Two digits plus two, with a carry', bg:'Двуцифрено плюс двуцифрено, с пренасяне', uk:'Двоцифрове плюс двоцифрове, з перенесенням' } },
   { id:6, op:'+', needs:[5], d:3, eq:'87 + 25', desc:{ en:'Crossing a hundred', bg:'През стотицата', uk:'Через сотню' } },
   { id:141, op:'x', needs:[6], src:'basics', d:3, eq:{ bg:'6 · 7', uk:'6 · 7' }, desc:{ en:'The times table, and division read back from it', bg:'Таблицата за умножение и делението, прочетено наобратно', uk:'Таблиця множення і ділення, прочитане навпаки' }, gen:genTimes },
-  { id:267, op:'w', grp:'geo', src:'basics', d:2, shapes:{ down:1, up:2, join:2, split:2 }, eq:{ bg:'1 дм = 10 см', uk:'1 дм = 10 см' }, desc:{ en:'Centimetres, decimetres and metres, one into another', bg:'Сантиметри, дециметри и метри: от една мярка в друга', uk:'Сантиметри, дециметри й метри: з однієї міри в іншу' }, gen:genUnits },
+  { id:267, op:'w', grp:'geo', src:'basics', also:['ach-2023-2'], d:2, shapes:{ down:1, up:2, join:2, split:2 }, eq:{ bg:'1 дм = 10 см', uk:'1 дм = 10 см' }, desc:{ en:'Centimetres, decimetres and metres, one into another', bg:'Сантиметри, дециметри и метри: от една мярка в друга', uk:'Сантиметри, дециметри й метри: з однієї міри в іншу' }, gen:genUnits },
   { id:268, op:'w', grp:'geo', needs:[267], src:'basics', d:2, shapes:{ down:2, up:2, join:2, split:2 }, eq:{ bg:'1 м = 100 см', uk:'1 м = 100 см' }, desc:{ en:'Millimetres too, and a hundred centimetres to a metre: 1 м 5 см is 105 см', bg:'И милиметри, и сто сантиметра в метъра: 1 м 5 см са 105 см', uk:'І міліметри, і сто сантиметрів у метрі: 1 м 5 см — це 105 см' }, gen:genUnitsWide },
   { id:8, op:'w', grp:'chain', d:2, eq:'2 + 6 − 5', desc:{ en:'A long chain of + and −, worked left to right', bg:'Дълга верижка от + и −, отляво надясно', uk:'Довгий ланцюжок з + і −, зліва направо' }, also:['mbg-autumn-2024-2', 'mbg-autumn-2025-2', 'mbg-autumn-forecast2026-2'], gen:genChain },
   { id:9, op:'w', grp:'chain', needs:[8], d:3, shapes:{ cancel:2, ones:2, run:3, sub:2, tens:2 }, eq:'1 + 9 + 2 + 8', desc:{ en:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', bg:'Верижки, които се опростяват с групиране — в десетици, двойки ± или числа, които се унищожават', uk:'Ланцюжки, що спрощуються групуванням — у десятки, пари ± або доданки, що скорочуються' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2024-2', 'mbg-autumn-2025-2', 'mbg-autumn-forecast2026-2'], gen:genPairs },
@@ -379,6 +381,11 @@ export const LEVELS = [
   { id:85, op:'w', grp:'geo', needs:[21], src:'mbg-winter-2024', d:4, eq:{ bg:'Четири правоъгълника', uk:'Чотири прямокутники' }, desc:{ en:'A figure of four equal rectangles, from its perimeter', bg:'Фигура от четири еднакви правоъгълника — по обиколката ѝ', uk:'Фігура з чотирьох однакових прямокутників — за її периметром' }, gen:genPinwheel },
   { id:90, op:'w', grp:'geo', src:'kms-2025', d:3, eq:{ bg:'Равнобедрени', uk:'Рівнобедрені' }, desc:{ en:'Triangles on a grid: which have two equal sides', bg:'Триъгълници върху мрежа: кои имат две равни страни', uk:'Трикутники на сітці: які мають дві рівні сторони' }, gen:genIsoTri },
   { id:91, op:'w', grp:'geo', needs:[32], src:'kms-2025', d:2, eq:{ bg:'Обиколка в дм', uk:'Периметр у дм' }, desc:{ en:'A rectangle\'s perimeter, asked in another unit', bg:'Обиколка на правоъгълник, питана в друга мярка', uk:'Периметр прямокутника в інших одиницях' }, gen:genRectDm },
+  { id:280, op:'w', grp:'geo', needs:[267], src:'ach-2022', also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ plain:2, sum:2 }, eq:{ bg:'Сравни мерките', uk:'Порівняй довжини' }, desc:{ en:'Two lengths in см, дм and м: which is longer? The same units first', bg:'Две дължини в см, дм и м: коя е по-голяма? Първо в едни и същи мерки', uk:'Дві довжини в см, дм і м: яка більша? Спершу в однакових одиницях' }, gen:genUnitCmp },
+  { id:281, op:'w', grp:'geo', src:'ach-2025', also:['ach-2026-2'], d:3, shapes:{ side:2, perim:3, row:3, house:2 }, eq:{ bg:'Обиколка на правоъгълник', uk:'Периметр прямокутника' }, desc:{ en:'A rectangle\'s other side and its perimeter, squares in a row, a side read off a triangle', bg:'Другата страна и обиколката на правоъгълник, квадрати в редица, страна от триъгълник', uk:'Друга сторона й периметр прямокутника, квадрати в ряд, сторона з трикутника' }, gen:genRectPool },
+  { id:282, op:'w', grp:'geo', src:'ach-2022', also:['ach-2023-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ sum:2, eq:2, back:2 }, eq:{ bg:'Обиколка на триъгълник', uk:'Периметр трикутника' }, desc:{ en:'A triangle\'s perimeter from its sides, or the third side from the perimeter', bg:'Обиколка на триъгълник от страните му — или третата страна от обиколката', uk:'Периметр трикутника за його сторонами — або третя сторона за периметром' }, gen:genTriPerim },
+  { id:283, op:'w', grp:'geo', src:'ach-2022', also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ sides:2, name:1 }, eq:{ bg:'Вид триъгълник', uk:'Вид трикутника' }, desc:{ en:'Equilateral, isosceles or scalene, by its sides', bg:'Равностранен, равнобедрен или разностранен — по страните', uk:'Рівносторонній, рівнобедрений чи різносторонній — за сторонами' }, gen:genTriType },
+  { id:284, op:'w', grp:'geo', src:'ach-2025', d:2, eq:{ bg:'Елхичката', uk:'Ялинка' }, desc:{ en:'Triangles stacked into a fir tree: the big ones, and the small ones where they overlap', bg:'Триъгълници, наредени в елха: големите и малките, където се застъпват', uk:'Трикутники, складені в ялинку: великі й малі там, де вони заходять один на один' }, gen:genTreeCount },
   { id:137, op:'w', grp:'geo', needs:[141], src:'mbg-spring-2025', d:2, eq:{ bg:'Квадратчета от лист', uk:'Квадратики з аркуша' }, desc:{ en:'How many small squares can be cut from a sheet', bg:'Колко квадратчета могат да се изрежат от лист', uk:'Скільки квадратиків можна вирізати з аркуша' }, gen:genCutSq },
   { id:138, op:'w', grp:'geo', needs:[21, 141], src:'mbg-spring-2025', d:3, eq:{ bg:'Конецът', uk:'Нитка' }, desc:{ en:'One thread laid out as one shape, then another', bg:'Един конец, нареден в една фигура, после в друга', uk:'Одна нитка, викладена однією фігурою, потім іншою' }, gen:genThread },
   { id:121, op:'w', grp:'geo', needs:[91], src:'mbg-winter-2023', d:4, eq:{ bg:'С 2 дм по-дълга', uk:'На 2 дм довша' }, desc:{ en:'One side given, the other so much longer, the perimeter in another unit', bg:'Едната страна дадена, другата с толкова по-дълга, обиколката в друга мярка', uk:'Одна сторона дана, інша на стільки довша, периметр в інших одиницях' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2'], gen:genRectLonger },

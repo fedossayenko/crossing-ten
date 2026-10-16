@@ -268,8 +268,9 @@
       const q = Q.withChoices(Q.raw(L.id));
       if(!q.options) continue;
       asked++;
-      const vs = q.options.map(o => o.v), right = q.options.filter(o => Q.accepts(q, [String(o.v)]));
-      if(q.options.length !== 4 || new Set(vs).size !== 4 || vs.some(v => !Number.isInteger(v) || v < 0))
+      // four, made from her slips; a kind with its own options brings as many as its paper offers (<, =, > are three)
+      const vs = q.options.map(o => o.v), right = q.options.filter(o => Q.accepts(q, [String(o.v)])), n = q.own ? q.options.length : 4;
+      if(n < 2 || n > 4 || q.options.length !== n || new Set(vs).size !== n || vs.some(v => !Number.isInteger(v) || v < 0))
         throw new Error('level ' + L.id + ': bad options ' + vs.join(', '));
       if(right.length !== 1 || right[0].id !== q.pick) throw new Error('level ' + L.id + ': ' + right.length + ' right options in ' + vs.join(', '));
       if(vs.some((v, k) => k && v < vs[k - 1])) throw new Error('level ' + L.id + ': options out of order ' + vs.join(', '));
