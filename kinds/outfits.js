@@ -14,7 +14,7 @@ const OUT_SETS = [
 const outUk = (n, few, many) => UK_PLURAL.select(n) === 'few' ? few : many;
 export function genOutfits(){
   const who = rnd(OUT_WHO.length), set = rnd(OUT_SETS.length), a = 2 + rnd(5), b = 2 + rnd(2);
-  return {kind:'outfits', who, set, a, b, traps:[a + b, a*b + 1], ans: a*b};
+  return {kind:'outfits', who, set, a, b, traps:[a + b, a*b + 1].filter(t => t !== a*b), ans: a*b};   // 2 + 2 is 2 · 2: no slip there
 }
 const num = x => '<span class="num">' + x + '</span>';
 function drawOutfits(q){

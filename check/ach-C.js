@@ -161,3 +161,17 @@
     console.log('Аз и числата ' + year + ' 2 клас: tasks ' + met[year].join(', ') + ' pinned (our solution, no official key; * the same question with other numbers)' + not);
   console.log('Аз и числата, numbers and digits: ' + Object.entries(n).map(([k, v]) => v + ' ' + k).join(', ') + ' worked out again another way');
 }
+
+// A row or an equation takes its boxes in order: 10 □ □ □ □ 20 is 12, 14, 16, 18 left to right, and □□□ − □□ = 1 is
+// 100 − 99, never 99 − 100. (Two numbers by their sum and difference, or three in a row by their sum, go in any order.)
+{
+  const Q = APP;
+  for(const [id, shape] of [[286, 'even'], [287, 'boxes'], [290, 'const']]){
+    let q; for(let i = 0; i < 2000 && !(q && q.shape === shape); i++) q = Q.raw(id);
+    if(!q || q.shape !== shape) throw new Error('level ' + id + ' never drew ' + shape);
+    const parts = Q.answers(q).map(String);
+    if(!Q.accepts(q, parts)) throw new Error('level ' + id + ' ' + shape + ': its own answer in order is refused');
+    if(Q.accepts(q, parts.slice().reverse())) throw new Error('level ' + id + ' ' + shape + ': the boxes are taken in any order — ' + parts.slice().reverse().join(', ') + ' is accepted');
+  }
+  console.log('Аз и числата: a row\'s and an equation\'s boxes are taken in order (286, 287, 290)');
+}

@@ -88,7 +88,7 @@ const NAMED_BOXES = [[3, 2, 1], [3, 1, 91], [2, 1, 1]];
 export function genNamedEdge(){
   if(Math.random() < 0.15){
     const b = rnd(NAMED_BOXES.length), [n, m, r] = NAMED_BOXES[b], big = 10 ** (n - 1), small = 10 ** m - 1;
-    return {kind:'named', shape:'boxes', b, n, m, r, big, small, slots:2, ans: big, alt:[small]};
+    return {kind:'named', shape:'boxes', b, n, m, r, big, small, slots:2, ordered:true, ans: big, alt:[small]};
   }
   const sum = Math.random() < 0.6, pos = Math.random() < 0.5, nine = Math.random() < 0.55, a = 11 + rnd(80);
   // nine: the largest sum or the smallest difference, where the other is 9; else the other is 0, or 1 above zero

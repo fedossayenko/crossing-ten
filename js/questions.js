@@ -60,6 +60,7 @@ export function accepts(q, parts){
   const want = answers(q), got = parts.map(Number), n = q.slots || 1;
   if(got.length !== n) return false;
   if(n === 1) return want.indexOf(got[0]) >= 0;
+  if(q.ordered) return want.length === n && got.every((v, i) => v === want[i]);   // a row or an equation: each box its own number
   return want.length === n && got.every((v, i) => want.indexOf(v) >= 0 && got.indexOf(v) === i);
 }
 // A competition's marks, by МБГ's rules: 2 points for the answer; 1 when a task has several answers and at least

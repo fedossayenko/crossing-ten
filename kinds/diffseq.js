@@ -22,9 +22,9 @@ export function genDiffSeq(){
 // по-голямо от предходното» — 25, 38, 51, 64 in the four boxes; or from 49, each 7 less: 42, 35, 28, 21.
 export function genDiffSeqNext(){
   if(Math.random() < 0.4){
-    const up = Math.random() < 0.5, d = 2 + rnd(18), a = up ? 1 + rnd(99 - 4*d) : 4*d + rnd(100 - 4*d);
+    const up = Math.random() < 0.5, d = 2 + rnd(18), a = up ? 1 + rnd(99 - 4*d) : 4*d + 1 + rnd(99 - 4*d);   // none of the five 0 or past 99
     const seq = [0, 1, 2, 3, 4].map(i => a + (up ? i*d : -i*d));
-    return {kind:'diffseq', shape:'const', up, d, seq, slots:4, ans: seq[1], alt: seq.slice(2)};
+    return {kind:'diffseq', shape:'const', up, d, seq, slots:4, ordered:true, ans: seq[1], alt: seq.slice(2)};
   }
   for(;;){
     const a0 = 1 + rnd(9), d0 = 1 + rnd(3), g = 1 + rnd(2), n = Math.random() < 0.5 ? 5 : 6, seq = [a0];

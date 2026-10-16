@@ -74,7 +74,7 @@ export function genTermWords(){
       return {kind:'term', shape:'more', more, b, d, traps: [more ? b - d : b + d].filter(t => t >= 0 && t <= 100), ans};
     }
     if(w < 0.75){
-      const sum = Math.random() < 0.5, up = Math.random() < 0.25, a = 11 + rnd(80), b = sum ? 11 + rnd(80) : 2 + rnd(a - 12), c = 5 + rnd(40);
+      const sum = Math.random() < 0.5, up = Math.random() < 0.25, a = 11 + rnd(80), b = sum ? 11 + rnd(80) : 2 + rnd(Math.max(1, a - 12)), c = 5 + rnd(40);
       const v = sum ? a + b : a - b, ans = up ? v + c : v - c;
       if(v > 99 || v < 2 || ans < 1 || ans > 99) continue;
       // «умали с» taken off the second number alone (a − (b − c)), or the other way

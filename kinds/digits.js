@@ -38,7 +38,7 @@ export function genTensDigit(){
   const w = Math.random();
   if(w < 0.3){
     const lo = 10*(1 + rnd(8)), list = [2, 4, 6, 8].map(u => lo + u);
-    return {kind:'digits', shape:'even', lo, hi: lo + 10, slots:4, ans: list[0], alt: list.slice(1)};
+    return {kind:'digits', shape:'even', lo, hi: lo + 10, slots:4, ordered:true, ans: list[0], alt: list.slice(1)};
   }
   if(w < 0.55){
     const tens = Math.random() < 0.6, d = tens ? 1 + rnd(9) : rnd(10);

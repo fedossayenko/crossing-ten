@@ -12,6 +12,8 @@ interface Question {
   alt?: number[];
   /** how many answer boxes */
   slots?: number;
+  /** the boxes take ans, then alt, in that order (a row, an equation); otherwise in any order */
+  ordered?: boolean;
   // a plain sum is a, op, b — kinds reuse those names for their own things, so they stay untyped
   /** А/Б/В/Г */
   options?: { id: number; v: any; text: [string, string] | string }[];
