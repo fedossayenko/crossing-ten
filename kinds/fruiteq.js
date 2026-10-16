@@ -1,5 +1,6 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
 // Level 233 (3rd grade): two flowers, two lines with counts (genFlowerEq, shapes 'sum' and 'diff').
+// Level 279: a star and a pentagon, each once doubled (genFigTwins, shape 'twin').
 import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
 export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
@@ -102,7 +103,37 @@ function whyFlowerEq(q, full){
     flo(1 - i) + ' = ' + q.S + ' − ' + v[i] + ' = <b>' + v[1 - i] + '</b> &nbsp;→&nbsp; ' + Math.max(q.x, q.y) + ' − ' + Math.min(q.x, q.y) + ' = ' + q.ans;
 }
 
+// Level 279 Звезди и петоъгълници. Аз и числата 2022, задача 4 (shape 'twin'): ★ + ★ = 24, ★ + ⬠ = 30, ⬠ + ⬠ = 36 —
+// the same figure is the same number, so ★ is the number that doubled makes 24, 12, and ⬠ is 18 (30 − 12 checks it).
+// The paper fills in both; here one figure is asked. x is ★, y is ⬠, at the one asked (0 ★, 1 ⬠).
+export function genFigTwins(){
+  for(;;){
+    const x = 6 + rnd(40), y = 6 + rnd(40);
+    if(x === y || x + y > 99) continue;
+    const at = rnd(2);
+    return {kind:'fruiteq', shape:'twin', x, y, at, traps: [at ? x : y, at ? 2*y : 2*x].filter(t => t <= 100), ans: at ? y : x};
+  }
+}
+// ★ and ⬠ drawn as outlines, as the paper draws them
+const TWIN_ICON = ['<path d="M0 -10 L2.9 -3.6 L9.5 -3.1 L4.5 1.3 L5.9 8.1 L0 4.5 L-5.9 8.1 L-4.5 1.3 L-9.5 -3.1 L-2.9 -3.6 Z" fill="var(--lemon)" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round"/>',
+  '<path d="M0 -9.5 L9 -2.9 L5.6 7.7 L-5.6 7.7 L-9 -2.9 Z" fill="var(--accentbg)" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round"/>'];
+const twin = i => '<svg class="ic" viewBox="-11 -11 22 22" role="img" aria-label="' + (i ? tr('петоъгълник', 'п’ятикутник') : tr('звезда', 'зірка')) + '">' + TWIN_ICON[i] + '</svg>';
+function drawFigTwins(q){
+  return '<div class="ask">' + tr('На еднаквите фигури отговарят еднакви числа.', 'Однаковим фігурам відповідають однакові числа.') + '</div>' +
+    '<div class="eqs"><span>' + twin(0) + ' + ' + twin(0) + ' = ' + 2*q.x + '</span><span>' + twin(0) + ' + ' + twin(1) + ' = ' + (q.x + q.y) + '</span>' +
+    '<span>' + twin(1) + ' + ' + twin(1) + ' = ' + 2*q.y + '</span></div>' +
+    '<div class="ask">' + tr('Кое число е ', 'Яке число — ') + twin(q.at) + '?</div><div class="line xl">' + twin(q.at) + ' = ' + SLOT + '</div>';
+}
+// the summary line is plain text
+const eqFigTwins = q => { const v = q.at ? q.y : q.x; return 2*v + ' = ' + v + ' + ' + v + ' → ' + v; };
+function whyFigTwins(q, full){
+  if(!full) return tr('Намери реда, в който фигурата е два пъти: кое число, събрано със себе си, дава сбора?', 'Знайди рядок, де фігура двічі: яке число, додане саме до себе, дає суму?');
+  const v = q.at ? q.y : q.x;
+  return twin(q.at) + ' + ' + twin(q.at) + ' = ' + 2*v + tr(', а ', ', а ') + 2*v + ' = ' + v + ' + ' + v + ' &nbsp;→&nbsp; ' + twin(q.at) + ' = ' + v;
+}
+
 function drawFruiteq(q){
+  if(q.shape === 'twin') return drawFigTwins(q);
   if(q.shape) return drawFlowerEq(q);
   if(q.tri){
     const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
@@ -135,12 +166,14 @@ function drawFruiteq(q){
     '<div class="line md">' + SLOT + '</div>';
 }
 function eqFruiteq(q){
+  if(q.shape === 'twin') return eqFigTwins(q);
   if(q.shape) return eqFlowerEq(q);
   if(q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
   if(q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
   return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
 }
 function whyFruiteq(q, full){
+  if(q.shape === 'twin') return whyFigTwins(q, full);
   if(q.shape) return whyFlowerEq(q, full);
   if(q.tri){
     if(!full) return tr('Събери трите реда. Колко пъти е вътре всяка фигура?', 'Додай три рядки. Скільки разів у них кожна фігура?');

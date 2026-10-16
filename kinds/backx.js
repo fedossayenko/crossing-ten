@@ -1,4 +1,4 @@
-// Question kind 'backx': level 234 ((x : 2) · 4) · 8 and level 269 Намислих число — Undo the steps from the end to find x.
+// Question kind 'backx': level 234 ((x : 2) · 4) · 8, level 269 Намислих число and level 274 Неизвестното число — Undo the steps from the end to find x.
 
 // МБГ Есен 2023, 3 клас, задача 19 (shape 'num'): ((x : 2) · 4) · 8 = 64 — back from the end, 64 : 8 = 8, 8 : 4 = 2,
 // and x = 2 · 2 = 4. Есен 2024, задача 9 (shape 'sum'): ((x : 2) · 3) · 4 = 5 · 9 − (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9) —
@@ -38,6 +38,24 @@ export function genBackPm(){
     if(steps.some(s => (v += s) < 1 || v > 100)) continue;
     const again = v + steps.reduce((a, s) => a + s, 0);
     return {kind:'backx', shape, x, steps, r: v, traps: [again, v].filter((t, i, a) => t >= 0 && t !== x && a.indexOf(t) === i), ans: x};
+  }
+}
+// Level 274 Неизвестното число, one step back. Аз и числата 2026, задача 3 (shape 'think'): «Намислих число. Към него
+// прибавих 26 и получих 95» — 95 − 26 = 69; here also «от него извадих», which is undone by adding. Аз и числата 2024,
+// задача 3 (shapes 'x' and 'brx'): 9 + x = 55, so x = 55 − 9 = 46; (46 + 7) + x = 75 — the bracket first, 53 + x = 75,
+// x = 22. The slips: adding the two numbers given (95 + 26), and taking away only one number of the bracket (75 − 46).
+export function genBackAdd(){
+  const w = Math.random(), shape = w < 0.4 ? 'think' : w < 0.7 ? 'x' : 'brx';
+  for(;;){
+    if(shape === 'brx'){
+      const a = 11 + rnd(60), b = 2 + rnd(9), s = a + b, x = 5 + rnd(60), c = s + x;
+      if(c > 99) continue;
+      return {kind:'backx', shape, a, b, s, c, traps: [c - a, c - b].filter(t => t !== x && t >= 0), ans: x};
+    }
+    const minus = shape === 'think' && Math.random() < 0.3, a = shape === 'x' && Math.random() < 0.4 ? 2 + rnd(8) : 11 + rnd(40), x = 10 + rnd(90);
+    const c = minus ? x - a : x + a;
+    if(c < 1 || c > 99 || a === x) continue;
+    return {kind:'backx', shape, minus, a, c, traps: [minus ? c - a : c + a].filter(t => t !== x && t >= 0), ans: x};
   }
 }
 const nw = s => '<span style="white-space:nowrap">' + s + '</span>';
@@ -86,5 +104,28 @@ function whyBackPm(q, full){
   let v = q.r;
   return q.steps.slice().reverse().map(s => { const w = v - s, t = nw(v + ' ' + pmStep(-s) + ' = <b>' + w + '</b>'); v = w; return t; }).join(' &nbsp;→&nbsp; ');
 }
-KIND.backx = { draw: q => q.steps ? drawBackPm(q) : drawBackX(q), eq: q => q.steps ? backPmLine(q) : eqBackX(q),
-  why: (q, full) => q.steps ? whyBackPm(q, full) : whyBackX(q, full) };
+const ADD_SHAPES = { think:1, x:1, brx:1 };
+function drawBackAdd(q){
+  const X = '<i>x</i>', num = n => '<span class="num">' + n + '</span>';
+  if(q.shape === 'think') return '<div class="ask">' + tr('Намислих число. ' + (q.minus ? 'От него извадих ' : 'Към него прибавих ') + num(q.a) + ' и получих ' + num(q.c) + '. Кое число съм намислил?',
+      'Я задумав число. ' + (q.minus ? 'Від нього відняв ' : 'До нього додав ') + num(q.a) + ' і отримав ' + num(q.c) + '. Яке число я задумав?') + '</div>' +
+    '<div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + tr('Намери неизвестното число.', 'Знайди невідоме число.') + '</div>' +
+    '<div class="given">' + nw((q.shape === 'brx' ? '(' + q.a + ' + ' + q.b + ')' : q.a) + ' + ' + X + ' = ' + q.c) + '</div>' +
+    '<div class="line xl">' + X + ' = ' + SLOT + '</div>';
+}
+// the summary line is plain text
+const eqBackAdd = q => (q.shape === 'brx' ? q.a + ' + ' + q.b + ' = ' + q.s + ', ' + q.c + ' − ' + q.s : q.minus ? q.c + ' + ' + q.a : q.c + ' − ' + q.a) + ' = ' + q.ans;
+function whyBackAdd(q, full){
+  if(!full){
+    if(q.minus) return tr('Върни стъпката обратно: каквото е извадено, го прибави.', 'Поверни крок назад: що відняли — додай.');
+    return (q.shape === 'brx' ? tr('Първо пресметни скобата. ', 'Спершу обчисли дужку. ') : '') +
+      tr('Неизвестното събираемо е сборът без другото събираемо.', 'Невідомий доданок — це сума без іншого доданка.');
+  }
+  if(q.shape === 'brx') return q.a + ' + ' + q.b + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + nw(q.s + ' + <i>x</i> = ' + q.c) + ' &nbsp;→&nbsp; <i>x</i> = ' + q.c + ' − ' + q.s + ' = ' + q.ans;
+  if(q.minus) return nw('? − ' + q.a + ' = ' + q.c) + ' &nbsp;→&nbsp; ' + q.c + ' + ' + q.a + ' = ' + q.ans;
+  return nw((q.shape === 'x' ? q.a + ' + <i>x</i>' : '? + ' + q.a) + ' = ' + q.c) + ' &nbsp;→&nbsp; ' + q.c + ' − ' + q.a + ' = ' + q.ans;
+}
+KIND.backx = { draw: q => ADD_SHAPES[q.shape] ? drawBackAdd(q) : q.steps ? drawBackPm(q) : drawBackX(q),
+  eq: q => ADD_SHAPES[q.shape] ? eqBackAdd(q) : q.steps ? backPmLine(q) : eqBackX(q),
+  why: (q, full) => ADD_SHAPES[q.shape] ? whyBackAdd(q, full) : q.steps ? whyBackPm(q, full) : whyBackX(q, full) };

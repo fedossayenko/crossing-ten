@@ -49,8 +49,8 @@ import { genSums, genSumsTwo } from '../kinds/sums.js';
 import { genSeq } from '../kinds/seq.js';
 import { genGapCount, genGapSum, genMissing, genTurns } from '../kinds/missing.js';
 import { genFruit } from '../kinds/fruit.js';
-import { genFlowerEq, genFruitEq } from '../kinds/fruiteq.js';
-import { genTerm } from '../kinds/term.js';
+import { genFigTwins, genFlowerEq, genFruitEq } from '../kinds/fruiteq.js';
+import { genTerm, genTermWords } from '../kinds/term.js';
 import { genTrees } from '../kinds/trees.js';
 import { genRibbon } from '../kinds/ribbon.js';
 import { genPaint } from '../kinds/paint.js';
@@ -95,7 +95,9 @@ import { genDiffSeq } from '../kinds/diffseq.js';
 import { genDaily } from '../kinds/daily.js';
 import { genIsoPerim, genTriPerim, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
-import { genBrackets } from '../kinds/brackets.js';
+import { genBrackets, genBracketsShort } from '../kinds/brackets.js';
+import { genMatch } from '../kinds/match.js';
+import { genOvals } from '../kinds/ovals.js';
 import { genMagic } from '../kinds/magic.js';
 import { genPaintRow, genPaintTwo } from '../kinds/paintrow.js';
 import { genSegCount, genSegCountEx } from '../kinds/segcount.js';
@@ -183,7 +185,7 @@ import { genDistPts } from '../kinds/distpts.js';
 import { genNotColor } from '../kinds/notcolor.js';
 import { genNest } from '../kinds/nest.js';
 import { genKeepDig } from '../kinds/keepdig.js';
-import { genBackPm, genBackX } from '../kinds/backx.js';
+import { genBackAdd, genBackPm, genBackX } from '../kinds/backx.js';
 import { genRegroup } from '../kinds/regroup.js';
 import { genBoxDig } from '../kinds/boxdig.js';
 import { genSqSumLeast, genSqSumOdd } from '../kinds/sqsum.js';
@@ -215,6 +217,12 @@ export const LEVELS = [
   { id:9, op:'w', grp:'chain', needs:[8], d:3, shapes:{ cancel:2, ones:2, run:3, sub:2, tens:2 }, eq:'1 + 9 + 2 + 8', desc:{ en:'Chains that simplify by grouping — into tens, ± pairs, or terms that cancel', bg:'Верижки, които се опростяват с групиране — в десетици, двойки ± или числа, които се унищожават', uk:'Ланцюжки, що спрощуються групуванням — у десятки, пари ± або доданки, що скорочуються' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2024-2', 'mbg-autumn-2025-2', 'mbg-autumn-forecast2026-2'], gen:genPairs },
   { id:79, op:'w', grp:'chain', needs:[9], src:'mbg-winter-2024', d:4, shapes:{ '0':2, '1':3, '2':2, '3':4, '4':4 }, eq:'1 + 49 + 2 + 48', desc:{ en:'Numbers that pair up into a round fifty, then used', bg:'Числа, които се събират по две в кръгло число — после се използват', uk:'Числа, що попарно дають кругле число, — потім використовуються' }, also:['mbg-winter-2020-2', 'mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-winter-2023-2'], gen:genFifty },
   { id:99, op:'w', grp:'chain', needs:[8], src:'mbg-winter-2023', d:2, shapes:{ '0':2, '1':2, '2':2, '3':2, '4':2, '5':2, '6':2 }, eq:'86 − (51 − 5)', desc:{ en:'Brackets first — or see what each bracket is short of 100', bg:'Първо скобите — или колко не достига всяка до 100', uk:'Спершу дужки — або скільки кожній бракує до 100' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'kms-2024-2', 'mbg-spring-2025-2', 'kms-2023-2'], gen:genBrackets },
+  { id:274, op:'w', grp:'find', src:'ach-2024', d:2, shapes:{ think:2, x:2, brx:2 }, eq:{ bg:'Неизвестното число', uk:'Невідоме число' }, desc:{ en:'A number found back from one step: a number thought of, x in a sum, a bracket first', bg:'Число, намерено с една стъпка назад: намислено число, x в сбор, първо скобата', uk:'Число, знайдене одним кроком назад: задумане число, x у сумі, спершу дужка' }, also:['ach-2026-2'], gen:genBackAdd },
+  { id:275, op:'w', grp:'chain', src:'ach-2022', d:2, shapes:{ nb:2, bn:2, bb:2, nnb:2, nnn:2, three:2, gt:2 }, eq:'36 + (92 − 74)', desc:{ en:'Two or three steps with two-digit numbers, brackets first — and three addends, two of which make a round ten', bg:'Две-три сметки с двуцифрени числа, първо скобите — и три събираеми, две от които правят кръгло число', uk:'Дві-три дії з двоцифровими числами, спершу дужки — і три доданки, два з яких дають кругле число' }, also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], gen:genBracketsShort },
+  { id:276, op:'w', grp:'chain', src:'ach-2024', d:2, shapes:{ gift:2, hat:2 }, eq:{ bg:'Свържи', uk:'З’єднай' }, desc:{ en:'Sums written on gifts or snowmen, their answers held by others: which goes with which', bg:'Сметки по подаръци или снежни човеци, отговорите им — у други: кое с кое', uk:'Приклади на подарунках чи сніговиках, відповіді — в інших: що з чим' }, also:['ach-2026-2'], gen:genMatch },
+  { id:277, op:'w', grp:'chain', src:'ach-2024', d:2, shapes:{ strip:2, eqs:2 }, eq:{ bg:'Верижка', uk:'Ланцюжок' }, desc:{ en:'Numbers joined by arrows that add or take away: find a hidden number or step', bg:'Числа, свързани със стрелки, които прибавят или изваждат: намери скрито число или стъпка', uk:'Числа, з’єднані стрілками, що додають або віднімають: знайди приховане число чи крок' }, also:['ach-2026-2'], gen:genOvals },
+  { id:278, op:'w', grp:'word', needs:[141], src:'ach-2023', d:2, shapes:{ name:2, more:2, then:2, diff:2 }, eq:{ bg:'С думи', uk:'Словами' }, desc:{ en:'The operation said in words: a sum, a difference, a product; so much bigger or smaller; how many more', bg:'Действието, казано с думи: сбор, разлика, произведение; с толкова по-голямо или по-малко; с колко повече', uk:'Дію сказано словами: сума, різниця, добуток; на стільки більше чи менше; на скільки більше' }, also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], gen:genTermWords },
+  { id:279, op:'w', grp:'find', src:'ach-2022', d:2, eq:{ bg:'Звезди и петоъгълници', uk:'Зірки й п’ятикутники' }, desc:{ en:'The same figure is the same number: a figure added to itself gives the sum', bg:'Еднаквите фигури са еднакви числа: фигура, събрана със себе си, дава сбора', uk:'Однакові фігури — однакові числа: фігура, додана сама до себе, дає суму' }, gen:genFigTwins },
   { id:129, op:'w', grp:'chain', needs:[141], src:'mbg-spring-2025', d:2, shapes:{ '0':2, '1':2 }, eq:{ bg:'3 + 3 + 3 − 3 · 3', uk:'3 + 3 + 3 − 3 · 3' }, desc:{ en:'Equal addends are a product — spot it and it cancels', bg:'Еднаквите събираеми са произведение — забележи го и се съкращава', uk:'Однакові доданки — це добуток: помітиш — і все скорочується' }, gen:genRepAdd },
   { id:130, op:'w', grp:'chain', needs:[129], src:'mbg-spring-2025', d:3, shapes:{ '0':2, '1':2 }, eq:{ bg:'(11 − 10) · (11 − 9)', uk:'(11 − 10) · (11 − 9)' }, desc:{ en:'Brackets first, then multiply and divide before adding', bg:'Първо скобите, после умножението и делението, после събирането', uk:'Спершу дужки, потім множення й ділення, потім додавання' }, gen:genMulBr },
   { id:83, op:'w', grp:'chain', needs:[8, 141], src:'mbg-winter-2024', d:2, eq:'(…) · 0', desc:{ en:'One bracket comes to 0, so the long one needs no working', bg:'Едната скоба е 0, така че дългата не се смята', uk:'Одна дужка дорівнює 0, тож довгу не треба рахувати' }, gen:genZeroFac },
