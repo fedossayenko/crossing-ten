@@ -109,6 +109,22 @@ A, B and C read from a named number, 153 a square and a rectangle with equal per
 task (its clock time is А/Б/В/Г). The pyramid's boxes are lettered A … M, not А … К: «И» and «Е» would
 read as words to check.js's Ukrainian test.
 
+**Аз и числата** (СБНУ, the primary teachers' association; a school contest sat in January), 2nd grade,
+2022–2026 (school years 2021/22 … 2025/26, tags `ach-2022-2` … `ach-2026-2`, named by the January it was
+sat), is in too. Its 12–13 tasks a paper are far easier than МБГ's, and SBNU publishes no key: every pin in
+check/ach-A … ach-E.js is checked against our own solution. Matching, ДА/НЕ and colouring tasks are asked
+one item at a time. New levels 274–299, all rated 2–3: an unknown addend, one bracket, which expression
+gives a value (А/Б/В/Г), a strip of ovals and arrows, operations named in words, stars and pentagons;
+lengths compared with <, = or >, a pool's and a row of squares' perimeters, a triangle's perimeter, the
+three kinds of triangle (by its sides or by name), the triangles in a tree; true or false about a number or
+a perimeter, the tens digit, the largest sum with a one-digit addend, numbers said in tens, two numbers by
+their sum and difference, the next number of a run; cuts and pieces, things done at once, one and the
+others, outfits, the change from a лев; three groups, giving to make it equal, a place counted from the
+other end, who bought which fruit. Level 93 gained three consecutive numbers, and 267 is tagged for the
+2023 conversions. Not in the app: 2026 task 2 (the ant's legs, a riddle with nothing to vary), 2023 task 12
+and 2022 task 12 (colouring), 2023 task 2г (10 дм = 100 см: the units drill keeps 1, 10 and 100 out of its
+answers). Competitions leave out a level only this contest asks.
+
 The **spring round, 1st grade, 2025 and 2023** (МБГ Пролет 2025 and 2023, 1 клас) are in whole, tags
 `mbg-spring-2025-1` and `mbg-spring-2023-1`, every printed task pinned in check/grade1.js against its key.
 The two papers ask much the same things, so they share 25 levels, 155–179, rated on a 1st-grade scale:
@@ -156,7 +172,7 @@ and a strip, a segment in three units, numbered points, ants, figures with no co
 A level row carries `src` and `grade`, and `also:[…]` for other papers its task turns up on; a paper is
 a source and a grade, keyed like `mbg-winter-2024-2`. A level is rated once: when the same idea is
 easier or harder on another paper it is a level of its own, not a tag. The picker filters by paper
-(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, МБГ Есен 2025, 2024 and 2023 3 клас), tags
+(Основи, МБГ Есен 2 клас, МБГ Есен 2025 2 клас, МБГ Зима 2024 2 клас, Коледно състезание 2025 2 клас, Аз и числата 2026 2 клас, МБГ Есен 2025, 2024 and 2023 3 клас), tags
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
