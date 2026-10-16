@@ -113,7 +113,9 @@ import { genRing } from '../kinds/ring.js';
 import { genCuckoo } from '../kinds/cuckoo.js';
 import { genLeast3 } from '../kinds/least3.js';
 import { genNuts, genNutsLeast } from '../kinds/nuts.js';
-import { genAndMore, genFishers } from '../kinds/andmore.js';
+import { genAndMore, genFishers, genThreeGroups } from '../kinds/andmore.js';
+import { genEqualize } from '../kinds/equalize.js';
+import { genShelf } from '../kinds/shelf.js';
 import { genLanterns } from '../kinds/lanterns.js';
 import { genFigCount, genVTri } from '../kinds/vtri.js';
 import { genNumPyr } from '../kinds/numpyr.js';
@@ -162,7 +164,7 @@ import { genWhoMore } from '../kinds/whomore.js';
 import { genSegWord } from '../kinds/segword.js';
 import { genPrices } from '../kinds/prices.js';
 import { genHops } from '../kinds/hops.js';
-import { genWhoColor } from '../kinds/whocolor.js';
+import { genWhoColor, genWhoFruit } from '../kinds/whocolor.js';
 import { genDigRule } from '../kinds/digrule.js';
 import { genBlind } from '../kinds/blind.js';
 import { genBowl } from '../kinds/bowl.js';
@@ -316,6 +318,10 @@ export const LEVELS = [
   { id:150, op:'w', grp:'num', needs:[18], src:'kms-2022', d:4, eq:{ bg:'И в двете редици', uk:'В обох рядах' }, desc:{ en:'Two lists given by rules, and the numbers on both', bg:'Две редици, зададени с правило, и числата и в двете', uk:'Два ряди, задані правилом, і числа, що є в обох' }, gen:genBothSeq },
   { id:152, op:'w', grp:'num', needs:[13], src:'kms-2022', d:4, eq:{ bg:'A, B и C', uk:'A, B і C' }, desc:{ en:'A number named in words, then two more read from it', bg:'Число, казано с думи, и още две, прочетени от него', uk:'Число, назване словами, і ще два, знайдені з нього' }, gen:genNamedPair },
   { id:119, op:'w', grp:'word', src:'mbg-winter-2020', d:2, eq:{ bg:'И с толкова повече', uk:'І на стільки більше' }, desc:{ en:'One group, another with so many more: how many in all', bg:'Една група и друга с толкова повече: колко общо', uk:'Одна група й інша на стільки більша: скільки всього' }, gen:genAndMore },
+  { id:296, op:'w', grp:'word', src:'ach-2022', needs:[119], d:3, shapes:{ second:2, third:2, chain:2, total:3 }, eq:{ bg:'Три групи', uk:'Три групи' }, desc:{ en:'A second group told from the first, a third from the first or the second: one of them, or all three', bg:'Втора група, казана спрямо първата, трета — спрямо първата или втората: едната от тях или трите общо', uk:'Друга група — відносно першої, третя — відносно першої чи другої: одна з них або всі три разом' }, also:['ach-2024-2'], gen:genThreeGroups },
+  { id:297, op:'w', grp:'word', src:'ach-2022', d:3, shapes:{ before:3, give:3 }, eq:{ bg:'Поравно', uk:'Порівну' }, desc:{ en:'One gives the other some and both have the same: how many the other had, or how many to give', bg:'Едната дава на другата и двете имат поравно: колко е имала другата или колко да даде', uk:'Одна віддає іншій, і в обох стає порівну: скільки мала інша або скільки віддати' }, gen:genEqualize },
+  { id:298, op:'w', grp:'count', src:'ach-2025', d:2, shapes:{ pos:2, total:2 }, eq:{ bg:'От другия край', uk:'З іншого кінця' }, desc:{ en:'A place in a row counted from the other end, or the whole row from a place counted both ways', bg:'Място в редица, броено от другия край — или колко са всички по място, броено от двете страни', uk:'Місце в ряду, пораховане з іншого кінця, — або скільки всіх за місцем, порахованим з обох боків' }, gen:genShelf },
+  { id:299, op:'w', grp:'word', src:'ach-2022', d:2, eq:{ bg:'Кой какво купил?', uk:'Хто що купив?' }, desc:{ en:'A girl, two boys and three fruits: a «not» clue and a name that starts with a vowel', bg:'Момиче, две момчета и три плода: подсказка «не» и име, което започва с гласен звук', uk:'Дівчинка, два хлопчики й три фрукти: підказка «не» та ім’я, що починається з голосного звука' }, gen:genWhoFruit },
   { id:133, op:'w', grp:'word', needs:[141], src:'mbg-spring-2025', d:3, shapes:{ '0':2, '1':2, '2':3, '3':3 }, eq:{ bg:'Пъти повече', uk:'У стільки разів' }, desc:{ en:'So many times more or fewer, and equal shares', bg:'Толкова пъти повече или по-малко, и поравно', uk:'У стільки разів більше чи менше, і порівну' }, gen:genTimesW },
   { id:135, op:'w', grp:'word', needs:[14, 141], src:'mbg-spring-2025', d:3, eq:{ bg:'Намалено 3 пъти', uk:'Зменшено в 3 рази' }, desc:{ en:'Only the odd — or even — addends made so many times smaller or bigger', bg:'Само нечетните — или четните — събираеми, намалени или увеличени няколко пъти', uk:'Лише непарні — або парні — доданки, зменшені чи збільшені в кілька разів' }, gen:genGrowTimes },
   { id:122, op:'w', grp:'word', src:'mbg-autumn-2021', d:3, eq:{ bg:'Фенерите', uk:'Ліхтарі' }, desc:{ en:'A trick: a lantern put out is still there', bg:'Уловка: загасеният фенер пак си е там', uk:'Підступ: погаслий ліхтар нікуди не дівається' }, gen:genLanterns },
