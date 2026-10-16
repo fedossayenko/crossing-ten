@@ -5,8 +5,20 @@
 // numbers in a row are a number and one more: take the one away, halve what is left.
 // Зима 2020: how many of 4 … 18 are the sum of two consecutive numbers? n + (n + 1) is always
 // odd, and every odd number from 3 up is one: 5, 7, …, 17 — seven of them
+// Аз и числата 2023, задача 11 (shape 'three'): which three consecutive numbers add to 18? Three numbers in a row
+// are the middle one three times, one taken from the first and given to the last: 18 : 3 = 6, so 5, 6, 7. Drawn
+// after the old question, so a seed recorded before it still asks what it asked, unless the draw after it
+// turns it into this one.
 import { KIND, SLOT, rnd, tr } from '../js/core.js';
 export function genConsec(){
+  const q = consecOld();
+  if(Math.random() < 0.2){
+    const m = 2 + rnd(31);
+    return {kind:'consec', shape:'three', m, S: 3*m, slots:3, ans: m - 1, alt:[m, m + 1]};
+  }
+  return q;
+}
+function consecOld(){
   if(Math.random() < 0.3){
     const a = 2 + rnd(10), b = a + 8 + rnd(15), list = [];
     for(let v = a; v <= b; v++) if(v % 2 && v >= 3) list.push(v);
@@ -20,6 +32,10 @@ export function genConsec(){
   }
 }
 function drawConsec(q){
+  if(q.shape === 'three'){
+    return '<div class="ask">' + tr('Сборът на кои <b>три последователни</b> числа е <span class="num">' + q.S + '</span>?', 'Сума яких <b>трьох послідовних</b> чисел дорівнює <span class="num">' + q.S + '</span>?') + '</div>' +
+      '<div class="line md">' + SLOT + ', <span class="slot" id="slot1"></span>, <span class="slot" id="slot2"></span></div>';
+  }
   if(q.shape === 'count'){
     return '<div class="ask">' + tr('Колко от числата от <span class="num">' + q.a + '</span> до <span class="num">' + q.b + '</span> можем да представим като сбор на две <b>последователни</b> числа?',
       'Скільки чисел від <span class="num">' + q.a + '</span> до <span class="num">' + q.b + '</span> можна подати як суму двох <b>послідовних</b> чисел?') + '</div>' +
@@ -35,10 +51,15 @@ function drawConsec(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqConsec(q){
+  if(q.shape === 'three') return (q.m - 1) + ' + ' + q.m + ' + ' + (q.m + 1) + ' = ' + q.S + ' → ' + (q.m - 1) + ', ' + q.m + ', ' + (q.m + 1);
   if(q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;
   return (10*q.t + 9) + ' − ' + 10*q.s + ' = ' + q.X + ' = ' + (q.X - 1)/2 + ' + ' + (q.X + 1)/2 + ' → ' + q.ans;
 }
 function whyConsec(q, full){
+  if(q.shape === 'three'){
+    if(!full) return tr('Трите числа са почти равни: средното е колкото една от три равни части на сбора.', 'Три числа майже рівні: середнє — це одна з трьох рівних частин суми.');
+    return q.S + ' : 3 = <b>' + q.m + '</b> — ' + tr('средното', 'середнє') + ' &nbsp;→&nbsp; ' + (q.m - 1) + ' + ' + q.m + ' + ' + (q.m + 1) + ' = ' + q.S + ' &nbsp;→&nbsp; ' + (q.m - 1) + ', ' + q.m + ', ' + (q.m + 1);
+  }
   if(q.shape === 'count'){
     if(!full) return tr('Събери няколко двойки съседни числа. Какви числа излизат — четни или нечетни?', 'Додай кілька пар сусідніх чисел. Які числа виходять — парні чи непарні?');
     return tr('сборът на две последователни е винаги нечетен: ', 'сума двох послідовних завжди непарна: ') + q.list.map(v => v + ' = ' + (v - 1)/2 + ' + ' + (v + 1)/2).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;

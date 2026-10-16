@@ -77,6 +77,33 @@ export function genNamedSum(){
   const a = rnd(4), b = rnd(4), sum = Math.random() < 0.7, A = NAMED_ONE[0][a][2], B = NAMED_ONE[1][b][2];
   return {kind:'named', shape:7, a, b, sum, traps: A === 0 ? [sum ? B + 1 : B - 1] : [], ans: sum ? A + B : B - A};
 }
+// Level 287. Аз и числата 2024, задача 2: one addend is 52, the other a one-digit number above zero — the
+// largest sum? The other is 9: 52 + 9 = 61. Asked the other way, the smallest sum takes 0 — or 1, when the
+// number must be above zero — and a difference turns both round: the smallest takes away 9, the largest 0 or 1.
+// Аз и числата 2023, задача 5 (shape 'boxes'): □□□ − □□ = 1. A three-digit number is at least 100 and a
+// two-digit one at most 99, so the only pair a gap of 1 allows is 100 − 99. The same with □□ − □ = 1 (10 − 9)
+// and □□□ − □ = 91 (100 − 9).
+/** @type {[number, number, number][]} */
+const NAMED_BOXES = [[3, 2, 1], [3, 1, 91], [2, 1, 1]];
+export function genNamedEdge(){
+  if(Math.random() < 0.15){
+    const b = rnd(NAMED_BOXES.length), [n, m, r] = NAMED_BOXES[b], big = 10 ** (n - 1), small = 10 ** m - 1;
+    return {kind:'named', shape:'boxes', b, n, m, r, big, small, slots:2, ans: big, alt:[small]};
+  }
+  const sum = Math.random() < 0.6, pos = Math.random() < 0.5, nine = Math.random() < 0.55, a = 11 + rnd(80);
+  // nine: the largest sum or the smallest difference, where the other is 9; else the other is 0, or 1 above zero
+  const o = nine ? 9 : pos ? 1 : 0, ans = sum ? a + o : a - o;
+  const traps = nine ? [sum ? a + 10 : a - 10] : [sum ? (pos ? a : a + 1) : (pos ? a : a - 1)];
+  return {kind:'named', shape: nine ? 'nine' : 'zero', a, sum, pos, o, traps, ans};
+}
+// the question, in Bulgarian and Ukrainian: «кой е възможно най-големият сбор?»
+const namedEdgeAsk = q => {
+  const most = (q.shape === 'nine') === q.sum;   // the largest sum (9 added), or the largest difference (0 or 1 taken)
+  return q.sum ? [most ? 'кой е възможно най-големият сбор' : 'кой е възможно най-малкият сбор', most ? 'яка найбільша можлива сума' : 'яка найменша можлива сума']
+               : [most ? 'коя е възможно най-голямата разлика' : 'коя е възможно най-малката разлика', most ? 'яка найбільша можлива різниця' : 'яка найменша можлива різниця'];
+};
+const namedBoxCells = n => '<span style="display:inline-flex; vertical-align:middle">' + '<span style="display:inline-block; width:1.1em; height:1.3em; border:2px solid var(--muted); margin-left:-2px"></span>'.repeat(n) + '</span>';
+const NAMED_DIGS = {1:['едноцифрено', 'одноцифрове'], 2:['двуцифрено', 'двоцифрове'], 3:['трицифрено', 'трицифрове']};
 export function genNamed(){
   if(Math.random() < 0.06){
     const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
@@ -144,6 +171,21 @@ const namedGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’я
 const namedNum = n => n + ' ' + (UK_PLURAL.select(n) === 'few' ? 'числа' : n === 1 ? 'число' : 'чисел');
 
 function drawNamed(q){
+  if(q.shape === 'boxes'){
+    const [N, M] = [NAMED_DIGS[q.n], NAMED_DIGS[q.m]];
+    return '<div class="ask">' + tr('Напиши липсващите числа, за да е вярно решена задачата: от ' + N[0] + ' число извадих ' + M[0] + ' и получих <span class="num">' + q.r + '</span>.',
+      'Напиши пропущені числа, щоб приклад був розв’язаний правильно: від ' + N[1].replace(/е$/, 'ого') + ' числа відняли ' + M[1] + ' й отримали <span class="num">' + q.r + '</span>.') + '</div>' +
+      '<div class="given">' + namedBoxCells(q.n) + ' − ' + namedBoxCells(q.m) + ' = ' + q.r + '</div>' +
+      '<div class="line md">' + SLOT + ' − <span class="slot" id="slot1"></span> = ' + q.r + '</div>';
+  }
+  if(q.shape === 'nine' || q.shape === 'zero'){
+    const [bg, uk] = namedEdgeAsk(q), gt = q.pos ? tr(', по-голямо от нула', ', більше за нуль') : '';
+    return '<div class="ask">' + (q.sum ? tr('Ако едното събираемо е <span class="num">' + q.a + '</span>, а другото е <b>едноцифрено</b> число' + gt + ', ' + bg + '?',
+        'Якщо один доданок дорівнює <span class="num">' + q.a + '</span>, а інший — <b>одноцифрове</b> число' + gt + ', ' + uk + '?')
+      : tr('Ако умаляемото е <span class="num">' + q.a + '</span>, а умалителят е <b>едноцифрено</b> число' + gt + ', ' + bg + '?',
+        'Якщо зменшуване дорівнює <span class="num">' + q.a + '</span>, а від’ємник — <b>одноцифрове</b> число' + gt + ', ' + uk + '?')) + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 7){
     const [A, B] = [NAMED_ONE[0][q.a], NAMED_ONE[1][q.b]], [x, y] = q.sum ? [A, B] : [B, A];
     return '<div class="ask">' + tr('Пресметнете <b>' + (q.sum ? 'сбора' : 'разликата') + '</b> на ' + x[0] + ' и ' + y[0] + '.',
@@ -200,6 +242,8 @@ function drawNamed(q){
 }
 const namedSumText = q => { const A = NAMED_ONE[0][q.a][2], B = NAMED_ONE[1][q.b][2]; return q.sum ? A + ' + ' + B : B + ' − ' + A; };
 function eqNamed(q){
+  if(q.shape === 'boxes') return q.big + ' − ' + q.small + ' = ' + q.r + ' → ' + q.big + ', ' + q.small;
+  if(q.shape === 'nine' || q.shape === 'zero') return q.a + (q.sum ? ' + ' : ' − ') + q.o + ' = ' + q.ans;
   if(q.shape === 7) return namedSumText(q) + ' = ' + q.ans;
   if(q.shape === 6) return 'A = ' + q.A + ', B = ' + q.B + ', C = ' + q.ans;
   if(q.shape === 5) return q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + ' = ' + q.ans;
@@ -215,6 +259,22 @@ function eqNamed(q){
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
 }
 function whyNamed(q, full){
+  if(q.shape === 'boxes'){
+    if(!full) return tr('Първото число трябва да е колкото може по-малко, а второто — колкото може по-голямо.', 'Перше число має бути якомога меншим, а друге — якомога більшим.');
+    const [N, M] = [NAMED_DIGS[q.n], NAMED_DIGS[q.m]];
+    return tr('най-малкото ' + N[0] + ' число е <b>' + q.big + '</b>, най-голямото ' + M[0] + ' е <b>' + q.small + '</b>',
+      'найменше ' + N[1] + ' число — <b>' + q.big + '</b>, найбільше ' + M[1] + ' — <b>' + q.small + '</b>') +
+      ' &nbsp;→&nbsp; ' + q.big + ' − ' + q.small + ' = ' + q.r + tr(' — друга двойка няма', ' — іншої пари немає') + ' &nbsp;→&nbsp; ' + q.big + ', ' + q.small;
+  }
+  if(q.shape === 'nine' || q.shape === 'zero'){
+    if(!full) return q.shape === 'nine'
+      ? tr('Кое е най-голямото едноцифрено число?', 'Яке найбільше одноцифрове число?') + (q.sum ? '' : tr(' Колкото повече извадиш, толкова по-малко остава.', ' Що більше віднімеш, то менше залишиться.'))
+      : tr('Кое е най-малкото едноцифрено число — и може ли да е то тук?', 'Яке найменше одноцифрове число — і чи можна взяти саме його?');
+    const why = q.shape === 'nine' ? tr('най-голямото едноцифрено число е <b>9</b>', 'найбільше одноцифрове число — <b>9</b>')
+      : q.pos ? tr('най-малкото едноцифрено число е 0, но то трябва да е по-голямо от нула: <b>1</b>', 'найменше одноцифрове число — 0, але воно має бути більшим за нуль: <b>1</b>')
+      : tr('най-малкото едноцифрено число е <b>0</b>', 'найменше одноцифрове число — <b>0</b>');
+    return why + ' &nbsp;→&nbsp; ' + q.a + (q.sum ? ' + ' : ' − ') + q.o + ' = ' + q.ans;
+  }
   if(q.shape === 7){
     if(!full) return tr('Първо намери всяко от двете числа. Нулата също е едноцифрено число.', 'Спершу знайди кожне з двох чисел. Нуль — теж одноцифрове число.');
     const [A, B] = [NAMED_ONE[0][q.a], NAMED_ONE[1][q.b]], cap = t => t[0].toUpperCase() + t.slice(1);

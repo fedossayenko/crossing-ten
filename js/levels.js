@@ -8,13 +8,13 @@ import { genSnail } from '../kinds/snail.js';
 import { genBox } from '../kinds/box.js';
 import { genSqCut } from '../kinds/sqcut.js';
 import { genCount, genCountMissed, genCountShort, genCountTold } from '../kinds/count.js';
-import { genNamed, genNamedPair, genNamedSum } from '../kinds/named.js';
+import { genNamed, genNamedEdge, genNamedPair, genNamedSum } from '../kinds/named.js';
 import { genGrow, genGrowShort, genGrowTimes } from '../kinds/grow.js';
 import { genErase } from '../kinds/erase.js';
 import { genIneq, genIneqSmall, genIneqWide } from '../kinds/ineq.js';
 import { genOrder } from '../kinds/order.js';
-import { genSumBoard, genSumDiff } from '../kinds/sumdiff.js';
-import { genDigits } from '../kinds/digits.js';
+import { genSumBoard, genSumDiff, genSumDiffPair } from '../kinds/sumdiff.js';
+import { genDigits, genTensDigit } from '../kinds/digits.js';
 import { genDigitBelow, genDigitFreq, genDigitOmit, genDigitRun } from '../kinds/dcount.js';
 import { genBucket } from '../kinds/bucket.js';
 import { genRects, genRectsAnts, genRectsIn } from '../kinds/rects.js';
@@ -63,7 +63,7 @@ import { genCrates } from '../kinds/crates.js';
 import { genMultiple } from '../kinds/multiple.js';
 import { genSudoku } from '../kinds/sudoku.js';
 import { genThreeDig } from '../kinds/thr.js';
-import { genTens } from '../kinds/tens.js';
+import { genTens, genTensSaid } from '../kinds/tens.js';
 import { genSigns } from '../kinds/signs.js';
 import { genBoth } from '../kinds/both.js';
 import { genShort } from '../kinds/short.js';
@@ -90,8 +90,9 @@ import { genUnitCmp } from '../kinds/unitcmp.js';
 import { genTriType } from '../kinds/tritype.js';
 import { genMinuend } from '../kinds/minuend.js';
 import { genConsec } from '../kinds/consec.js';
+import { genYesNo } from '../kinds/yesno.js';
 import { genDigitBlocks, genWordPos } from '../kinds/wordpos.js';
-import { genDiffSeq } from '../kinds/diffseq.js';
+import { genDiffSeq, genDiffSeqNext } from '../kinds/diffseq.js';
 import { genDaily } from '../kinds/daily.js';
 import { genIsoPerim, genTriPerim, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
@@ -265,7 +266,13 @@ export const LEVELS = [
   { id:54, op:'w', grp:'num', d:5, eq:{ bg:'Судоку', uk:'Судоку' }, desc:{ en:'Four by four: every row, column and box holds 1 to 4 once', bg:'Четири на четири: във всеки ред, стълб и квадрат 1 до 4 по веднъж', uk:'Чотири на чотири: у кожному рядку, стовпці й квадраті 1–4 по одному разу' }, also:['mbg-autumn-2020-2'], gen:genSudoku },
   { id:117, op:'w', grp:'num', needs:[44], src:'mbg-winter-2020', d:4, eq:{ bg:'Зачеркни до трицифрено', uk:'Закресли до трицифрового' }, desc:{ en:'Cross out digits to leave the smallest three-digit number', bg:'Зачеркни цифри до най-малкото трицифрено число', uk:'Закресли цифри до найменшого трицифрового числа' }, gen:genLeast3 },
   { id:89, op:'w', grp:'num', needs:[23], src:'mbg-winter-2024', d:4, eq:'C + 1A + B7', desc:{ en:'Letters for digits, where only one tens digit can work', bg:'Букви вместо цифри — само една цифра на десетиците може да стане', uk:'Букви замість цифр — підходить лише одна цифра десятків' }, gen:genLetters },
-  { id:93, op:'w', grp:'num', needs:[13], src:'kms-2025', d:3, shapes:{ '-':3, count:2 }, eq:{ bg:'Последователни', uk:'Послідовні' }, desc:{ en:'Two numbers in a row, from a sum given in words', bg:'Две поредни числа по сбор, казан с думи', uk:'Два послідовні числа за сумою, названою словами' }, also:['mbg-winter-2020-2'], gen:genConsec },
+  { id:93, op:'w', grp:'num', needs:[13], src:'kms-2025', d:3, shapes:{ '-':3, count:2, three:2 }, eq:{ bg:'Последователни', uk:'Послідовні' }, desc:{ en:'Two numbers in a row, from a sum given in words — or three, from their sum', bg:'Две поредни числа по сбор, казан с думи — или три по сбора им', uk:'Два послідовні числа за сумою, названою словами — або три за їхньою сумою' }, also:['mbg-winter-2020-2', 'ach-2023-2'], gen:genConsec },
+  { id:285, op:'w', grp:'num', src:'ach-2022', d:2, shapes:{ num:2, perim:2 }, eq:{ bg:'Вярно ли е?', uk:'Чи правда?' }, desc:{ en:'One statement about a number (its digits, its places, the smallest or largest of its kind) or about a perimeter: true or not', bg:'Едно твърдение за число (цифрите му, разредите му, най-малкото или най-голямото) или за обиколка: вярно ли е', uk:'Одне твердження про число (його цифри, розряди, найменше чи найбільше) або про периметр: правда чи ні' }, also:['ach-2023-2', 'ach-2025-2'], gen:genYesNo },
+  { id:286, op:'w', grp:'num', src:'ach-2022', d:2, shapes:{ grid:2, all:2, even:2 }, eq:{ bg:'Цифрата на десетиците', uk:'Цифра десятків' }, desc:{ en:'Which numbers have a given tens digit: in a table, all of them, or the even ones inside a ten', bg:'Кои числа имат дадена цифра на десетиците: в таблица, всичките, или четните между две кръгли числа', uk:'Які числа мають дану цифру десятків: у таблиці, усі, або парні між двома круглими числами' }, also:['ach-2023-2', 'ach-2025-2'], gen:genTensDigit },
+  { id:287, op:'w', grp:'num', src:'ach-2023', d:3, shapes:{ nine:2, zero:3, boxes:2 }, eq:{ bg:'Най-големият сбор', uk:'Найбільша сума' }, desc:{ en:'A number and any one-digit number: the largest or smallest sum or difference (0 counts unless it must be above zero); and a three-digit minus a two-digit number that leaves 1', bg:'Число и кое да е едноцифрено: най-големият или най-малкият сбор или разлика (и 0 се брои, освен ако трябва да е по-голямо от нула); и трицифрено минус двуцифрено, което дава 1', uk:'Число і будь-яке одноцифрове: найбільша чи найменша сума або різниця (і 0 рахується, якщо не сказано «більше за нуль»); і трицифрове мінус двоцифрове, що дає 1' }, also:['ach-2024-2'], gen:genNamedEdge },
+  { id:288, op:'w', grp:'num', src:'ach-2024', d:3, eq:{ bg:'Казано в десетици', uk:'Сказано в десятках' }, desc:{ en:'Two numbers told by their tens and ones («as many ones», «one fewer ones»), then their difference or sum', bg:'Две числа, казани с десетици и единици («също толкова единици», «с една по-малко единици»), после разликата или сборът им', uk:'Два числа, названі десятками й одиницями («стільки ж одиниць», «на одну одиницю менше»), потім їхня різниця чи сума' }, gen:genTensSaid },
+  { id:289, op:'w', grp:'find', src:'ach-2024', d:3, eq:{ bg:'Кои две числа?', uk:'Які два числа?' }, desc:{ en:'Both numbers, from their sum and their difference', bg:'Двете числа по сбора и разликата им', uk:'Обидва числа за їхньою сумою та різницею' }, gen:genSumDiffPair },
+  { id:290, op:'w', grp:'seq', src:'ach-2022', d:2, shapes:{ grow:2, const:2 }, eq:{ bg:'Следващото число', uk:'Наступне число' }, desc:{ en:'The next number of a run whose steps grow, or five numbers each the same step on', bg:'Следващото число в редица, чиито стъпки растат, или пет числа, всяко с една и съща стъпка напред', uk:'Наступне число послідовності, кроки якої ростуть, або п’ять чисел, кожне на той самий крок далі' }, also:['ach-2023-2', 'ach-2025-2'], gen:genDiffSeqNext },
   { id:60, op:'w', grp:'num', needs:[53], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Цифрите', uk:'Цифри' }, desc:{ en:'The digits of the smallest or largest three-digit number that fits', bg:'Цифрите на най-малкото или най-голямото трицифрено число, което пасва', uk:'Цифри найменшого чи найбільшого тризначного числа, що підходить' }, gen:genDigProd },
   { id:66, op:'w', grp:'num', needs:[59], grade:3, src:'mbg-autumn-2025', d:3, eq:{ bg:'Цифрата на единиците', uk:'Цифра одиниць' }, desc:{ en:'Two numbers a set distance apart — which digits their product can end in', bg:'Две числа на дадена разлика — на какво може да завършва произведението им', uk:'Два числа із заданою різницею — якою цифрою може закінчуватися їхній добуток' }, gen:genOddProd },
   { id:241, op:'w', grp:'num', needs:[66], grade:3, src:'mbg-autumn-2024', d:3, eq:{ bg:'Две последователни', uk:'Два послідовні' }, desc:{ en:'Two consecutive numbers (even, odd or any), or two 4 apart, of any size — which digits their product can end in', bg:'Две последователни числа (четни, нечетни или кои да е) или две на разлика 4, колкото и да са големи — на какво може да завършва произведението им', uk:'Два послідовні числа (парні, непарні чи будь-які) або два з різницею 4, будь-якої величини — якою цифрою може закінчуватися їхній добуток' }, gen:genConsecProd },

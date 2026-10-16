@@ -40,6 +40,16 @@ function sumBoard(sm, dm, top, wide){
     return {kind:'sumdiff', shape:'board', S, d, small, big, asksBig, traps: (S % 2 ? [S - d] : [S / 2, S - d]).filter(v => v !== ans), ans};
   }
 }
+// Level 289. Аз и числата 2024, задача 8: «Маймунката Мунка те пита кои две числа имат сбор 12 и разлика 4» — both
+// of them, 8 and 4. Take the difference off the sum and two equal halves are left: 12 − 4 = 8, 8 : 2 = 4, and
+// 4 + 4 = 8. Level 216 asks one of the two in the 1st grade; here both, with sums up to 60.
+export function genSumDiffPair(){
+  for(;;){
+    const small = 1 + rnd(25), d = 1 + rnd(20), big = small + d, S = small + big;
+    if(S > 60) continue;
+    return {kind:'sumdiff', shape:'two', S, d, small, big, slots:2, ans: big, alt:[small]};
+  }
+}
 export function genSumDiff(){
   if(Math.random() < 0.2) return genSumAndDiff();
   if(Math.random() < 0.4) return genGap();
@@ -49,6 +59,11 @@ export function genSumDiff(){
 }
 
 function drawSumdiff(q){
+  if(q.shape === 'two'){
+    return '<div class="ask">' + tr('Маймунката Мунка те пита кои две числа имат <b>сбор</b> <span class="num">' + q.S + '</span> и <b>разлика</b> <span class="num">' + q.d + '</span>. Запиши ги.',
+      'Мавпочка Мунка питає тебе, які два числа мають <b>суму</b> <span class="num">' + q.S + '</span> і <b>різницю</b> <span class="num">' + q.d + '</span>. Напиши їх.') + '</div>' +
+      '<div class="line md">' + tr('Числата са ', 'Числа: ') + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
+  }
   if(q.shape === 'board' && q.plain){
     return '<div class="ask">' + tr('Разликата на две числа е <span class="num">' + q.d + '</span>, а сборът им е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'Різниця двох чисел дорівнює <span class="num">' + q.d + '</span>, а їхня сума — <span class="num">' + q.S + '</span>. Яке з цих чисел <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
@@ -83,6 +98,7 @@ function drawSumdiff(q){
     ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
 }
 function eqSumdiff(q){
+  if(q.shape === 'two') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.small + tr(' и ', ' і ') + q.big;
   if(q.shape === 'board') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.ans;
   if(q.shape === 'sd') return '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
   if(q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + tr(' от ', ' від ') + q.c + ' → ' + q.ans;
@@ -93,7 +109,7 @@ function eqSumdiff(q){
 // A sum and a difference: two bars, the longer one longer by the difference — take that off, and what
 // is left is two equal halves.
 function sumdiffSvg(q){
-  if(q.shape === 'sd' || q.shape === 'board'){
+  if(q.shape === 'sd' || q.shape === 'board' || q.shape === 'two'){
     const u = 180 / q.big, half = q.small * u;
     let g = '';
     [[0, q.small, 0], [30, q.big, 1]].forEach(([y, v, i]) => { g += '<rect' + popAt(1 + i) + ' x="40" y="' + y + '" width="' + (v * u).toFixed(1) + '" height="20" rx="5" fill="none" stroke="var(--accent)" stroke-width="2"/>'; });
@@ -102,7 +118,7 @@ function sumdiffSvg(q){
       svgText((40 + half + q.d * u / 2).toFixed(1), 45, q.d, 12, 'var(--warm)') + '</g>';
     g += '<g' + popAt(4) + '><path d="M' + (40 + half + q.d * u + 8).toFixed(1) + ',0 h5 v50 h-5" stroke="var(--ink)" stroke-width="1.6" fill="none"/>' + svgText((40 + half + q.d * u + 26).toFixed(1), 30, q.S, 13, 'var(--ink)') + '</g>';
     g += '<g' + popAt(5) + '>' + svgText((40 + half / 2).toFixed(1), 15, q.small, 13, 'var(--accent)') + svgText((40 + half / 2).toFixed(1), 45, q.small, 13, 'var(--accent)') + '</g>';
-    const foot = q.asksBig ? q.small + ' + ' + q.d + ' = ' + q.big : q.shape === 'board' ? q.big + ' − ' + q.d + ' = ' + q.small : '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small;
+    const foot = q.asksBig || q.shape === 'two' ? q.small + ' + ' + q.d + ' = ' + q.big : q.shape === 'board' ? q.big + ' − ' + q.d + ' = ' + q.small : '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small;
     g += svgText(130, 78, foot, 15, 'var(--ink)', popAt(6));
     return '<svg viewBox="0 -8 272 96" style="display:block; width:326px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете числа като ленти', 'два числа як смужки') + '">' + g + '</svg>';
   }
@@ -120,6 +136,10 @@ function sumdiffSvg(q){
     lo - 1, hi + 1, tr('другото число от двете страни', 'інше число з обох боків'));
 }
 function whySumdiff(q, full){
+  if(q.shape === 'two'){
+    if(!full) return tr('Махни разликата от сбора — остават две равни части.', 'Прибери різницю із суми — лишаються дві рівні частини.');
+    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = <b>' + q.big + '</b>' + sumdiffSvg(q);
+  }
   if(q.shape === 'board'){
     if(!full) return tr('Опитай две числа с този сбор, като започнеш от две равни половини. Каква е разликата им?',
       'Спробуй два числа з такою сумою, починаючи з двох рівних половин. Яка між ними різниця?');

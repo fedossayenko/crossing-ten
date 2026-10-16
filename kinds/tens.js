@@ -35,12 +35,41 @@ export function genTens(){
   return {kind:'tens', shape:3, a, b, c, ans: 100*a + 10*b + c};
 }
 
+// Level 288. Аз и числата 2024, задача 11: «Умаляемото има 8 десетици и също толкова единици. Умалителят има
+// 6 десетици и с една по-малко единици. Разликата е:» — 88 and 65, so 23. Each number is told by its tens, and
+// its ones against its own tens. The paper's other options are the digits swapped (32) and 88 − 6 = 82, the
+// second number's tens taken away as if they were ones. Now and then two addends and their sum instead.
+const TENS_K = [['една', 'одну одиницю'], ['две', 'дві одиниці'], ['три', 'три одиниці']];
+function tensSaidOne(lo){
+  for(;;){
+    const t = lo + rnd(10 - lo), rel = rnd(3), k = 1 + rnd(3), u = rel === 0 ? t : rel === 1 ? t - k : t + k;
+    if(u < 0 || u > 9) continue;
+    return rel === 0 ? {t, rel, u} : {t, rel, k, u};
+  }
+}
+export function genTensSaid(){
+  for(;;){
+    const sum = Math.random() < 0.3, A = tensSaidOne(2), B = tensSaidOne(1), a = 10*A.t + A.u, b = 10*B.t + B.u;
+    if(sum ? a + b > 99 : a <= b) continue;
+    const ans = sum ? a + b : a - b, swap = ans % 10 && Math.floor(ans / 10) ? 10*(ans % 10) + Math.floor(ans / 10) : -1;
+    return {kind:'tens', shape:'said', sum, A, B, a, b, traps: [swap, sum ? a + B.t : a - B.t].filter(v => v >= 0 && v !== ans), ans};
+  }
+}
+// «има 6 десетици и с една по-малко единици» / «має 6 десятків і на одну одиницю менше»
+const tensSaidBg = n => 'има ' + places(n.t, 10) + ' и ' + (n.rel === 0 ? 'също толкова единици' : 'с ' + TENS_K[n.k - 1][0] + (n.rel === 1 ? ' по-малко' : ' повече') + ' единици');
+const tensSaidUk = n => 'має ' + tensUkPlaces(n.t, 10) + ' і ' + (n.rel === 0 ? 'стільки ж одиниць' : 'на ' + TENS_K[n.k - 1][1] + (n.rel === 1 ? ' менше' : ' більше'));
 // Ukrainian forms by Intl plural category: one (1 десяток), few (2 десятки), many (5 десятків)
 const tensUk = {1:{one:'одиниця', few:'одиниці', many:'одиниць'}, 10:{one:'десяток', few:'десятки', many:'десятків'},
                 100:{one:'сотня', few:'сотні', many:'сотень'}};
 const tensUkPlaces = (n, u) => n + ' ' + tensUk[u][UK_PLURAL.select(n)];
 const tensPlaces = (n, u) => tr(places(n, u), tensUkPlaces(n, u));
 function drawTens(q){
+  if(q.shape === 'said'){
+    return '<div class="ask">' + (q.sum
+      ? tr('Първото събираемо ' + tensSaidBg(q.A) + '. Второто събираемо ' + tensSaidBg(q.B) + '. <b>Сборът</b> е:', 'Перший доданок ' + tensSaidUk(q.A) + '. Другий доданок ' + tensSaidUk(q.B) + '. <b>Сума</b> дорівнює:')
+      : tr('Умаляемото ' + tensSaidBg(q.A) + '. Умалителят ' + tensSaidBg(q.B) + '. <b>Разликата</b> е:', 'Зменшуване ' + tensSaidUk(q.A) + '. Від’ємник ' + tensSaidUk(q.B) + '. <b>Різниця</b> дорівнює:')) + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   const B = '<span class="circle">□</span>';
   // the box holds a single digit in the first two, a whole number in the others
   const digit = q.shape < 2 || q.shape === 4;
@@ -58,9 +87,15 @@ function drawTens(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqTens(q){
+  if(q.shape === 'said') return q.a + (q.sum ? ' + ' : ' − ') + q.b + ' = ' + q.ans;
   return tr('разредни единици → ', 'розрядні одиниці → ') + q.ans;
 }
 function whyTens(q, full){
+  if(q.shape === 'said'){
+    if(!full) return tr('Запиши всяко число с цифри: първо цифрата на десетиците, после — на единиците.', 'Напиши кожне число цифрами: спершу цифру десятків, потім — одиниць.');
+    const one = n => tensPlaces(n.t, 10) + tr(' и ', ' і ') + (n.rel === 0 ? '' : n.t + (n.rel === 1 ? ' − ' : ' + ') + n.k + ' = ') + tensPlaces(n.u, 1) + ' &nbsp;→&nbsp; <b>' + (10*n.t + n.u) + '</b>';
+    return one(q.A) + '; &nbsp;' + one(q.B) + ' &nbsp;→&nbsp; ' + q.a + (q.sum ? ' + ' : ' − ') + q.b + ' = ' + q.ans;
+  }
   if(!full) return tr('Всяка десетица е десет единици, а всяка стотица — десет десетици.',
                       'Кожен десяток — це десять одиниць, а кожна сотня — десять десятків.');
   if(q.shape === 0) return q.N + ' − ' + q.c + ' = <b>' + (q.N - q.c) + '</b> &nbsp;→&nbsp; ' +

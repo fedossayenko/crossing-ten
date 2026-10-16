@@ -39,7 +39,7 @@ const NOT = {
   // the hint names a number that happens to be the answer
   nudge: { 60:'"0 cannot stand in front" when the product is 0', 64:'the target product, which the question states', 66:'the difference given in the question', 76:'the divisor 3, given in the question' },
   // their А/Б/В/Г questions answer with an option, not a number, and draw no answer box (their other questions keep every rule)
-  option: { 63:1, 94:1, 146:1, 147:1, 154:1, 170:1, 177:1, 187:1, 276:1, 280:1, 283:1, 299:1 },
+  option: { 63:1, 94:1, 146:1, 147:1, 154:1, 170:1, 177:1, 187:1, 276:1, 280:1, 283:1, 285:1, 299:1 },
   // the answer is a letter of a word: a lone «и» there is the letter in САНКИ, not the Bulgarian «и»
   letter: { 94:'the letter asked for' },
 };

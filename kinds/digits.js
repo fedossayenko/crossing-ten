@@ -4,7 +4,7 @@
 // back — which is why only the extremes, 1 and 18, happen exactly once.
 // Задача 8: from three digits, every two-digit number with two different ones — and a
 // leading zero does not make a number, which is what has to be spotted.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
 function genFromDigits(){
   const pool = shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0, 3);
   if(Math.random() < 0.6 && pool.indexOf(0) < 0) pool[rnd(3)] = 0;
@@ -28,6 +28,34 @@ function genDigitGap(){
     return {kind:'digits', shape:4, k, ones, list, traps:[ans + near], ans};
   }
 }
+// Level 286. Аз и числата 2025, задача 6: colour the squares whose numbers have 2 десетици — 26 52 84 27 25 /
+// 92 23 21 42 72 / 12 28 24 69 22: eight of them. The traps hold the 2 as their ones: 52, 92, 42, 72, 12.
+// Here: how many. Аз и числата 2022, задача 5 (shape 'all') asks to write every two-digit number with tens
+// digit 5 — 50 to 59, ten; here how many, and with a given ones digit there are nine, as 0 cannot lead.
+// Аз и числата 2023, задача 1 (shape 'even'): 10 □ □ □ □ 20 — the two-digit numbers between 10 and 20 that divide
+// by 2 go in the boxes: 12, 14, 16, 18. «Between» leaves out 10 and 20.
+export function genTensDigit(){
+  const w = Math.random();
+  if(w < 0.3){
+    const lo = 10*(1 + rnd(8)), list = [2, 4, 6, 8].map(u => lo + u);
+    return {kind:'digits', shape:'even', lo, hi: lo + 10, slots:4, ans: list[0], alt: list.slice(1)};
+  }
+  if(w < 0.55){
+    const tens = Math.random() < 0.6, d = tens ? 1 + rnd(9) : rnd(10);
+    return {kind:'digits', shape:'all', tens, d, traps:[tens ? 9 : 10], ans: tens ? 10 : 9};
+  }
+  const t = 1 + rnd(9), k = 5 + rnd(5), j = 3 + rnd(3);
+  const own = shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(u => 10*t + u)).slice(0, k);
+  const swapped = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== t).map(x => 10*x + t)).slice(0, j);
+  const others = [];
+  for(let v = 10; v <= 99; v++) if(Math.floor(v / 10) !== t && v % 10 !== t) others.push(v);
+  return {kind:'digits', shape:'grid', t, list: shuffle(own.concat(swapped, shuffle(others).slice(0, 15 - k - j))), traps:[k + j], ans: k};
+}
+const tensDigitOwn = q => q.list.filter(v => Math.floor(v / 10) === q.t);
+const tensDigitAll = q => { const out = []; for(let v = 10; v <= 99; v++) if((q.tens ? Math.floor(v / 10) : v % 10) === q.d) out.push(v); return out; };
+const tensDigitBg = t => t + ' ' + (t === 1 ? 'десетица' : 'десетици');
+// a line of numbers and boxes that has to fit its own length on a phone
+const TD_LINE = '<div class="line" style="font-size:clamp(20px,5.5vw,34px)">';
 export function genDigits(){
   if(Math.random() < 0.18) return genDigitGap();
   if(Math.random() < 0.28) return genFromDigits();
@@ -48,6 +76,23 @@ export function genDigits(){
 const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
 
 function drawDigits(q){
+  if(q.shape === 'grid'){
+    const td = v => '<td style="border:1.5px solid var(--muted); padding:4px 10px; text-align:center">' + v + '</td>';
+    return '<div class="ask">' + tr('Колко от числата в таблицата имат <b>' + tensDigitBg(q.t) + '</b>?', 'Скільки чисел у таблиці мають <b>' + ukN(q.t, 'десяток', 'десятки', 'десятків') + '</b>?') + '</div>' +
+      '<table style="margin:8px auto; border-collapse:collapse; font-family:Fredoka,sans-serif; font-size:clamp(18px,5.5vw,26px)">' +
+      [0, 1, 2].map(r => '<tr>' + q.list.slice(5*r, 5*r + 5).map(td).join('') + '</tr>').join('') + '</table>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
+  if(q.shape === 'all'){
+    return '<div class="ask">' + tr('Колко са <b>двуцифрените</b> числа с цифра на ' + (q.tens ? 'десетиците' : 'единиците') + ' <span class="num">' + q.d + '</span>?',
+      'Скільки є <b>двоцифрових</b> чисел із цифрою ' + (q.tens ? 'десятків' : 'одиниць') + ' <span class="num">' + q.d + '</span>?') + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
+  if(q.shape === 'even'){
+    return '<div class="ask">' + tr('Запиши всички двуцифрени числа между <span class="num">' + q.lo + '</span> и <span class="num">' + q.hi + '</span>, които се делят на <span class="num">2</span>.',
+      'Напиши всі двоцифрові числа між <span class="num">' + q.lo + '</span> і <span class="num">' + q.hi + '</span>, які діляться на <span class="num">2</span>.') + '</div>' +
+      TD_LINE + q.lo + ' ' + SLOT + ' <span class="slot" id="slot1"></span> <span class="slot" id="slot2"></span> <span class="slot" id="slot3"></span> ' + q.hi + '</div>';   // the paper's row: 10 □ □ □ □ 20
+  }
   if(q.shape === 4){
     const [bgA, bgB] = q.ones ? ['единиците', 'десетиците'] : ['десетиците', 'единиците'], [ukA, ukB] = q.ones ? ['одиниць', 'десятків'] : ['десятків', 'одиниць'];
     return '<div class="ask">' + tr('Колко от числата <span class="num">' + q.list.join(', ') + '</span> имат цифра на ' + bgA + ', <b>поне с ' + q.k + ' по-голяма</b> от цифрата на ' + bgB + '?',
@@ -78,6 +123,9 @@ function drawDigits(q){
 }
 const digitGapOk = q => q.list.filter(v => (q.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= q.k);
 function eqDigits(q){
+  if(q.shape === 'grid') return tensDigitOwn(q).join(', ') + ' → ' + q.ans;
+  if(q.shape === 'all'){ const a = tensDigitAll(q); return a[0] + ', ' + a[1] + ', …, ' + a[a.length - 1] + ' → ' + q.ans; }
+  if(q.shape === 'even') return [q.ans].concat(q.alt).join(', ');
   if(q.shape === 4) return digitGapOk(q).join(', ') + ' → ' + q.ans;
   if(q.shape === 3) return tr('от ', 'з ') + q.pool.join(',') + ' → ' + q.made.join(', ') + ' → ' + q.ans;
   if(q.shape === 2) return tr('едната цифра ' + q.d + ', другата ' +
@@ -87,6 +135,23 @@ function eqDigits(q){
     : tr('срещат се веднъж: 1 и 18 → ', 'трапляються один раз: 1 і 18 → ') + q.ans;
 }
 function whyDigits(q, full){
+  if(q.shape === 'grid'){
+    if(!full) return tr('Цифрата на десетиците е първата цифра на двуцифреното число. Внимавай с числата, в които тази цифра е на мястото на единиците.',
+      'Цифра десятків — перша цифра двоцифрового числа. Обережно з числами, де ця цифра стоїть на місці одиниць.');
+    const sw = q.list.filter(v => v % 10 === q.t && Math.floor(v / 10) !== q.t);
+    return tr('не стават — там ' + q.t + ' е цифрата на единиците: ', 'не підходять — там ' + q.t + ' — цифра одиниць: ') + sw.join(', ') + '; &nbsp;' +
+      tr('стават: ', 'підходять: ') + tensDigitOwn(q).map(v => '<b>' + v + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.shape === 'all'){
+    if(!full) return q.tens ? tr('Цифрата на единиците може да е всяка. Колко цифри има?', 'Цифра одиниць може бути будь-якою. Скільки всього цифр?')
+                            : tr('Цифрата на десетиците може да е всяка — освен една. Коя?', 'Цифра десятків може бути будь-якою — крім однієї. Якої?');
+    return tensDigitAll(q).join(', ') + (q.tens ? '' : tr(' — нулата не може да е отпред', ' — нуль не може стояти першим')) + ' &nbsp;→&nbsp; ' + q.ans;
+  }
+  if(q.shape === 'even'){
+    if(!full) return tr('Числата, които се делят на 2, завършват на 0, 2, 4, 6 или 8. А „между“ не включва двете крайни числа.',
+      'Числа, які діляться на 2, закінчуються на 0, 2, 4, 6 або 8. А «між» не включає двох крайніх чисел.');
+    return tr(q.lo + ' и ' + q.hi + ' са крайните, не са „между“; ', q.lo + ' і ' + q.hi + ' — крайні, вони не «між»; ') + tr('делят се на 2: ', 'діляться на 2: ') + [q.ans].concat(q.alt).map(v => '<b>' + v + '</b>').join(', ');
+  }
   if(q.shape === 4){
     if(!full) return tr('За всяко число: с колко се различават двете цифри — и коя е по-голямата?', 'Для кожного числа: на скільки відрізняються дві цифри — і яка з них більша?');
     return tr('стават: ', 'підходять: ') + digitGapOk(q).map(v => '<b>' + v + '</b>').join(', ') + tr(' — «поне с ', ' — «щонайменше на ') + q.k + tr('» значи ', '» означає ') + q.k + tr(' или повече', ' або більше') + ' &nbsp;→&nbsp; ' + q.ans;

@@ -165,6 +165,9 @@
     if(q.kind === 'consec' && q.shape === 'count'){   // Зима 2020: each one tried against every pair n + (n + 1)
       let n = 0; for(let v = q.a; v <= q.b; v++) if([...Array(v).keys()].some(k => k + k + 1 === v)) n++;
       if(n !== a) fail('the count');
+    } else if(q.kind === 'consec' && q.shape === 'three'){   // Аз и числата 2023: every run of three tried
+      const r = [...Array(40).keys()].filter(v => v + (v + 1) + (v + 2) === q.S);
+      if(r.length !== 1 || r[0] !== a || q.alt.join() !== [r[0] + 1, r[0] + 2].join() || q.slots !== 3) fail('the three');
     } else if(q.kind === 'consec'){
       const X = (10*q.t + 9) - 10*q.s, m = [...Array(100).keys()].filter(v => v + v + 1 === X);
       if(m.length !== 1 || (q.small ? m[0] : m[0] + 1) !== a) fail('the pair');
