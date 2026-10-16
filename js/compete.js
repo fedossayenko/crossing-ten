@@ -17,8 +17,9 @@ export const COMP_N = 20, COMP_MIN = 60;
 export const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
 const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kind whose answer is a word keeps its own А/Б/В/Г
 // The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
+// Nor a level only Аз и числата asks: a school contest, far easier than an olympiad paper.
 // A paper is for the player's own grade (her profile's, 2nd by default).
-const olympiad = () => LEVELS.filter(l => l.src !== 'basics' && l.grade === (PLAYER.grade || 2));
+const olympiad = () => LEVELS.filter(l => l.src !== 'basics' && l.papers.some(p => !p.startsWith('ach-')) && l.grade === (PLAYER.grade || 2));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 export function compTasks(paper){
   if(paper === 'forecast') return FORECAST.map(task);

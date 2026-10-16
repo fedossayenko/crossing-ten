@@ -357,13 +357,13 @@ const server = http.createServer((req, res) => {
       return JSON.stringify(shown); })()`) || '{}');
     expect(ch.opts === 4 && ch.pad && ch.choices && ch.crossed && ch.hint && ch.settled && ch.green && ch.back, 'multiple choice went wrong: ' + JSON.stringify(ch));
 
-    // A competition, as МБГ sets its papers: 20 tasks, all typed (a kind whose answer is a word keeps its own А/Б/В/Г),
+    // A competition, as МБГ sets its papers (never a level only Аз и числата asks: a school contest, far easier): 20 tasks, all typed (a kind whose answer is a word keeps its own А/Б/В/Г),
     // 2 points each; one skipped comes back last; 12 right make 24 of 40, and the table's points add up to them.
     const cp = JSON.parse(await run(`(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
-      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
+      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, school: (g => { PLAYER.grade = 2; const n = Array.from({ length: 40 }, () => compTasks()).flat().filter(q => LEVELS.find(l => l.id === q.lvl).papers.every(p => p.startsWith('ach-'))).length; PLAYER.grade = g; return n; })(PLAYER.grade), clock: !!$('compClock'), skip: !$('skipBtn').hidden,
         header: $('levelName').textContent + ' ' + $('sub').textContent,
         chip: /[0-9]/.test(($('run').querySelector('.ptschip') || {}).textContent || ''), quitShown: !$('quitBtn').hidden && $('homeBtn').hidden };
       out.top = !$('compTop').hidden && $('levelPill').hidden && document.querySelectorAll('#dots .step').length === 20 && !$('compNote').hidden;
@@ -433,7 +433,7 @@ const server = http.createServer((req, res) => {
       newRound(); await wait(50);   // back on a round, where the next checks start
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
-    expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
+    expect(cp.n === 20 && cp.drill === 0 && cp.school === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastAgain && cp.oldBest && cp.oldCard &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
