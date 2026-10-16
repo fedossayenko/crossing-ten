@@ -62,7 +62,7 @@ function drawSumdiff(q){
   if(q.shape === 'two'){
     return '<div class="ask">' + tr('Маймунката Мунка те пита кои две числа имат <b>сбор</b> <span class="num">' + q.S + '</span> и <b>разлика</b> <span class="num">' + q.d + '</span>. Запиши ги.',
       'Мавпочка Мунка питає тебе, які два числа мають <b>суму</b> <span class="num">' + q.S + '</span> і <b>різницю</b> <span class="num">' + q.d + '</span>. Напиши їх.') + '</div>' +
-      '<div class="line md">' + tr('Числата са ', 'Числа: ') + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
+      '<div class="line md"><span class="or">' + tr('Числата са', 'Числа:') + '</span> ' + SLOT + ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot1"></span></div>';
   }
   if(q.shape === 'board' && q.plain){
     return '<div class="ask">' + tr('Разликата на две числа е <span class="num">' + q.d + '</span>, а сборът им е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
