@@ -59,7 +59,7 @@ export function genWhoFruit(){
     if(wfFits(q).length !== 1) continue;
     const texts = fruits.map(f => [WF_FRUIT[f][0], WF_FRUIT[f][2]]).concat([['Не може да се каже', 'Не можна визначити']]);
     const ids = shuffle([0, 1, 2, 3]), pick = ids.indexOf(has[ask]);
-    return Object.assign(q, {options: ids.map((t, id) => ({ id, v: id, text: texts[t] })), pick, own: true, ans: pick});
+    return Object.assign(q, {options: ids.map((t, id) => ({ id, v: id, text: /** @type {[string, string]} */ (texts[t].map(w => '<span class="vw">' + w + '</span>')) })), pick, own: true, ans: pick});   // one under another: «Не може да се каже» is long
   }
 }
 const wfKid = (q, k) => [WF_GIRLS, WF_VOWEL, WF_CONS][k][q.kids[k]], wfFr = (q, i) => WF_FRUIT[q.fruits[i]];

@@ -54,7 +54,7 @@
   const sigF = g => JSON.stringify([g.shape, g.kids, g.order, g.fruits, g.has, g.vowel, g.ask]);
   [[0, 'Кой плод си е купила Мина?', 'круша'], [1, 'Кой плод си е купил Иво?', 'ябълка'], [2, 'Кой плод си е купил Петър?', 'банан']].forEach(([ask, asks, fruit]) => {
     const q = fruitQ(ask);
-    if(q.options[q.pick].text[0] !== fruit) fail('Аз и числата 2022 task 11: the right option is not ' + fruit, q);
+    if(q.options[q.pick].text[0].replace(/<[^>]*>/g, '') !== fruit) fail('Аз и числата 2022 task 11: the right option is not ' + fruit, q);
     pin('Аз и числата 2022 task 11 (' + fruit + ')', 'ach-2022-2', 299, q, [q.pick], fruitStory + asks, sigF, 2e7);
   });
 
@@ -104,7 +104,7 @@
     if(fits.length !== 1) fail('299: the clues allow ' + fits.length + ' ways', q);
     const k = q.order[[0, 1, 2].find(j => kids[j] === s.match(/Кой плод си е купила? (\S+)\?/)[1])];
     if(fits[0][q.order.indexOf(k)] !== q.has[k]) fail('299: the drawn answer is not the only fit', q);
-    if(q.options.length !== 4 || q.options.filter(o => o.text[0] === fruits[fits[0][q.order.indexOf(q.ask)]]).length !== 1 || q.options[q.pick].text[0] !== fruits[fits[0][q.order.indexOf(q.ask)]]) fail('299: the right option is not the one picked', q);
+    if(q.options.length !== 4 || q.options.filter(o => o.text[0].replace(/<[^>]*>/g, '') === fruits[fits[0][q.order.indexOf(q.ask)]]).length !== 1 || q.options[q.pick].text[0].replace(/<[^>]*>/g, '') !== fruits[fits[0][q.order.indexOf(q.ask)]]) fail('299: the right option is not the one picked', q);
   }
   console.log('Аз и числата 2022 2 клас: tasks 1 (296), 2 (297) and 11 (299, each child asked) pinned (our solution, no official key)');
   console.log('Аз и числата 2024 2 клас: task 6 pinned on 296, its three questions one by one (our solution, no official key); the paper matches each question to its worked line, here typed');
