@@ -1,7 +1,9 @@
 /* ---------- competition ----------
    An МБГ paper as its rules have set it since 2018: 20 tasks in an hour, easiest first, every answer typed,
    2 points for a right answer, 1 for at least half of a task's several answers (mbgPts). Nothing is marked
-   until the end, or until the clock runs out; a skipped task comes back after the others.
+   until the end, or until the clock runs out; a skipped task comes back after the others. A paper keeps to
+   the picker's focus (compFocus in app.js): a grade, a competition, its round, one year. A start sheet says
+   where its tasks come from and how it goes before the clock starts.
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
@@ -10,20 +12,29 @@ import { accepts, seededRaw, slipOf } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, clearTimers, compTick, finish, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, compFocus, compTick, finish, go, newRound, setComp, sfx, show } from './app.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
 export const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
 const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kind whose answer is a word keeps its own А/Б/В/Г
 // The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
-// Nor a level only Аз и числата asks: a school contest, far easier than an olympiad paper.
-// A paper is for the player's own grade (her profile's, 2nd by default).
-const olympiad = () => LEVELS.filter(l => l.src !== 'basics' && l.papers.some(p => !p.startsWith('ach-')) && l.grade === (PLAYER.grade || 2));
+// Nor a level only Аз и числата asks, a school contest far easier than an olympiad paper, unless that contest is the focus.
+// A paper is for one grade and keeps to the focus; a focus with nothing to draw from is the whole grade.
+const olympiad = f => LEVELS.filter(l => l.src !== 'basics' && (f.comp === 'ach' || l.papers.some(p => !p.startsWith('ach-'))) && f.has(l));
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
-export function compTasks(paper){
+// drawn by how often real papers ask it: an every-year task turns up more than a one-off
+const pick = pool => { let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0)); return pool.find(l => (w -= 1 + l.freq) < 0); };
+export function compTasks(paper, f = compFocus()){
   if(paper === 'forecast') return FORECAST.map(task);
-  const out = [], used = new Set(), OLYMPIAD = olympiad();
+  const focused = olympiad(f), OLYMPIAD = focused.length ? focused : olympiad({ comp: '', has: l => l.grade === f.grade });
+  // one year's paper has fewer levels than tasks: each of them once, then some again with other numbers, easiest first
+  if(OLYMPIAD.length <= COMP_N){
+    const ls = OLYMPIAD.slice();
+    while(ls.length < COMP_N) ls.push(pick(OLYMPIAD));
+    return ls.sort((a, b) => a.d - b.d).map(l => task(l.id));
+  }
+  const out = [], used = new Set();
   let lastGrp = null;
   for(let i = 0; i < COMP_N; i++){
     const [lo, hi] = BANDS[Math.floor(i / 5)];
@@ -31,23 +42,25 @@ export function compTasks(paper){
     const other = pool.filter(l => l.grp !== lastGrp);        // no two in a row from one group
     if(other.length) pool = other;
     if(!pool.length) pool = OLYMPIAD.filter(l => l.d >= lo);
-    // drawn by how often real papers ask it: an every-year task turns up more than a one-off
-    let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0));
-    const l = pool.find(l => (w -= 1 + l.freq) < 0);
+    if(!pool.length) pool = OLYMPIAD.filter(l => !used.has(l.id));   // a contest with no task this hard (Аз и числата): what is left
+    const l = pick(pool);
     used.add(l.id); lastGrp = l.grp;
     out.push(task(l.id));
   }
   return out;
 }
+// her best paper from the same place (compFocus's key, or 'forecast'); a paper marked the old way
+// (3–5 points a task, some А/Б/В/Г) doesn't compare: only those at 2 points a task
+export const bestComp = from => LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n && r.from === from).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
 export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 export const compLeft = () => compTime(COMP.end - Date.now());
 
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
 export function startComp(paper){
-  const qs = compTasks(paper), now = Date.now();
+  const f = compFocus(), qs = compTasks(paper, f), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
   clearInterval(compTick);
-  setComp({ paper, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
+  setComp({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
     if(!COMP){ clearInterval(compTick); return; }
     const c = $('compClock');
     if(c) c.textContent = compLeft();
@@ -55,7 +68,16 @@ export function startComp(paper){
   }, 1000));
   newRound(qs, true);
   $('levelName').textContent = paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
-  $('sub').textContent = t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle');   // a paper mixes levels from every paper of her grade
+  $('sub').textContent = paper ? t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle') : f.name;   // where its tasks come from
+}
+// Before the clock: where the tasks come from, how the paper goes, her best from the same place; Start starts it.
+let NEXT = '';   // the paper the sheet is for: 'forecast', or one drawn from the focus
+export function openComp(paper){ NEXT = paper || ''; go('paper'); }
+export function paintCompSheet(){
+  const f = compFocus(), best = bestComp(NEXT || f.key);
+  $('compFrom').innerHTML = '<span class="lab">' + t('compFrom') + '</span><b>' + (NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name) + '</b>' +
+    '<span class="meta">' + t(NEXT ? 'compForecastHow' : 'compHow') + '</span>' + (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '');
+  $('compRules').innerHTML = [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRulePts', 2 * COMP_N)].map(s => '<li>' + s + '</li>').join('');
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.
 export function compAnswer(){
@@ -88,14 +110,12 @@ export function compEnd(){
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){
-  // a paper marked the old way (3–5 points a task, some А/Б/В/Г) doesn't compare: only those at 2 points a task
-  const best = LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+  const f = compFocus(), best = bestComp(f.key);
   $('compStart').innerHTML = '<span class="compicon">' + ICON(GLYPH.stopwatch[1]) + '</span><span class="nm"><span class="lab">' +
-    t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b>' +
+    t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b><span class="meta">' + f.name + '</span>' +
     (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');
 }
-// The buttons, wired once app.js has set the page up (as a module this file runs first), so the
-// picker's own click handler still runs before the card is painted.
+// The buttons, wired once app.js has set the page up (as a module this file runs first).
 export function startCompete(){
   $('skipBtn').onclick = () => {
     if(!COMP) return;
@@ -106,6 +126,7 @@ export function startCompete(){
   };
   $('nextBtn').onclick = () => { if(COMP && COMP.ans[S.i]) compNext(); };
   $('quitBtn').onclick = () => { if(COMP && confirm(t('quitAsk'))) compEnd(); };   // what she has answered counts, the rest is unanswered
-  $('levelPill').addEventListener('click', paintCompCard);
-  $('compStart').onclick = () => startComp();
+  $('compStart').onclick = () => openComp();
+  $('compGo').onclick = () => startComp(NEXT);
+  $('compBack').onclick = back;
 }

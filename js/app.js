@@ -6,7 +6,7 @@ import { ARCHIVE, keeps, unionRounds } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, compAnswer, compEnd, paintCompCard, compLeft, compTasks, compTime, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -18,7 +18,8 @@ import { IN, SYNC_ON, paintSync, startSync, syncNow, syncSoon, syncing } from '.
 const ROUTES = {
   play: null,
   today: { sheet: 'today', show: () => showToday($('todayIn')) },
-  levels: { sheet: 'picker', show: () => { buildPicker(); paintCompCard(); $('pickWarn').hidden = !midRound(); } },   // the paper's card too, however the page is reached
+  levels: { sheet: 'picker', show: () => { buildPicker(); $('pickWarn').hidden = !midRound(); } },
+  paper: { sheet: 'compSheet', show: () => paintCompSheet() },   // a paper, before its clock starts
   badges: { sheet: 'stats', show: () => showStats() },
   parents: { sheet: 'parent', show: () => renderParent() },
   players: { sheet: 'players', show: () => paintPlayers() },
@@ -636,7 +637,7 @@ export function finish(){
       const open = b.getAttribute('aria-expanded') !== 'true';
       b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
     });
-    const prev = LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+    const prev = bestComp(COMP.from);
     if(prev){
       $('compBest').hidden = false;
       $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
@@ -650,7 +651,7 @@ export function finish(){
     ts: now, day: dayKey(now),
     level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
     pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: Math.round((Math.min(now, COMP ? COMP.end : now) - (COMP ? COMP.t0 : S.t0)) / 1000),
-    levels: COMP ? S.qs.map(q => q.lvl) : undefined,
+    levels: COMP ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
@@ -1211,7 +1212,7 @@ function paintSide(){
     S.level = +b.dataset.lvl; paintPill(); newRound();
   });
   $('side').querySelectorAll('.sidenav button').forEach(b => b.onclick = () => go(b.dataset.r));
-  $('side').querySelector('.sidecomp').onclick = () => { if(!midRound() || confirm(t('pickWarn'))) startComp(); };
+  $('side').querySelector('.sidecomp').onclick = () => { if(!midRound() || confirm(t('pickWarn'))) openComp(); };
   $('side').querySelector('.sidewho').onclick = openPlayers;
   const now = $('side').querySelector('[aria-pressed="true"]');
   if(now) now.scrollIntoView({ block:'nearest' });
@@ -1311,6 +1312,7 @@ function buildPicker(){
         '<div class="gcard list">' + g.levels.map(row).join('') + '</div></details>';
     }).join('');
   // a group drawn open fires a toggle of its own: only a change from how it was drawn is hers
+  paintCompCard();   // the paper's card names the focus it draws from
   $('pickAll').querySelectorAll('details').forEach(d => d.ontoggle = () => { if(String(d.open) === d.dataset.def) OPENED.delete(d.dataset.k); else OPENED.set(d.dataset.k, d.open); });
   document.querySelectorAll('#picker [data-lvl]').forEach(b => b.onclick = () => {
     S.level = +b.dataset.lvl;
@@ -1327,6 +1329,16 @@ function loadFocus(){
   // a focus picked while she was in another grade is dropped: a new school year starts on the new grade
   const f = Array.isArray(LOCAL.focus) && LOCAL.focus[4] === myGrade() ? LOCAL.focus : [myGrade(), '', '', ''];
   [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER] = f;
+}
+// A paper keeps to the focus too (js/compete.js): her grade unless another is picked (a year's paper is its own
+// grade), and the competition, round and year picked. The basics are drill, not a paper: with them, the grade's paper.
+// key: where it comes from, so a paper is compared with papers from the same place.
+export function compFocus(){
+  loadFocus();
+  const drill = PICK_COMP === 'basics', comp = drill ? '' : PICK_COMP, paper = drill ? '' : PICK_PAPER, grade = paper ? paperGrade(paper) : PICK_GRADE || myGrade();
+  return { grade, comp, has: l => l.grade === grade && (drill || inFocus(l)),
+    key: paper || ['g' + grade, comp, comp && PICK_ROUND].filter(Boolean).join('-'),
+    name: paper ? paperName(paper) : t('src', comp ? t('comps')[comp] + (PICK_ROUND ? ' ' + t('mbgRounds')[PICK_ROUND] : '') : t('allComps'), grade) };
 }
 const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
 const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&

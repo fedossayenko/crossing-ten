@@ -176,7 +176,7 @@ easier or harder on another paper it is a level of its own, not a tag. The picke
 each row with its grade and any paper other than the autumn one, and recommends her own grade's levels
 first. A paper's full name and its short tag are `papers` and `paperTag` in `js/i18n.js`. The grade is on the player's profile (2nd until set); a 3rd-grader's
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
-as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels.
+as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels, or from the focus.
 
 - Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages, on every push — through GitHub Actions)
 - Also: https://crossing-ten.sayenkofedor.workers.dev/ (Cloudflare, `./deploy-cf.sh` from a clean tree — no CI, free).
@@ -252,7 +252,13 @@ olympiad tasks. Every answer is typed (a kind whose answer is a word keeps its o
 marked as МБГ marks it (`mbgPts`): 2 points for a right answer, 1 for at least half of a task's
 several answers, 0 otherwise, 40 in all. The time used is shown, since МБГ ranks a tie by it, and
 it stops at the hour. Nothing is marked until the end or until the clock runs out, and **Skip for now**
-sends a task to the back of the queue. Today also offers a 2nd-grader the forecast's paper for
+sends a task to the back of the queue. A paper keeps to the picker's focus (`compFocus` in `js/app.js`):
+her grade unless another is picked, and the competition, round and year picked there — МБГ Есен alone, or
+Есен 2025 alone, whose levels each come once and then some again with other numbers, easiest first, to
+make 20. Аз и числата counts only when it is the focus. Every way into a paper (the picker's card, Today,
+the side panel) opens a start sheet first: where the tasks come from, the four rules, the best so far
+from the same place; the clock starts with **Започни**. The best is kept per focus (`from` on the round),
+so an easy paper is never the record for a hard one. Today also offers a 2nd-grader the forecast's paper for
 МБГ Есен 2026: a task from each `FORECAST` level in `js/compete.js`, in the forecast's order,
 with new numbers every time. The tasks come from the levels' own generators,
 never from the competitions' papers, which are copyrighted. A paper is saved as one round

@@ -360,13 +360,13 @@ const server = http.createServer((req, res) => {
       return JSON.stringify(shown); })()`) || '{}');
     expect(ch.opts === 4 && ch.pad && ch.choices && ch.crossed && ch.hint && ch.settled && ch.green && ch.back, 'multiple choice went wrong: ' + JSON.stringify(ch));
 
-    // A competition, as МБГ sets its papers (never a level only Аз и числата asks: a school contest, far easier): 20 tasks, all typed (a kind whose answer is a word keeps its own А/Б/В/Г),
+    // A competition, as МБГ sets its papers: 20 tasks, all typed (a kind whose answer is a word keeps its own А/Б/В/Г),
     // 2 points each; one skipped comes back last; 12 right make 24 of 40, and the table's points add up to them.
     const cp = JSON.parse(await run(`(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
-      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
-      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, school: (g => { PLAYER.grade = 2; const n = Array.from({ length: 40 }, () => compTasks()).flat().filter(q => LEVELS.find(l => l.id === q.lvl).papers.every(p => p.startsWith('ach-'))).length; PLAYER.grade = g; return n; })(PLAYER.grade), clock: !!$('compClock'), skip: !$('skipBtn').hidden,
+      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100); $('compGo').click(); await wait(100);
+      const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
         header: $('levelName').textContent + ' ' + $('sub').textContent,
         chip: /[0-9]/.test(($('run').querySelector('.ptschip') || {}).textContent || ''), quitShown: !$('quitBtn').hidden && $('homeBtn').hidden };
       out.top = !$('compTop').hidden && $('levelPill').hidden && document.querySelectorAll('#dots .step').length === 20 && !$('compNote').hidden;
@@ -404,7 +404,7 @@ const server = http.createServer((req, res) => {
       // a paper marked the old way (3–5 points a task, some А/Б/В/Г) is no paper to beat: its 60 / 64 is not the best so far
       const old = Object.assign({}, LOCAL.rounds[LOCAL.rounds.length - 1], { id: 'old', pts: 60, max: 64 }); LOCAL.rounds.push(old);
       $('sheet').hidden = true; window.confirm = () => true;
-      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100);
+      $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100); $('compGo').click(); await wait(100);
       { const q = S.qs[S.i];   // the first task right, as А/Б/В/Г or typed (a task with several boxes stays typed)
         if(q.options) document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click();
         else for(let slot = 0; slot < (q.slots || 1); slot++){ [...String(answers(q)[slot])].forEach(K); K('go'); } }
@@ -416,7 +416,7 @@ const server = http.createServer((req, res) => {
       // a paper whose hour ran out while the app was hidden (an iPad put away for hours): its time is the hour, not the hours
       $('sheet').hidden = true; $('levelPill').click(); await wait(100);
       out.oldCard = $('compStart').textContent.includes(t('compBest', 24, 40)); LOCAL.rounds.splice(LOCAL.rounds.indexOf(old), 1);
-      $('compStart').click(); await wait(100);
+      $('compStart').click(); await wait(100); $('compGo').click(); await wait(100);
       COMP.t0 -= 3 * 3600e3; COMP.end = COMP.t0 + 3600e3;
       for(let i = 0; i < 100 && COMP; i++) await wait(50);   // the clock's next tick ends it
       out.expired = COMP === null && LOCAL.rounds[LOCAL.rounds.length - 1].secs === 3600 && $('scoreSub').textContent.includes('60:00');
@@ -429,19 +429,60 @@ const server = http.createServer((req, res) => {
       const g = PLAYER.grade; PLAYER.grade = 2; $('tabToday').click(); await wait(50);
       const fc = () => !!COMP && S.qs.length === 20 && new Set(S.qs.map(q => q.lvl)).size === 20 && $('levelName').textContent === t('papers')['mbg-autumn-forecast2026'] &&
         S.qs.every(q => !q.options && q.pts === 2 && LEVELS.find(l => l.id === q.lvl).papers.includes('mbg-autumn-forecast2026-2'));
-      document.querySelector('#today .comp.forecast').click(); await wait(100);
+      document.querySelector('#today .comp.forecast').click(); await wait(100); out.forecastSheet = $('compFrom').textContent.includes(t('papers')['mbg-autumn-forecast2026']); $('compGo').click(); await wait(100);
       out.forecast = fc(); $('quitBtn').click(); await wait(50);
       $('again').click(); await wait(100); out.forecastAgain = fc(); $('quitBtn').click(); await wait(50);
       $('toStats').click(); await wait(50); PLAYER.grade = g;
       newRound(); await wait(50);   // back on a round, where the next checks start
       return JSON.stringify(out); })()`) || '{}');
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
-    expect(cp.n === 20 && cp.drill === 0 && cp.school === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
+    expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
-      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastAgain && cp.oldBest && cp.oldCard &&
+      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
+  }
+  // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
+  // say where its tasks come from; its best is the best of papers from the same place.
+  {
+    const fo = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      const chip = (row, v) => { const b = $(row).querySelector('[data-v="' + v + '"]'); if(b) b.click(); return !!b; };
+      const lv = q => LEVELS.find(l => l.id === q.lvl), many = () => Array.from({ length: 10 }, () => compTasks()).flat();
+      $('levelPill').click(); await wait(100);
+      const out = {};
+      // 2 клас and nothing else: the grade's olympiad levels, never one only Аз и числата asks (a school contest, far easier)
+      chip('pickGrades', '2'); chip('pickComps', '');
+      let qs = many(); out.g2 = qs.every(q => lv(q).grade === 2) && !qs.some(q => lv(q).papers.every(p => p.startsWith('ach-')));
+      // the 1st grade picked by an older child: a 1st-grade paper
+      chip('pickGrades', '1'); qs = many(); out.g1 = qs.every(q => lv(q).grade === 1);
+      // МБГ Есен, 2 клас: only what an autumn paper asks
+      out.chips = chip('pickGrades', '2') && chip('pickComps', 'mbg') && chip('pickRounds', 'autumn');
+      qs = many(); out.autumn = qs.every(q => lv(q).grade === 2 && lv(q).papers.some(p => p.startsWith('mbg-autumn')));
+      // one year, МБГ Есен 2025: each of its levels, then some again to make 20, easiest first
+      out.chips = out.chips && chip('pickPapers', 'mbg-autumn-2025-2');
+      const its = LEVELS.filter(l => l.src !== 'basics' && l.papers.includes('mbg-autumn-2025-2'));
+      qs = compTasks(); out.paper = qs.length === 20 && qs.every(q => lv(q).papers.includes('mbg-autumn-2025-2')) && its.every(l => qs.some(q => q.lvl === l.id)) &&
+        qs.every((q, k) => !k || lv(qs[k - 1]).d <= lv(q).d);
+      // Аз и числата: its own levels, though it has no task as hard as an МБГ paper's last ones
+      out.chips = out.chips && chip('pickComps', 'ach');
+      qs = many(); out.ach = qs.length === 200 && qs.every(q => lv(q).papers.some(p => p.startsWith('ach-')));
+      // the card names where the paper comes from; it opens the start sheet (where from, the rules), and only Start starts it
+      out.card = $('compStart').textContent.includes(t('comps').ach);
+      $('compStart').click(); await wait(100);
+      out.sheet = location.hash === '#/paper' && !$('compSheet').hidden && !COMP && $('compSheet').textContent.includes(t('comps').ach) &&
+        $('compSheet').textContent.includes(t('compRulePts', 40)) && $('compSheet').textContent.includes(t('compRuleTime', 20, 60));
+      $('compGo').click(); await wait(100);
+      out.started = !!COMP && $('compSheet').hidden && $('sub').textContent.includes(t('comps').ach);
+      $('quitBtn').click(); await wait(50);
+      out.from = LOCAL.rounds[LOCAL.rounds.length - 1].from;
+      // back to her own grade, all competitions, for the checks after
+      $('sheet').hidden = true; $('levelPill').click(); await wait(100); chip('pickComps', ''); chip('pickGrades', String(PLAYER.grade));
+      return JSON.stringify(out); })()`) || '{}');
+    expect(fo.g2 && fo.g1 && fo.chips && fo.autumn && fo.paper && fo.ach && fo.card && fo.sheet && fo.started && fo.from === 'g2-ach',
+      'a paper does not keep to the focus: ' + JSON.stringify(fo));
+    await run(`$('sheet').hidden = true; newRound(); 1`);
   }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task
   {

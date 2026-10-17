@@ -785,6 +785,11 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .dots:has(.step:nth-child(15)){gap:3px}
 .compnote{margin:0; font-size:14px; color:var(--muted); text-align:center}
 .compnote[hidden]{display:none}
+.compfrom{gap:3px}
+.compfrom .lab{color:var(--accent-ink); font-size:11px}
+.compfrom b{font-size:17px; font-weight:700}
+.compfrom .meta{font-size:14px; color:var(--muted)}
+.comprules{margin:0; padding:14px 16px 14px 34px; gap:8px; font-size:15px; line-height:1.4}
 @media (orientation:landscape) and (min-width:1100px) and (min-height:700px){
   .app:has(#compTop:not([hidden])) .choices{grid-template-columns:1fr}
   .app:has(#compTop:not([hidden])) .ch{min-height:84px}

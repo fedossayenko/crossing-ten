@@ -101,6 +101,19 @@
   </div>
 </div>
 
+<!-- A paper, before its clock starts: where its tasks come from, how it goes (js/compete.js paintCompSheet) -->
+<div class="sheet" id="compSheet" hidden role="dialog" data-t-aria="compName">
+  <div class="sheet-in">
+    <div class="bar">
+      <button class="icon back" id="compBack" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 data-t="compName"></h1>
+    </div>
+    <div class="gcard compfrom" id="compFrom"></div>
+    <ul class="gcard comprules" id="compRules"></ul>
+    <button class="btn" id="compGo" data-t="compGo"></button>
+  </div>
+</div>
+
 <!-- End of a round -->
 <div class="sheet" id="sheet" hidden>
   <div class="confetti" id="confetti" aria-hidden="true"></div>
