@@ -71,8 +71,11 @@ const server = http.createServer((req, res) => {
       $('levelPill').click();
       if(!document.querySelector('#picker .pick[data-lvl="' + l.id + '"]')) document.querySelector('#pickGrades [data-v="0"]').click();   // it opens on her grade
       document.querySelector('#picker .pick[data-lvl="' + l.id + '"]').click();
+      const shown = new Set();   // a round never shows the same task twice; a level with fewer different ones has a shorter round
       for(let i = 0; i < S.qs.length; i++){
         const q = S.qs[S.i], want = answers(q).slice(0, q.slots || 1);
+        if(shown.has($('stage').innerHTML)) out.push('level ' + l.id + ': task ' + (i + 1) + ' of ' + S.qs.length + ' repeats an earlier one');
+        shown.add($('stage').innerHTML);
         if(i === 0){
           for(let t = 0; t < 2; t++){ want.forEach(v => { type(v + 100 > 999 ? 1 : v + 100); key('go'); }); await tick(); }
         } else {

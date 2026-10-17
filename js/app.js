@@ -314,12 +314,22 @@ function putCat(slot, m){
 }
 
 /* ---------- round flow ---------- */
+// New tasks from these levels added to a set, none of them a screen the set already shows: a level with fewer
+// different tasks than wanted gives a shorter round. ponytail: a task with the same text and other А/Б/В/Г counts as a repeat
+function addFresh(set, want, levels){
+  const seen = new Set(set.map(drawQ));
+  for(let i = 0; set.length < want && i < want * 40; i++){   // 40 draws a task find the rare ones of a lopsided level (153: two tasks are 3/4 of its draws)
+    const lv = levels[rnd(levels.length)], q = gen(lv), k = drawQ(q);
+    if(!seen.has(k)){ seen.add(k); set.push(Object.assign(q, { lvl: lv })); }
+  }
+  return set;
+}
 const plainQ = q => q.own ? q : (({ options, pick, pts, ...rest }) => rest)(q);   // own: a kind that is always А/Б/В/Г; lvl stays, so a task from
 // another level (a paper's redo, the notebook) is logged under its own level and seed
 // comp: a competition's own tasks, which come with their options and points already
 export function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
-  S.qs = qs || Array.from({length:LOCAL.n}, () => gen(S.level));
+  S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
   $('sheet').hidden = true;
@@ -606,10 +616,7 @@ export function finish(){
   });
   const padFrom = COMP ? missed.map(x => x.q.lvl) : [S.level];   // a paper's redo is padded from its own levels, not the one picked before it
   $('redo').onclick = () => {
-    const set = missed.map(x => x.q);
-    const want = Math.min(12, Math.max(6, missed.length*2));
-    while(set.length < want){ const lv = padFrom[rnd(padFrom.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
-    newRound(shuffle(set));
+    newRound(shuffle(addFresh(missed.map(x => x.q), Math.min(12, Math.max(6, missed.length*2)), padFrom)));
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
 
@@ -810,8 +817,7 @@ export function renderParent(){
   // practise these: the very tasks she missed (drawn again from their seeds), and new ones from those levels up to ten
   $('shapeGo').onclick = () => {
     const set = worst.flatMap(x => x.seeds.map(seed => { try { return Object.assign(seeded(seed, () => raw(x.lv)), { seed, lvl: x.lv }); } catch(e){ return null; } })).filter(Boolean).slice(0, 10);
-    while(set.length < 10){ const lv = worst[rnd(worst.length)].lv; set.push(Object.assign(gen(lv), { lvl: lv })); }
-    newRound(shuffle(set));
+    newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
   };
   $('shapeWrap').hidden = !worst.length;
   $('byShape').innerHTML = worst.map(x => {
@@ -891,9 +897,7 @@ export function fixKind(kind, check){
   const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
   if(!levels.length) return;
   const set = check ? [] : g.items.filter(x => x.q).map(x => x.q).slice(0, 12);
-  const want = Math.min(12, Math.max(5, set.length));
-  while(set.length < want){ const lv = levels[rnd(levels.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
-  newRound(shuffle(set));
+  newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels)));
   S.redo = check ? { check: kind } : { fix: kind };
 }
 // Put them all right: every kind's missed tasks in one round (at most twelve, the most repeated kinds first)
@@ -901,8 +905,7 @@ export function fixAll(){
   const open = notebookData().open, set = open.flatMap(g => g.items.filter(x => x.q).map(x => x.q)).slice(0, 12);
   const levels = [...new Set(open.flatMap(g => g.items.map(x => x.lv)))];
   if(!levels.length) return;
-  while(set.length < 5){ const lv = levels[rnd(levels.length)]; set.push(Object.assign(gen(lv), { lvl: lv })); }
-  newRound(shuffle(set));
+  newRound(shuffle(addFresh(set, 5, levels)));
   S.redo = { fix: open.map(g => g.kind) };
 }
 // the levels a kind was put right on: from the round that put it right
