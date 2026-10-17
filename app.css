@@ -65,8 +65,11 @@ body, .sheet{
 @font-face{font-family:Fredoka; src:url(fonts/fredoka-latin.woff2) format('woff2'); font-weight:300 700; font-display:swap;
   unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
 /* "locl" off: with lang="bg" the system font would switch to the Bulgarian letter shapes (д like g, т like m);
-   the app keeps the shapes she has been reading in it. Turn it on to have the Bulgarian ones. */
+   the app keeps the shapes she has been reading in it. Turn it on to have the Bulgarian ones.
+   Safari ignores "locl" 0 and shapes by the language instead: there the text below <html lang="bg"> is shaped as
+   Russian (the plain shapes), while the page stays Bulgarian for VoiceOver. An element with a lang of its own keeps it. */
 body{color:var(--ink); font-family:var(--ui-font); font-size:16px; -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased; font-feature-settings:"locl" 0}
+:root:lang(bg) body{-webkit-locale:"ru"}
 svg text{font-family:var(--ui-font)}   /* the figures' labels name a font of their own (Nunito); the interface's wins */
 .app{height:100%; max-width:640px; margin:0 auto; padding-inline:16px; padding-block:8px 14px; display:flex; flex-direction:column; gap:10px}
 button{font:inherit; color:inherit; touch-action:manipulation; -webkit-user-select:none; user-select:none; cursor:pointer}
