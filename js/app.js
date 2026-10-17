@@ -22,6 +22,7 @@ const ROUTES = {
   paper: { sheet: 'compSheet', show: () => paintCompSheet() },   // a paper, before its clock starts
   badges: { sheet: 'stats', show: () => showStats() },
   parents: { sheet: 'parent', show: () => renderParent() },
+  review: { sheet: 'review', show: () => paintReview() },   // one past round, task by task, opened from the grown-ups' lists
   players: { sheet: 'players', show: () => paintPlayers() },
   notebook: { sheet: 'notebook', show: () => showNotebook($('notebookIn')) },
 };
@@ -41,6 +42,7 @@ export function applyRoute(){
   if(tabbed) paintTabWeek();
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.r === ROUTE ? 'page' : 'false'));
   keepAwake();   // the screen stays on only for a task
+  clock();       // and her time on it runs only there
 }
 // history.state.depth counts the steps the app pushed, so back() never leaves the app
 // From one tab's screen to another is a switch, not a step: nothing to go back to, the tab bar is there.
@@ -58,7 +60,7 @@ addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
 document.addEventListener('scroll', e => { const el = /** @type {HTMLElement} */ (e.target); if(el.classList && el.classList.contains('sheet')) el.classList.toggle('scrolled', el.scrollTop > 6); }, true);
 const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
 
-export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], t0:0, timers:[] };
+export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], ms:[], after:[], on:0, cur:0, timers:[] };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
@@ -332,7 +334,7 @@ export function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
-  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.t0 = Date.now();
+  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.ms = []; S.after = []; S.on = 0;
   $('sheet').hidden = true;
   if(routeNow() !== 'play') go('play', true);
   $('confetti').innerHTML = '';
@@ -367,10 +369,18 @@ function keepAwake(){
 }
 function letSleep(){ const p = awake; awake = null; if(p) p.then(l => l && l.release()); }
 document.addEventListener('visibilitychange', keepAwake);
+// Her time on each task (S.ms): only while it is on screen and still open, so a hidden app, a locked iPad, another
+// screen or a round picked up again next morning add nothing. A paper's own time is its hour, as on paper.
+function clock(){
+  const now = Date.now();
+  if(S.on) S.ms[S.cur] = (S.ms[S.cur] || 0) + now - S.on;
+  S.cur = S.i; S.on = ROUTE === 'play' && document.visibilityState === 'visible' && !S.settled && S.qs.length ? now : 0;
+}
+document.addEventListener('visibilitychange', clock);
 export function show(){
   const q = S.qs[S.i];
   S.parts = Array(q.slots || 1).fill(''); S.at = 0;
-  S.tries = 0; S.revealed = false; S.settled = false; S.wrong = false;
+  S.tries = 0; S.revealed = false; S.settled = false; S.wrong = false; clock();
   clearTimers();
   $('stage').innerHTML = drawQ(q);
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
@@ -396,7 +406,7 @@ function saveRound(){
   try {
     if(COMP) localStorage.removeItem(RS);
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
-      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, t0:S.t0 } }));
+      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, ms:S.ms, after:S.after } }));
   } catch(e){}
 }
 function paintSlot(){
@@ -477,7 +487,7 @@ function check(){
   const q = S.qs[S.i];
   if(accepts(q, S.parts)){
     if(S.results[S.i] === undefined) S.results[S.i] = S.tries === 0;
-    if(S.tries > 0) S.second[S.i] = true;
+    if(S.tries > 0){ S.second[S.i] = true; S.after[S.i] = 1; }
     const quick = S.tries === 0;
     $('verdict').className = 'verdict ok';
     $('verdict').textContent = t(quick ? 'yes' : 'gotIt');
@@ -489,7 +499,7 @@ function check(){
     $('hint').scrollIntoView({ block:'nearest' });      // a long question on a short phone: the praise lands below the fold too
     mood(cheer === 'eat' ? 'happy' : cheer);
     quick ? sfx.good() : sfx.ok();
-    S.settled = true;
+    S.settled = true; clock();
     $('go').textContent = '→';
     paintDots();
     // a solution picture plays step by step and is there to be looked at: it waits for her tap on → or the card; a treat is eaten to the end
@@ -533,7 +543,8 @@ function retry(){
 function reveal(){
   const q = S.qs[S.i];
   S.results[S.i] = false;
-  S.revealed = true; S.settled = true; S.wrong = false;
+  S.revealed = true; S.settled = true; S.wrong = false; clock();
+  S.after[S.i] = S.tries > 1 ? 3 : 2;   // missed twice, or she asked for it after one miss
   $('card').classList.remove('missed');
   S.parts = answers(q).slice(0, S.parts.length).map(String);
   $('verdict').className = 'verdict';
@@ -556,7 +567,7 @@ function next(){
 const STAR = on => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 6 6.5.8-4.8 4.5 1.2 6.5L12 17.2 6.3 20.4l1.2-6.5L2.7 9.4l6.5-.8z" fill="' +
   (on ? 'var(--warm)' : 'none') + '" stroke="' + (on ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 export function finish(){
-  clearTimers();
+  clearTimers(); clock();
   try { localStorage.removeItem(RS); } catch(e){}
   const n = S.qs.length, got = S.results.filter(Boolean).length;
   const tier = tierFor(got, n);
@@ -567,7 +578,7 @@ export function finish(){
   const pts = COMP ? S.qs.reduce((a, q, k) => a + mbgPts(q, COMP.ans[k]), 0) : got;
   const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
   $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
-  const secs = Math.round((Date.now() - S.t0) / 1000), ended = COMP ? Math.min(Date.now(), COMP.end) : Date.now();
+  const secs = Math.round(S.ms.reduce((a, x) => a + x, 0) / 1000), ended = COMP ? Math.min(Date.now(), COMP.end) : Date.now();
   $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(ended - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
   const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
@@ -650,7 +661,7 @@ export function finish(){
     id: 'r' + now + '_' + Math.random().toString(36).slice(2,7),
     ts: now, day: dayKey(now),
     level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
-    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: Math.round((Math.min(now, COMP ? COMP.end : now) - (COMP ? COMP.t0 : S.t0)) / 1000),
+    pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: COMP ? Math.round((Math.min(now, COMP.end) - COMP.t0) / 1000) : secs,
     levels: COMP ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
@@ -658,8 +669,10 @@ export function finish(){
     redo: S.redo || undefined,
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
-    // generator has changed since is told apart, never shown as something it was not
-    t: S.qs.map((q, k) => [q.lvl || S.level, q.shape ?? null, q.seed ?? null, S.typed[k] ?? null, S.skipped[k] ? -1 : S.results[k] ? 1 : 0, answer(q)])
+    // generator has changed since is told apart, never shown as something it was not; then her seconds on it
+    // (on screen only), and after a miss: 1 right on the second try, 2 the solution opened, 3 wrong again
+    t: S.qs.map((q, k) => [q.lvl || S.level, q.shape ?? null, q.seed ?? null, S.typed[k] ?? null, S.skipped[k] ? -1 : S.results[k] ? 1 : 0, answer(q),
+      Math.round((S.ms[k] || 0) / 1000), S.after[k] || 0])
   };
   LOCAL.rounds.push(round);
   ARCHIVE.put(PLAYER.id, [round]);
@@ -820,6 +833,11 @@ export function renderParent(){
     const set = worst.flatMap(x => x.seeds.map(seed => { try { return Object.assign(seeded(seed, () => raw(x.lv)), { seed, lvl: x.lv }); } catch(e){ return null; } })).filter(Boolean).slice(0, 10);
     newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
   };
+  // her papers, and her last rounds: each opens task by task
+  const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), comps = logged.filter(r => r.level === 'comp').reverse();
+  $('compsWrap').hidden = !comps.length; $('compList').innerHTML = comps.map(roundRow).join('');
+  $('roundsWrap').hidden = !logged.length; $('roundList').innerHTML = logged.slice(-20).reverse().map(roundRow).join('');
+  document.querySelectorAll('#compList .rrow, #roundList .rrow').forEach(b => b.onclick = () => { REVIEW = b.dataset.r; go('review'); });
   $('shapeWrap').hidden = !worst.length;
   $('byShape').innerHTML = worst.map(x => {
     const l = LEVELS.find(y => y.id === x.lv);
@@ -828,6 +846,37 @@ export function renderParent(){
     return '<div class="nbitem"><span class="eq">' + (ex || (l ? levelName(l) : x.lv)) + '</span><span class="smeta">' + (l ? levelName(l) + ' · ' : '') + t('shapeMiss', x.miss, x.n) + '</span></div>';
   }).join('');
 }
+// A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
+const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
+const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : ''].filter(Boolean).join(' · ');
+const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><span class="eq">' + esc(roundName(r)) + '</span><span class="smeta">' + roundMeta(r) + '</span></button>';
+// One round again, task by task: each drawn again from its level and seed, with what she wrote, her time on it and what
+// came after a miss. A task whose generator has changed since is named, never shown as something it was not.
+// ponytail: the round to show is kept here only; a reload on #/review shows her latest
+let REVIEW = null;
+function paintReview(){
+  const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), r = logged.find(x => x.id === REVIEW) || logged[logged.length - 1];
+  $('reviewTitle').textContent = r ? roundName(r) : ''; $('reviewSub').textContent = r ? roundMeta(r) : '';
+  const comp = r && r.level === 'comp', AFTER = ['', t('secondTry'), t('openedSol'), t('wrongTwice')];
+  $('reviewList').innerHTML = !r ? '' : r.t.map(([lv, shape, seed, wrote, ok, ans, secs, after], k) => {
+    let q = null;
+    try { const d = seed === null ? null : seeded(seed, () => raw(lv)); if(d && answer(d) === ans && (d.shape ?? null) === shape) q = d; } catch(e){}
+    const L = LEVELS.find(l => l.id === lv), st = ok === -1 ? 'skip' : ok ? 'ok' : 'no';
+    const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
+    const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
+    const note = [AFTER[after] || '', Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    const pts = !comp ? '' : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
+    return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + task + (note ? '<small>' + note + '</small>' : '') +
+      '</span><span class="co">' + said + '</span><span class="cp">' + pts + '</span></button><div class="why" hidden>' +
+      (q ? '<div class="stage rtask">' + drawQ(q).replace(/ id="slot\d+"/g, '') + '</div><div class="eq">' + eqText(q) + '</div>' + why(q, true) : t('taskGone')) + '</div>';
+  }).join('');
+  $('reviewList').querySelectorAll('.crow').forEach(b => b.onclick = () => {
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
+  });
+}
+$('reviewBack').onclick = back;
 // One row per round. Every field is quoted, so nothing in it can act as a spreadsheet formula.
 function csvOf(rounds){
   const q = v => '"' + String(v).replace(/"/g, '""') + '"';
@@ -1338,8 +1387,11 @@ export function compFocus(){
   const drill = PICK_COMP === 'basics', comp = drill ? '' : PICK_COMP, paper = drill ? '' : PICK_PAPER, grade = paper ? paperGrade(paper) : PICK_GRADE || myGrade();
   return { grade, comp, has: l => l.grade === grade && (drill || inFocus(l)),
     key: paper || ['g' + grade, comp, comp && PICK_ROUND].filter(Boolean).join('-'),
-    name: paper ? paperName(paper) : t('src', comp ? t('comps')[comp] + (PICK_ROUND ? ' ' + t('mbgRounds')[PICK_ROUND] : '') : t('allComps'), grade) };
+    name: paper ? paperName(paper) : srcName(grade, comp, PICK_ROUND) };
 }
+const srcName = (grade, comp, round) => t('src', comp ? t('comps')[comp] + (round ? ' ' + t('mbgRounds')[round] : '') : t('allComps'), grade);
+// where a paper came from, by its round's `from` (compFocus's key): a year's paper, the forecast, or a grade's focus ('g2-mbg-autumn')
+const fromName = k => !k ? '' : k === 'forecast' ? t('papers')['mbg-autumn-forecast2026'] : /^g\d/.test(k) ? srcName(+k[1], k.split('-')[1], k.split('-')[2]) : paperName(k);
 const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
 const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&
   (!PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND)) && (!PICK_PAPER || inPaper(l, PICK_PAPER));

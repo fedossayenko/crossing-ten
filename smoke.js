@@ -222,6 +222,23 @@ const server = http.createServer((req, res) => {
     LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
     return JSON.stringify(r); })()`) || '{}');
   expect(r6.listed && r6.shown && r6.round && r6.fixed && r6.recheck && r6.logged && r6.all && r6.allFixed, 'the mistakes notebook went wrong: ' + JSON.stringify(r6));
+  // Her time on a task runs only while it is on screen: the app hidden mid-task (an iPad put away) adds nothing to the
+  // task or the round; each task logs its seconds and what came after a miss (right on the retry, solution opened, wrong again)
+  const tm = JSON.parse(await run(`(async () => { const wait = ms => new Promise(r => setTimeout(r, ms));
+    const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), type = v => [...String(v)].forEach(K);
+    const hide = h => { Object.defineProperty(document, 'visibilityState', { get: () => h ? 'hidden' : 'visible', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); };
+    const was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 2; $('sheet').hidden = true;
+    const qs = [11, 12, 13, 14].map(s => Object.assign(seeded(s, () => raw(2)), { seed: s })), a = qs.map(answer);
+    newRound(qs); await wait(30);
+    hide(true); await wait(2500); hide(false); delete document.visibilityState;
+    type(a[0]); K('go'); K('go'); await wait(30);
+    type(a[1] + 10); K('go'); $('retryBtn').click(); type(a[1]); K('go'); K('go'); await wait(30);
+    type(a[2] + 10); K('go'); $('reveal').click(); K('go'); await wait(30);
+    type(a[3] + 10); K('go'); $('retryBtn').click(); type(a[3] + 10); K('go'); K('go'); await wait(30);
+    const r = LOCAL.rounds[LOCAL.rounds.length - 1];
+    LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await wait(30);
+    return JSON.stringify({ n: r.t.length, secs: r.secs, task: r.t.map(x => x[6]), after: r.t.map(x => x[7]).join() }); })()`) || '{}');
+  expect(tm.n === 4 && tm.secs < 2 && tm.task.every(s => Number.isInteger(s) && s < 2) && tm.after === '0,1,2,3', 'the time on a task went wrong: ' + JSON.stringify(tm));
   // R7: the grown-ups see this week against the last and the shapes she misses most; her grade is set there (and
   // stamped, so it wins on her other devices); a round's end says how long it took; a player's card, grade and rounds
   const r7 = JSON.parse(await run(`(async () => { const tick = () => new Promise(r => setTimeout(r, 30));
@@ -442,6 +459,25 @@ const server = http.createServer((req, res) => {
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
+    // The grown-ups list her papers and her last rounds; one opens task by task, each task drawn again from its seed
+    // (with no answer boxes of its own: the slot ids belong to the task on screen), and ‹ goes back to the list
+    const rv = JSON.parse(await run(`(async () => { const wait = ms => new Promise(r => setTimeout(r, ms)), bad = s => /undefined|NaN|null/.test(s);
+      $('tabParents').click(); await wait(50);
+      const r = LOCAL.rounds.filter(x => x.level === 'comp' && Array.isArray(x.t)).pop();
+      const out = { comps: !$('compsWrap').hidden && $('compList').children.length >= 1, rounds: !$('roundsWrap').hidden && $('roundList').children.length >= 1,
+        named: !bad($('compList').textContent + $('roundList').textContent) };
+      document.querySelector('#compList .rrow').click(); await wait(50);
+      out.open = !$('review').hidden && location.hash === '#/review' && $('reviewList').querySelectorAll('.crow').length === r.t.length &&
+        $('reviewSub').textContent.includes(r.pts + ' / ' + r.max) && !bad($('reviewList').textContent + $('reviewTitle').textContent + $('reviewSub').textContent);
+      const row = $('reviewList').querySelector('.crow'); row.click();
+      out.row = row.getAttribute('aria-expanded') === 'true' && !row.nextElementSibling.hidden && !!row.nextElementSibling.querySelector('.rtask') &&
+        !row.nextElementSibling.querySelector('[id^="slot"]');
+      $('reviewBack').click(); await wait(50); out.back = $('review').hidden && !$('parent').hidden;
+      const top = document.querySelector('#roundList .rrow'), name = top.querySelector('.eq').textContent; top.click(); await wait(50);
+      out.round = !$('review').hidden && $('reviewTitle').textContent === name && $('reviewList').querySelectorAll('.crow').length === LOCAL.rounds.filter(x => Array.isArray(x.t)).pop().t.length;
+      $('reviewBack').click(); await wait(50); newRound(); await wait(30);
+      return JSON.stringify(out); })()`) || '{}');
+    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.back && rv.round, 'the past rounds went wrong: ' + JSON.stringify(rv));
   }
   // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
   // say where its tasks come from; its best is the best of papers from the same place.

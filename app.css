@@ -1061,7 +1061,12 @@ body.welcome .tabs{display:none}   /* the first-run form (app.js openEdit) */
 .scorebar[hidden]{display:none}
 .scorebar i{display:block; height:100%; background:var(--accent); border-radius:999px}
 button.crow{width:100%; background:none; border:0; color:var(--ink); font:inherit; text-align:left; cursor:pointer}
-#compTable .why{padding:4px 16px 10px calc(2.4em + 14px); font-size:14px} #compTable .why .eq{font-family:Fredoka,var(--ui-font); font-size:16px}
+#compTable .why,#reviewList .why{padding:4px 16px 10px calc(2.4em + 14px); font-size:14px} #compTable .why .eq,#reviewList .why .eq{font-family:Fredoka,var(--ui-font); font-size:16px}
+/* a past round (#/review): under each task its time and what came after a miss; open, the task as it was drawn, smaller */
+.crow .cg small{display:block; font-size:12px; font-weight:500; color:var(--muted)}
+#review .rsub{font-size:14px; font-weight:600; color:var(--muted); padding:0 4px 10px}
+.rtask{margin:4px 0 10px} .rtask .line{font-size:24px} .rtask .ask{font-size:15px}
+button.rrow{width:100%; background:none; border:0; border-top:1px solid var(--line); color:var(--ink); font:inherit; text-align:left; cursor:pointer}
 .endright{display:flex; flex-direction:column; gap:14px}
 .nbhow{font-size:13px; color:var(--muted); margin:0; padding:0 4px}
 .paperset{display:flex; gap:8px; flex-wrap:wrap}

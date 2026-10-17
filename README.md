@@ -394,7 +394,9 @@ family account is logged in. Local storage holds her settings and the last 400 r
 synchronous: the app has them at once); IndexedDB (`js/archive.js`) holds every round, merged in
 before the first question, so what she has learned, her reviews and her badges never fall off
 the end of the log. Each round records its tasks: level, shape and seed (the question is drawn
-again from them), what she wrote when she missed, right / wrong / unanswered, and the answer.
+again from them), what she wrote when she missed, right / wrong / unanswered, the answer, her seconds on it (counted
+only while it is on screen) and what came after a miss (right on the second try, solution opened, wrong again).
+The grown-ups' screen lists her papers and her last rounds; each opens task by task, drawn again from those seeds.
 An installed app asks the browser to keep this storage (`navigator.storage.persist`). The very first launch on a device
 asks for the player's name, mascot and language (or logs in to a family that already plays
 elsewhere). On an iPhone or iPad, the home-screen icon and a Safari tab keep **separate**

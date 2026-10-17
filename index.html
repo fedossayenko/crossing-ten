@@ -219,6 +219,10 @@
         </div>
       </div>
       <div class="parentmain">
+        <div class="gcard" id="compsWrap" hidden>
+          <div class="gtitle"><b data-t="compsTitle"></b></div>
+          <div class="nbitems" id="compList"></div>
+        </div>
         <div class="gcard" id="groupWrap" hidden>
           <div class="gtitle"><b data-t="byGroupTitle"></b><span data-t="last30"></span></div>
           <div class="bars" id="byGroup"></div>
@@ -232,6 +236,10 @@
           <div class="gtitle"><b data-t="shapesTitle"></b><span data-t="last30"></span></div>
           <div class="nbitems" id="byShape"></div>
           <button class="btn ghost" id="shapeGo" data-t="practiseThese"></button>
+        </div>
+        <div class="gcard" id="roundsWrap" hidden>
+          <div class="gtitle"><b data-t="roundsTitle"></b></div>
+          <div class="nbitems" id="roundList"></div>
         </div>
         <div class="gcard" id="troubleWrap" hidden>
           <div class="gtitle"><b data-t="trouble"></b></div>
@@ -293,6 +301,18 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- One past round or paper, task by task (#/review), opened from the grown-ups' lists -->
+<div class="sheet" id="review" hidden role="dialog" data-t-aria="taskByTask">
+  <div class="sheet-in">
+    <div class="bar">
+      <button class="icon back" id="reviewBack" data-t-aria="back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h1 id="reviewTitle"></h1>
+    </div>
+    <div class="rsub" id="reviewSub"></div>
+    <div class="gcard list" id="reviewList"></div>
   </div>
 </div>
 
