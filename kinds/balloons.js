@@ -21,7 +21,7 @@ export function genBalloons3(){
 }
 // Level 293. Аз и числата 2026, 2 клас, задача 12 (shape 'shoes'): Снежанка has 4 pairs of shoes and the seven dwarfs
 // one pair each — the seven is said in a word: 4 + 7 = 11. Аз и числата 2025, задача 12 (shape 'week'): two лева on
-// Monday, one a day on the other six days of the week: 2 + 6 = 8 (the slip counts seven days). Аз и числата 2023,
+// Monday, one a day on the other six days of the week: 2 + 6 = 8 (the slip counts seven days) — asked in euro, as Bulgaria pays since 2026. Аз и числата 2023,
 // задача 7 (shape 'rest'): 52 pencils, 9 children with two each, the rest with one — only those with one are asked:
 // 52 − 18 = 34 (level 87 adds the 9 back; that is the slip here).
 export function genBalloonsOne(){
@@ -44,6 +44,7 @@ const BALLOONS_BG = {2:'два', 3:'три', 4:'четири'};
 // Ukrainian "кулька" after a number: 1 кульку, 2–4 кульки, 5+ кульок
 const balloonsUk = n => ['кульку', 'кульки', 'кульок'][{one:0, few:1, many:2}[UK_PLURAL.select(n)]];
 const ONE_BG = {1:'един', 2:'два', 3:'три', 4:'четири', 5:'пет', 6:'шест', 7:'седем', 8:'осем', 9:'девет'};
+const EUR_BG = n => ({1:'едно', 2:'две'}[n] || ONE_BG[n]) + ' евро';   // евро is neuter: едно, две
 const ONE_UK = {1:'один', 2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять'};
 const oneUk = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
 const oneNum = x => '<span class="num">' + x + '</span>';
@@ -53,11 +54,11 @@ function drawBalloonsOne(q){
     'Білосніжка мала ' + oneNum(q.a) + ' ' + oneUk(q.a, 'пару', 'пари', 'пар') + ' взуття, а семеро гномів — лише по ' + oneNum(q.b) + (q.b === 1 ? ' парі' : ' пари') +
       '. Скільки пар взуття мають Білосніжка і гноми разом?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
-  if(q.shape === 'week') return '<div class="ask">' + tr('Ани спестявала пари за коледни играчки. В понеделник спестила ' + ONE_BG[q.a] + ' лева, а през останалите шест дни от седмицата — по ' +
-      ONE_BG[q.b] + (q.b === 1 ? ' лев' : ' лева') + ' на ден. Колко пари спестила Ани за една седмица?',
-    'Ані відкладала гроші на ялинкові іграшки. У понеділок вона відклала ' + ONE_UK[q.a] + ' ' + oneUk(q.a, 'лев', 'леви', 'левів') + ', а протягом решти шести днів тижня — по ' +
-      (q.b === 1 ? 'одному леву' : ONE_UK[q.b] + ' леви') + ' на день. Скільки грошей відклала Ані за тиждень?') + '</div>' +
-    '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('лв.', 'лв.') + '</span></div>';
+  if(q.shape === 'week') return '<div class="ask">' + tr('Ани спестявала пари за коледни играчки. В понеделник спестила ' + EUR_BG(q.a) + ', а през останалите шест дни от седмицата — по ' +
+      EUR_BG(q.b) + ' на ден. Колко пари спестила Ани за една седмица?',
+    'Ані відкладала гроші на ялинкові іграшки. У понеділок вона відклала ' + ONE_UK[q.a] + ' євро, а протягом решти шести днів тижня — по ' +
+      (q.b === 1 ? 'одному' : ONE_UK[q.b]) + ' євро на день. Скільки грошей відклала Ані за тиждень?') + '</div>' +
+    '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('евро', 'євро') + '</span></div>';
   return '<div class="ask">' + tr('За състезанието „Аз и числата“ няколко деца носят общо ' + oneNum(q.T) + ' молива, като ' + oneNum(q.k) + ' носят по ' + ONE_BG[q.m] +
       ' молива, а останалите — по един. Колко деца носят по един молив?',
     'На змагання «Я і числа» кілька дітей несуть разом ' + oneNum(q.T) + ' ' + oneUk(q.T, 'олівець', 'олівці', 'олівців') + ', причому ' + oneNum(q.k) + ' несуть по ' + ONE_UK[q.m] +
@@ -76,7 +77,7 @@ function whyBalloonsOne(q, full){
   }
   if(q.shape === 'week'){
     if(!full) return tr('В седмицата има седем дни: понеделник и още шест. Колко е спестила през тези шест дни?', 'У тижні сім днів: понеділок і ще шість. Скільки вона відклала за ці шість днів?');
-    return tr('шест дни по ', 'шість днів по ') + q.b + tr(' лв.: ', ' лв.: ') + Array(6).fill(q.b).join(' + ') + ' = <b>' + 6*q.b + '</b> &nbsp;→&nbsp; ' + q.a + ' + ' + 6*q.b + ' = ' + q.ans;
+    return tr('шест дни по ', 'шість днів по ') + q.b + tr(' евро: ', ' євро: ') + Array(6).fill(q.b).join(' + ') + ' = <b>' + 6*q.b + '</b> &nbsp;→&nbsp; ' + q.a + ' + ' + 6*q.b + ' = ' + q.ans;
   }
   if(!full) return tr('Първо намери колко молива носят децата с повече моливи. Всеки от останалите моливи е на едно дете.', 'Спершу знайди, скільки олівців несуть діти, які мають більше. Кожен з решти олівців — в однієї дитини.');
   return q.k + ' · ' + q.m + ' = <b>' + q.k*q.m + '</b>' + tr(' молива носят децата с по ' + ONE_BG[q.m], ' ' + oneUk(q.k*q.m, 'олівець', 'олівці', 'олівців') + ' несуть діти по ' + ONE_UK[q.m]) +

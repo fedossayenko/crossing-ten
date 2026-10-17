@@ -119,7 +119,7 @@ lengths compared with <, = or >, a pool's and a row of squares' perimeters, a tr
 three kinds of triangle (by its sides or by name), the triangles in a tree; true or false about a number or
 a perimeter, the tens digit, the largest sum with a one-digit addend, numbers said in tens, two numbers by
 their sum and difference, the next number of a run; cuts and pieces, things done at once, one and the
-others, outfits, the change from a лев; three groups, giving to make it equal, a place counted from the
+others, outfits, the change from one euro; three groups, giving to make it equal, a place counted from the
 other end, who bought which fruit. Level 93 gained three consecutive numbers, and 267 is tagged for the
 2023 conversions. Not in the app: 2026 task 2 (the ant's legs, a riddle with nothing to vary), 2023 task 12
 and 2022 task 12 (colouring), 2023 task 2г (10 дм = 100 см: the units drill keeps 1, 10 and 100 out of its

@@ -1,7 +1,7 @@
 // Question kind 'prices': level 185 Цените — School things priced in pairs, and one on its own.
 
 // МБГ Пролет 2021, 1 клас, задача 14: a ruler and an eraser cost 50 стотинки, a ruler and a triangle 60,
-// the triangle alone 40 — the eraser? The triangle's price takes the ruler out of the second pair:
+// the triangle alone 40 — the eraser? (Asked in цента, as Bulgaria pays in euro since 2026.) The triangle's price takes the ruler out of the second pair:
 // 60 − 40 = 20 for the ruler, and then 50 − 20 = 30 for the eraser.
 // [Bulgarian, Bulgarian with the article, Ukrainian]
 /** @type {[string, string, string][]} */
@@ -34,15 +34,15 @@ function pricesSvg(q){
     const cx = 40 + k*80;
     g += '<rect x="' + (cx - 36) + '" y="0" width="72" height="92" rx="10" fill="var(--solid)" stroke="var(--line)" stroke-width="1.4"/>';
     things.forEach((t, j) => { g += priceThing(t, cx, things.length === 1 ? 32 : 18 + j*30); });
-    g += svgText(cx, 82, price === '?' ? '?' : price + ' ст.', 13, 'var(--ink)');
+    g += svgText(cx, 82, price === '?' ? '?' : price + tr(' цента', ' центів'), 13, 'var(--ink)');
   });
   return '<div class="fig wide"><svg viewBox="0 -2 320 96" role="img" aria-label="' + tr('нещата и цените им', 'речі та їхні ціни') + '">' + g + '</svg></div>';
 }
 const priceName = (q, k) => tr(PRICE_THINGS[q.it[k]][0], PRICE_THINGS[q.it[k]][2]);
 function drawPrices(q){
   const t = PRICE_THINGS[q.it[1]];
-  return '<div class="ask">' + tr('Колко стотинки струва <b>' + t[1] + '</b>?', 'Скільки стотинок коштує <b>' + t[2] + '</b>?') + '</div>' + pricesSvg(q) +
-    '<div class="line lg">' + SLOT + ' <span class="unit">ст.</span></div>';
+  return '<div class="ask">' + tr('Колко цента струва <b>' + t[1] + '</b>?', 'Скільки центів коштує <b>' + t[2] + '</b>?') + '</div>' + pricesSvg(q) +
+    '<div class="line lg">' + SLOT + ' <span class="unit">' + tr('цента', 'ц.') + '</span></div>';
 }
 function eqPrices(q){
   return priceName(q, 0) + ' ' + q.B + ' − ' + q.z + ' = ' + q.x + ', ' + priceName(q, 1) + ' ' + q.A + ' − ' + q.x + ' = ' + q.ans;

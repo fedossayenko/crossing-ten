@@ -21,7 +21,7 @@
     if(pinSeed(name, () => Q.raw(id), g => sig(g) === want ? 2 : 0)) return;
     throw new Error(name + ': level ' + id + ' never asks the printed question');
   };
-  pin('Пролет 2021 task 14', 185, {kind:'prices', it:[0, 1, 2], x:20, y:30, z:40, A:50, B:60, traps:[10], ans:30}, [30], 'Колко стотинки струва гумата');
+  pin('Пролет 2021 task 14', 185, {kind:'prices', it:[0, 1, 2], x:20, y:30, z:40, A:50, B:60, traps:[10], ans:30}, [30], 'Колко цента струва гумата');
   pin('Пролет 2021 task 17', 186, {kind:'hops', a:3, b:4, N:14, ans:6}, [6], 'или 3 метра, или 4 метра. По колко начина той може да достигне по права до цветче, което се намира на 14 метра');
   // Алекс, Борис, Катрин; син, зелен, жълт; Алекс not yellow nor blue, Борис not yellow — Катрин's is yellow
   const wc = {kind:'whocolor', kids:[0, 1, 2], cols:[0, 1, 2], has:[1, 0, 2], not1:[2, 0], not2:2, ask:2, options:[0, 1, 2, 3].map(id => ({id, v:id, text:[['син', 'синя'], ['зелен', 'зелена'], ['жълт', 'жовта'], ['Не може да се каже', 'Не можна визначити']][id]})), pick:2, own:true, ans:2};

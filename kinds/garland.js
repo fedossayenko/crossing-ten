@@ -2,7 +2,7 @@
 
 // Коледно 2024, задача 10, the one solved in full, in its four parts. Яна bought 3 green garlands,
 // her mother 1 green and 2 red, her brother 1 green, 2 blue and 2 red; green are 12 дм, blue 15 дм,
-// red 30 дм (the prices in the table are never needed). 1) all of them: 60 + 30 + 120 = 210 дм = 21 м.
+// red 30 дм (the prices in the table are never needed; in цента, as Bulgaria pays in euro since 2026). 1) all of them: 60 + 30 + 120 = 210 дм = 21 м.
 // 2) the green make a square: 60 : 4 = 15 дм. 3) the red make the roof's two sides: 12 м : 2 = 6 м.
 // 4) all of them make a tree of two equal-sided triangles, the lower one's side 4 м: 21 − 12 = 9 м
 // for the upper, 3 м a side.
@@ -34,7 +34,7 @@ function drawGarland(q){
   const C = [tr('зелени', 'зелені'), tr('сини', 'сині'), tr('червени', 'червоні')], one = [tr('зелена', 'зелену'), tr('синя', 'синю'), tr('червена', 'червону')];
   const buy = w => w.map((k, c) => k ? k + ' ' + (k === 1 ? one[c] : C[c]) : '').filter(Boolean).join(tr(', ', ', ')).replace(/, ([^,]*)$/, tr(' и $1', ' і $1'));
   const T = '<table class="tix"><tr><th>' + tr('Гирлянди', 'Гірлянди') + '</th><th>' + tr('Цена', 'Ціна') + '</th><th>' + tr('Дължина', 'Довжина') + '</th></tr>' +
-    [tr('Зелена', 'Зелена'), tr('Синя', 'Синя'), tr('Червена', 'Червона')].map((nm, c) => '<tr><td>' + nm + '</td><td>' + q.price[c] + tr(' ст.', ' коп.') + '</td><td>' + q.len[c] + ' дм</td></tr>').join('') + '</table>';
+    [tr('Зелена', 'Зелена'), tr('Синя', 'Синя'), tr('Червена', 'Червона')].map((nm, c) => '<tr><td>' + nm + '</td><td>' + q.price[c] + tr(' цента', ' центів') + '</td><td>' + q.len[c] + ' дм</td></tr>').join('') + '</table>';
   const g1 = q.who[0].filter(Boolean).length === 1 && q.who[0][0] === 1;
   const story = tr('Яна купила ' + buy(q.who[0]) + (g1 ? ' гирлянда' : ' гирлянди') + ', майка ѝ — ' + buy(q.who[1]) + ', а брат ѝ — ' + buy(q.who[2]) + '. ',
     'Яна купила ' + buy(q.who[0]) + (g1 ? ' гірлянду' : ' гірлянди') + ', її мама — ' + buy(q.who[1]) + ', а брат — ' + buy(q.who[2]) + '. ');

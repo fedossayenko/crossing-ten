@@ -6,7 +6,8 @@
 // Б) two pupils, a grandad and a mother, each paying the price for them or the full one: 81 лв.
 // В) the 19 лв change from 100, in exactly 6 notes and coins: 3 ways (1 2 2 2 2 10, 1 1 2 5 5 5,
 //    1 1 1 1 5 10). The paper wants them listed; here it asks how many there are.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+// The лева are asked as euro, as Bulgaria pays since 2026: the same coins (1, 2) and notes (5, 10, 20, 50).
+import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const SANTA_MONEY = [1, 2, 5, 10, 20, 50];
 export function santaWays(R, k){
   const out = [];
@@ -50,7 +51,7 @@ function santaMap(q){
     house(0, 0, 1, 'end') + house(0, 1, 2, 'end') + house(7, 1, 3, 'middle', -0.45) + house(0, 5, 4, 'end') + house(9, 5, 5, 'middle', 0.95) + '</svg></div>';
 }
 function santaTable(q){
-  const c = v => v ? v + ' лв.' : '–';
+  const c = v => v ? v + ' евро' : '–';
   return '<table class="tix"><tr><th>' + tr('Къща', 'Будинок') + '</th><th>' + tr('ученици', 'учні') + '</th><th>' + tr('пенсионери', 'пенсіонери') + '</th><th>' + tr('основна цена', 'повна ціна') + '</th></tr>' +
     q.rows.map((r, i) => '<tr><td>' + (i + 2) + '</td><td>' + c(r[1]) + '</td><td>' + c(r[2]) + '</td><td>' + c(r[0]) + '</td></tr>').join('') + '</table>';
 }
@@ -59,14 +60,14 @@ function drawSanta(q){
   if(q.shape === 0) return '<div class="ask">' + who + tr('Тръгнали от къща 1 и посетили подред къщи 2, 3, 4 и накрая 5 по <b>най-краткия път</b>. Колко метра са изминали?',
     'Вони вийшли з будинку 1 і відвідали по черзі будинки 2, 3, 4 і нарешті 5 <b>найкоротшим шляхом</b>. Скільки метрів вони пройшли?') + '</div>' +
     santaMap(q) + '<div class="line md">' + SLOT + ' <span class="unit">м</span></div>';
-  if(q.shape === 1) return '<div class="ask">' + who + tr('Близнаците плащат билет за ученици, дядото — за пенсионери, а майката — основната цена. Където няма намаление, се плаща основната цена. Колко лева са дали за билети?',
-    'Близнюки платять за учнівський квиток, дідусь — за пенсійний, а мама — повну ціну. Де знижки немає, платять повну ціну. Скільки левів вони заплатили за квитки?') + '</div>' +
-    santaTable(q) + '<div class="line md">' + SLOT + ' <span class="unit">лв.</span></div>';
-  return '<div class="ask">' + who + tr('Платили <span class="num">' + q.T + '</span> лв. за билети със <span class="num">100</span> лв. Рестото получили в точно <span class="num">' + q.k +
-    '</span> банкноти и монети (без стотинки). <b>По колко начина</b> може да е било рестото?',
-    'За квитки на <span class="num">' + ukN(q.T, 'лев', 'леви', 'левів').replace(' ', '</span> ') + ' вони дали <span class="num">100</span> левів. Решту отримали рівно <span class="num">' + q.k +
-    '</span> купюрами й монетами (без стотинок). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
-    '<div class="note">' + tr('Монети: 1 и 2 лв. Банкноти: 5, 10, 20 и 50 лв.', 'Монети: 1 і 2 леви. Купюри: 5, 10, 20 і 50 левів.') + '</div>' +
+  if(q.shape === 1) return '<div class="ask">' + who + tr('Близнаците плащат билет за ученици, дядото — за пенсионери, а майката — основната цена. Където няма намаление, се плаща основната цена. Колко евро са дали за билети?',
+    'Близнюки платять за учнівський квиток, дідусь — за пенсійний, а мама — повну ціну. Де знижки немає, платять повну ціну. Скільки євро вони заплатили за квитки?') + '</div>' +
+    santaTable(q) + '<div class="line md">' + SLOT + ' <span class="unit">' + tr('евро', 'євро') + '</span></div>';
+  return '<div class="ask">' + who + tr('Платили <span class="num">' + q.T + '</span> евро за билети със <span class="num">100</span> евро. Рестото получили в точно <span class="num">' + q.k +
+    '</span> банкноти и монети (без центове). <b>По колко начина</b> може да е било рестото?',
+    'За квитки на <span class="num">' + q.T + '</span> євро вони дали <span class="num">100</span> євро. Решту отримали рівно <span class="num">' + q.k +
+    '</span> купюрами й монетами (без центів). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
+    '<div class="note">' + tr('Монети: 1 и 2 евро. Банкноти: 5, 10, 20 и 50 евро.', 'Монети: 1 і 2 євро. Купюри: 5, 10, 20 і 50 євро.') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqSanta(q){
