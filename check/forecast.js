@@ -29,6 +29,8 @@
       let v = q.ans;
       q.steps.forEach(s => { v += s; if(v < 1 || v > 100) fail('a step leaves 1…100'); });
       if(v !== q.r || !q.steps.some(s => s > 0) || !q.steps.some(s => s < 0)) fail('the steps do not lead to ' + q.r);
+      // one-digit steps, as the papers with this task had (2 клас Есен 2013, 2015; 1 клас Есен 2024), that do not cancel out
+      if(q.steps.some(s => Math.abs(s) > 9) || v === q.ans) fail('a step of two digits, or steps that cancel');
       if(q.shape === 'arrow' ? !text.includes('? ' + q.steps.map(s => (s < 0 ? '−' : '+') + Math.abs(s) + ' →').join(' ') + ' ' + q.r)
                              : !text.includes('Намислих си число.') || !text.includes('Получих ' + q.r + '.')) fail('not drawn as asked: ' + text);
     }

@@ -28,12 +28,13 @@ export function genBackX(){
 }
 // 2nd grade, level 269 (shapes 'word' and 'arrow'): no × or : yet — three steps of + and −, undone from the end.
 // МБГ Есен 2024, 1 клас, задача 12 drew it as arrows, ? −3 → +1 → −2 → 5; Есен 2013 and 2015, 2 клас, in words,
-// «Намислих си число…». The trap is doing the steps again on the result instead of undoing them.
+// «Намислих си число. Събрах го с 11 и получих 22», one step. The trap is doing the steps again on the result
+// instead of undoing them. Steps of one digit, as on those papers: the thinking is the undoing, not the sums.
 export function genBackPm(){
   const shape = Math.random() < 0.5 ? 'word' : 'arrow';
   for(;;){
-    const x = 10 + rnd(90), steps = [0, 1, 2].map(() => (Math.random() < 0.5 ? -1 : 1) * (2 + rnd(18)));
-    if(steps.every(s => s > 0) || steps.every(s => s < 0)) continue;
+    const x = 10 + rnd(90), steps = [0, 1, 2].map(() => (Math.random() < 0.5 ? -1 : 1) * (1 + rnd(9)));
+    if(steps.every(s => s > 0) || steps.every(s => s < 0) || !steps.reduce((a, s) => a + s, 0)) continue;   // steps that cancel leave the result the number
     let v = x;
     if(steps.some(s => (v += s) < 1 || v > 100)) continue;
     const again = v + steps.reduce((a, s) => a + s, 0);
