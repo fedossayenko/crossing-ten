@@ -3,7 +3,7 @@
 // Задача 7: every addend moves by the same amount, so the sum moves that many times.
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
 // down 10 and the subtrahend up 10, so both changes take away: 30 − 20 = 10.
-import { BGNUM, KIND, SLOT, UKNUM, popAt, rnd, svgText, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UKNUM, popAt, rnd, svgText, textW, tr } from '../js/core.js';
 function genGrowDiff(){
   for(;;){
     const M = 20 + rnd(60), S = 5 + rnd(M - 10), a = 1 + rnd(12), b = 1 + rnd(12), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
@@ -99,8 +99,9 @@ function growDiffSvg(q, full){
             : '</g>' + svgText((20 + s/2).toFixed(1), y + 40, tr('умалител', 'від’ємник'), 11, 'var(--accent)') + svgText((20 + s + (w - s)/2).toFixed(1), y + 40, tr('разлика', 'різниця'), 11, 'var(--warmink)'));
   };
   const arrow = up => up ? '↑' : '↓';
-  const g = bar(14, q.M, q.S, 0) + svgText(120, full ? 66 : 76, full ? (q.mUp ? '+' : '−') + q.a + tr(' на умаляемото, ', ' до зменшуваного, ') + (q.sUp ? '+' : '−') + q.b + tr(' на умалителя', ' до від’ємника')
-                                                        : tr('умаляемото ', 'зменшуване ') + arrow(q.mUp) + tr(', умалителят ', ', від’ємник ') + arrow(q.sUp), 12, 'var(--muted)') +
+  const say = full ? (q.mUp ? '+' : '−') + q.a + tr(' на умаляемото, ', ' до зменшуваного, ') + (q.sUp ? '+' : '−') + q.b + tr(' на умалителя', ' до від’ємника')
+                   : tr('умаляемото ', 'зменшуване ') + arrow(q.mUp) + tr(', умалителят ', ', від’ємник ') + arrow(q.sUp);
+  const g = bar(14, q.M, q.S, 0) + svgText(120, full ? 66 : 76, say, Math.min(12, Math.floor(12 * 232 / textW(say, 12))), 'var(--muted)') +   // the longer Ukrainian line a size smaller
     (full ? bar(80, q.M2, q.S2, 3) : '');
   return '<svg viewBox="0 0 240 ' + (full ? 112 : 84) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('разликата като ивица', 'різниця як смужка') + '">' + g + '</svg>';
 }

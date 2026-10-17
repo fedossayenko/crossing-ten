@@ -108,6 +108,27 @@ function eqSumdiff(q){
 // its right. The widest gap: A and B each on either side of the number, and the widest pair across it.
 // A sum and a difference: two bars, the longer one longer by the difference — take that off, and what
 // is left is two equal halves.
+// The widest gap, a line for each: A as far from the number on one side as on the other, every point with its
+// number over it; then B; then A and B sent opposite ways, and how far apart that puts them. A point keeps at least
+// 28 px from the middle, so a number over it never runs into the middle one.
+function gapSvg(q){
+  const A = 'var(--warm)', B = 'var(--accent)', M = 132, k = 90 / Math.max(q.d1, q.d2), f = v => v.toFixed(1);
+  const X = d => M + Math.sign(d) * Math.max(28, Math.abs(d) * k);
+  const row = (y, pts, name, st) => '<g' + popAt(st) + '>' + svgText(14, y + 5, name, 14, 'var(--ink)') +
+    '<line x1="30" y1="' + y + '" x2="234" y2="' + y + '" stroke="var(--line)" stroke-width="2"/>' +
+    pts.map(([d, col]) => '<line x1="' + M + '" y1="' + y + '" x2="' + f(X(d)) + '" y2="' + y + '" stroke="' + col + '" stroke-width="4" stroke-linecap="round"/>' +
+      svgText(f((M + X(d)) / 2), y + 18, Math.abs(d), 12, col) + '<circle cx="' + f(X(d)) + '" cy="' + y + '" r="5" fill="' + col + '"/>' +
+      svgText(f(X(d)), y - 10, q.c + d, 13, col)).join('') +
+    '<circle cx="' + M + '" cy="' + y + '" r="4" fill="var(--ink)"/>' + svgText(M, y - 10, q.c, 13, 'var(--ink)') + '</g>';
+  const x1 = f(X(-q.d1)), x2 = f(X(q.d2));
+  const g = row(0, [[-q.d1, A], [q.d1, A]], '<tspan fill="' + A + '">A</tspan>', 1) +
+    row(52, [[-q.d2, B], [q.d2, B]], '<tspan fill="' + B + '">B</tspan>', 2) +
+    row(104, [[-q.d1, A], [q.d2, B]], '<tspan fill="' + A + '">A</tspan> <tspan fill="' + B + '">B</tspan>', 3.5) +
+    '<g' + popAt(4.5) + '><path d="M' + x1 + ',127 v10 M' + x1 + ',132 H' + x2 + ' M' + x2 + ',127 v10" stroke="var(--ink)" stroke-width="2.5" fill="none"/>' +
+    svgText(f((+x1 + +x2) / 2), 150, q.d1 + ' + ' + q.d2 + ' = ' + q.ans, 14, 'var(--ink)') + '</g>';
+  return '<svg viewBox="0 -28 240 186" style="display:block; width:260px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('A и B около ', 'A і B навколо ') + q.c + '">' + g + '</svg>';
+}
 function sumdiffSvg(q){
   if(q.shape === 'sd' || q.shape === 'board' || q.shape === 'two'){
     const u = 180 / q.big, half = q.small * u;
@@ -122,14 +143,7 @@ function sumdiffSvg(q){
     g += svgText(130, 78, foot, 15, 'var(--ink)', popAt(6));
     return '<svg viewBox="0 -8 272 96" style="display:block; width:326px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете числа като ленти', 'два числа як смужки') + '">' + g + '</svg>';
   }
-  if(q.shape === 'gap'){
-    const m = Math.max(q.d1, q.d2), A = 'var(--warm)', B = 'var(--accent)';
-    return lineSvg([{at:q.c, step:0}, {at:q.c - q.d1, name:'A', col:A, step:1}, {at:q.c + q.d1, name:'A', col:A, step:1},
-        {at:q.c - q.d2, name:'B', col:B, step:2}, {at:q.c + q.d2, name:'B', col:B, step:2}],
-      [{from:q.c - q.d1, to:q.c, label:q.d1, row:1, col:A, step:3}, {from:q.c, to:q.c + q.d2, label:q.d2, row:1, col:B, step:3.5},
-       {from:q.c - q.d1, to:q.c + q.d2, label:q.d1 + ' + ' + q.d2 + ' = ' + q.ans, row:2, col:'var(--ink)', step:4.5}],
-      q.c - m - 1, q.c + m + 1, tr('A и B около ', 'A і B навколо ') + q.c);
-  }
+  if(q.shape === 'gap') return gapSvg(q);
   const lo = q.a - q.d, hi = q.a + q.d;
   return lineSvg([{at:q.a, name:String(q.a), step:0}, {at:lo, name:String(lo), col:'var(--warm)', step:1.5}, {at:hi, name:String(hi), col:'var(--accent)', step:2.5}],
     [{from:lo, to:q.a, label:q.d, row:1, col:'var(--warm)', step:1}, {from:q.a, to:hi, label:q.d, row:1, col:'var(--accent)', step:2}],

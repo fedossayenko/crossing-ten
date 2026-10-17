@@ -4,7 +4,7 @@
 // column and its right edge at or right of it — so the count is the choices each way.
 // МБГ Зима 2021, 2023: a small grid, its squares against its other rectangles. A square is a
 // rectangle too, so «all rectangles» holds the squares, and «not squares» leaves them out.
-import { BGNUM, CM, KIND, SLOT, UKNUM, gridSvg, popAt, rnd, svgText, tr } from '../js/core.js';
+import { BGNUM, CM, KIND, SLOT, UKNUM, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 function genRectsVsSq(){
   const [W, H] = [[2, 2], [2, 2], [3, 2], [3, 3]][rnd(4)];
   const all = W*(W + 1)/2 * H*(H + 1)/2, sizes = [];
@@ -130,8 +130,9 @@ function rectsAntSvg(q){
       '<circle cx="' + (x + (q.c - 0.5) * s) + '" cy="' + (y + (top - 0.5) * s) + '" r="2.4" fill="var(--warm)"/></g>';
   }));
   const W = across.length * (tw + gx) - gx, H = down.length * (th + gy) - gy;
-  g += svgText(W / 2, H + 22, q.wide + ' × ' + q.tall + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k * 0.25));
-  return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8) * 1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  const foot = q.wide + ' × ' + q.tall + ' = ' + q.ans, [l, r] = roomFor(-4, Math.max(W, 120) + 4, W / 2, foot, 15);
+  g += svgText(W / 2, H + 22, foot, 15, 'var(--ink)', popAt(2 + k * 0.25));
+  return '<svg viewBox="' + l + ' -4 ' + (r - l) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((r - l) * 1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('всички правоъгълници с мравката', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
 }
 // The ants' strip: every rectangle with an ant in it, each small on its own copy of the strip, a row for each
@@ -150,8 +151,9 @@ function rectsStripSvg(q){
     W = Math.max(W, x + tw);
   }));
   const H = rows.length*(s + gy) - gy;
-  g += svgText(Math.max(W, 120)/2, H + 22, rows.map(r => r.length).join(' + ') + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k*0.25));
-  return '<svg viewBox="-4 -4 ' + (Math.max(W, 120) + 8) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((Math.max(W, 120) + 8)*1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  const foot = rows.map(r => r.length).join(' + ') + ' = ' + q.ans, [l, r] = roomFor(-4, Math.max(W, 120) + 4, Math.max(W, 120)/2, foot, 15);
+  g += svgText(Math.max(W, 120)/2, H + 22, foot, 15, 'var(--ink)', popAt(2 + k*0.25));
+  return '<svg viewBox="' + l + ' -4 ' + (r - l) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((r - l)*1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('всички правоъгълници с мравка', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
 }
 // The strip of squares: every rectangle that counts, each on its own copy of the strip, a row for each length,
@@ -169,8 +171,9 @@ function rectsSumSvg(q){
     W = Math.max(W, x + tw);
   } });
   const H = q.parts.length*(s + gy) - gy + 18, VW = Math.max(W, 250);
-  g += svgText(W/2, H + 20, q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + k*0.4));
-  return '<svg viewBox="' + (-(VW - W)/2 - 4) + ' -4 ' + (VW + 8) + ' ' + (H + 32) + '" style="display:block; width:' + Math.round((VW + 8)*1.1) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  const foot = q.parts.map(pt => Array(pt[1]).fill(pt[2]).join(' + ')).join(' + ') + ' = ' + q.ans, [l, r] = roomFor(-(VW - W)/2 - 4, (VW + W)/2 + 4, W/2, foot, 15);
+  g += svgText(W/2, H + 20, foot, 15, 'var(--ink)', popAt(2 + k*0.4));
+  return '<svg viewBox="' + l + ' -4 ' + (r - l) + ' ' + (H + 32) + '" style="display:block; width:' + Math.round((r - l)*1.1) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('правоъгълниците и обиколките им', 'прямокутники та їхні периметри') + '">' + g + '</svg>';
 }
 function whyRects(q, full){

@@ -1,5 +1,5 @@
 // Question kind 'paint': level 34 Оцветени — Paint whole rows and columns — what is left.
-import { KIND, SLOT, UK_PLURAL, gridSvg, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 
 const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
 
@@ -42,18 +42,18 @@ function paintSvg(q, full){
   let lines = '';
   for(let i = 0; i <= C; i++) lines += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + h + '"/>';
   for(let j = 0; j <= R; j++) lines += '<line x1="0" y1="' + j*u + '" x2="' + w + '" y2="' + j*u + '"/>';
-  let g = layer(0, 0, w, r*u, 1) + layer(0, 0, c*u, h, 2) + '<g stroke="var(--ink)" stroke-width="1.5">' + lines + '</g>';
+  let g = layer(0, 0, w, r*u, 1) + layer(0, 0, c*u, h, 2) + '<g stroke="var(--ink)" stroke-width="1.5">' + lines + '</g>', foot = '';
   if(!full) g += '<rect' + popAt(3) + ' x="1" y="1" width="' + (u - 2) + '" height="' + (u - 2) + '" fill="none" stroke="var(--warm)" stroke-width="3"/>';
   else {
     const rr = R - r, cc = C - c;
     g += '<rect' + popAt(3) + ' x="' + c*u + '" y="' + r*u + '" width="' + cc*u + '" height="' + rr*u + '" fill="var(--warm)" fill-opacity=".22" stroke="var(--warm)" stroke-width="3"/>';
     const left = rr === 1 ? String(q.left) : rr <= 5 ? Array(rr).fill(cc).join(' + ') + ' = ' + q.left : rr + ' × ' + cc + ' = ' + q.left;
-    const foot = q.asksLeft ? left : (rr === 1 ? '' : left + ', ') + (R*C) + ' − ' + q.left + ' = ' + q.ans;
+    foot = q.asksLeft ? left : (rr === 1 ? '' : left + ', ') + (R*C) + ' − ' + q.left + ' = ' + q.ans;
     g += svgText(w/2, h + 24, foot, 15, 'var(--ink)', popAt(4));
   }
-  const W = full ? Math.max(w, 230) : w, x0 = (W - w)/2, H = h + (full ? 34 : 0);
+  const W = full ? Math.max(w, 230) : w, x0 = (W - w)/2, H = h + (full ? 34 : 0), [l, rt] = roomFor(-x0 - 3, W - x0 + 3, w/2, foot, 15);
   // the line break keeps the worked line's last number apart from the foot's when the foot is that one number
-  return '\n<svg viewBox="' + (-x0 - 3) + ' -3 ' + (W + 6) + ' ' + (H + 6) + '" style="display:block; width:' + Math.round((W + 6)*(full ? 1.1 : 0.9)) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  return '\n<svg viewBox="' + l + ' -3 ' + (rt - l) + ' ' + (H + 6) + '" style="display:block; width:' + Math.round((rt - l)*(full ? 1.1 : 0.9)) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('оцветените редове и стълбове', 'зафарбовані рядки й стовпці') + '">' + g + '</svg>';
 }
 function whyPaint(q, full){

@@ -29,6 +29,12 @@ export const SLOT = '<span class="slot" id="slot0"></span>';
 export const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
 // a label in a solution picture, centred on x
 export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
+// About how wide a label draws (the widths of the app's bold font, measured in Safari: a space .2 em, a capital .7,
+// · : , .25, → .96, a digit, a sign or a small letter .63; SVG keeps one of several spaces), and a picture's left and
+// right edges pushed out where a label centred on cx would run past them: a picture clips at its viewBox
+export const textW = (t, size) => [...String(t).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '\u00a0').replace(/&[a-z]+;/g, 'x').replace(/ +/g, ' ')]
+  .reduce((w, c) => w + (/\s/.test(c) ? .2 : /[.,:;·'’]/.test(c) ? .25 : /[()]/.test(c) ? .4 : c === '→' ? .96 : /[A-ZА-ЯІЇЄҐ]/.test(c) ? .7 : .63), 0) * size;
+export const roomFor = (x0, x1, cx, t, size) => { const h = textW(t, size) / 2 + 4; return [Math.min(x0, cx - h), Math.max(x1, cx + h)]; };
 // A line with points and distances, for the pictures of the line levels. Points: [{at, name, col, step}];
 // distances: [{from, to, label, row, col, step}], drawn as brackets in rows above (row < 0) or below the line.
 // The coordinates are lengths; lo and hi are the ends of the line. A step makes that part pop in.

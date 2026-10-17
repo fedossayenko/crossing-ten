@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, textW, tr } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -66,7 +66,8 @@ function bothSvg(q){
   let g = '';
   for(let i = 0; i < q.T; i++) g += '<circle' + popAt(i * 0.06) + ' cx="' + x(i).toFixed(1) + '" cy="0" r="' + (s * 0.36).toFixed(1) + '" fill="' + (i >= lo && i < q.A ? 'var(--warm)' : 'var(--muted)') + '"/>';
   const brace = (a, b, y, t, col, step) => { const x1 = (6 + a * s).toFixed(1), x2 = (6 + b * s).toFixed(1), d = y < 0 ? 5 : -5;
-    return '<g' + popAt(step) + '><path d="M' + x1 + ',' + (y + d) + ' V' + y + ' H' + x2 + ' V' + (y + d) + '" stroke="' + col + '" stroke-width="2" fill="none"/>' + svgText(((+x1 + +x2) / 2).toFixed(1), y < 0 ? y - 5 : y + 15, t, 12, col) + '</g>'; };
+    return '<g' + popAt(step) + '><path d="M' + x1 + ',' + (y + d) + ' V' + y + ' H' + x2 + ' V' + (y + d) + '" stroke="' + col + '" stroke-width="2" fill="none"/>' +
+      svgText(Math.min(Math.max((+x1 + +x2) / 2, textW(t, 12) / 2 + 2), 240 - textW(t, 12) / 2).toFixed(1), y < 0 ? y - 5 : y + 15, t, 12, col) + '</g>'; };   // a short bracket's label slides in from the edge
   g += brace(0, q.A, -12, q.A + ' ' + tr(q.lang[0], bothUkLang[q.lang[0]]), 'var(--accent)', 2) + brace(lo, q.T, 12, q.B + ' ' + tr(q.lang[1], bothUkLang[q.lang[1]]), 'var(--good)', 3);
   const foot = q.A + ' + ' + q.B + ' − ' + q.T + ' = ' + q.both + (q.asksBoth ? '' : ', ' + q.B + ' − ' + q.both + ' = ' + q.ans);
   g += svgText(121, 52, foot, 15, 'var(--ink)', popAt(4.5));

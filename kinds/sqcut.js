@@ -1,5 +1,5 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-import { CM, KIND, SLOT, UKNUM, diffBars, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UKNUM, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -272,7 +272,8 @@ export function sqWalkSvg(W, H, cuts, tint, sides, foot){
       svgText(lx.toFixed(1), ly.toFixed(1), t, 12, 'var(--warm)') + '</g>';
   });
   g += svgText(f(W / 2), (H * u + 38).toFixed(1), foot, 15, 'var(--ink)', popAt(2 + sides.length * 1.5));
-  return '<svg viewBox="-34 -22 ' + (W * u + 68).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(W * u + 68) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  const [l, r] = roomFor(-34, W * u + 34, W * u / 2, foot, 15);
+  return '<svg viewBox="' + l.toFixed(0) + ' -22 ' + (r - l).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(r - l) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('страните една по една', 'сторони одна за одною') + '">' + g + '</svg>';
 }
 // the four sides of a box, clockwise from the top, with their labels

@@ -1,7 +1,7 @@
 // Question kind 'shared': level 22 Обща страна — Two figures share an edge — what it costs the outline.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
-import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 import { sqWalkSvg } from './sqcut.js';
 function stackSvg(q){
   const u = 150 / (q.a + q.h), W = q.a * u, hh = q.h * u, aa = q.a * u;
@@ -78,13 +78,34 @@ function eqShared(q){
     ? 'квадрат ' + q.P + tr(', триъгълник ', ', трикутник ') + q.p + ' → ' + q.ans
     : q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + (2*q.ans) + ' → ' + q.ans;
 }
+// The stack, both outlines side by side, each traced around: DCEF's in blue; ABEF's has the same blue sides
+// (EF, the two short uprights, and AB as long as DC) and the square's two uprights AD and BC on top, in orange —
+// all that ABEF has more than DCEF.
+function stackWhySvg(q){
+  const u = 100 / (q.a + q.h), w = q.a * u, hh = q.h * u, H = (q.a + q.h) * u, gap = 80, B = 'var(--accent)', O = 'var(--warm)';
+  const f = v => v.toFixed(1), line = (x1, y1, x2, y2, col, st) => '<line' + popAt(st) + ' x1="' + f(x1) + '" y1="' + f(y1) + '" x2="' + f(x2) + '" y2="' + f(y2) + '" stroke="' + col + '" stroke-width="4" stroke-linecap="round"/>';
+  const fig = (x, name) => '<g stroke="var(--muted)" stroke-width="1.4" fill="none"><rect x="' + f(x) + '" y="0" width="' + f(w) + '" height="' + f(H) + '"/><line x1="' + f(x) + '" y1="' + f(hh) + '" x2="' + f(x + w) + '" y2="' + f(hh) + '"/></g>' +
+    [['F', 0, 0], ['E', 1, 0], ['D', 0, hh], ['C', 1, hh], ['A', 0, H], ['B', 1, H]].map(([t, r, y]) => svgText(f(x + (r ? w + 9 : -9)), f(+y + 5), t, 11, 'var(--muted)')).join('') +
+    svgText(f(x + w / 2), -12, name, 13, 'var(--ink)');
+  const R = w + gap;
+  let g = fig(0, 'DCEF') + fig(R, 'ABEF');
+  // DCEF all round, then ABEF: the same four, AB standing in for DC
+  g += '<path' + popAt(1) + ' d="M0,' + f(hh) + ' V0 H' + f(w) + ' V' + f(hh) + ' Z" fill="none" stroke="' + B + '" stroke-width="4" stroke-linejoin="round"/>';
+  g += '<path' + popAt(2) + ' d="M' + f(R) + ',' + f(hh) + ' V0 H' + f(R + w) + ' V' + f(hh) + '" fill="none" stroke="' + B + '" stroke-width="4" stroke-linejoin="round"/>' +
+    line(R, H, R + w, H, B, 2) + svgText(f(R + w / 2), f(H + 16), 'AB = DC', 11, B, popAt(2.5));
+  // and what ABEF has more: the square's two uprights, together the difference
+  g += line(R, hh, R, H, O, 3.5) + line(R + w, hh, R + w, H, O, 3.5) +
+    '<g' + popAt(4.5) + '>' + svgText(f(R - 22), f(hh + (H - hh) / 2 + 5), q.a, 13, O) + svgText(f(R + w + 22), f(hh + (H - hh) / 2 + 5), q.a, 13, O) + '</g>';
+  const foot = q.d + ' : 2 = ' + q.a + ', 4 × ' + q.a + ' = ' + q.ans, [l, r] = roomFor(-32, R + w + 32, (R + w) / 2, foot, 15);
+  g += svgText(f((R + w) / 2), f(H + 44), foot, 15, 'var(--ink)', popAt(5.5));
+  return '<svg viewBox="' + f(l) + ' -30 ' + f(r - l) + ' ' + f(H + 84) + '" style="display:block; width:' + Math.round((r - l) * 1.25) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('двете обиколки една до друга', 'обидва периметри поруч') + '">' + g + '</svg>';
+}
 // The pictures. A triangle cut in two: the halves pull apart and the cut lights up on both — it is
-// in both perimeters, so the sum is the big one plus the cut twice. The stack: the two upright sides
-// of the square are all that ABEF has more than DCEF. The notch: three sides of the square stay, the
-// fourth goes, and the triangle's other two take its place.
+// in both perimeters, so the sum is the big one plus the cut twice. The stack: stackWhySvg. The notch:
+// three sides of the square stay, the fourth goes, and the triangle's other two take its place.
 function sharedSvg(q){
-  if(q.shape === 2) return sqWalkSvg(q.a, q.a + q.h, [[0, q.h, q.a, q.h]], [0, q.h, q.a, q.a], [[0, q.h, 0, q.h + q.a, q.a], [q.a, q.h, q.a, q.h + q.a, q.a]],
-    q.d + ' : 2 = ' + q.a + ', 4 × ' + q.a + ' = ' + q.ans);
+  if(q.shape === 2) return stackWhySvg(q);
   if(q.shape === 1){
     const c = q.c, k = c * 0.55;
     return sqWalkSvg(c, c, [[0, 0, c / 2, k], [c / 2, k, c, 0]], null, [[0, 0, 0, c, c], [0, c, c, c, c], [c, c, c, 0, c], [0, 0, c / 2, k, ''], [c / 2, k, c, 0, '']],
@@ -105,10 +126,11 @@ function whyShared(q, full){
 }
 function whySharedText(q, full){
   if(q.kind === 'shared' && q.shape === 2){
-    if(!full) return tr('Височината на горния правоъгълник влиза и в двете обиколки — тя отпада.',
-      'Висота верхнього прямокутника входить в обидва периметри — вона скорочується.');
-    return tr('ABEF е по-висок от DCEF точно с AD, и то от двете страни &nbsp;→&nbsp; ',
-      'ABEF вищий за DCEF саме на AD, і то з обох боків &nbsp;→&nbsp; ') + q.d + ' : 2 = <b>' +
+    if(!full) return tr('Обиколи двата правоъгълника страна по страна. Кои страни има обиколката на ABEF, а на DCEF ги няма?',
+      'Обійди обидва прямокутники сторона за стороною. Які сторони є в периметрі ABEF, а в периметрі DCEF їх немає?');
+    return tr('обиколката на ABEF има всички страни на DCEF (AB е колкото DC) и още две — <b>AD</b> и <b>BC</b>',
+      'периметр ABEF має всі сторони DCEF (AB така сама, як DC) і ще дві — <b>AD</b> і <b>BC</b>') +
+      ' &nbsp;→&nbsp; AD + BC = ' + q.d + ' &nbsp;→&nbsp; AD = ' + q.d + ' : 2 = <b>' +
       q.a + tr('</b> е страната на квадрата &nbsp;→&nbsp; 4 × ', '</b> — це сторона квадрата &nbsp;→&nbsp; 4 × ') + q.a + ' = ' + q.ans;
   }
   if(q.kind === 'shared' && q.shape === 1){

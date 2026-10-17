@@ -29,6 +29,20 @@ function inUkrainian(L, q, bgTexts){
   });
   return uk;
 }
+// A picture clips at its viewBox: every centred label of the task, the hint and the solution must fit inside it
+// (as wide as textW guesses, 3 px of slack). A <g transform> moves labels, so not those.
+function fits(L, lang, html){
+  for(const svg of html.match(/<svg[\s\S]*?<\/svg>/g) || []){
+    const vb = (svg.match(/viewBox="([-\d. ]+)"/) || [])[1];
+    if(!vb || /transform=/.test(svg)) continue;
+    const [x0, , w] = vb.trim().split(/\s+/).map(Number);
+    for(const [, tag, text] of svg.matchAll(/(<text\b[^>]*>)([\s\S]*?)<\/text>/g)){
+      if(!/text-anchor="middle"/.test(tag)) continue;
+      const x = +(tag.match(/\sx="([-\d.]+)"/) || [])[1], size = +(tag.match(/font-size="([\d.]+)"/) || [, 14])[1], half = textW(text, size) / 2, t = strip(text);
+      if(x - half < x0 - 3 || x + half > x0 + w + 3) throw new Error('level ' + L + lang + ': „' + t + '" runs off the side of its picture');
+    }
+  }
+}
 // Every level, in the table's order. A rule that does not fit a level is lifted for that level alone,
 // with the reason; every other rule still holds for it.
 const IDS = LEVELS.map(l => l.id);
@@ -64,7 +78,8 @@ for(const L of globalThis.LEVEL_PART || IDS){
       if(RANDS !== r0) throw new Error('level ' + L + ': drawing a question drew a random number');
       // the same rules in both languages: the worked line and summary end on the answer,
       // and the first-miss nudge never gives it away
-      [['', bg], [' (Ukrainian)', inUkrainian(L, q, bg)]].forEach(([lang, [, eq, full, nudge]]) => {
+      [['', bg], [' (Ukrainian)', inUkrainian(L, q, bg)]].forEach(([lang, [task, eq, full, nudge]]) => {
+        if(i < 300) fits(L, lang, task + full + nudge);
         if(!NOT.lands[L] && !(q.own && NOT.option[L]) && ok.indexOf(lastNum(full)) < 0) throw new Error('level ' + L + lang + ': worked line lands on ' + lastNum(full) + ', answer is ' + ans + ' -- ' + JSON.stringify(q));
         if(!NOT.lands[L] && !(q.own && NOT.option[L]) && ok.indexOf(lastNum(eq)) < 0) throw new Error('level ' + L + lang + ': summary line lands on ' + lastNum(eq) + ', answer is ' + ans);
         const nums = (strip(nudge).match(/\d+/g) || []).map(Number);

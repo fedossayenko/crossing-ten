@@ -5,7 +5,7 @@
 // and every 6 letters the word starts again: 15 = 6 + 6 + 3, the 3rd letter, Л. A letter
 // cannot be typed, so this kind brings its own А/Б/В/Г, and ans is the right one's id.
 // Each pair is the word in Bulgarian and in Ukrainian, the same length, no letter twice.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
 export const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
 // Есен 2019, задача 11: ○ ○ ○ ○ △ □ over and over; how many circles among the first 31. Six to a
 // round, so 31 = 5 · 6 + 1: five rounds of 4 circles, and the 31st starts a sixth — 21.
@@ -91,9 +91,10 @@ function patCountSvg(q, full){
       (full ? svgText(16, y + 4, Math.min((r + 1)*L, q.n), 11, 'var(--muted)') + svgText(x0 + L*C + 6, y + 5, q.pat.slice(0, len).filter(s => s === q.sym).length, 13, 'var(--accent)') : '') + '</g>';
   }
   const w = Math.floor(q.n / L), k = q.pat.filter(x => x === q.sym).length, extra = q.pat.slice(0, q.n % L).filter(x => x === q.sym).length;
-  if(full) g += svgText(x0 + (L*C)/2, rows*24 + 14, w + ' · ' + k + (q.n % L ? ' + ' + extra : '') + ' = ' + q.ans, 15, 'var(--ink)', popAt(2 + rows*0.7));
-  const W = x0 + L*C + 20;
-  return '<svg viewBox="0 -14 ' + W + ' ' + (rows*24 + (full ? 34 : 4)) + '" style="display:block; width:' + Math.round(W*1.2) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  const foot = full ? w + ' · ' + k + (q.n % L ? ' + ' + extra : '') + ' = ' + q.ans : '';
+  if(full) g += svgText(x0 + (L*C)/2, rows*24 + 14, foot, 15, 'var(--ink)', popAt(2 + rows*0.7));
+  const [l, r] = roomFor(0, x0 + L*C + 20, x0 + (L*C)/2, foot, 15);
+  return '<svg viewBox="' + l + ' -14 ' + (r - l) + ' ' + (rows*24 + (full ? 34 : 4)) + '" style="display:block; width:' + Math.round((r - l)*1.2) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('моделът ред по ред', 'зразок рядок за рядком') + '">' + g + '</svg>';
 }
 // The word's picture: each copy of the word a box, where each copy ends under it (but the copy found, whose

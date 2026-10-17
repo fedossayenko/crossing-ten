@@ -4,7 +4,7 @@
 // «между», where the two ends are NOT counted — so the condition has to be read.
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
-import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, textW, tr } from '../js/core.js';
 export function genCount(){
   if(Math.random() < 0.14){
     // Задача 3: a list with repeats. What is asked is about the set behind it, not the
@@ -211,7 +211,8 @@ function countSet(q, full){
     const x = (10 + (i + 0.5) * W).toFixed(1);
     g += svgText(x, 0, v, 16, again ? 'var(--muted)' : 'var(--good)') + (again && full ? '<path' + popAt(step++) + ' d="M' + (+x - 6) + ',-12 l12,14" stroke="var(--bad)" stroke-width="2.5"/>' : '');
   });
-  if(full) g += svgText(120, 30, (q.asksSum ? q.pool.join(' + ') + ' = ' : q.pool.join(', ') + ' → ') + q.ans, 14, 'var(--ink)', popAt(step + 1));
+  const foot = (q.asksSum ? q.pool.join(' + ') + ' = ' : q.pool.join(', ') + ' → ') + q.ans;
+  if(full) g += svgText(120, 30, foot, Math.min(14, Math.floor(14 * 228 / textW(foot, 14))), 'var(--ink)', popAt(step + 1));   // a long sum gets smaller, the numbers above keep their size
   return '<svg viewBox="0 -22 240 ' + (full ? 62 : 32) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('различните цифри', 'різні цифри') + '">' + g + '</svg>';
 }
 function whyCount(q, full){
