@@ -80,6 +80,6 @@ function whyMultiple(q, full){
   // past the bound, the counts that make three equal addends, one by one; the first that also makes two is the answer
   const threes = []; for(let v = q.N + 1; v <= q.ans; v++) if(v % 3 === 0) threes.push(v);
   return tr('над ' + q.N + ' на три равни: ', 'більше за ' + q.N + ' на три однакові: ') + threes.map(v => v + ' = ' + v/3 + ' + ' + v/3 + ' + ' + v/3).join(', ') +
-    tr(' &nbsp;→&nbsp; на две равни от тях става ', ' &nbsp;→&nbsp; на два однакові з них виходить ') + q.ans + ' = ' + q.ans/2 + ' + ' + q.ans/2 + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>' + multipleSvg(q);
+    tr(' &nbsp;→&nbsp; първото, което става и на две равни: ', ' &nbsp;→&nbsp; перше, яке виходить і на два однакові: ') + q.ans + ' = ' + q.ans/2 + ' + ' + q.ans/2 + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>' + multipleSvg(q);
 }
 KIND.multiple = { draw:drawMultiple, eq:eqMultiple, why:whyMultiple };

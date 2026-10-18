@@ -196,7 +196,7 @@ function countLine(q, full){
       const a = +X(q.lo + i), b = +X(q.hi - i), h = 10 + (b - a) * 0.18;
       g += '<path' + popAt(n + 2 + i) + ' d="M' + a + ',8 Q' + ((a + b) / 2).toFixed(1) + ',' + (8 + 2*h).toFixed(1) + ' ' + b + ',8" stroke="var(--warm)" stroke-width="2.2" fill="none"/>';
     }
-    g += svgText(120, 64, tr('всяка двойка: ', 'кожна пара: ') + each + ' → ' + q.ans, 14, 'var(--ink)', popAt(n + 3 + Math.floor(n / 2)));
+    g += svgText(120, 64, each === q.ans ? String(q.ans) : tr('всяка двойка: ', 'кожна пара: ') + each + ' → ' + q.ans, 14, 'var(--ink)', popAt(n + 3 + Math.floor(n / 2)));
     return svg(98, g, label);
   }
   g += svgText(120, 44, n + tr(' числа', ' чисел'), 15, 'var(--ink)', popAt(n + 2));

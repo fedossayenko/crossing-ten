@@ -103,7 +103,7 @@ function whyTens(q, full){
   if(q.shape === 1) return tensPlaces(q.a, 10) + ' = ' + (10*q.a) + ', ' + tensPlaces(q.b, 10) + ' = ' + (10*q.b) +
     ', ' + tensPlaces(10*q.m, 1) + ' = ' + (10*q.m) + ' &nbsp;→&nbsp; ' + (10*q.a) + ' + ' + (10*q.b) + ' + ' +
     (10*q.m) + ' = <b>' + (100*q.ans) + '</b> &nbsp;→&nbsp; ' +
-    tr('това са ' + q.ans + ' ' + PLACE[100][1], 'це ' + tensUkPlaces(q.ans, 100));
+    tr((q.ans === 1 ? 'това е ' : 'това са ') + places(q.ans, 100), 'це ' + tensUkPlaces(q.ans, 100));
   if(q.shape === 4) return tensPlaces(q.t, 10) + ' = ' + (10*q.t) + ' &nbsp;→&nbsp; ' + (10*q.t) + ' + ' +
     q.u + ' = <b>' + q.tot + '</b> &nbsp;→&nbsp; ' + tr('цифрата на десетиците е ', 'цифра десятків — ') + q.ans;
   if(q.shape === 2) return tensPlaces(q.t, 10) + ' = <b>' + (10*q.t) + '</b> &nbsp;→&nbsp; ' + q.N + ' − ' +

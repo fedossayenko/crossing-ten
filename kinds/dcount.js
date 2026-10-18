@@ -187,8 +187,8 @@ function whyDcount(q, full){
   const list = hits.slice(0, 12).join(', ') + (hits.length > 12 ? ', …' : '');   // the dots only when the list goes on
   if(q.shape !== 1) return tr('цифрата я има в ', 'цифра є в числах ') + list + ' &nbsp;→&nbsp; ' + q.ans + dcountSvg(q);
   return tr('до <b>' + q.ans + '</b> цифрата се е появила ' + q.k + ' пъти (' + list +
-    ') &nbsp;→&nbsp; следващото число с нея идва по-нататък, значи ',
+    ') &nbsp;→&nbsp; следващото, ' + (q.ans + 1) + ', я има още веднъж, значи ',
     'до <b>' + q.ans + '</b> цифра з’явилася ' + ukN(q.k, 'раз', 'рази', 'разів') + ' (' + list +
-    ') &nbsp;→&nbsp; наступне число з нею буде далі, отже, ') + q.ans + dcountSvg(q);
+    ') &nbsp;→&nbsp; наступне, ' + (q.ans + 1) + ', має її ще раз, отже, ') + q.ans + dcountSvg(q);
 }
 KIND.dcount = { draw:drawDcount, eq:eqDcount, why:whyDcount };

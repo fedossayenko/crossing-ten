@@ -101,6 +101,6 @@ function whyTreesText(q){
     '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans,
     q.len + ' м кроками по ' + q.d + ' м дають <b>' + gaps + '</b> ' + treesGaps(gaps) +
     ' &nbsp;→&nbsp; деревець на одне більше: ' + q.ans);
-  return between + ' &nbsp;→&nbsp; ' + q.len + tr(' м, разделени на ', ' м, поділені на ') + gaps + ' → ' + q.ans;
+  return between + ' &nbsp;→&nbsp; ' + tr('всичките са равни и заедно правят ' + q.len + ' м: ', 'усі однакові й разом становлять ' + q.len + ' м: ') + addUp(gaps, q.ans) + ' → ' + q.ans;
 }
 KIND.trees = { draw:drawTrees, eq:eqTrees, why:whyTrees };

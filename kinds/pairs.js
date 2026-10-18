@@ -248,7 +248,7 @@ function whyPairs(q, full){
       ', … &nbsp;→&nbsp; ' + vals.join(' + ') + ' = ' + q.ans;
   }
   if(q.shape === 'sub'){
-    if(!full) return tr('Групирай ги по двойки — всяка дава кръгло число.', 'Згрупуй їх парами — кожна дає кругле число.');
+    if(!full) return tr('Групирай ги по двойки — кои дават кръгло число?', 'Згрупуй їх парами — які дають кругле число?');
     const ts = q.terms;
     let g = '', run = 0, odd = '', rest = 0;
     for(let k = 0; k < ts.length; k += 2){

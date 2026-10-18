@@ -169,18 +169,20 @@ function whyIneq(q, full){
           : q.shape === 1 ? tr('Първо пресметни лявата страна.', 'Спочатку обчисли ліву частину.')
           : tr('„Не е вярно" обръща знака.', '«НЕ правильно» перевертає знак.');
   const lim = q.L - q.C;
+  // the 2nd grade compares with < and > only: «6 или по-малко», not «≤ 6»
+  const most = v => tr(v + ' или по-малко', v + ' або менше'), least = v => tr(v + ' или повече', v + ' або більше'), run = (a, b) => a === b ? String(a) : a + ' … ' + b;
   if(q.asksSum){
     const list = [];
     for(let v = 0; v <= lim; v++) list.push(v);
-    return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L +
-      tr(', значи', ', отже') + ' ? ≤ ' + lim + ' &nbsp;→&nbsp; ' + list.join(' + ') + ' = ' + q.ans;
+    return q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ' + tr('трябва', 'треба, щоб') + ' ? + ' + q.C + tr(' да е ', ' було ') + most(q.L) +
+      tr(', значи ? е ', ', отже ? — ') + most(lim) + ' &nbsp;→&nbsp; ' + list.join(' + ') + ' = ' + q.ans;
   }
   const head = q.A + ' − ' + q.B + ' = <b>' + q.L + '</b> &nbsp;→&nbsp; ';
-  if(q.shape === 0) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≤ ' + q.L + tr(', значи', ', отже') + ' ? ≤ ' + lim +
-    ' &nbsp;→&nbsp; 0 … ' + lim + ' &nbsp;→&nbsp; ' + q.ans;
-  if(q.shape === 1) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' > ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + (lim+1) +
-    ' &nbsp;→&nbsp; ' + (lim+1) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
-  return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' ≥ ' + q.L + tr(', значи', ', отже') + ' ? ≥ ' + lim +
-    ' &nbsp;→&nbsp; ' + Math.max(0, lim) + ' … 9 &nbsp;→&nbsp; ' + q.ans;
+  if(q.shape === 0) return head + tr('трябва', 'треба, щоб') + ' ? + ' + q.C + tr(' да е ', ' було ') + most(q.L) + tr(', значи ? е ', ', отже ? — ') + most(lim) +
+    ' &nbsp;→&nbsp; ' + run(0, lim) + ' &nbsp;→&nbsp; ' + q.ans;
+  if(q.shape === 1) return head + tr('трябва', 'треба') + ' ? + ' + q.C + ' > ' + q.L + tr(', значи ? е ', ', отже ? — ') + least(lim+1) +
+    ' &nbsp;→&nbsp; ' + run(lim+1, 9) + ' &nbsp;→&nbsp; ' + q.ans;
+  return head + tr('трябва', 'треба, щоб') + ' ? + ' + q.C + tr(' да е ', ' було ') + least(q.L) + tr(', значи ? е ', ', отже ? — ') + least(lim) +
+    ' &nbsp;→&nbsp; ' + run(Math.max(0, lim), 9) + ' &nbsp;→&nbsp; ' + q.ans;
 }
 KIND.ineq = { draw:drawIneq, eq:eqIneq, why:whyIneq };

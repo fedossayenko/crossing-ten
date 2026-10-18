@@ -229,7 +229,8 @@ function whyRibbon(q, full){
   if(q.shape === 5){
     if(!full) return tr('Първо двете дължини в едни и същи мерки.', 'Спершу обидві довжини в однакових одиницях.');
     const u = RIB_U[q.to] <= Math.min(RIB_U[q.u1], RIB_U[q.u2]) ? q.to : RIB_U[q.u1] < RIB_U[q.u2] ? q.u1 : q.u2, f = RIB_U[u];
-    return q.a + ' ' + q.u1 + ' = ' + q.A/f + ' ' + u + ', ' + q.b + ' ' + q.u2 + ' = ' + q.B/f + ' ' + u + ' &nbsp;→&nbsp; ' + q.A/f + ' − ' + q.B/f + ' = ' + (q.A - q.B)/f + ' ' + u +
+    const conv = (v, w, V) => w === u ? '' : v + ' ' + w + ' = ' + V/f + ' ' + u;   // a length already in u needs no line
+    return [conv(q.a, q.u1, q.A), conv(q.b, q.u2, q.B)].filter(Boolean).join(', ') + ' &nbsp;→&nbsp; ' + q.A/f + ' − ' + q.B/f + ' = ' + (q.A - q.B)/f + ' ' + u +
       (u === q.to ? '' : ' = ' + q.ans + ' ' + q.to) + ribbonSvg(q);
   }
   if(q.shape === 4){
@@ -242,8 +243,8 @@ function whyRibbon(q, full){
     if(!full) return tr('Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.',
       'Кожну паличку прикладають стільки разів, скільки сказано, — і одиниці вимірювання мають збігатися.');
     const head = q.inDm ? q.a + ' дм = <b>' + q.aCm + ' см</b> &nbsp;→&nbsp; ' : '';
-    return head + Array(q.k).fill(q.aCm).join(' + ') + ' = <b>' + (q.k*q.aCm) + '</b>, &nbsp;' + (q.m === 1 ? '' : Array(q.m).fill(q.b).join(' + ') + ' = ') +
-      '<b>' + (q.m*q.b) + '</b> &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans + ribbonSvg(q);
+    return head + Array(q.k).fill(q.aCm).join(' + ') + ' = <b>' + (q.k*q.aCm) + '</b>' + (q.m === 1 ? '' : ', &nbsp;' + Array(q.m).fill(q.b).join(' + ') + ' = <b>' + (q.m*q.b) + '</b>') +
+      ' &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans + ribbonSvg(q);
   }
   // the reminder must not state the factor: for a plain conversion that IS the answer
   if(!full) return q.shape === 0

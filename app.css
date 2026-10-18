@@ -319,6 +319,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 /* what happens after an answer: coloured boxes with a word and an icon, never colour alone */
 .hint{width:100%; display:flex; flex-direction:column; gap:8px; font-variant-numeric:tabular-nums}
 .hint:empty{display:none}
+.hint svg,.why svg{overflow:visible}   /* a caption in the interface font runs a little wider than textW measures (Nunito): let it show, as .fig does */
 .fb{border-radius:14px; padding:10px 12px; display:flex; flex-direction:column; gap:5px; text-align:left;
   font-size:clamp(13.5px,3.8vw,15px); font-weight:700; line-height:1.4; color:var(--ink)}
 .fb .fbhead{display:flex; align-items:center; gap:10px; font-weight:700}

@@ -61,7 +61,7 @@ function whySigns(q, full){
     tr(', после минусите: ', ', потім мінуси: ') + plusSum + ' − ' + q.wit.join(' − ') + ' = ' + q.T;
   return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
     'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
-    drop + ' &nbsp;→&nbsp; ' + q.wit.join(' + ') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
+    drop + (q.wit.length > 1 ? ' &nbsp;→&nbsp; ' + q.wit.join(' + ') : '') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
     ' &nbsp;→&nbsp; ' + regroup +
     tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
 }
