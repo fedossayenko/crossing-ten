@@ -40,6 +40,8 @@ for(let i = 0; i < 6000; i++){
     cutShapes++;
     if(q.P !== 4*q.c) throw new Error('square perimeter is not four sides');
     if(q.p <= 2*q.c) throw new Error('a triangle of ' + q.p + ' cannot sit on a side of ' + q.c);
+    // cut out of the square, its other two sides fit inside it: at most a side each (the notch drawn, apex below the far side)
+    if(q.p - q.c > 2*q.c) throw new Error('a triangle of ' + q.p + ' on a side of ' + q.c + ' reaches out of the square it is cut from');
     if(q.ans !== q.P - q.c + (q.p - q.c)) throw new Error('cut-square perimeter wrong: ' + JSON.stringify(q));
     continue;
   }

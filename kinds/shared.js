@@ -27,9 +27,9 @@ export function genShared(){
   if(Math.random() < 0.3) return genStack();
   if(Math.random() < 0.4){
     // Задача 18: a triangle cut off a square along one whole side. The boundary loses
-    // that side and gains the triangle's other two.
+    // that side and gains the triangle's other two — more than the side, and no more than two sides, or it would not fit in the square.
     const c = 3 + rnd(6);
-    const p = 2*c + 1 + rnd(12);
+    const p = 2*c + 1 + rnd(c);
     return {kind:'shared', shape:1, c, P: 4*c, p, ans: 4*c - c + (p - c)};
   }
   for(;;){
