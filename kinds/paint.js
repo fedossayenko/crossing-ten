@@ -1,5 +1,5 @@
 // Question kind 'paint': level 34 Оцветени — Paint whole rows and columns — what is left.
-import { KIND, SLOT, UK_PLURAL, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, addUp, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 
 const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
 
@@ -29,8 +29,8 @@ function drawPaint(q){
     '<div class="line md">' + SLOT + '</div>';
 }
 function eqPaint(q){
-  return tr(q.R + '×' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans,
-    q.R + '×' + q.C + ', зафарбовано ' + q.r + ' ' + paintPl(q.r, 'рядок', 'рядки', 'рядків') + ' і ' + q.c + ' ' +
+  return tr(q.R + ' на ' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans,
+    q.R + ' на ' + q.C + ', зафарбовано ' + q.r + ' ' + paintPl(q.r, 'рядок', 'рядки', 'рядків') + ' і ' + q.c + ' ' +
     paintPl(q.c, 'стовпець', 'стовпці', 'стовпців') + ' → ' + q.ans);
 }
 // The picture: the painted rows on top, the painted columns on the left, each a see-through layer, so a crossing
@@ -47,7 +47,7 @@ function paintSvg(q, full){
   else {
     const rr = R - r, cc = C - c;
     g += '<rect' + popAt(3) + ' x="' + c*u + '" y="' + r*u + '" width="' + cc*u + '" height="' + rr*u + '" fill="var(--warm)" fill-opacity=".22" stroke="var(--warm)" stroke-width="3"/>';
-    const left = rr === 1 ? String(q.left) : rr <= 5 ? Array(rr).fill(cc).join(' + ') + ' = ' + q.left : rr + ' × ' + cc + ' = ' + q.left;
+    const left = rr === 1 ? String(q.left) : rr <= 5 ? Array(rr).fill(cc).join(' + ') + ' = ' + q.left : addUp(rr, cc);
     foot = q.asksLeft ? left : (rr === 1 ? '' : left + ', ') + (R*C) + ' − ' + q.left + ' = ' + q.ans;
     g += svgText(w/2, h + 24, foot, 15, 'var(--ink)', popAt(4));
   }
@@ -66,7 +66,7 @@ function whyPaint(q, full){
   const body = tr('остават ', 'лишаються ') + rows + tr(' и ', ' і ') + cols + ' &nbsp;→&nbsp; ' +
     (rr === 1 ? String(q.left)
      : rr <= 5 ? Array(rr).fill(cc).join(' + ') + ' = ' + q.left
-     : rr + ' × ' + cc + ' = ' + q.left);
+     : addUp(rr, cc));
   return (q.asksLeft ? body : body + ' &nbsp;→&nbsp; ' + (q.R*q.C) + ' − ' + q.left + ' = ' + q.ans) + paintSvg(q, true);
 }
 KIND.paint = { draw:drawPaint, eq:eqPaint, why:whyPaint };

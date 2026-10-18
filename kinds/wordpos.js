@@ -5,7 +5,7 @@
 // and every 6 letters the word starts again: 15 = 6 + 6 + 3, the 3rd letter, Л. A letter
 // cannot be typed, so this kind brings its own А/Б/В/Г, and ans is the right one's id.
 // Each pair is the word in Bulgarian and in Ukrainian, the same length, no letter twice.
-import { KIND, SLOT, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, addUp, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
 export const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
 // Есен 2019, задача 11: ○ ○ ○ ○ △ □ over and over; how many circles among the first 31. Six to a
 // round, so 31 = 5 · 6 + 1: five rounds of 4 circles, and the 31st starts a sixth — 21.
@@ -71,7 +71,7 @@ function drawWordPos(q){
 function eqWordPos(q){
   if(q.shape === 'digits') return q.pat.join(', ') + ' → ' + digitParts(q).map(p => p.filter(v => v === q.dig).length).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'count'){ const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length;
-    return q.n + ' = ' + Math.floor(q.n / L) + ' · ' + L + ' + ' + q.n % L + ' → ' + q.ans; }
+    return q.n + ' = ' + Array(Math.floor(q.n / L)).fill(L).join(' + ') + (q.n % L ? ' + ' + q.n % L : '') + ' → ' + q.ans; }
   return (q.right ? q.n*q.L + ' − ' + q.p + ' + 1 = ' + q.fromLeft + ', ' : '') + q.fromLeft + tr('-ма → ', '-га → ') + wordPosWord(q)[q.at];
 }
 // The pattern's picture: one round of the pattern a row, the asked symbol filled in, so every row holds as
@@ -91,7 +91,7 @@ function patCountSvg(q, full){
       (full ? svgText(16, y + 4, Math.min((r + 1)*L, q.n), 11, 'var(--muted)') + svgText(x0 + L*C + 6, y + 5, q.pat.slice(0, len).filter(s => s === q.sym).length, 13, 'var(--accent)') : '') + '</g>';
   }
   const w = Math.floor(q.n / L), k = q.pat.filter(x => x === q.sym).length, extra = q.pat.slice(0, q.n % L).filter(x => x === q.sym).length;
-  const foot = full ? w + ' · ' + k + (q.n % L ? ' + ' + extra : '') + ' = ' + q.ans : '';
+  const foot = full ? Array(w).fill(k).join(' + ') + (q.n % L ? ' + ' + extra : '') + ' = ' + q.ans : '';
   if(full) g += svgText(x0 + (L*C)/2, rows*24 + 14, foot, 15, 'var(--ink)', popAt(2 + rows*0.7));
   const [l, r] = roomFor(0, x0 + L*C + 20, x0 + (L*C)/2, foot, 15);
   return '<svg viewBox="' + l + ' -14 ' + (r - l) + ' ' + (rows*24 + (full ? 34 : 4)) + '" style="display:block; width:' + Math.round((r - l)*1.2) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
@@ -131,12 +131,12 @@ function whyWordPos(q, full){
   if(q.shape === 'count'){
     if(!full) return tr('Колко символа има в едно повторение на модела — и колко от тях са търсените?', 'Скільки символів в одному повторенні зразка — і скільки з них ті, що треба?') + patCountSvg(q, false);
     const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length, w = Math.floor(q.n / L), r = q.n % L, extra = q.pat.slice(0, r).filter(x => x === q.sym).length;
-    return tr('в едно повторение: ' + L + ' символа, от тях ' + k + ' ', 'в одному повторенні: ' + L + ' символів, з них ' + k + ' ') + q.sym + ' &nbsp;→&nbsp; ' + q.n + ' = ' + w + ' · ' + L + ' + ' + r +
-      ' &nbsp;→&nbsp; ' + w + ' · ' + k + (r ? ' + ' + extra : '') + ' = ' + q.ans + patCountSvg(q, true);
+    return tr('в едно повторение: ' + L + ' символа, от тях ' + k + ' ', 'в одному повторенні: ' + L + ' символів, з них ' + k + ' ') + q.sym + ' &nbsp;→&nbsp; ' + q.n + ' = ' + Array(w).fill(L).join(' + ') + (r ? ' + ' + r : '') +
+      ' &nbsp;→&nbsp; ' + Array(w).fill(k).join(' + ') + (r ? ' + ' + extra : '') + ' = ' + q.ans + patCountSvg(q, true);
   }
   if(!full) return tr('Думата се повтаря — на всеки толкова букви, колкото има в нея, започва отначало.', 'Слово повторюється — через стільки букв, скільки в ньому є, воно починається знову.');
   const W = wordPosWord(q), whole = Math.floor((q.fromLeft - 1) / q.L);
-  return (q.right ? tr('всички букви: ', 'усього букв: ') + q.n + ' · ' + q.L + ' = ' + q.n*q.L + tr(', отляво това е ', ', зліва це ') + q.n*q.L + ' − ' + q.p + ' + 1 = <b>' + q.fromLeft + '</b> &nbsp;→&nbsp; ' : '') +
-    q.fromLeft + ' = ' + (whole ? whole + ' · ' + q.L + ' + ' : '') + (q.at + 1) + ' &nbsp;→&nbsp; ' + tr('буква номер ', 'буква номер ') + (q.at + 1) + tr(' в ', ' у ') + W + ': <b>' + W[q.at] + '</b>' + wordPosSvg(q);
+  return (q.right ? tr('всички букви: ', 'усього букв: ') + addUp(q.n, q.L) + tr(', отляво това е ', ', зліва це ') + q.n*q.L + ' − ' + q.p + ' + 1 = <b>' + q.fromLeft + '</b> &nbsp;→&nbsp; ' : '') +
+    (whole ? tr('по ' + q.L + ' букви: ', 'по ' + q.L + ' букв: ') + addUp(whole, q.L) + tr(' и още ', ' і ще ') + (q.at + 1) + ' &nbsp;→&nbsp; ' : '') + tr('буква номер ', 'буква номер ') + (q.at + 1) + tr(' в ', ' у ') + W + ': <b>' + W[q.at] + '</b>' + wordPosSvg(q);
 }
 KIND.wordpos = { draw:drawWordPos, eq:eqWordPos, why:whyWordPos };

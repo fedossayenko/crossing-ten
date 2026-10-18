@@ -315,9 +315,10 @@ difficulty: 49 asks two and three equal addends, as every paper did, not four an
 topics in order: numbers to 100, ± without crossing ten, ± with crossing, and the times table last. No МБГ
 paper before spring asks anything that needs × or ÷ (they say «равни събираеми», «два пъти»), so a 2nd-grade
 level with no `needs` path to the times table (141) shows no ×, ÷, «a : b» or «дели се» in its task, hint or
-solution: it adds, counts in steps (3, 6, 9, …) or halves (17 + 17 = 34). A form that needs the times table is
-a layer after 141. Before a split or a widening, look first: which papers print each form, its rubric score,
-and what a child has been taught by that round.
+solution: it adds, counts in steps (3, 6, 9, …) or halves (17 + 17 = 34), and a grid is «4 на 2»
+(`check/taught.js`: the autumn levels so far). A form that needs the times table is a layer after 141.
+Before a split or a widening, look first: which papers print each form, its rubric score, and what a child
+has been taught by that round.
 
 **This rating is a prior, not a verdict.** The picker also shows her real first-try
 rate per level, which is the honest measure; when the two disagree, believe the data.

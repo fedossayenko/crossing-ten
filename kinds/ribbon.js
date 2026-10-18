@@ -1,7 +1,7 @@
 // Question kind 'ribbon': level 32 Ленти — Centimetres, decimetres and metres.
 
 // Задача 12: centimetres against decimetres and metres.
-import { CM, KIND, SLOT, UK_PLURAL, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UK_PLURAL, addUp, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 // МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
 // 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
@@ -166,8 +166,8 @@ function eqRibbon(q){
   if(q.shape === 6) return q.groups.map(g => g.n + '×' + g.cm).join(', ') + ' → ' + q.ans;
   if(q.shape === 7) return [...new Set(q.cms)].sort((a, b) => a - b).join(', ') + ' см → ' + q.ans;
   if(q.shape === 5) return q.A + ' мм − ' + q.B + ' мм = ' + (q.A - q.B) + ' мм = ' + q.ans + ' ' + q.to;
-  if(q.shape === 4) return q.k + '×' + q.a + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
-  if(q.shape === 3) return q.k + '×' + q.aCm + ' + ' + q.m + '×' + q.b + ' → ' + q.ans;
+  if(q.shape === 4) return Array(q.k).fill(q.a).join(' + ') + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;
+  if(q.shape === 3) return Array(q.k).fill(q.aCm).concat(Array(q.m).fill(q.b)).join(' + ') + ' → ' + q.ans;
   return (q.shape === 0 ? tr('преобразуване', 'перетворення') : q.L + tr(' см към ', ' см до ') + q.t + ' ' + q.u.nm) + ' → ' + q.ans;
 }
 // The pictures: the board or ribbon as one bar to scale, made of its pieces — a stick laid down again and
@@ -200,16 +200,16 @@ function ribbonSvg(q){
   }
   if(q.shape === 4){
     const segs = Array.from({length: q.k}, () => [q.a, A, false]).concat([[q.left, W, false]]);
-    return ribSvg(segs, [[0, q.cm, q.cm + ' см', I, true], [0, q.k*q.a, q.k + ' × ' + q.a + ' см', A, false], [q.k*q.a, q.cm, q.left + ' см', W, false]], q.cm + ' см = ' + q.ans + ' дм');
+    return ribSvg(segs, [[0, q.cm, q.cm + ' см', I, true], [0, q.k*q.a, q.k*q.a + ' см', A, false], [q.k*q.a, q.cm, q.left + ' см', W, false]], q.cm + ' см = ' + q.ans + ' дм');
   }
   if(q.shape === 3){
     const segs = Array.from({length: q.k}, () => [q.aCm, A, false]).concat(Array.from({length: q.m}, () => [q.b, W, false]));
-    return ribSvg(segs, [[0, q.k*q.aCm, q.k + ' × ' + q.aCm + ' см', A, false], [q.k*q.aCm, q.ans, q.m + ' × ' + q.b + ' см', W, false]], (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans);
+    return ribSvg(segs, [[0, q.k*q.aCm, q.k*q.aCm + ' см', A, false], [q.k*q.aCm, q.ans, q.m*q.b + ' см', W, false]], (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans);
   }
   if(q.shape === 0){
     const n = q.toCm ? q.n : q.ans, segs = Array.from({length: n}, () => [q.u.cm, A, false]);
     return ribSvg(segs, [[0, q.u.cm, '1 ' + q.u.nm, A, false], [0, n*q.u.cm, n*q.u.cm + ' см', I, true]],
-      q.toCm ? n + ' × ' + q.u.cm + ' = ' + q.ans + ' см' : n*q.u.cm + ' см = ' + q.ans + ' ' + q.u.nm);
+      q.toCm ? addUp(n, q.u.cm) + ' см' : n*q.u.cm + ' см = ' + q.ans + ' ' + q.u.nm);
   }
   const T = q.t + ' дм = ' + q.target + ' см', long = Math.max(q.L, q.target);
   return q.shape === 1
@@ -235,15 +235,15 @@ function whyRibbon(q, full){
   if(q.shape === 4){
     if(!full) return tr('Първо цялата дъска в сантиметри, чак после я преобразувай.',
       'Спочатку знайди довжину всієї дошки в сантиметрах, а вже потім переводь.');
-    return q.k + ' × ' + q.a + ' = <b>' + (q.k*q.a) + '</b> &nbsp;→&nbsp; ' + (q.k*q.a) + ' + ' + q.left +
+    return Array(q.k).fill(q.a).join(' + ') + ' = <b>' + (q.k*q.a) + '</b> &nbsp;→&nbsp; ' + (q.k*q.a) + ' + ' + q.left +
       ' = <b>' + q.cm + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм, ' + tr('значи', 'отже') + ' ' + q.ans + ribbonSvg(q);
   }
   if(q.shape === 3){
     if(!full) return tr('Всяка пръчка се слага толкова пъти, колкото е казано — и мерките трябва да съвпадат.',
       'Кожну паличку прикладають стільки разів, скільки сказано, — і одиниці вимірювання мають збігатися.');
     const head = q.inDm ? q.a + ' дм = <b>' + q.aCm + ' см</b> &nbsp;→&nbsp; ' : '';
-    return head + q.k + ' × ' + q.aCm + ' = <b>' + (q.k*q.aCm) + '</b>, &nbsp;' + q.m + ' × ' + q.b +
-      ' = <b>' + (q.m*q.b) + '</b> &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans + ribbonSvg(q);
+    return head + Array(q.k).fill(q.aCm).join(' + ') + ' = <b>' + (q.k*q.aCm) + '</b>, &nbsp;' + (q.m === 1 ? '' : Array(q.m).fill(q.b).join(' + ') + ' = ') +
+      '<b>' + (q.m*q.b) + '</b> &nbsp;→&nbsp; ' + (q.k*q.aCm) + ' + ' + (q.m*q.b) + ' = ' + q.ans + ribbonSvg(q);
   }
   // the reminder must not state the factor: for a plain conversion that IS the answer
   if(!full) return q.shape === 0

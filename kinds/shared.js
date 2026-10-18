@@ -1,7 +1,7 @@
 // Question kind 'shared': level 22 Обща страна — Two figures share an edge — what it costs the outline.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
-import { CM, KIND, SLOT, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, addUp, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 import { sqWalkSvg } from './sqcut.js';
 function stackSvg(q){
   const u = 150 / (q.a + q.h), W = q.a * u, hh = q.h * u, aa = q.a * u;
@@ -96,7 +96,7 @@ function stackWhySvg(q){
   // and what ABEF has more: the square's two uprights, together the difference
   g += line(R, hh, R, H, O, 3.5) + line(R + w, hh, R + w, H, O, 3.5) +
     '<g' + popAt(4.5) + '>' + svgText(f(R - 22), f(hh + (H - hh) / 2 + 5), q.a, 13, O) + svgText(f(R + w + 22), f(hh + (H - hh) / 2 + 5), q.a, 13, O) + '</g>';
-  const foot = q.d + ' : 2 = ' + q.a + ', 4 × ' + q.a + ' = ' + q.ans, [l, r] = roomFor(-32, R + w + 32, (R + w) / 2, foot, 15);
+  const foot = q.d + ' = ' + q.a + ' + ' + q.a + ', ' + addUp(4, q.a), [l, r] = roomFor(-32, R + w + 32, (R + w) / 2, foot, 15);
   g += svgText(f((R + w) / 2), f(H + 44), foot, 15, 'var(--ink)', popAt(5.5));
   return '<svg viewBox="' + f(l) + ' -30 ' + f(r - l) + ' ' + f(H + 84) + '" style="display:block; width:' + Math.round((r - l) * 1.25) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('двете обиколки една до друга', 'обидва периметри поруч') + '">' + g + '</svg>';
@@ -117,7 +117,7 @@ function sharedSvg(q){
   const g = half(-14, [90, 90], [0, 90], 1) + half(14, [90, 90], [170, 90], 2) +
     svgText(30, 112, q.p1, 13, 'var(--accent)', popAt(1)) + svgText(150, 112, q.p2, 13, 'var(--accent)', popAt(2)) +
     svgText(85, 112, '?', 14, 'var(--warm)', popAt(3)) +
-    svgText(90, 140, '(' + q.p1 + ' + ' + q.p2 + ' − ' + q.P + ') : 2 = ' + q.ans, 15, 'var(--ink)', popAt(4));
+    svgText(90, 140, q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + q.ans + ' + ' + q.ans, 15, 'var(--ink)', popAt(4));
   return '<svg viewBox="-30 -10 240 160" style="display:block; width:280px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете части и общата им страна', 'дві частини і їхня спільна сторона') + '">' + g + '</svg>';
 }
 function whyShared(q, full){
@@ -130,8 +130,8 @@ function whySharedText(q, full){
       'Обійди обидва прямокутники сторона за стороною. Які сторони є в периметрі ABEF, а в периметрі DCEF їх немає?');
     return tr('обиколката на ABEF има всички страни на DCEF (AB е колкото DC) и още две — <b>AD</b> и <b>BC</b>',
       'периметр ABEF має всі сторони DCEF (AB така сама, як DC) і ще дві — <b>AD</b> і <b>BC</b>') +
-      ' &nbsp;→&nbsp; AD + BC = ' + q.d + ' &nbsp;→&nbsp; AD = ' + q.d + ' : 2 = <b>' +
-      q.a + tr('</b> е страната на квадрата &nbsp;→&nbsp; 4 × ', '</b> — це сторона квадрата &nbsp;→&nbsp; 4 × ') + q.a + ' = ' + q.ans;
+      ' &nbsp;→&nbsp; AD + BC = ' + q.d + tr(', а AD е колкото BC', ', а AD така сама, як BC') + ': ' + q.d + ' = ' + q.a + ' + ' + q.a + ' &nbsp;→&nbsp; AD = <b>' +
+      q.a + tr('</b> е страната на квадрата &nbsp;→&nbsp; ', '</b> — це сторона квадрата &nbsp;→&nbsp; ') + addUp(4, q.a);
   }
   if(q.kind === 'shared' && q.shape === 1){
     if(!full) return tr('Общата страна изчезва, а другите две се появяват.', 'Спільна сторона зникає, а дві інші з’являються.');

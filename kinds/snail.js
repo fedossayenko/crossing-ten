@@ -2,7 +2,7 @@
 
 // Задача 20: a snail that climbs one day and slips back the next. It only has to reach the
 // top once, so the last climb is not followed by a slip — the slipping stops there.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, addUp, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genSnail(){
   for(;;){
     const up = 5 + rnd(6), down = 2 + rnd(up - 3);
@@ -67,7 +67,7 @@ function snailSvg(q, full){
     x += w;
   });
   g += svgText(226, 14, tr('нагоре', 'вгору'), 11, 'var(--warm)') + svgText(274, 14, tr('надолу', 'вниз'), 11, 'var(--accent)');
-  return svg(184, g + svgText(150, 178, q.k + ' × 2 + 1 = ' + q.ans, 15, 'var(--ink)', popAt(step * 0.6 + 1)));
+  return svg(184, g + svgText(150, 178, 2*q.k + ' + 1 = ' + q.ans, 15, 'var(--ink)', popAt(step * 0.6 + 1)));
 }
 function whySnail(q, full){
   if(!full) return tr('Всеки два дни (нагоре и надолу) го качват малко по-високо, но след последното изкачване той вече не слиза.',
@@ -76,8 +76,8 @@ function whySnail(q, full){
   return tr('за всеки 2 дни (ден нагоре и ден надолу) печели ', 'за кожні 2 дні (день угору й день униз) він просувається на ') + q.up + ' − ' + q.down + ' = <b>' + q.gain +
     tr('</b> м &nbsp;→&nbsp; трябва преди последното изкачване да е на ', '</b> м &nbsp;→&nbsp; перед останнім підйомом він має бути на висоті ') +
     q.H + ' − ' + q.up + ' = <b>' + (q.H - q.up) +
-    tr('</b> м или повече &nbsp;→&nbsp; това става след ' + q.k + ' × 2 = ' + 2*q.k + ' дни (',
-       '</b> м або вище &nbsp;→&nbsp; так буде після ' + q.k + ' × 2 = ' + 2*q.k + ' ' + snailD(2*q.k) + ' (') +
-    (q.gain*q.k) + ' м) &nbsp;→&nbsp; ' + q.k + ' × 2 + 1 = ' + q.ans + snailSvg(q, true);
+    tr('</b> м или повече &nbsp;→&nbsp; това става след ' + addUp(q.k, 2) + ' дни (',
+       '</b> м або вище &nbsp;→&nbsp; так буде після ' + addUp(q.k, 2) + ' ' + snailD(2*q.k) + ' (') +
+    (q.gain*q.k) + ' м) &nbsp;→&nbsp; ' + 2*q.k + ' + 1 = ' + q.ans + snailSvg(q, true);
 }
 KIND.snail = { draw:drawSnail, eq:eqSnail, why:whySnail };

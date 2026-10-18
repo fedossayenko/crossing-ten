@@ -42,7 +42,7 @@ function whyFlowers(q, full){
     for(let y = 1; x*q.p[0] + y*q.p[1] < q.T; y++){
       const rest = q.T - x*q.p[0] - y*q.p[1];
       if(rest > 0 && rest % q.p[2] === 0)
-        ways.push(x + '×' + q.p[0] + ' + ' + y + '×' + q.p[1] + ' + ' + (rest/q.p[2]) + '×' + q.p[2]);
+        ways.push(Array(x).fill(q.p[0]).concat(Array(y).fill(q.p[1]), Array(rest/q.p[2]).fill(q.p[2])).join(' + '));   // a flower an addend: their count is the answer
     }
   return '<b>' + ways.join(tr('</b>, или <b>', '</b>, або <b>')) + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' + q.ans + ' ' +
     tr('цветя', flowersPl(q.ans, ['квітка', 'квітки', 'квіток']));

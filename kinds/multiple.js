@@ -1,4 +1,4 @@
-// Question kind 'multiple': level 49 Кратни — The smallest count that splits into equal parts both ways.
+// Question kind 'multiple': level 49 Равни събираеми — The smallest count that splits into equal parts both ways.
 import { BGNUM, KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
@@ -6,7 +6,10 @@ const GARDEN = [['рози','розите','градината'], ['ябълки
 
 // Задача 17: "a sum of p equal addends" is another way of saying "divides by p". Wanted
 // both ways at once, so the count divides by both — and the smallest one past the bound.
-const PAIRS = [[2,3,6], [2,4,4], [2,5,10], [3,4,12], [2,6,6], [2,7,14], [3,2,6], [4,3,12]];
+// Every paper that asks it (Есен 2022, Зима 2021, Зима 2024) takes two and three equal addends, and so does this:
+// four and three (12, 24, … 72) or two and seven need the times table, which the 2nd grade meets after the autumn
+// and winter rounds (README, How difficulty is assigned).
+const PAIRS = [[2,3,6], [3,2,6]];
 export function genMultiple(){
   if(Math.random() < 0.25){
     // Зима 2021: how many of 1 … 20 can be written both ways — the multiples of 6: 6, 12, 18
@@ -41,8 +44,7 @@ function drawMultiple(q){
 }
 function eqMultiple(q){
   if(q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;
-  return tr('кратно на ' + q.p + ' и на ' + q.r + ', над ' + q.N,
-                                      'кратне ' + q.p + ' і ' + q.r + ', більше за ' + q.N) + ' → ' + q.ans;
+  return tr('на ' + q.p + ' и на ' + q.r + ' равни, над ' + q.N, 'на ' + q.p + ' і на ' + q.r + ' однакові, більше за ' + q.N) + ' → ' + q.ans;
 }
 // The picture: the numbers in rows of ten, as on a hundred chart. One that divides by the first count is
 // ringed, one that divides by the second sits on a warm square, so the ones that split both ways carry both
@@ -58,24 +60,26 @@ function multipleSvg(q){
       svgText(x, y + 4, v, 11, low ? 'var(--muted)' : both ? 'var(--good)' : 'var(--ink)');
     g += both && !low ? '<g' + popAt(1 + k++) + '>' + cell + '</g>' : low ? '<g opacity=".45">' + cell + '</g>' : cell;
   }
-  const h = Math.ceil((end - from + 1) / 10) * C, by = tr('дели се на ', 'ділиться на ');
+  const h = Math.ceil((end - from + 1) / 10) * C, by = n => tr('на ' + n + ' равни', 'на ' + n + ' однакові');
   const note = (x, t) => '<text x="' + x + '" y="' + (h + 20) + '" font-size="11" font-weight="800" fill="var(--muted)">' + t + '</text>';   // left-aligned beside its mark
-  g += '<circle cx="26" cy="' + (h + 16) + '" r="8" fill="none" stroke="var(--accent)" stroke-width="2"/>' + note(39, by + q.p) +
-    '<rect x="128" y="' + (h + 7.5) + '" width="17" height="17" rx="4" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="1.5"/>' + note(152, by + q.r);
+  g += '<circle cx="26" cy="' + (h + 16) + '" r="8" fill="none" stroke="var(--accent)" stroke-width="2"/>' + note(39, by(q.p)) +
+    '<rect x="128" y="' + (h + 7.5) + '" width="17" height="17" rx="4" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="1.5"/>' + note(152, by(q.r));
   g += svgText(120, h + 46, count ? q.list.join(', ') + ' → ' + q.ans : tr('първото над ' + q.N + ': ', 'перше більше за ' + q.N + ': ') + q.ans, 15, 'var(--ink)', popAt(2 + k));
   return '<svg viewBox="-4 -4 248 ' + (h + 58) + '" style="display:block; width:270px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('числата, които се делят и на двата броя', 'числа, що діляться на обидві кількості') + '">' + g + '</svg>';
 }
 function whyMultiple(q, full){
   if(q.shape === 'count'){
-    if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой — и на двата.', 'Сума однакових доданків означає, що число ділиться націло на їхню кількість — на обидві.');
-    return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; на <b>', 'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; на <b>') + q.L + '</b> &nbsp;→&nbsp; ' + q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans + multipleSvg(q);
+    if(!full) return tr('Две равни събираеми: число, събрано със себе си (10 = 5 + 5). Три равни: едно и също число три пъти (15 = 5 + 5 + 5). Кои числа стават и по двата начина?',
+      'Два однакові доданки: число, додане саме до себе (10 = 5 + 5). Три однакові: те саме число тричі (15 = 5 + 5 + 5). Які числа виходять обома способами?');
+    return tr('най-малкото е <b>6</b> = 3 + 3 = 2 + 2 + 2, а всяко следващо е с 6 повече', 'найменше — <b>6</b> = 3 + 3 = 2 + 2 + 2, а кожне наступне на 6 більше') +
+      ' &nbsp;→&nbsp; ' + q.list.join(', ') + ' &nbsp;→&nbsp; ' + q.ans + multipleSvg(q);
   }
-  if(!full) return tr('Сбор на равни събираеми значи, че числото се дели точно на техния брой.',
-                      'Сума однакових доданків означає, що число ділиться націло на їхню кількість.');
-  return tr('дели се и на ' + q.p + ', и на ' + q.r + ' &nbsp;→&nbsp; значи се дели на <b>',
-            'ділиться і на ' + q.p + ', і на ' + q.r + ' &nbsp;→&nbsp; отже, ділиться на <b>') + q.L +
-    '</b> &nbsp;→&nbsp; ' + [q.L*(q.ans/q.L - 1), q.ans].join(', ') +
-    tr(' — първото над ' + q.N + ' е ', ' — перше більше за ' + q.N + ': ') + q.ans + multipleSvg(q);
+  if(!full) return tr('Две равни събираеми: число, събрано със себе си (10 = 5 + 5). Три равни: едно и също число три пъти (15 = 5 + 5 + 5). Търси първото над ' + q.N + ', което става и по двата начина.',
+                      'Два однакові доданки: число, додане саме до себе (10 = 5 + 5). Три однакові: те саме число тричі (15 = 5 + 5 + 5). Шукай перше більше за ' + q.N + ', яке виходить обома способами.');
+  // past the bound, the counts that make three equal addends, one by one; the first that also makes two is the answer
+  const threes = []; for(let v = q.N + 1; v <= q.ans; v++) if(v % 3 === 0) threes.push(v);
+  return tr('над ' + q.N + ' на три равни: ', 'більше за ' + q.N + ' на три однакові: ') + threes.map(v => v + ' = ' + v/3 + ' + ' + v/3 + ' + ' + v/3).join(', ') +
+    tr(' &nbsp;→&nbsp; на две равни от тях става ', ' &nbsp;→&nbsp; на два однакові з них виходить ') + q.ans + ' = ' + q.ans/2 + ' + ' + q.ans/2 + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>' + multipleSvg(q);
 }
 KIND.multiple = { draw:drawMultiple, eq:eqMultiple, why:whyMultiple };

@@ -1,5 +1,5 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
-import { KIND, NAMES, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, NAMES, SLOT, UK_PLURAL, addUp, popAt, rnd, svgText, tr } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
 export function genTrees(){
@@ -79,7 +79,7 @@ function treesSvg(q, full){
   const t0 = at.length * 0.5 + 1;
   at.forEach((k, i) => { if(i && at[i - 1] === k - 1)
     g += '<g' + popAt(t0 + i) + '>' + arc(X[i - 1], X[i]) + svgText((X[i - 1] + X[i]) / 2, -46, k - 1, 11, 'var(--accent)') + '</g>'; });
-  const foot = q.shape === 1 ? gaps + ' + 1 = ' + q.ans : q.shape === 2 ? q.len + ' : ' + gaps + ' = ' + q.ans : gaps + ' × ' + q.d + ' = ' + q.ans;
+  const foot = q.shape === 1 ? gaps + ' + 1 = ' + q.ans : q.shape === 2 ? addUp(gaps, q.ans) + ' → ' + q.ans : addUp(gaps, q.d);
   return svg(104, g + svgText(123, 40, foot, 15, 'var(--ink)', popAt(t0 + at.length + 1)));
 }
 function whyTrees(q, full){
@@ -92,11 +92,11 @@ function whyTreesText(q){
   const gaps = q.n - 1;
   const between = tr('между ' + q.n + ' дръвчета има <b>' + gaps + '</b> разстояния',
     'між ' + q.n + (q.n % 10 === 1 && q.n % 100 !== 11 ? ' деревцем' : ' деревцями') + ' <b>' + gaps + '</b> ' + treesGaps(gaps));
-  if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, ' + 'а ' + between + ' &nbsp;→&nbsp; ' + gaps + ' × ' + q.d + ' = ' + q.ans;
+  if(q.shape === 3) return q.dm + ' дм = <b>' + q.d + '</b> м, ' + 'а ' + between + ' &nbsp;→&nbsp; ' + addUp(gaps, q.d);
   if(q.shape === 0) return between + ' &nbsp;→&nbsp; ' +
     (q.d === 1 ? tr('по един метър всяко, значи ', 'по одному метру кожен, отже ') + q.ans
      : gaps <= 6 ? Array(gaps).fill(q.d).join(' + ') + ' = ' + q.ans
-     : gaps + ' × ' + q.d + ' = ' + q.ans);
+     : addUp(gaps, q.d));
   if(q.shape === 1) return tr(q.len + ' м на стъпки по ' + q.d + ' м дава <b>' + gaps +
     '</b> разстояния &nbsp;→&nbsp; дръвчетата са с едно повече: ' + q.ans,
     q.len + ' м кроками по ' + q.d + ' м дають <b>' + gaps + '</b> ' + treesGaps(gaps) +

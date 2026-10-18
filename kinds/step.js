@@ -51,7 +51,7 @@ function drawStep(q){
     (q.shape === 0 ? '' : CM) + '</div>';
 }
 function eqStep(q){
-  return q.W + '×' + q.H + tr(', изрязано ', ', вирізано ') + q.w + '×' + q.h + ' → ' + q.ans;
+  return q.W + ' на ' + q.H + tr(', изрязано ', ', вирізано ') + q.w + ' на ' + q.h + ' → ' + q.ans;
 }
 // The picture: the figure again, its six sides walked as the answer needs them. For the outline the
 // two sides of the notch slide out to the missing corner (dashed), so it is the whole rectangle's.
@@ -70,7 +70,7 @@ function stepWalkSvg(q){
     g += side(2, q.w, 'var(--warm)', 1) + side(3, q.h, 'var(--warm)', 1.5) +
       '<g' + popAt(2.5) + '>' + corner(q.W - q.w, q.H, q.W, q.H) + corner(q.W, q.H, q.W, q.H - q.h) + '</g>' +
       side(0, q.W, 'var(--accent)', 3.5) + side(5, q.H, 'var(--accent)', 4);
-    foot = '(' + q.W + ' + ' + q.H + ') × 2 = ' + q.ans;
+    foot = (q.W + q.H) + ' + ' + (q.W + q.H) + ' = ' + q.ans;
   } else if(q.shape === 2){
     g += side(5, q.H, 'var(--accent)', 1) + side(1, q.H - q.h, 'var(--good)', 2) + side(3, '?', 'var(--warm)', 3);
     foot = q.H + ' − ' + (q.H - q.h) + ' = ' + q.ans;

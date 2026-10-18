@@ -24,6 +24,9 @@ export const ukN = (n, one, few, many) => n + ' ' + ({one, few}[UK_PLURAL.select
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 export const SLOT = '<span class="slot" id="slot0"></span>';
+// n times k before the times table (2nd grade until spring): the equal addends written out, or counted in steps
+// when there are more than five — what a child who has not met × does (check/taught.js)
+export const addUp = (n, k) => n < 2 ? String(n*k) : n <= 5 ? Array(n).fill(k).join(' + ') + ' = ' + n*k : k + ', ' + 2*k + ', ' + 3*k + ', …, ' + n*k;
 // A solution picture that builds up: the part drawn at step n pops in n·0.12 s after the picture appears
 // (still, all at once, when motion is reduced). Attributes for an SVG element: '<g' + popAt(3) + '>'.
 export const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';

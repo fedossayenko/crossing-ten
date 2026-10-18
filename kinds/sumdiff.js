@@ -100,7 +100,7 @@ function drawSumdiff(q){
 function eqSumdiff(q){
   if(q.shape === 'two') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.small + tr(' и ', ' і ') + q.big;
   if(q.shape === 'board') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.ans;
-  if(q.shape === 'sd') return '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
+  if(q.shape === 'sd') return q.S + ' − ' + q.d + ' = ' + q.small + ' + ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
   if(q.shape === 'gap') return 'A на ' + q.d1 + ', B на ' + q.d2 + tr(' от ', ' від ') + q.c + ' → ' + q.ans;
   return q.a + tr(' и разлика ', ' і різниця ') + q.d + ' → ' + (2*q.a - q.d) + tr(' и ', ' і ') + q.ans;
 }
@@ -139,7 +139,7 @@ function sumdiffSvg(q){
       svgText((40 + half + q.d * u / 2).toFixed(1), 45, q.d, 12, 'var(--warm)') + '</g>';
     g += '<g' + popAt(4) + '><path d="M' + (40 + half + q.d * u + 8).toFixed(1) + ',0 h5 v50 h-5" stroke="var(--ink)" stroke-width="1.6" fill="none"/>' + svgText((40 + half + q.d * u + 26).toFixed(1), 30, q.S, 13, 'var(--ink)') + '</g>';
     g += '<g' + popAt(5) + '>' + svgText((40 + half / 2).toFixed(1), 15, q.small, 13, 'var(--accent)') + svgText((40 + half / 2).toFixed(1), 45, q.small, 13, 'var(--accent)') + '</g>';
-    const foot = q.asksBig || q.shape === 'two' ? q.small + ' + ' + q.d + ' = ' + q.big : q.shape === 'board' ? q.big + ' − ' + q.d + ' = ' + q.small : '(' + q.S + ' − ' + q.d + ') : 2 = ' + q.small;
+    const foot = q.asksBig || q.shape === 'two' ? q.small + ' + ' + q.d + ' = ' + q.big : q.shape === 'board' ? q.big + ' − ' + q.d + ' = ' + q.small : (q.S - q.d) + ' = ' + q.small + ' + ' + q.small;
     g += svgText(130, 78, foot, 15, 'var(--ink)', popAt(6));
     return '<svg viewBox="0 -8 272 96" style="display:block; width:326px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете числа като ленти', 'два числа як смужки') + '">' + g + '</svg>';
   }
@@ -152,7 +152,7 @@ function sumdiffSvg(q){
 function whySumdiff(q, full){
   if(q.shape === 'two'){
     if(!full) return tr('Махни разликата от сбора — остават две равни части.', 'Прибери різницю із суми — лишаються дві рівні частини.');
-    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b> &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = <b>' + q.big + '</b>' + sumdiffSvg(q);
+    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ' = <b>' + q.small + '</b> + ' + q.small + ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = <b>' + q.big + '</b>' + sumdiffSvg(q);
   }
   if(q.shape === 'board'){
     if(!full) return tr('Опитай две числа с този сбор, като започнеш от две равни половини. Каква е разликата им?',
@@ -163,7 +163,7 @@ function whySumdiff(q, full){
   }
   if(q.shape === 'sd'){
     if(!full) return tr('Махни разликата — остават две равни части.', 'Прибери різницю — лишаються дві рівні частини.');
-    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ', ' + (q.S - q.d) + ' : 2 = <b>' + q.small + '</b>' + (q.asksBig ? ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' &nbsp;→&nbsp; ' + q.ans + sumdiffSvg(q);
+    return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ' = <b>' + q.small + '</b> + ' + q.small + (q.asksBig ? ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' &nbsp;→&nbsp; ' + q.ans + sumdiffSvg(q);
   }
   if(q.shape === 'gap'){
     if(!full) return tr('Всяко от двете може да е от едната или от другата страна.',

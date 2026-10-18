@@ -39,7 +39,7 @@ function genBound(){
           ans: most ? Math.ceil(n/7) : Math.floor(n/7)};
 }
 // МБГ Пролет 2025, 1 клас, задача 20: the same bound over a shorter run — the least Tuesdays among 20 days.
-// short: the weeks are added up as sevens, not multiplied — there is no × in the 1st grade
+// short: a run of at most 30 days, as the 1st grade asks it (the weeks are added up as sevens on every level)
 export function genBoundShort(){ const q = genBound(); return q.n > 30 ? genBoundShort() : Object.assign(q, {short:true}); }
 // МБГ Пролет 2023, 1 клас, задача 17: mum's birthday is on a Sunday, dad's 3 days later, on a Wednesday; mine
 // is 5 days after dad's — Thursday 1, Friday 2, … Monday 5. A day cannot be typed, so it brings its own four.
@@ -247,7 +247,7 @@ function whyWeekdayText(q, full){
   if(q.kind === 'weekday' && q.shape === 'bound'){
     if(!full) return tr('Колко цели седмици се събират, и какво остава след тях?',
       'Скільки цілих тижнів уміщається і що лишається після них?');
-    const w = Math.floor(q.n / 7), r = q.n % 7, head = q.n + ' = ' + (q.short ? Array(w).fill(7).join(' + ') : w + ' × 7') + ' + ' + r;
+    const w = Math.floor(q.n / 7), r = q.n % 7, head = q.n + ' = ' + Array(w).fill(7).join(' + ') + ' + ' + r;
     return tr(head + ' &nbsp;→&nbsp; <b>' + w + '</b> ' + (w === 1 ? 'е сигурен' : 'са сигурни') + ', а ' +
       (r === 1 ? 'оставащият 1 ден може ' : 'останалите ' + r + ' дни могат ') + (q.most ? 'да хванат още един' : 'и да не хванат нито един') +
       ' &nbsp;→&nbsp; ' + q.ans,

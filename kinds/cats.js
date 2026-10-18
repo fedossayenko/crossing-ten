@@ -53,7 +53,7 @@ function catsSvg(q){
   g += '<g' + popAt(t1) + '><line x1="' + x(D) + '" y1="-6" x2="' + x(D) + '" y2="52" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 3"/>' +
     svgText(+x(D), 66, D + tr(' дни', ' днів'), 12, 'var(--ink)') + '</g>' + svgText(+x(0), 66, 0, 11, 'var(--muted)');
   const foot = '<tspan fill="var(--warm)">' + q.q + '</tspan> + <tspan fill="var(--accent)">' + q.p + '</tspan> = ' + (q.p + q.q) +
-    tr(' кутии за ', ' коробок за ') + D + (q.k === 1 ? '' : ' &nbsp;→&nbsp; ' + D + ' · 2 = ' + q.ans);
+    tr(' кутии за ', ' коробок за ') + D + (q.k === 1 ? '' : ' &nbsp;→&nbsp; ' + D + ' + ' + D + ' = ' + q.ans);
   g += svgText(X0 + 110, 92, foot, 14, 'var(--ink)', popAt(t1 + 1));
   return '<svg viewBox="0 -10 ' + (X0 + 252) + ' 112" style="display:block; width:' + Math.round((X0 + 252) * 1.3) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('кутиите на двете котки по дни', 'коробки обох кішок по днях') + '">' + g + '</svg>';

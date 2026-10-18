@@ -43,12 +43,12 @@ function drawCoins(q){
 }
 function eqCoins(q){
   if(q.shape === 'mix') return q.n + tr(' монети, и от двата вида → ', ' монет, обох видів → ') + q.vals.join(', ');
-  return q.n1 + '×1 + ' + q.n2 + '×2 = ' + q.T + ' → ' + q.ans;
+  return Array(q.n1).fill(1).concat(Array(q.n2).fill(2)).join(' + ') + ' = ' + q.T + ' → ' + q.ans;
 }
 function whyCoins(q, full){
   if(q.shape === 'mix'){
     if(!full) return tr('Колко от монетите може да са по 2 евро? Поне една, но не всички.', 'Скільки монет можуть бути по 2 євро? Хоча б одна, але не всі.');
-    return q.vals.map((v, i) => (i + 1) + ' × 2 + ' + (q.n - i - 1) + ' × 1 = ' + v).join('; ') + ' &nbsp;→&nbsp; ' + q.vals.join(', ');
+    return q.vals.map((v, i) => Array(i + 1).fill(2).concat(Array(q.n - i - 1).fill(1)).join(' + ') + ' = ' + v).join('; ') + ' &nbsp;→&nbsp; ' + q.vals.join(', ');
   }
   if(!full) return tr('Монетите от 1 евро позволяват всяка сума до сбора.', 'Монети по 1 євро дають змогу заплатити будь-яку суму аж до загальної.');
   const total = q.n1 + ' + ' + (2*q.n2) + ' = <b>' + q.T + '</b> ' + tr('евро', 'євро');

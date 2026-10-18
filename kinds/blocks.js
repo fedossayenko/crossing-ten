@@ -3,7 +3,7 @@
 // МБГ Зима 2020, задача 7: 1, 2, 3, 4 in a row with 1 next to 2 and 3 next to 4. Glue each pair into
 // a block: two blocks go 2 ways, and each block can be turned: 2 · 2 · 2 = 8. Counted here by
 // listing every order.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, addUp, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 function blocksCount(n, pairs){
   let c = 0;
   (function walk(cur, left){
@@ -52,7 +52,7 @@ function blocksSvg(q, fact){
       tile(p.slice().reverse(), x + p.length*18 + 18, ty, 18, popAt(4.5 + orders.length*0.5 + i));
     x += 2*p.length*18 + 50;
   });
-  g += svgText(150, ty + 48, [fact].concat(glued.map(() => 2)).join(' · ') + ' = ' + q.ans, 15, 'var(--ink)', popAt(6 + orders.length*0.5 + glued.length));
+  g += svgText(150, ty + 48, addUp(2 ** glued.length, fact), 15, 'var(--ink)', popAt(6 + orders.length*0.5 + glued.length));
   return '<svg viewBox="0 -4 300 ' + (ty + 60) + '" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('парчетата, подредбите им и обръщанията', 'шматки, їхні розстановки й повороти') + '">' + g + '</svg>';
 }
@@ -60,6 +60,6 @@ function whyBlocks(q, full){
   if(!full) return tr('Слепи съседите в едно парче. Колко парчета се нареждат — и колко начина има всяко парче да се обърне?', 'Склей сусідів в один шматок. Скільки шматків ставиш у ряд — і скількома способами можна перевернути кожен?');
   const chain = q.pairs.length === 2 && q.pairs[0][1] === q.pairs[1][0];
   const units = chain ? q.n - 2 : q.n - q.pairs.length, fact = [...Array(units).keys()].map(v => v + 1).reduce((a, b) => a*b, 1), turns = chain ? 2 : Math.pow(2, q.pairs.length);
-  return tr('парчета за нареждане: ', 'шматків у ряду: ') + units + ' &nbsp;→&nbsp; ' + tr(fact + ' подредби', ukN(fact, 'розстановка', 'розстановки', 'розстановок')) + ' · ' + tr(turns + ' обръщания', ukN(turns, 'поворот', 'повороти', 'поворотів')) + ' = ' + q.ans + blocksSvg(q, fact);
+  return tr('парчета за нареждане: ', 'шматків у ряду: ') + units + ' &nbsp;→&nbsp; ' + tr(fact + ' подредби', ukN(fact, 'розстановка', 'розстановки', 'розстановок')) + tr(', всяка с ' + turns + ' обръщания', ', кожна з ' + ukN(turns, 'поворотом', 'поворотами', 'поворотами')) + ' &nbsp;→&nbsp; ' + addUp(turns, fact) + blocksSvg(q, fact);
 }
 KIND.blocks = { draw:drawBlocks, eq:eqBlocks, why:whyBlocks };

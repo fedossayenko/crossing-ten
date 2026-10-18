@@ -168,7 +168,7 @@ function drawFruiteq(q){
 function eqFruiteq(q){
   if(q.shape === 'twin') return eqFigTwins(q);
   if(q.shape) return eqFlowerEq(q);
-  if(q.tri) return '(' + q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ') : 2 = ' + q.ans;
+  if(q.tri) return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + q.ans + ' + ' + q.ans + ' → ' + q.ans;
   if(q.grid) return [q.A, q.B, q.C, q.D].join(', ') + ' → ' + q.ans;
   return q.s1 + ', ' + q.s2 + ', ' + q.s3 + ' → ' + q.ans;
 }
@@ -177,7 +177,7 @@ function whyFruiteq(q, full){
   if(q.shape) return whyFlowerEq(q, full);
   if(q.tri){
     if(!full) return tr('Събери трите реда. Колко пъти е вътре всяка фигура?', 'Додай три рядки. Скільки разів у них кожна фігура?');
-    return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + (q.s1 + q.s2 + q.s3) + tr(' — всяка фигура по два пъти', ' — кожна фігура двічі') + ' &nbsp;→&nbsp; ' + (q.s1 + q.s2 + q.s3) + ' : 2 = ' + q.ans;
+    return q.s1 + ' + ' + q.s2 + ' + ' + q.s3 + ' = ' + (q.s1 + q.s2 + q.s3) + tr(' — всяка фигура по два пъти', ' — кожна фігура двічі') + ' &nbsp;→&nbsp; ' + (q.s1 + q.s2 + q.s3) + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.grid){
     if(!full) return tr('Двата стълба заедно съдържат всичките четири плода.', 'Два стовпці разом містять усі чотири фрукти.');

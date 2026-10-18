@@ -1,5 +1,5 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-import { CM, KIND, SLOT, UKNUM, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UKNUM, addUp, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -242,13 +242,13 @@ function drawSqcut(q){
 }
 function eqSqcut(q){
   if(q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
-  if(q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + '×' + 5*q.side + ' мм → ' + q.ans;
+  if(q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + ' на ' + 5*q.side + ' мм → ' + q.ans;
   if(q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
-    q.w + '×' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
-  if(q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Math.min(q.t.w, q.t.h) + ' · ' + q.ans + ' → ' + q.ans;
+    q.w + ' на ' + q.side + ' → ' + q.ans + (q.slots ? tr(' или 4 квадрата → ', ' або 4 квадрати → ') + q.alt[0] : '');
+  if(q.shape === 5 && q.rev) return tr('по-малката страна ', 'менша сторона ') + q.short + ' = ' + Array(Math.min(q.t.w, q.t.h)).fill(q.ans).join(' + ') + ' → ' + q.ans;
   if(q.shape === 5) return tr(q.n + ' квадрата, страна ' + q.side + ' → правоъгълник ',
-    q.n + ' квадрати, сторона ' + q.side + ' → прямокутник ') + (q.t.w*q.s) + '×' + (q.t.h*q.s) + ' → ' + q.ans;
-  if(q.shape === 4 && q.mm) return 'квадрат ' + q.mm + ' мм → ' + q.P + tr(' см, триъгълник ', ' см, трикутник ') + '3 · ' + q.t + ' = ' + q.p + ' → ' + q.ans;
+    q.n + ' квадрати, сторона ' + q.side + ' → прямокутник ') + (q.t.w*q.s) + ' на ' + (q.t.h*q.s) + ' → ' + q.ans;
+  if(q.shape === 4 && q.mm) return 'квадрат ' + q.mm + ' мм → ' + q.P + tr(' см, триъгълник ', ' см, трикутник ') + addUp(3, q.t) + ' → ' + q.ans;
   if(q.shape === 4) return 'квадрат ' + q.dm + (q.inCm ? ' см → ' : ' дм → ') + q.P + tr(', триъгълник ', ', трикутник ') +
     q.sides.join('+') + ' = ' + q.p + ' → ' + q.ans;
   return q.shape === 3
@@ -300,7 +300,7 @@ function sqcutSvg(q){
     if(q.rev){
       // the short side, made of the smallest squares' sides
       const m = Math.min(t.w, t.h), least = q.ans, side = t.h <= t.w ? [t.w, 0, t.w, t.h, q.short] : [0, t.h, t.w, t.h, q.short];
-      return sqWalkSvg(t.w, t.h, cuts, null, [side], q.short + ' : ' + m + ' = ' + least);
+      return sqWalkSvg(t.w, t.h, cuts, null, [side], q.short + ' = ' + Array(m).fill(least).join(' + '));
     }
     return sqWalkSvg(t.w, t.h, cuts, null, sqSides(0, 0, t.w, t.h, t.w * s, t.h * s), P + q.ans);
   }
@@ -315,7 +315,7 @@ function sqcutSvg(q){
   const S = q.side, k = q.parts, sm = S / k;
   if(q.shape === 1) return sqWalkSvg(S, S, sqGrid(k, S), null, sqSides(0, 0, S, S, S, S), P + q.ans);
   if(q.shape === 0) return sqWalkSvg(S, S, sqGrid(k, S), [0, 0, sm, sm], sqSides(0, 0, sm, sm, q.small, q.small), q.small + ' + ' + q.small + ' + ' + q.small + ' + ' + q.small + ' = ' + q.ans);
-  return sqWalkSvg(S, S, sqGrid(k, S), [0, 0, S, S], sqSides(0, 0, sm, sm, q.small, q.small), (k * k) + ' × ' + (4 * q.small) + ' = ' + q.ans);
+  return sqWalkSvg(S, S, sqGrid(k, S), [0, 0, S, S], sqSides(0, 0, sm, sm, q.small, q.small), addUp(k * k, 4 * q.small));
 }
 function whySqcut(q, full){
   const text = whySqcutText(q, full);
@@ -324,7 +324,7 @@ function whySqcut(q, full){
 function whySqcutText(q, full){
   if(q.kind === 'sqcut' && q.shape === 6 && q.both){
     if(!full) return tr('Двете парчета имат всичко от обиколката на квадрата — и още нещо. Какво?', 'Дві частини мають увесь периметр квадрата — і ще дещо. Що?');
-    return tr('страната е ', 'сторона ') + q.P + ' : 4 = <b>' + q.side + '</b> &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
+    return tr('страната е <b>', 'сторона <b>') + q.side + '</b>: ' + addUp(4, q.side) + ' &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
   }
   if(q.kind === 'sqcut' && q.shape === 6){
     if(!full && q.slots) return tr('Четири еднакви части: четири ивици — или четири квадрата, а и квадратът е правоъгълник.',
@@ -337,13 +337,13 @@ function whySqcutText(q, full){
     return tr('всяка ивица е', 'кожна смужка —') + ' <b>' + q.w + '</b> на <b>' + q.side + '</b> см &nbsp;→&nbsp; ' + q.w + ' + ' +
       q.side + ' = ' + (q.w + q.side) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; <b>' + P + ' см</b>' +
       (q.mm ? ' &nbsp;→&nbsp; 1 см = 10 мм, ' + tr('значи', 'отже,') + ' ' + q.ans + ' мм' : '') +
-      (q.slots ? '; ' + tr('или четири квадрата със страна ', 'або чотири квадрати зі стороною ') + q.side/2 + ' см &nbsp;→&nbsp; ' + q.side/2 + ' · 4 = <b>' + 2*q.side + ' см</b>' +
+      (q.slots ? '; ' + tr('или четири квадрата със страна ', 'або чотири квадрати зі стороною ') + q.side/2 + ' см &nbsp;→&nbsp; ' + addUp(4, q.side/2) + ' <b>см</b>' +
         (q.mm ? ' = ' + q.alt[0] + ' мм' : '') : '');
   }
   if(q.kind === 'sqcut' && q.shape === 5 && q.rev){
     if(!full) return tr('Колко от най-малките страни се нареждат по късата страна на правоъгълника?', 'Скільки найменших сторін уміщається вздовж короткої сторони прямокутника?');
     const m = Math.min(q.t.w, q.t.h);
-    return tr('по късата страна се нареждат ', 'уздовж короткої сторони вміщається ') + m + tr(' от най-малките страни &nbsp;→&nbsp; ', ' найменших сторін &nbsp;→&nbsp; ') + q.short + ' : ' + m + ' = ' + q.ans;
+    return tr('по късата страна се нареждат ', 'уздовж короткої сторони вміщається ') + m + tr(' от най-малките страни &nbsp;→&nbsp; ', ' найменших сторін &nbsp;→&nbsp; ') + q.short + ' = ' + Array(m).fill(q.ans).join(' + ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.kind === 'sqcut' && q.shape === 5){
     if(!full) return tr('Най-малкото квадратче дава мярката — с нея измери целия правоъгълник.',
@@ -355,7 +355,7 @@ function whySqcutText(q, full){
   }
   if(q.kind === 'sqcut' && q.shape === 4 && q.mm){
     if(!full) return tr('Равностранният има три равни страни. И двете обиколки — в сантиметри.', 'У рівностороннього три рівні сторони. І обидва периметри — у сантиметрах.');
-    return '4 · ' + q.mm + ' = ' + 4*q.mm + ' мм = <b>' + q.P + ' см</b>, 3 · ' + q.t + ' = <b>' + q.p + ' см</b> &nbsp;→&nbsp; ' + Math.max(q.P, q.p) + ' − ' + Math.min(q.P, q.p) + ' = ' + q.ans;
+    return addUp(4, q.mm) + ' мм = <b>' + q.P + ' см</b>, ' + addUp(3, q.t) + ' <b>см</b> &nbsp;→&nbsp; ' + Math.max(q.P, q.p) + ' − ' + Math.min(q.P, q.p) + ' = ' + q.ans;
   }
   if(q.kind === 'sqcut' && q.shape === 4){
     if(!full) return q.inCm ? tr('Пресметни поотделно двете обиколки.', 'Обчисли окремо обидва периметри.')
@@ -363,7 +363,7 @@ function whySqcutText(q, full){
                                  'Периметри дано в різних одиницях — спершу переведи їх в однакові.');
     const side = q.inCm ? q.dm : 10*q.dm;
     return (q.inCm ? '' : q.dm + ' дм = <b>' + side + '</b> см &nbsp;→&nbsp; ') +
-      tr('квадратът е 4 × ', 'периметр квадрата 4 × ') + side + ' = <b>' + q.P +
+      tr('квадратът е ', 'периметр квадрата ') + Array(4).fill(side).join(' + ') + ' = <b>' + q.P +
       tr('</b>, триъгълникът е ', '</b>, трикутника ') + q.sides.join(' + ') + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; ' +
       q.P + ' − ' + q.p + ' = ' + q.ans;
   }
@@ -371,10 +371,10 @@ function whySqcutText(q, full){
     if(!full) return tr('Половината обиколка са двете различни страни, взети по веднъж.',
       'Половина периметра — це дві різні сторони, узяті по одному разу.');
     const half = q.P / 2, wide = half - q.a;
-    return tr('половината обиколка е ' + q.P + ' : 2 = <b>' + half + '</b>, а височината е ' + q.a +
+    return tr('половината обиколка е <b>' + half + '</b> (' + half + ' + ' + half + ' = ' + q.P + '), а височината е ' + q.a +
       ' &nbsp;→&nbsp; дължината е ' + half + ' − ' + q.a + ' = <b>' + wide + '</b>' +
       ' &nbsp;→&nbsp; B е ' + q.extra + ' на ' + q.a,
-      'половина периметра: ' + q.P + ' : 2 = <b>' + half + '</b>, а висота ' + q.a +
+      'половина периметра — <b>' + half + '</b> (' + half + ' + ' + half + ' = ' + q.P + '), а висота ' + q.a +
       ' &nbsp;→&nbsp; довжина ' + half + ' − ' + q.a + ' = <b>' + wide + '</b>' +
       ' &nbsp;→&nbsp; B — ' + q.extra + ' на ' + q.a) +
       (q.asksSide ? tr(', по-малката страна е ', ', менша сторона — ') + q.ans

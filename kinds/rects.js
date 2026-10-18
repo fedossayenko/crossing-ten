@@ -4,7 +4,7 @@
 // column and its right edge at or right of it — so the count is the choices each way.
 // МБГ Зима 2021, 2023: a small grid, its squares against its other rectangles. A square is a
 // rectangle too, so «all rectangles» holds the squares, and «not squares» leaves them out.
-import { BGNUM, CM, KIND, SLOT, UKNUM, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { BGNUM, CM, KIND, SLOT, UKNUM, addUp, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 function genRectsVsSq(){
   const [W, H] = [[2, 2], [2, 2], [3, 2], [3, 3]][rnd(4)];
   const all = W*(W + 1)/2 * H*(H + 1)/2, sizes = [];
@@ -108,10 +108,10 @@ function drawRects(q){
 }
 function eqRects(q){
   if(q.shape === 3) return tr('всички ', 'усіх ') + q.all + tr(', без мравка ', ', без мурашки ') + q.free + ' → ' + q.ans;
-  if(q.shape === 2) return q.W + '×' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
+  if(q.shape === 2) return q.W + ' на ' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
   return q.shape === 1
-    ? q.s + '×' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
-    : q.W + '×' + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
+    ? q.s + ' на ' + (q.n*q.s) + ', ' + (q.squares ? tr('квадратите', 'лише квадрати') : tr('без квадратите', 'без квадратів')) + ' → ' + q.ans
+    : q.W + (q.shape === 4 ? '×' : ' на ') + q.H + tr(', мравката в ', ', мурашка в ') + q.c + '/' + q.r + ' → ' + q.ans;
 }
 // The ant's picture: every rectangle that holds her, each drawn small on its own copy of the grid.
 // They stand in a table — a row for each way up and down, a column for each way across — so the
@@ -130,7 +130,8 @@ function rectsAntSvg(q){
       '<circle cx="' + (x + (q.c - 0.5) * s) + '" cy="' + (y + (top - 0.5) * s) + '" r="2.4" fill="var(--warm)"/></g>';
   }));
   const W = across.length * (tw + gx) - gx, H = down.length * (th + gy) - gy;
-  const foot = q.wide + ' × ' + q.tall + ' = ' + q.ans, [l, r] = roomFor(-4, Math.max(W, 120) + 4, W / 2, foot, 15);
+  // the 3rd grade (shape 4, level 257) multiplies; the 2nd grade adds (check/taught.js)
+  const foot = q.shape === 4 ? q.wide + ' × ' + q.tall + ' = ' + q.ans : addUp(q.tall, q.wide), [l, r] = roomFor(-4, Math.max(W, 120) + 4, W / 2, foot, 15);
   g += svgText(W / 2, H + 22, foot, 15, 'var(--ink)', popAt(2 + k * 0.25));
   return '<svg viewBox="' + l + ' -4 ' + (r - l) + ' ' + (H + 34) + '" style="display:block; width:' + Math.round((r - l) * 1.4) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('всички правоъгълници с мравката', 'усі прямокутники з мурашкою') + '">' + g + '</svg>';
@@ -203,6 +204,6 @@ function whyRects(q, full){
     'Прямокутник може складатися з одного або з кількох квадратиків.');
   const rep = n => Array(n).fill(q.wide).join(' + ');
   return tr('по ширина <b>', 'по ширині <b>') + q.wide + tr('</b>, по височина <b>', '</b>, по висоті <b>') + q.tall + '</b> &nbsp;→&nbsp; ' +
-    (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.wide + ' × ' + q.tall + ' = ' + q.ans) + rectsAntSvg(q);
+    (q.tall <= 4 ? rep(q.tall) + ' = ' + q.ans : q.shape === 4 ? q.wide + ' × ' + q.tall + ' = ' + q.ans : addUp(q.tall, q.wide)) + rectsAntSvg(q);
 }
 KIND.rects = { draw:drawRects, eq:eqRects, why:whyRects };

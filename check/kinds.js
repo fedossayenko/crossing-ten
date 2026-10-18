@@ -1033,6 +1033,7 @@ for(let i = 0; i < 4000; i++){
   if(q.N % q.L === 0) throw new Error('the bound is itself a count that works, which blurs „more than"');
   if(!BGNUM[q.p] || !BGNUM[q.r]) throw new Error('the number of equal parts has no Bulgarian word');
   if(q.ans > 100) throw new Error('the count has run past what she works with');
+  if([q.p, q.r].sort().join() !== '2,3') throw new Error('every paper asks two and three equal addends, not ' + q.p + ' and ' + q.r + ': more needs the times table');
 }
 if(lastNum(why({kind:'multiple', g:['рози','розите','градината'], p:3, r:2, L:6, N:32, ans:36}, true)) !== 36)
   throw new Error('more than 32, splitting into 2 and into 3, should be 36');
