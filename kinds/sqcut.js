@@ -80,8 +80,8 @@ function triSqSvg(q){
   const [p, r, L] = q.sides.slice().sort((x, y) => x - y);   // L is the longest, so it makes the base
   const ax = (L*L + r*r - p*p) / (2*L), ay = Math.sqrt(Math.max(1, r*r - ax*ax));
   const S = q.inCm ? q.dm : 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
-  const t = (x, y, txt) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
-    '" text-anchor="middle" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
+  const t = (x, y, txt, anchor) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
+    '" text-anchor="' + (anchor || 'middle') + '" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
   const sx = (L + 4) * u;
   return '<div class="fig"><svg viewBox="-16 -16 ' + (232).toFixed(0) + ' ' + (H + 34).toFixed(1) +
     '" role="img" aria-label="' + tr('триъгълник и квадрат', 'трикутник і квадрат') + '">' +
@@ -91,8 +91,8 @@ function triSqSvg(q){
     '<rect x="' + sx.toFixed(1) + '" y="' + (H - S*u).toFixed(1) + '" width="' + (S*u).toFixed(1) +
       '" height="' + (S*u).toFixed(1) + '"/></g>' +
     t(L*u/2, H + 15, L + ' см') +
-    t(ax*u/2 - 9, H - ay*u/2, r + ' см') +
-    t((ax + L)*u/2 + 9, H - ay*u/2, p + ' см') +
+    t(ax*u/2 - ay/r*9, H - ay*u/2 - ax/r*9 + 4, r + ' см', 'end') +
+    t((ax + L)*u/2 + ay/p*9, H - ay*u/2 - (L - ax)/p*9 + 4, p + ' см', 'start') +
     t(sx + S*u/2, H + 15, q.sqLabel || q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
 }
 export function genSqCut(){
@@ -351,8 +351,10 @@ function whySqcutText(q, full){
       'Скільки сторін квадратика вміщається вздовж довгої сторони прямокутника і скільки вздовж короткої?')
       : tr('Най-малкото квадратче дава мярката — с нея измери целия правоъгълник.',
       'Найменший квадратик дає мірку — нею виміряй увесь прямокутник.');
-    return tr((same ? 'страната на всяко е ' : 'страната на най-малкото е ') + q.side + ' &nbsp;→&nbsp; правоъгълникът е <b>',
-      (same ? 'сторона кожного — ' : 'сторона найменшого — ') + q.side + ' &nbsp;→&nbsp; прямокутник — <b>') + (q.t.w*q.s) +
+    const big = [...new Set(q.t.sq.map(r => r[2]))].filter(k => k > 1).sort((a, b) => a - b);   // the smallest is always one unit
+    const bigs = big.length ? tr(big.length > 1 ? 'по-големите: ' : 'по-голямото: ', big.length > 1 ? 'більші: ' : 'більший: ') + big.map(k => addUp(k, q.s)).join(', ') + ' &nbsp;→&nbsp; ' : '';
+    return tr((same ? 'страната на всяко е ' : 'страната на най-малкото е ') + q.side + ' &nbsp;→&nbsp; ' + bigs + 'правоъгълникът е <b>',
+      (same ? 'сторона кожного — ' : 'сторона найменшого — ') + q.side + ' &nbsp;→&nbsp; ' + bigs + 'прямокутник — <b>') + (q.t.w*q.s) +
       '</b> на <b>' + (q.t.h*q.s) + '</b> &nbsp;→&nbsp; ' + (q.t.w*q.s) + ' + ' + (q.t.h*q.s) + ' = ' +
       ((q.t.w + q.t.h)*q.s) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans;
   }
@@ -393,4 +395,11 @@ function whySqcutText(q, full){
     return found + tr(', обиколката ѝ е <b>', ', його периметр <b>') + (4*q.small) + '</b> &nbsp;→&nbsp; ' + add(4*q.small, q.parts*q.parts) + ' = ' + q.ans;
   }
 }
-KIND.sqcut = { draw:drawSqcut, eq:eqSqcut, why:whySqcut };
+// Her misreading on shape 5: every square taken as the small one, in one row or two (4 squares of 3: 30 or 24).
+function slipSqcut(q, parts){
+  if(q.shape !== 5 || q.rev || q.few === q.n) return null;
+  const v = +parts[0], ways = [2*(q.n + 1)*q.side];
+  for(let r = 2; r < q.n; r++) if(q.n % r === 0) ways.push(2*(r + q.n/r)*q.side);
+  return v !== q.ans && ways.includes(v) ? 'allSame' : null;
+}
+KIND.sqcut = { draw:drawSqcut, eq:eqSqcut, why:whySqcut, slip:slipSqcut };

@@ -116,9 +116,10 @@ function whyPencils(q, full){
   const c0 = pencilsUkCol[q.col[0][0]];
   if(!full) return tr('„Не са ' + q.col[0][0] + '" значи всички останали цветове заедно.',
     '«Не ' + c0[1] + '» — це всі інші кольори разом.') + pencilsSvg(q, false);
-  return tr('<b>' + q.notA + '</b> не са ' + q.col[0][0] + ', значи ' + q.col[0][0] + ' са ',
-    '<b>' + q.notA + '</b> — не ' + c0[1] + ', отже ' + c0[2] + ' — ') +
-    q.T + ' − ' + q.notA + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' +
+  return tr('<b>' + q.notA + '</b> не са ' + q.col[0][0] + ' — това са ' + q.col[1][0] + 'те и ' + q.col[2][0] + 'те заедно (всичките ' + q.T + ' не ни трябват)',
+    '<b>' + q.notA + '</b> — не ' + c0[1] + ', тобто ' + pencilsUkCol[q.col[1][0]][1] + ' й ' + pencilsUkCol[q.col[2][0]][1] + ' разом (усі ' + q.T + ' не потрібні)') + ' &nbsp;→&nbsp; ' +
     tr(q.col[2][0] + ' са ', pencilsUkCol[q.col[2][0]][2] + ' — ') + q.notA + ' − ' + q.b + ' = ' + q.ans + pencilsSvg(q, true);
 }
-KIND.pencils = { draw:drawPencils, eq:eqPencils, why:whyPencils };
+// Her misreading: the «не са» number, or the first colour's, given as the answer.
+const slipPencils = (q, parts) => !q.shape && +parts[0] !== q.ans && (+parts[0] === q.notA || +parts[0] === q.a) ? 'otherQuestion' : null;
+KIND.pencils = { draw:drawPencils, eq:eqPencils, why:whyPencils, slip:slipPencils };

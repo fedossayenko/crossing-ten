@@ -6,10 +6,10 @@
 import { KIND, SLOT, rnd, tr } from '../js/core.js';
 const POSN = ['стотиците', 'десетиците', 'единиците'];
 const allDiff = n => { const d = String(n); return d[0] !== d[1] && d[1] !== d[2] && d[0] !== d[2]; };
-function pick3(small, pos, dig){
+function pick3(small, pos, dig, any = false){
   for(let i = 0; i < 900; i++){
     const n = small ? 100 + i : 999 - i;
-    if(!allDiff(n)) continue;
+    if(!any && !allDiff(n)) continue;
     if(pos >= 0 && +String(n)[pos] !== dig) continue;
     return n;
   }
@@ -53,8 +53,17 @@ function whyThr(q, full){
   const found = tr('с ' + q.dig + ' на ' + POSN[q.pos] + ' ' + best + ' е <b>' + q.a + '</b>',
     best + ' число з цифрою ' + q.dig + ' в розряді ' + thrUkPos[POSN[q.pos]] + ' — <b>' + q.a + '</b>');
   if(q.shape === 0) return found.replace('<b>' + q.a + '</b>', q.a);
-  return tr('без условие ' + best + ' е <b>' + q.base + '</b>, а ',
-    'без умови ' + best + ' — <b>' + q.base + '</b>, а ') +
+  const skip = q.small ? '100, 101' : '999, 998';   // the plain end repeats a digit: the trap
+  return tr('само с различни цифри ' + best + ' е <b>' + q.base + '</b> (' + skip + ' повтарят цифра), а ',
+    'лише з різними цифрами ' + best + ' — <b>' + q.base + '</b> (' + skip + ' мають однакові цифри), а ') +
     found + ' &nbsp;→&nbsp; ' + Math.max(q.a, q.base) + ' − ' + Math.min(q.a, q.base) + ' = ' + q.ans;
 }
-KIND.thr = { draw:drawThr, eq:eqThr, why:whyThr };
+// Her misreadings: one of the two numbers given as the gap; a number with a repeated digit let in (100 for 102).
+function slipThr(q, parts){
+  const v = +parts[0], plain = q.small ? 100 : 999, any = pick3(q.small, q.pos, q.dig, true);
+  if(v === q.ans) return null;
+  if(q.shape === 1 && (v === q.a || v === q.base)) return 'otherQuestion';
+  const loose = q.shape === 0 ? [any] : [Math.abs(q.a - plain), Math.abs(any - q.base), Math.abs(any - plain)];
+  return loose.includes(v) ? 'sameDigits' : null;
+}
+KIND.thr = { draw:drawThr, eq:eqThr, why:whyThr, slip:slipThr };

@@ -69,4 +69,11 @@ function whyPaint(q, full){
      : addUp(rr, cc));
   return (q.asksLeft ? body : body + ' &nbsp;→&nbsp; ' + (q.R*q.C) + ' − ' + q.left + ' = ' + q.ans) + paintSvg(q, true);
 }
-KIND.paint = { draw:drawPaint, eq:eqPaint, why:whyPaint };
+// Her misreadings: rows and columns traded (5 rows of 7 read as 7 rows of 5); the crossings painted twice.
+function slipPaint(q, parts){
+  const v = +parts[0], as = left => q.asksLeft ? left : q.R*q.C - left, swap = (q.R - q.c)*(q.C - q.r), both = q.R*q.C - q.r*q.C - q.c*q.R;
+  if(v === q.ans) return null;
+  if(v === as(swap)) return 'rowsCols';
+  return both >= 0 && v === as(both) ? 'twice' : null;
+}
+KIND.paint = { draw:drawPaint, eq:eqPaint, why:whyPaint, slip:slipPaint };

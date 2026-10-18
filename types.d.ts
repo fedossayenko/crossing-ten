@@ -54,6 +54,8 @@ interface Kind {
   draw: (q: Question) => string;
   eq: (q: Question) => string;
   why: (q: Question, full?: boolean) => string;
+  /** the misreading her wrong answer shows, a key of t('slip'); only for a value no other reading gives */
+  slip?: (q: Question, parts: string[]) => string | null;
 }
 
 // The browser bits the DOM typings leave out, or type too narrowly for a page that looks its

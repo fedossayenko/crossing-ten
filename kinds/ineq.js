@@ -134,7 +134,7 @@ function eqIneq(q){
   if(q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;
   if(q.shape === 6 || q.shape === 8) return ineqSmallText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ■ = ' + (q.ans > 1 ? '0 … ' + (q.ans - 1) : '0') + ' → ' + q.ans;
   if(q.shape === 4) return '□ + ' + q.C + ' < ' + q.T + ' → □ < ' + (q.T - q.C) + tr(', двуцифрени: 10 … ', ', двоцифрові: 10 … ') + (q.T - q.C - 1) + ' → ' + q.ans;
-  if(q.shape === 5) return '❄' + q.d + (q.three ? q.d : '') + ' ≤ ' + q.N + ' → ❄ = ' + q.fits.join(', ');
+  if(q.shape === 5) return q.N + tr(' не е по-малко от ', ' не менше за ') + '❄' + q.d + (q.three ? q.d : '') + ' → ❄ = ' + q.fits.join(', ');
   if(q.shape === 3) return q.A + ' − ' + q.B + ' > ? + ' + q.C + tr(' вярно', ' правильно') + ' → ' + q.ans;
   return (q.shape === 2 ? '? + ' + q.C + ' < ' + q.A + ' − ' + q.B
     : q.A + ' − ' + q.B + ' < ? + ' + q.C) + (q.shape === 1 ? tr(' вярно', ' правильно') : tr(' невярно', ' неправильно')) +
@@ -159,7 +159,7 @@ function whyIneq(q, full){
   }
   if(q.shape === 5){
     if(!full) return tr('„Не е по-малко" значи по-голямо или равно. Опитвай цифрите подред.', '«Не менше» означає більше або дорівнює. Пробуй цифри по черзі.');
-    const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) { const v = q.three ? 100*t + 11*q.d : 10*t + q.d; tries.push(v + (v <= q.N ? ' ≤ ' : ' > ') + q.N); }
+    const tries = []; for(let t = 1; t <= q.fits[q.fits.length - 1] + 1 && t <= 9; t++) { const v = q.three ? 100*t + 11*q.d : 10*t + q.d; tries.push(v + (v <= q.N ? tr(' не е повече от ', ' не більше за ') : tr(' е повече от ', ' більше за ')) + q.N); }
     return tries.join(', ') + ' &nbsp;→&nbsp; ❄ = ' + q.fits.join(tr(' и ', ' і '));
   }
   if(!full && q.shape === 3) return tr('Първо пресметни лявата страна. И 0 е число.', 'Спочатку обчисли ліву частину. І 0 — теж число.');

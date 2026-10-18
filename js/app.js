@@ -849,7 +849,11 @@ export function renderParent(){
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : ''].filter(Boolean).join(' · ');
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : ''].filter(Boolean).join(' · ');
+// A level after a round: its tasks in her later rounds, and how many of them right first time
+const since = (lv, ts) => LOCAL.rounds.reduce((s, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === lv && e[4] !== -1){ s.n++; if(e[4] === 1) s.ok++; } }); return s; }, { n: 0, ok: 0 });
+// the levels a round missed (or never reached) that she has not played since
+const toPractise = r => new Set(r.t.filter(e => e[4] !== 1 && !since(e[0], r.ts).n).map(e => e[0])).size;
 const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><span class="eq">' + esc(roundName(r)) + '</span><span class="smeta">' + roundMeta(r) + '</span></button>';
 // One round again, task by task: each drawn again from its level and seed, with what she wrote, her time on it and what
 // came after a miss. A task whose generator has changed since is named, never shown as something it was not.
@@ -866,11 +870,23 @@ function paintReview(){
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
     const note = [AFTER[after] || '', Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    // a miss: the misreading her answer shows, and whether its level was played after this round
+    const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
+    const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
     const pts = !comp ? '' : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
-    return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + task + (note ? '<small>' + note + '</small>' : '') +
+    return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + task + (note ? '<small>' + note + '</small>' : '') + (note2 ? '<small>' + note2 + '</small>' : '') +
       '</span><span class="co">' + said + '</span><span class="cp">' + pts + '</span></button><div class="why" hidden>' +
       (q ? '<div class="stage rtask">' + drawQ(q).replace(/ id="slot\d+"/g, '') + '</div><div class="eq">' + eqText(q) + '</div>' + why(q, true) : t('taskGone')) + '</div>';
   }).join('');
+  // practise this round's misses: the very tasks again (when their level still draws them), and new ones from those levels up to ten
+  const missed = r ? r.t.filter(e => e[4] !== 1) : [];
+  $('reviewFix').hidden = !missed.length;
+  $('reviewFix').onclick = () => {
+    const set = missed.map(([lv, shape, seed, , , ans]) => {
+      try { const d = Number.isInteger(seed) ? seeded(seed, () => raw(lv)) : null; return d && answer(d) === ans && (d.shape ?? null) === shape ? Object.assign(d, { seed, lvl: lv }) : null; } catch(e){ return null; }
+    }).filter(Boolean).slice(0, 12);
+    newRound(shuffle(addFresh(set, Math.max(10, set.length), [...new Set(missed.map(e => e[0]))])));
+  };
   $('reviewList').querySelectorAll('.crow').forEach(b => b.onclick = () => {
     const open = b.getAttribute('aria-expanded') !== 'true';
     b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;

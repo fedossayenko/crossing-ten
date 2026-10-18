@@ -17,11 +17,12 @@ export function genMidPtSeg(){
 }
 function midSvg(q){
   const W = 260, at = v => 12 + v / q.AB * (W - 24);
+  const tight = q.m / q.AB * (W - 24) < 18;   // N and M closer than a letter is wide: N leans left, M right
   const pts = [[0, 'A'], [q.half - q.m, 'N'], [q.half, 'M'], [q.AB, 'B']];
   return '<div class="fig wide"><svg viewBox="0 -14 ' + W + ' 46" role="img" aria-label="' + (q.shape === 'cm' ? tr('отсечката AB', 'відрізок AB') : tr('селищата върху пътя', 'села на дорозі')) + '">' +
     '<line x1="4" y1="10" x2="' + (W - 4) + '" y2="10" stroke="var(--ink)" stroke-width="2"/>' +
-    pts.map(([v, n]) => '<circle cx="' + at(v).toFixed(1) + '" cy="10" r="3.6" fill="var(--ink)"/><text x="' + at(v).toFixed(1) +
-      '" y="-2" text-anchor="middle" font-size="15" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + n + '</text>').join('') +
+    pts.map(([v, n]) => '<circle cx="' + at(v).toFixed(1) + '" cy="10" r="3.6" fill="var(--ink)"/><text x="' + (at(v) + (tight ? (n === 'N' ? -3 : n === 'M' ? 3 : 0) : 0)).toFixed(1) +
+      '" y="-2" text-anchor="' + (tight && n === 'N' ? 'end' : tight && n === 'M' ? 'start' : 'middle') + '" font-size="15" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + n + '</text>').join('') +
     '</svg></div>';
 }
 function drawMidPt(q){

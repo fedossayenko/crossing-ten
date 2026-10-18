@@ -255,6 +255,36 @@
   }
   console.log('mistakes: forgotten borrow, flipped digits, dropped carry, wrong sign, swapped tens and ones, a sign read backwards in a chain and off-by-one are each recognised; ten-frames show the crossing step exactly');
 }
+/* A worksheet kind names a misreading only by the one value it gives: her own wrong answers on the paper of 2026-10-18
+   are each named, a right answer never is, and every name it gives is there in all three languages. */
+{
+  const Q = APP;
+  [[{kind:'thr', small:true, pos:1, dig:9, a:190, base:102, shape:1, ans:88}, '90', 'sameDigits'],
+   [{kind:'thr', small:true, pos:1, dig:9, a:190, base:102, shape:1, ans:88}, '190', 'otherQuestion'],
+   [{kind:'sqcut', shape:5, t:{w:4, h:3, sq:[[0,0,3],[3,0,1],[3,1,1],[3,2,1]]}, s:3, n:4, few:3, side:3, ans:42}, '24', 'allSame'],
+   [{kind:'pencils', a:6, b:3, c:2, T:11, notA:5, ans:2}, '5', 'otherQuestion'],
+   [{kind:'diffseq', seq:[10,13,17,22,28,35], down:false, asksSum:true, ans:125}, '35', 'otherQuestion'],
+   [{kind:'diffseq', seq:[48,47,43,36,26,13], down:true, asksSum:false, ans:13}, '39', 'direction'],
+   [{kind:'diffseq', seq:[9,12,17,24,33,44], down:false, asksSum:true, ans:139}, '129', null],
+   [{kind:'coins', shape:'mix', n:4, vals:[5,6,7], ans:5, alt:[6,7]}, '3 · 2 · 1', 'otherQuestion'],
+   [{kind:'paint', R:5, C:7, r:3, c:1, left:12, asksLeft:true, ans:12}, '16', 'rowsCols'],
+   [{kind:'shared', shape:0, P:19, p1:11, p2:12, ans:2}, '4', 'twice'],
+   [{kind:'sums', shape:2, top:9, ans:10}, '45', 'countThem'], [{kind:'sums', shape:2, top:9, ans:10}, '9', 'zero']
+  ].forEach(([q, typed, want]) => {
+    const got = Q.slipOf(q, typed.split(' · '));
+    if(got !== want) throw new Error(q.kind + ' typed ' + typed + ' is read as ' + got + ', not ' + want);
+  });
+  const names = new Set();
+  for(const L of Q.LEVELS) for(let i = 0; i < 60; i++){
+    const q = Q.raw(L.id); if(!q.kind || !Q.KIND[q.kind].slip) continue;
+    const right = Q.slipOf(q, Q.answers(q).map(String));
+    if(right) throw new Error('level ' + L.id + ': the right answer is named ' + right + ' ' + JSON.stringify(q));
+    [q.ans + 1, q.ans - 1, 2*q.ans, q.ans + 10].forEach(v => { const k = Q.slipOf(q, [String(v)].concat((q.alt || []).map(String))); if(k) names.add(k); });
+  }
+  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
+  Q.setLang('bg');
+  console.log('misreadings: her 2026-10-18 paper named (8 of 9; 129 for 139 is a sum slip), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
+}
 
 
 /* Multiple choice: on every level that can be asked that way, exactly one option is right

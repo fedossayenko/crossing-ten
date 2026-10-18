@@ -188,7 +188,10 @@ function whyRects(q, full){
   if(q.shape === 2){
     if(!full) return tr('Преброй поотделно квадратите — малки и големи — и всички правоъгълници. Квадратът също е правоъгълник.',
       'Порахуй окремо квадрати — малі й великі — і всі прямокутники. Квадрат теж прямокутник.');
-    return tr('квадрати: ', 'квадратів: ') + q.sizes.join(' + ') + ' = <b>' + q.sq + '</b>; ' + tr('всички правоъгълници: <b>', 'усіх прямокутників: <b>') + q.all + '</b>' +
+    // every size (wide на high) with how many of it fit, added: the grid's 36 is no longer a number from nowhere
+    const by = []; for(let h = 1; h <= q.H; h++) for(let w = 1; w <= q.W; w++) by.push([w, h, (q.W - w + 1)*(q.H - h + 1)]);
+    return tr('квадрати: ', 'квадратів: ') + q.sizes.join(' + ') + ' = <b>' + q.sq + '</b>; ' + tr('всички правоъгълници: ', 'усіх прямокутників: ') +
+      by.map(([w, h, n]) => w + ' на ' + h + ': ' + n).join('; ') + ' &nbsp;→&nbsp; ' + by.map(b => b[2]).join(' + ') + ' = <b>' + q.all + '</b>' +
       (q.asksAll ? ' &nbsp;→&nbsp; ' + q.all + ' − ' + q.sq + ' = ' + q.ans
         : tr(', от тях не са квадрати ', ', з них не квадратів ') + q.all + ' − ' + q.sq + ' = <b>' + q.other + '</b> &nbsp;→&nbsp; ' + Math.max(q.sq, q.other) + ' − ' + Math.min(q.sq, q.other) + ' = ' + q.ans);
   }

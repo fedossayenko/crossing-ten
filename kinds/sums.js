@@ -80,9 +80,19 @@ function whySums(q, full){
       ' &nbsp;→&nbsp; ' + q.hi + ' − ' + q.lo + ' + 1 = ' + q.ans;
   }
   if(!full) return tr('Кой е най-малкият и кой най-големият резултат?', 'Який результат найменший, а який найбільший?');
-  return tr('най-малкото е <b>0</b>, най-голямото е <b>' + q.top + '</b> &nbsp;→&nbsp; от 0 до ' + q.top +
-    ' &nbsp;(с нулата) &nbsp;→&nbsp; ',
-    'найменший — <b>0</b>, найбільший — <b>' + q.top + '</b> &nbsp;→&nbsp; від 0 до ' + q.top +
-    ' &nbsp;(разом із нулем) &nbsp;→&nbsp; ') + q.ans;
+  // each number from the least to the most is made: the first two and the last, written out
+  const m = q.shape === 0 ? q.k : 2, op = q.shape === 2 ? ' − ' : ' + ', made = (v, hi) => v + ' = ' + [hi ? (q.shape === 1 ? q.n : 9) : v].concat(Array(m - 1).fill(hi && q.shape !== 2 ? (q.shape === 1 ? q.n : 9) : 0)).join(op);
+  return tr('най-малкото е <b>0</b>, най-голямото е <b>' + q.top + '</b>, а става и всяко между тях: ',
+    'найменший — <b>0</b>, найбільший — <b>' + q.top + '</b>, а виходить і кожне між ними: ') +
+    [made(0), made(1), made(2)].join(', ') + ', …, ' + made(q.top, true) + ' &nbsp;→&nbsp; ' +
+    tr('числата 0, 1, 2, …, ' + q.top + ' — броим ги, с нулата &nbsp;→&nbsp; ', 'числа 0, 1, 2, …, ' + q.top + ' — рахуємо їх, разом із нулем &nbsp;→&nbsp; ') + q.ans;
 }
-KIND.sums = { draw:drawSums, eq:eqSums, why:whySums };
+// Her misreadings: 0 left out; the results added up (0 + 1 + … + 9 = 45), or every pair counted, not the different results.
+function slipSums(q, parts){
+  const v = +parts[0];
+  if(v === q.ans || q.shape === 3) return null;
+  if(q.shape === 4) return v === q.pairs.length ? 'countThem' : null;
+  if(v === q.top) return 'zero';
+  return v === q.top*(q.top + 1)/2 ? 'countThem' : null;
+}
+KIND.sums = { draw:drawSums, eq:eqSums, why:whySums, slip:slipSums };

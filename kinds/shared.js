@@ -144,7 +144,10 @@ function whySharedText(q, full){
     if(!full) return tr('Общата страна е в двете обиколки.', 'Спільна сторона входить в обидва периметри.');
     return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + tr('</b>, а обиколката е ', '</b>, а периметр — ') + q.P +
       ' &nbsp;→&nbsp; ' + (q.p1+q.p2) + ' − ' + q.P + ' = ' + (2*q.ans) +
-      tr(', това е общата страна <b>два пъти</b> &nbsp;→&nbsp; ', ' — це спільна сторона, узята <b>двічі</b> &nbsp;→&nbsp; ') + q.ans;
+      tr(', това е общата страна <b>два пъти</b> (тя е и в двете малки обиколки, а в голямата я няма) &nbsp;→&nbsp; ',
+         ' — це спільна сторона, узята <b>двічі</b> (вона є в обох малих периметрах, а у великому її немає) &nbsp;→&nbsp; ') + (2*q.ans) + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans;
   }
 }
-KIND.shared = { draw:drawShared, eq:eqShared, why:whyShared };
+// Her misreading: the shared side found twice over and not halved.
+const slipShared = (q, parts) => q.shape === 0 && +parts[0] === 2*q.ans ? 'twice' : null;
+KIND.shared = { draw:drawShared, eq:eqShared, why:whyShared, slip:slipShared };

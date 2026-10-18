@@ -57,4 +57,9 @@ function whyCoins(q, full){
     tr(' &nbsp;→&nbsp; всяка сума до ' + q.T + ' може да се плати, значи не може ',
        ' &nbsp;→&nbsp; будь-яку суму до ' + q.T + ' можна заплатити, отже не можна ') + q.ans);
 }
-KIND.coins = { draw:drawCoins, eq:eqCoins, why:whyCoins };
+// Her misreading: each case found, but given as how many coins of one kind (3, 2, 1), not how many euro.
+function slipCoins(q, parts){
+  if(q.shape !== 'mix') return null;
+  return parts.map(Number).sort((a, b) => a - b).join() === q.vals.map((_, i) => i + 1).join() ? 'otherQuestion' : null;
+}
+KIND.coins = { draw:drawCoins, eq:eqCoins, why:whyCoins, slip:slipCoins };

@@ -81,7 +81,7 @@ function stepWalkSvg(q){
     foot = tr('равни: ', 'рівних: ') + q.ans;
   }
   g += svgText(f(X(q.W / 2)), f(Y(0) + 42), foot, 15, 'var(--ink)', popAt(5));
-  return '<svg viewBox="0 0 ' + f(q.W * u + 90) + ' ' + f(q.H * u + 70) + '" style="display:block; width:' + Math.round((q.W * u + 90) * 1.15) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+  return '<svg viewBox="0 -10 ' + f(q.W * u + 90) + ' ' + f(q.H * u + 80) + '" style="display:block; width:' + Math.round((q.W * u + 90) * 1.15) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('страните на фигурата', 'сторони фігури') + '">' + g + '</svg>';
 }
 function whyStep(q, full){

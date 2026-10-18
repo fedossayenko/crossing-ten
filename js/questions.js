@@ -162,8 +162,10 @@ export function tenFrame(q){
 
 // What a wrong answer to a plain sum most likely was. The first three are the mistakes
 // worth naming to her: a ten taken but not paid back, the small ones digit taken from the
-// big one, a carried ten dropped, or the wrong sign. Worksheet tasks are not guessed at.
+// big one, a carried ten dropped, or the wrong sign. A worksheet kind names only the misreadings its own
+// slip() knows by an exact value (a step of the way given as the answer, the run continued the wrong way).
 export function slipOf(q, parts){
+  if(q.kind && KIND[q.kind].slip) return parts.includes('') ? null : KIND[q.kind].slip(q, parts);
   if(parts.length !== 1 || parts[0] === '') return null;
   // a ± chain worked left to right: one sign read the other way round
   if(q.kind === 'chain' && !q.paired && Array.isArray(q.terms)){

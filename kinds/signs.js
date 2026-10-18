@@ -59,10 +59,13 @@ function whySigns(q, full){
   const plus = q.nums.filter(v => q.wit.indexOf(v) < 0), plusSum = total - drop;
   const regroup = tr('първо плюсовете: ', 'спочатку плюси: ') + plus.join(' + ') + ' = ' + plusSum +
     tr(', после минусите: ', ', потім мінуси: ') + plusSum + ' − ' + q.wit.join(' − ') + ' = ' + q.T;
+  // why no more: one minus more takes the smallest numbers after the first, and they already add up to too much
+  const small = q.nums.slice(1, q.wit.length + 2), more = tr('още един минус: ', 'ще один мінус: ') + small.join(' + ') + ' = ' + small.reduce((t, v) => t + v, 0) +
+    tr(', а трябват ' + drop + ' — това е много', ', а треба ' + drop + ' — це забагато');
   return tr('всичко със знак плюс е <b>' + total + '</b>, а трябва ' + q.T + ' &nbsp;→&nbsp; обърнатите трябва да дават ',
     'з усіма плюсами сума <b>' + total + '</b>, а треба ' + q.T + ' &nbsp;→&nbsp; числа з мінусом мають дати разом ') +
     drop + (q.wit.length > 1 ? ' &nbsp;→&nbsp; ' + q.wit.join(' + ') : '') + ' &nbsp;→&nbsp; ' + line + ' = ' + q.T +
-    ' &nbsp;→&nbsp; ' + regroup +
+    ' &nbsp;→&nbsp; ' + regroup + ' &nbsp;→&nbsp; ' + more +
     tr(' &nbsp;→&nbsp; минусите са ', ' &nbsp;→&nbsp; мінусів: ') + q.ans;
 }
 KIND.signs = { draw:drawSigns, eq:eqSigns, why:whySigns };

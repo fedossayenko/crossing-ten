@@ -44,7 +44,11 @@ function whyFlowers(q, full){
       if(rest > 0 && rest % q.p[2] === 0)
         ways.push(Array(x).fill(q.p[0]).concat(Array(y).fill(q.p[1]), Array(rest/q.p[2]).fill(q.p[2])).join(' + '));   // a flower an addend: their count is the answer
     }
-  return '<b>' + ways.join(tr('</b>, или <b>', '</b>, або <b>')) + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' + q.ans + ' ' +
+  // one of each first, then the rest from the three kinds: every way is listed, so none is missing
+  const base = q.p[0] + q.p[1] + q.p[2];
+  return tr('по едно от всеки вид: ', 'по одній кожного виду: ') + q.p.join(' + ') + ' = ' + base + tr(', остават ', ', лишається ') + (q.T - base) + ' &nbsp;→&nbsp; ' +
+    '<b>' + ways.join(tr('</b>, или <b>', '</b>, або <b>')) + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' +
+    (ways.length > 1 ? tr('всички начини дават еднакъв брой', 'усі способи дають однакову кількість') : tr('друг начин няма', 'іншого способу немає')) + ' &nbsp;→&nbsp; ' + q.ans + ' ' +
     tr('цветя', flowersPl(q.ans, ['квітка', 'квітки', 'квіток']));
 }
 KIND.flowers = { draw:drawFlowers, eq:eqFlowers, why:whyFlowers };

@@ -76,7 +76,18 @@ function whyDiffSeq(q, full){
   if(!full) return tr('Виж с колко се променя всяко число — а после как се променят самите стъпки.', 'Подивись, на скільки змінюється кожне число, — а потім як змінюються самі кроки.') + diffSeqSvg(q, false);
   const steps = q.seq.slice(1).map((v, i) => Math.abs(v - q.seq[i]));
   const n = q.seq.length - 1;
-  return tr('стъпките са ', 'кроки: ') + steps.slice(0, n - 1).join(', ') + tr(', следващата е ', ', наступний: ') + steps[n - 1] + ' &nbsp;→&nbsp; ' +
-    q.seq[n - 1] + (q.down ? ' − ' : ' + ') + steps[n - 1] + ' = <b>' + q.seq[n] + '</b>' + (q.asksSum ? ' &nbsp;→&nbsp; ' + q.seq.join(' + ') + ' = ' + q.ans : '') + diffSeqSvg(q, true);
+  return tr('стъпките са ', 'кроки: ') + steps.slice(0, n - 1).join(', ') + tr(', следващата е ', ', наступний: ') + steps[n - 1] +
+    (q.down ? tr(' — редицата намалява', ' — послідовність спадає') : '') + ' &nbsp;→&nbsp; ' +
+    q.seq[n - 1] + (q.down ? ' − ' : ' + ') + steps[n - 1] + ' = <b>' + q.seq[n] + '</b>' +
+    (q.asksSum ? ' &nbsp;→&nbsp; ' + tr('сборът на всичките шест: ', 'сума всіх шести: ') + q.seq.join(' + ') + ' = ' + q.ans : '') + diffSeqSvg(q, true);
 }
-KIND.diffseq = { draw:drawDiffSeq, eq:eqDiffSeq, why:whyDiffSeq };
+// Her misreadings, each known by the one value it gives: a falling run carried on upwards; the next number given when
+// the sum of all six is asked, or the five shown added up without it.
+function slipDiffSeq(q, parts){
+  if(q.shape) return null;
+  const v = +parts[0], n = q.seq.length - 1, up = q.seq[n - 1] + Math.abs(q.seq[n] - q.seq[n - 1]), five = q.ans - q.seq[n];
+  if(v === q.ans) return null;
+  if(q.down && (v === up || q.asksSum && v === five + up)) return 'direction';
+  return q.asksSum && (v === q.seq[n] || v === five) ? 'otherQuestion' : null;
+}
+KIND.diffseq = { draw:drawDiffSeq, eq:eqDiffSeq, why:whyDiffSeq, slip:slipDiffSeq };
