@@ -1,6 +1,6 @@
-// Question kind 'snail': level 58 Охлювът — Up by day, back by night — when the top is reached.
+// Question kind 'snail': level 58 Охлювът — A day up, a day back — when the top is reached.
 
-// Задача 20: a snail that climbs by day and slips back by night. It only has to reach the
+// Задача 20: a snail that climbs one day and slips back the next. It only has to reach the
 // top once, so the last climb is not followed by a slip — the slipping stops there.
 import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genSnail(){
@@ -15,27 +15,32 @@ export function genSnail(){
 }
 
 const snailM = n => ({one:'метр', few:'метри', many:'метрів'})[UK_PLURAL.select(n)] || 'метра';
+const snailD = n => ({one:'день', few:'дні'})[UK_PLURAL.select(n)] || 'днів';
 function drawSnail(q){
   return tr('<div class="ask">Един охлюв се катери по дървена греда, висока <span class="num">' + q.H +
-    '</span> метра. През деня се изкачва <span class="num">' + q.up +
-    '</span> метра нагоре, а през нощта се смъква <span class="num">' + q.down +
+    '</span> метра. Първия ден се изкачва <span class="num">' + q.up +
+    '</span> метра нагоре, а на следващия ден слиза <span class="num">' + q.down +
+    '</span> метра надолу. На третия ден пак се изкачва <span class="num">' + q.up +
+    '</span> метра нагоре, а на следващия ден слиза <span class="num">' + q.down +
     '</span> метра надолу. След колко <b>дни</b> охлювът ще стигне върха, ако тръгва от земята?</div>',
     '<div class="ask">Равлик повзе по дерев’яній жердині заввишки <span class="num">' + q.H +
-    '</span> ' + snailM(q.H) + '. Удень він піднімається на <span class="num">' + q.up +
-    '</span> ' + snailM(q.up) + ' вгору, а вночі сповзає на <span class="num">' + q.down +
+    '</span> ' + snailM(q.H) + '. Першого дня він піднімається на <span class="num">' + q.up +
+    '</span> ' + snailM(q.up) + ' вгору, а наступного дня сповзає на <span class="num">' + q.down +
+    '</span> ' + snailM(q.down) + ' вниз. Третього дня знову піднімається на <span class="num">' + q.up +
+    '</span> ' + snailM(q.up) + ' вгору, а наступного дня сповзає на <span class="num">' + q.down +
     '</span> ' + snailM(q.down) + ' вниз. Через скільки <b>днів</b> равлик доповзе до верху, якщо починає від землі?</div>') +
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('дни', 'днів') + '</span></div>';
 }
 function eqSnail(q){
   return q.H + ' м, +' + q.up + '/−' + q.down + ' → ' + q.ans;
 }
-// The climb as a zigzag: a stroke a day (up, orange) and a night (down, blue), numbered under it, against the
-// top of the beam and the dashed height he must reach by the last night (H − up). A long climb shows its first two
-// days and nights, then … and its last day, night and day. The hint draws a short climb with no numbers at all:
+// The climb as a zigzag: a stroke a day (odd days up, orange; even days down, blue), numbered under it, against the
+// top of the beam and the dashed height he must reach by the last slip (H − up). A long climb shows its first four
+// days, then … and its last three. The hint draws a short climb with no numbers at all:
 // the last stroke reaches the top and stops there.
 function snailSvg(q, full){
   const svg = (h, g) => '<svg viewBox="0 0 300 ' + h + '" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
-    tr('охлювът: нагоре денем, надолу нощем', 'равлик: удень угору, уночі вниз') + '">' + g + '</svg>';
+    tr('охлювът: ден нагоре, ден надолу', 'равлик: день угору, день униз') + '">' + g + '</svg>';
   const stroke = (x0, y0, x1, y1, up) => '<line x1="' + x0.toFixed(1) + '" y1="' + y0.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) +
     '" stroke="' + (up ? 'var(--warm)' : 'var(--accent)') + '" stroke-width="3" stroke-linecap="round"/>';
   const top = (x0, x1, y) => '<line x1="' + x0 + '" y1="' + y.toFixed(1) + '" x2="' + x1 + '" y2="' + y.toFixed(1) + '" stroke="var(--good)" stroke-width="2.5"/>';
@@ -61,18 +66,18 @@ function snailSvg(q, full){
     if(i === n - 1) g += '<g' + popAt(step * 0.6) + '><circle cx="' + (x + w) + '" cy="' + Y(to).toFixed(1) + '" r="4" fill="var(--ink)"/>' + svgText(x + w, Y(to) + 18, to, 11, 'var(--ink)') + '</g>';
     x += w;
   });
-  g += svgText(250, 14, tr('ден', 'день'), 11, 'var(--warm)') + svgText(282, 14, tr('нощ', 'ніч'), 11, 'var(--accent)');
+  g += svgText(226, 14, tr('нагоре', 'вгору'), 11, 'var(--warm)') + svgText(274, 14, tr('надолу', 'вниз'), 11, 'var(--accent)');
   return svg(184, g + svgText(150, 178, q.k + ' × 2 + 1 = ' + q.ans, 15, 'var(--ink)', popAt(step * 0.6 + 1)));
 }
 function whySnail(q, full){
-  if(!full) return tr('Всяко денонощие го качва с малко, но последното изкачване няма връщане назад.',
-    'Кожна доба піднімає його трохи вище, але після останнього підйому він уже не сповзає.') + snailSvg(q, false);
+  if(!full) return tr('Всеки два дни (нагоре и надолу) го качват малко по-високо, но след последното изкачване той вече не слиза.',
+    'Кожні два дні (угору й униз) піднімають його трохи вище, але після останнього підйому він уже не сповзає.') + snailSvg(q, false);
   const before = q.gain * (q.k - 1);
-  return tr('за всяко денонощие печели ', 'за кожну добу він просувається на ') + q.up + ' − ' + q.down + ' = <b>' + q.gain +
+  return tr('за всеки 2 дни (ден нагоре и ден надолу) печели ', 'за кожні 2 дні (день угору й день униз) він просувається на ') + q.up + ' − ' + q.down + ' = <b>' + q.gain +
     tr('</b> м &nbsp;→&nbsp; трябва преди последното изкачване да е на ', '</b> м &nbsp;→&nbsp; перед останнім підйомом він має бути на висоті ') +
     q.H + ' − ' + q.up + ' = <b>' + (q.H - q.up) +
-    tr('</b> м или повече &nbsp;→&nbsp; това става след ' + q.k + ' денонощия (',
-       '</b> м або вище &nbsp;→&nbsp; так буде після ' + q.k + ' діб (') +
+    tr('</b> м или повече &nbsp;→&nbsp; това става след ' + q.k + ' × 2 = ' + 2*q.k + ' дни (',
+       '</b> м або вище &nbsp;→&nbsp; так буде після ' + q.k + ' × 2 = ' + 2*q.k + ' ' + snailD(2*q.k) + ' (') +
     (q.gain*q.k) + ' м) &nbsp;→&nbsp; ' + q.k + ' × 2 + 1 = ' + q.ans + snailSvg(q, true);
 }
 KIND.snail = { draw:drawSnail, eq:eqSnail, why:whySnail };

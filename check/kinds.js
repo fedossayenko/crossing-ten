@@ -1430,6 +1430,18 @@ for(let i = 0; i < 4000; i++){
   if(lastNum(why(q, true)) !== 11) throw new Error('that snail reaches the top on day 11');
 }
 console.log('the snail: matched day by day against the climb, worksheet instance gives 11');
+// The answer counts every climb and every slip as a day of its own, as printed («Първия ден … се изкачва, а на
+// следващия ден слиза»). A climb by day and a slip by night make one day of the two: the top on day k + 1, not 2k + 1.
+for(let i = 0; i < 200; i++){
+  const q = raw(58);
+  LANG = 'uk';
+  const uk = strip(drawQ(q) + why(q, true) + why(q, false));
+  LANG = 'bg';
+  const bg = strip(drawQ(q) + why(q, true) + why(q, false));
+  if(/нощ|денем|денонощ/.test(bg) || /ніч|вночі|вдень|доб[аиуі]|діб/.test(uk)) throw new Error('the snail climbs by day and slips by night, but the answer counts each as a day: ' + q.ans);
+  if(strip(drawQ(q)).indexOf('на следващия ден слиза') < 0) throw new Error('the slip should take the next day, as printed');
+}
+console.log('the snail: a climb is one day, a slip the next, as printed');
 
 // задача 12: conversions and the cut both land on whole centimetres
 let sticks = 0, boards = 0;
