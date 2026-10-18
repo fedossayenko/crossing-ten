@@ -35,7 +35,7 @@ function Today(){
     <div class="tcols">
       <div class="tcol">
         ${d.mid && html`<button class="gcard nextcard main" onClick=${() => go('play', true)}><span class="nm"><span class="lab">${t('goOn')}</span><span class="eq">${d.mid}</span></span>${CHEV}</button>`}
-        ${d.next ? html`<${StartCard} l=${d.next} lab=${t(d.next.review ? 'reviewNext' : 'startHere')} main=${!d.mid}/>`
+        ${d.next ? html`<${StartCard} l=${d.next} lab=${t(d.next.fix ? 'fixNext' : d.next.review ? 'reviewNext' : 'startHere')} main=${!d.mid}/>`
                  : html`<div class="gcard advice">${t('allLearned')}</div>`}
         ${d.due.length > 0 && html`<div class="gtitle"><b>${t('forToday')}</b><span>${t('dueToday', d.due.length)}</span></div>
           <div class="gcard list duelist">${d.due.map(l => html`<button class="duerow" data-lvl=${l.id} onClick=${() => playLevel(l.id)}>

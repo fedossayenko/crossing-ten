@@ -1065,7 +1065,7 @@ export function todayData(){
   const lv = LEVELS.find(l => l.id === S.level);
   return { name: playerName(PLAYER), mascot: PLAYER.mascot, streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
-    next: nx ? card(nx) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
+    next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
     compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
@@ -1291,9 +1291,11 @@ function paperMark(h){
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + GLYPH.stopwatch[1] + '"/></svg>' +
     p.slice(-3).map(x => '<i class="' + (x.ok ? 'ok">✓' : 'no">✗') + '</i>').join('') + '</span>' : '';
 }
-// To put right: her last answer to it in a paper was wrong, and no round of its own has gone well since (4 in 5 first try).
-const toFix = h => { const p = h && h.paper[h.paper.length - 1];
-  return !!p && !p.ok && !(h.last && h.last.ts > p.ts && h.last.n && h.last.firstTry / h.last.n >= 0.8); };
+// To put right: her last answer to it in a paper was wrong, and no round of its own has gone well since (4 in 5 first
+// try). h: its history (levelHistory), x: its record (mastery) — a record taken as learned, as the suggestion's
+// "after" does, has put it right.
+const toFix = (h, x) => { const p = h && h.paper[h.paper.length - 1];
+  return !!p && !p.ok && !(x && x.at > p.ts && x.lastRate >= 0.8); };
 function levelStatus(l, m, hist){
   if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
   const h = hist[l.id];
@@ -1394,7 +1396,7 @@ function buildPicker(){
   const scope = focused() ? LEVELS.filter(shown) : LEVELS;   // with a focus, the bar counts what is in it
   const learned = scope.filter(done).length, met = LEVELS.filter(l => m[l.id]).length;
   $('nextUp').innerHTML = (nx ? '<button class="gcard nextcard" data-lvl="' + nx.id + '"><span class="nm">' +
-      '<span class="lab">' + t(review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
+      '<span class="lab">' + t(toFix(hist[nx.id], m[nx.id]) ? 'fixNext' : review ? 'reviewNext' : !met ? 'startHere' : met < LEVELS.length ? 'tryNext' : 'needsWork') + '</span>' +
       '<span class="eq">' + levelName(nx) + '</span>' +
       '<span class="meta"><span>' + groupOf(nx) + '</span>' + hard(nx) + '</span>' +
       (after ? '<span class="meta">' + t('nextAfter', levelName(after)) + '</span>' : '') +
@@ -1412,7 +1414,7 @@ function buildPicker(){
   $('pickDue').innerHTML = '<span class="nm"><span class="lab">' + t('forToday') + '</span><span class="eq">' + t('dueLearned', due.length) + '</span></span>' + CHEV;
   $('pickDue').onclick = () => { if(due.length){ S.level = due[0].id; paintPill(); newRound(); } };
   // first, what a paper found wrong and no good round has put right since, easiest first
-  const fix = listed.filter(l => toFix(hist[l.id])).sort((a, b) => a.d - b.d || b.freq - a.freq);
+  const fix = listed.filter(l => toFix(hist[l.id], m[l.id])).sort((a, b) => a.d - b.d || b.freq - a.freq);
   $('pickFix').innerHTML = fix.length ? '<div class="grouphead"><b>' + t('paperMissed') + '</b><span>' + t('fixUntil') + '</span></div><div class="gcard list">' + fix.map(row).join('') + '</div>' : '';
   // a competition picked is something to train for: one path through its levels, easiest first,
   // in the order the suggestion takes them
@@ -1464,7 +1466,11 @@ const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l
 // a focus is a competition picked, or a grade other than hers (a 2nd-grader going over the 1st grade first)
 const focused = () => !!(PICK_COMP || (PICK_GRADE && PICK_GRADE !== myGrade()));
 // the suggestion keeps to the focus; once that is all learned, the whole grade again
-const suggest = (m, lastGrp, lastDone) => (focused() && nextUp(m, lastGrp, lastDone, Date.now(), inFocus)) || nextUp(m, lastGrp, lastDone);
+// what a paper found wrong comes first, before anything new or due (easiest first, in the focus or her grade);
+// then the path, inside the focus; once that is all learned, the whole grade again
+const paperFix = m => { const hist = levelHistory(LOCAL.rounds);
+  return LEVELS.filter(l => (focused() ? inFocus(l) : l.grade === myGrade()) && toFix(hist[l.id], m[l.id])).sort((a, b) => a.d - b.d || b.freq - a.freq)[0]; };
+const suggest = (m, lastGrp, lastDone) => paperFix(m) || (focused() && nextUp(m, lastGrp, lastDone, Date.now(), inFocus)) || nextUp(m, lastGrp, lastDone);
 const roundOf = p => compOf(p) === 'mbg' ? paperSrc(p).split('-')[1] : '';
 const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
 // the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year
