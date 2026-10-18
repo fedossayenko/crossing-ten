@@ -44,7 +44,7 @@ function drawBuyLeft(q){
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('цента', 'ц.') + '</span></div>';
 }
 function eqBuyLeft(q){
-  if(q.shape === 'mix') return '100 − ' + q.p1 + ' − ' + q.k + ' · ' + q.p2 + ' − ' + q.p3 + ' = ' + q.ans;
+  if(q.shape === 'mix') return '100 − ' + q.p1 + ' − ' + Array(q.k).fill(q.p2).join(' − ') + ' − ' + q.p3 + ' = ' + q.ans;
   return q.M + ' − ' + Array(q.k).fill(q.p).join(' − ') + ' = ' + q.ans;
 }
 function whyBuyLeft(q, full){

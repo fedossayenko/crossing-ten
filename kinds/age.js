@@ -24,14 +24,16 @@ function drawAge(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqAge(q){
-  return tr('сега ', 'зараз ') + q.a + ' : ' + (q.m - 1) + ' = ' + q.now + (q.shape ? ', ' + q.now + ' + ' + q.b + ' = ' + q.ans : '');
+  return tr('сега ', 'зараз ') + (q.m === 2 ? q.a : q.a + ' = ' + Array(q.m - 1).fill(q.now).join(' + ') + ' → ' + q.now) + (q.shape ? ', ' + q.now + ' + ' + q.b + ' = ' + q.ans : '');
 }
 function whyAge(q, full){
   if(!full) return tr('Годините, които ще минат, трябва да добавят още няколко пъти сегашната възраст. Колко пъти?',
                       'Роки, які минуть, мають додати ще кілька разів теперішній вік. Скільки разів?');
-  return tr('после ще е ' + q.m + ' пъти колкото сега, значи ' + q.a + ' години са ' + (q.m - 1) + ' пъти колкото сега',
-            'потім буде у ' + ukN(q.m, 'раз', 'рази', 'разів') + ' більше, ніж зараз, отже ' + q.a + ' ' + ageYearsUk(q.a) + ' — це ' + ukN(q.m - 1, 'раз', 'рази', 'разів') + ' теперішній вік') +
-    ' &nbsp;→&nbsp; ' + q.a + ' : ' + (q.m - 1) + ' = <b>' + q.now + '</b>' +
+  // the years to come add the present age once more, or twice more: found by adding, not «a : (m − 1)»
+  const k = q.m - 1;
+  return tr('после ще е ' + q.m + ' пъти колкото сега, значи ' + q.a + ' години добавят още ' + (k === 1 ? 'веднъж сегашната възраст' : k + ' пъти сегашната възраст'),
+            'потім буде у ' + ukN(q.m, 'раз', 'рази', 'разів') + ' більше, ніж зараз, отже ' + q.a + ' ' + ageYearsUk(q.a) + ' додають ' + (k === 1 ? 'ще раз теперішній вік' : 'ще ' + ukN(k, 'раз', 'рази', 'разів') + ' теперішній вік')) +
+    ' &nbsp;→&nbsp; ' + (k === 1 ? tr('сега е ', 'зараз ') : q.a + ' = ' + Array(k).fill(q.now).join(' + ') + ' &nbsp;→&nbsp; ') + '<b>' + q.now + '</b>' +
     (q.shape ? ' &nbsp;→&nbsp; ' + q.now + ' + ' + q.b + ' = ' + q.ans : '');
 }
 KIND.age = { draw:drawAge, eq:eqAge, why:whyAge };

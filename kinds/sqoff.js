@@ -29,13 +29,13 @@ function drawSqOff(q){
     sqOffSvg(q) + '<div class="line xl">' + SLOT + '</div>';
 }
 function eqSqOff(q){
-  return q.W + '×' + q.H + ' → ' + q.cuts.join(', ') + ' → ' + q.ans;
+  return q.W + ' на ' + q.H + ' → ' + q.cuts.join(', ') + ' → ' + q.ans;
 }
 function whySqOff(q, full){
   if(!full) return tr('Страната на всеки квадрат е колкото по-късата страна на това, което е останало.',
                       'Сторона кожного квадрата дорівнює коротшій стороні того, що залишилося.');
   let W = q.W, H = q.H;
-  const steps = q.cuts.map(s => { const was = W + '×' + H; if(W > H) W -= s; else H -= s;
+  const steps = q.cuts.map(s => { const was = W + ' на ' + H; if(W > H) W -= s; else H -= s;
     return was + ' → ' + tr('квадрат ', 'квадрат ') + s; });
   return steps.join('; ') + tr(' &nbsp;→&nbsp; квадратите са ', ' &nbsp;→&nbsp; квадратів ') + q.ans;
 }

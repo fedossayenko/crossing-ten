@@ -6,7 +6,7 @@
 // with one. The 3 children are counted as well as the ones with a single balloon: 3 + 12 = 15.
 // Level 262, МБГ Есен 2024, 3 клас, задача 15: 50 balloons, 10 children with three each and every other child with
 // two (e). The rest of the balloons, 50 − 30 = 20, are shared out two by two: 10 children, and with the first 10, 20.
-import { KIND, SLOT, UKNUM_F, UK_PLURAL, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, UKNUM_F, UK_PLURAL, addUp, rnd, tr, ukN } from '../js/core.js';
 export function genBalloons(){
   const k = 2 + rnd(4), m = 2 + rnd(4), rest = 2 + rnd(Math.random() < 0.3 ? 30 : 14);   // Зима 2023: 3 by 3 and 31 more
   return {kind:'balloons', k, m, rest, T: k*m + rest, ans: k + rest};
@@ -66,9 +66,9 @@ function drawBalloonsOne(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqBalloonsOne(q){
-  if(q.shape === 'shoes') return q.a + ' + 7 · ' + q.b + ' = ' + q.ans;
-  if(q.shape === 'week') return q.a + ' + 6 · ' + q.b + ' = ' + q.ans;
-  return q.T + ' − ' + q.k + ' · ' + q.m + ' = ' + q.ans;
+  if(q.shape === 'shoes') return q.a + ' + ' + Array(7).fill(q.b).join(' + ') + ' = ' + q.ans;
+  if(q.shape === 'week') return q.a + ' + ' + Array(6).fill(q.b).join(' + ') + ' = ' + q.ans;
+  return addUp(q.k, q.m) + ' → ' + q.T + ' − ' + q.k*q.m + ' = ' + q.ans;
 }
 function whyBalloonsOne(q, full){
   if(q.shape === 'shoes'){
@@ -80,7 +80,7 @@ function whyBalloonsOne(q, full){
     return tr('шест дни по ', 'шість днів по ') + q.b + tr(' евро: ', ' євро: ') + Array(6).fill(q.b).join(' + ') + ' = <b>' + 6*q.b + '</b> &nbsp;→&nbsp; ' + q.a + ' + ' + 6*q.b + ' = ' + q.ans;
   }
   if(!full) return tr('Първо намери колко молива носят децата с повече моливи. Всеки от останалите моливи е на едно дете.', 'Спершу знайди, скільки олівців несуть діти, які мають більше. Кожен з решти олівців — в однієї дитини.');
-  return q.k + ' · ' + q.m + ' = <b>' + q.k*q.m + '</b>' + tr(' молива носят децата с по ' + ONE_BG[q.m], ' ' + oneUk(q.k*q.m, 'олівець', 'олівці', 'олівців') + ' несуть діти по ' + ONE_UK[q.m]) +
+  return addUp(q.k, q.m).replace(/(\d+)$/, '<b>$1</b>') + tr(' молива носят децата с по ' + ONE_BG[q.m], ' ' + oneUk(q.k*q.m, 'олівець', 'олівці', 'олівців') + ' несуть діти по ' + ONE_UK[q.m]) +
     ' &nbsp;→&nbsp; ' + q.T + ' − ' + q.k*q.m + ' = ' + q.ans + tr(' молива, по един на дете', ' ' + oneUk(q.ans, 'олівець', 'олівці', 'олівців') + ', по одному на дитину') + ' &nbsp;→&nbsp; ' + q.ans +
     tr(' деца', ' ' + oneUk(q.ans, 'дитина', 'дитини', 'дітей'));
 }
@@ -94,15 +94,15 @@ function drawBalloons(q){
 }
 function eqBalloons(q){
   if(q.shape) return eqBalloonsOne(q);
-  if(q.e) return q.T + ' − ' + q.k + ' · ' + q.m + ' = ' + q.rest + ', ' + q.rest + ' : ' + q.e + ' = ' + q.r + ', ' + q.k + ' + ' + q.r + ' = ' + q.ans;
-  return q.T + ' − ' + q.k + ' · ' + q.m + ' = ' + q.rest + ', ' + q.k + ' + ' + q.rest + ' = ' + q.ans;
+  if(q.e) return q.T + ' − ' + q.k + ' · ' + q.m + ' = ' + q.rest + ', ' + q.rest + ' : ' + q.e + ' = ' + q.r + ', ' + q.k + ' + ' + q.r + ' = ' + q.ans;   // 262, the 3rd grade: the times table is known
+  return addUp(q.k, q.m) + ' → ' + q.T + ' − ' + q.k*q.m + ' = ' + q.rest + ', ' + q.k + ' + ' + q.rest + ' = ' + q.ans;
 }
 function whyBalloons(q, full){
   if(q.shape) return whyBalloonsOne(q, full);
   if(q.e) return whyBalloons3(q, full);
   if(!full) return tr('Първо намери колко балона имат децата с повече балони. Не забравяй и тях да ги преброиш!',
                       'Спочатку знайди, скільки кульок у дітей, які мають більше. І не забудь їх теж порахувати!');
-  return q.k + ' · ' + q.m + ' = ' + q.k*q.m + tr(' балона', ' ' + balloonsUk(q.k*q.m)) + ' &nbsp;→&nbsp; ' +
+  return addUp(q.k, q.m) + tr(' балона', ' ' + balloonsUk(q.k*q.m)) + ' &nbsp;→&nbsp; ' +
     q.T + ' − ' + q.k*q.m + ' = <b>' + q.rest + '</b>' + tr(' деца с по един', ' ' + ukN(q.rest, 'дитина', 'дитини', 'дітей').replace(/^\d+ /, '') + ' по одній') +
     ' &nbsp;→&nbsp; ' + q.k + ' + ' + q.rest + ' = ' + q.ans;
 }

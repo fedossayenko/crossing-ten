@@ -39,7 +39,7 @@ function spanParts(q){
   return parts.concat(q.d2);
 }
 function eqDateSpan(q){
-  return spanParts(q).join(' + ') + ' = ' + q.days + (q.asksDays ? '' : ', ' + q.days + ' · ' + q.k + ' = ' + q.ans);
+  return spanParts(q).join(' + ') + ' = ' + q.days + (q.asksDays ? '' : q.k === 1 ? ' → ' + q.ans : ', ' + Array(q.k).fill(q.days).join(' + ') + ' = ' + q.ans);
 }
 function whyDateSpan(q, full){
   if(!full) return tr('Брой дните по месеци: колко остават от първия, колко са целите месеци, колко от последния. И първият, и последният ден се броят.',

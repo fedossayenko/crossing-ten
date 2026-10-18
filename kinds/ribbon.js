@@ -163,7 +163,7 @@ function drawRibbon(q){
     ' <span class="unit">' + unit + '</span></div>';
 }
 function eqRibbon(q){
-  if(q.shape === 6) return q.groups.map(g => g.n + '×' + g.cm).join(', ') + ' → ' + q.ans;
+  if(q.shape === 6) return q.groups.map(g => g.cm + ' см: ' + g.n).join(', ') + ' → ' + q.ans;
   if(q.shape === 7) return [...new Set(q.cms)].sort((a, b) => a - b).join(', ') + ' см → ' + q.ans;
   if(q.shape === 5) return q.A + ' мм − ' + q.B + ' мм = ' + (q.A - q.B) + ' мм = ' + q.ans + ' ' + q.to;
   if(q.shape === 4) return Array(q.k).fill(q.a).join(' + ') + ' + ' + q.left + ' = ' + q.cm + ' см → ' + q.ans;

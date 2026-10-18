@@ -6,7 +6,7 @@
 // 2) the green make a square: 60 : 4 = 15 дм. 3) the red make the roof's two sides: 12 м : 2 = 6 м.
 // 4) all of them make a tree of two equal-sided triangles, the lower one's side 4 м: 21 − 12 = 9 м
 // for the upper, 3 м a side.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, addUp, rnd, tr } from '../js/core.js';
 const GARLAND_LEN = [[8, 10, 12, 14, 16, 20], [10, 15, 20, 25, 30], [20, 30, 40, 50]];
 export function genGarland(){
   const shape = rnd(4);
@@ -46,21 +46,21 @@ function drawGarland(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqGarland(q){
-  if(q.shape === 1) return q.dm[0] + ' : 4 = ' + q.ans + ' дм';
-  if(q.shape === 2) return q.dm[2] + ' дм : 2 = ' + q.dm[2] / 2 + ' дм = ' + q.ans + ' м';
+  if(q.shape === 1) return q.dm[0] + ' = ' + Array(4).fill(q.ans).join(' + ') + ' → ' + q.ans + ' дм';
+  if(q.shape === 2) return q.dm[2] + ' дм = ' + q.dm[2] / 10 + ' м = ' + q.ans + ' + ' + q.ans + ' → ' + q.ans + ' м';
   const m = q.all / 10;
-  return q.dm.join(' + ') + ' = ' + q.all + ' дм = ' + m + ' м' + (q.shape === 3 ? ', ' + m + ' − 3 · ' + q.L + ' = ' + 3*q.ans + ' → ' + q.ans : '');
+  return q.dm.join(' + ') + ' = ' + q.all + ' дм = ' + m + ' м' + (q.shape === 3 ? ', ' + m + ' − ' + 3*q.L + ' = ' + 3*q.ans + ' = ' + q.ans + ' + ' + q.ans + ' + ' + q.ans + ' → ' + q.ans : '');
 }
 function whyGarland(q, full){
   if(!full) return q.shape === 1 ? tr('Колко зелени гирлянди има общо и колко са дълги заедно? Квадратът има четири равни страни.', 'Скільки всього зелених гірлянд і яка їхня спільна довжина? У квадрата чотири рівні сторони.')
     : q.shape === 2 ? tr('Колко са дълги всички червени заедно? Бедрата са две и са равни.', 'Яка спільна довжина всіх червоних? Бічних сторін дві, і вони рівні.')
     : q.shape === 3 ? tr('Всички гирлянди заедно — после махни долния триъгълник: три страни по толкова.', 'Усі гірлянди разом — потім відніми нижній трикутник: три сторони по стільки.')
-    : tr('Преброй гирляндите от всеки цвят и умножи по дължината от таблицата. Цената не трябва.', 'Порахуй гірлянди кожного кольору й помнож на довжину з таблиці. Ціна не потрібна.');
-  const rep = (k, v) => k === 1 ? String(v) : k <= 5 ? Array(k).fill(v).join(' + ') : k + ' · ' + v;
+    : tr('Преброй гирляндите от всеки цвят и събери дължините им от таблицата. Цената не трябва.', 'Порахуй гірлянди кожного кольору й додай їхні довжини з таблиці. Ціна не потрібна.');
+  const rep = (k, v) => k === 1 ? String(v) : Array(k).fill(v).join(' + ');
   const cnt = q.n.map((k, c) => k ? rep(k, q.len[c]) + ' = ' + q.dm[c] : '').filter(Boolean).join(', ');
-  if(q.shape === 1) return tr('зелените: ', 'зелені: ') + rep(q.n[0], q.len[0]) + ' = <b>' + q.dm[0] + '</b> дм &nbsp;→&nbsp; ' + q.dm[0] + ' : 4 = ' + q.ans + ' дм';
-  if(q.shape === 2) return tr('червените: ', 'червоні: ') + rep(q.n[2], q.len[2]) + ' = <b>' + q.dm[2] + '</b> дм = ' + q.dm[2] / 10 + ' м &nbsp;→&nbsp; ' + q.dm[2] / 10 + ' : 2 = ' + q.ans + ' м';
+  if(q.shape === 1) return tr('зелените: ', 'зелені: ') + rep(q.n[0], q.len[0]) + ' = <b>' + q.dm[0] + '</b> дм &nbsp;→&nbsp; ' + q.dm[0] + ' = ' + Array(4).fill(q.ans).join(' + ') + ' &nbsp;→&nbsp; ' + q.ans + ' дм';
+  if(q.shape === 2) return tr('червените: ', 'червоні: ') + rep(q.n[2], q.len[2]) + ' = <b>' + q.dm[2] + '</b> дм = ' + q.dm[2] / 10 + ' м &nbsp;→&nbsp; ' + q.dm[2] / 10 + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans + ' м';
   const m = q.all / 10;
-  return cnt + ' &nbsp;→&nbsp; ' + q.all + ' дм = <b>' + m + '</b> м' + (q.shape === 3 ? ' &nbsp;→&nbsp; ' + tr('долният: ', 'нижній: ') + '3 · ' + q.L + ' = ' + 3*q.L + ' м, ' + tr('горният: ', 'верхній: ') + m + ' − ' + 3*q.L + ' = ' + 3*q.ans + ' м &nbsp;→&nbsp; ' + 3*q.ans + ' : 3 = ' + q.ans : '');
+  return cnt + ' &nbsp;→&nbsp; ' + q.all + ' дм = <b>' + m + '</b> м' + (q.shape === 3 ? ' &nbsp;→&nbsp; ' + tr('долният: ', 'нижній: ') + addUp(3, q.L) + ' м, ' + tr('горният: ', 'верхній: ') + m + ' − ' + 3*q.L + ' = ' + 3*q.ans + ' м &nbsp;→&nbsp; ' + 3*q.ans + ' = ' + q.ans + ' + ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans : '');
 }
 KIND.garland = { draw:drawGarland, eq:eqGarland, why:whyGarland };

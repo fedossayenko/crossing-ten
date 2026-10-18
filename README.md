@@ -312,11 +312,13 @@ with both tags. A generator may widen a printed task (other numbers, other names
 difficulty: 49 asks two and three equal addends, as every paper did, not four and three.
 
 **What she has been taught by then is difficulty too.** The 2nd-grade programme (МОН 2023) teaches its four
-topics in order: numbers to 100, ± without crossing ten, ± with crossing, and the times table last. No МБГ
-paper before spring asks anything that needs × or ÷ (they say «равни събираеми», «два пъти»), so a 2nd-grade
-level with no `needs` path to the times table (141) shows no ×, ÷, «a : b» or «дели се» in its task, hint or
-solution: it adds, counts in steps (3, 6, 9, …) or halves (17 + 17 = 34), and a grid is «4 на 2»
-(`check/taught.js`: the autumn levels so far). A form that needs the times table is a layer after 141.
+topics in order: numbers to 100, ± without crossing ten, ± with crossing, and the times table last. No paper
+before spring (autumn, Коледно, Аз и числата, МБГ winter) prints × or ÷; they say «равни събираеми», «два пъти
+повече», «половината». So a 2nd-grade level with no `needs` path to the times table (141) shows no ×, ÷,
+«a : b», «дели се», «разделени на 9» or «умножи» in its task, hint or solution: it adds, counts in steps
+(3, 6, 9, …) or halves (17 + 17 = 34), and a grid is «4 на 2» (`check/taught.js`, every such level). Only
+«се делят на 2» is let through: Аз и числата 2023 prints it in January, for even numbers. A form that needs
+the times table is a layer after 141.
 Before a split or a widening, look first: which papers print each form, its rubric score, and what a child
 has been taught by that round.
 

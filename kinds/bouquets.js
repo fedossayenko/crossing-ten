@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 18: 10 bouquets, 34 roses, some of 3 and the rest of 7. If all had 3 there
 // would be 30; each bouquet of 7 adds 4 more, and 4 are missing: one of 7, nine of 3.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, addUp, rnd, tr, ukN } from '../js/core.js';
 export function genBouquets(){
   for(;;){
     const a = 2 + rnd(4), b = a + 2 + rnd(5), n = 5 + rnd(10), x = 1 + rnd(n - 1), T = x*a + (n - x)*b;
@@ -17,12 +17,12 @@ function drawBouquets(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqBouquets(q){
-  return q.x + ' · ' + q.a + ' + ' + (q.n - q.x) + ' · ' + q.b + ' = ' + q.T + ' → ' + q.ans;
+  return Array(q.x).fill(q.a).concat(Array(q.n - q.x).fill(q.b)).join(' + ') + ' = ' + q.T + ' → ' + q.ans;
 }
 function whyBouquets(q, full){
   if(!full) return tr('Ако всички букети бяха малки — колко рози щяха да са? Колко не достигат?', 'Якби всі букети були малі — скільки було б троянд? Скільки бракує?');
   const low = q.n*q.a, big = q.n - q.x;
-  return tr('ако всички са по ', 'якби всі були по ') + q.a + ': ' + q.n + ' · ' + q.a + ' = <b>' + low + '</b>, ' + tr('липсват ', 'бракує ') + (q.T - low) + ' &nbsp;→&nbsp; ' + tr('всеки голям дава още ', 'кожен великий дає ще ') + (q.b - q.a) +
-    ' &nbsp;→&nbsp; ' + (q.T - low) + ' : ' + (q.b - q.a) + ' = ' + big + tr(' големи, ', ' великих, ') + q.x + tr(' малки', ' малих') + ' &nbsp;→&nbsp; ' + q.ans;
+  return tr('ако всички са по ', 'якби всі були по ') + q.a + ': ' + addUp(q.n, q.a).replace(/(\d+)$/, '<b>$1</b>') + ', ' + tr('липсват ', 'бракує ') + (q.T - low) + ' &nbsp;→&nbsp; ' + tr('всеки голям дава още ', 'кожен великий дає ще ') + (q.b - q.a) +
+    ' &nbsp;→&nbsp; ' + (big > 1 ? (q.T - low) + ' = ' + Array(big).fill(q.b - q.a).join(' + ') + ' &nbsp;→&nbsp; ' : '') + big + tr(big === 1 ? ' голям, ' : ' големи, ', big === 1 ? ' великий, ' : ' великих, ') + q.x + tr(q.x === 1 ? ' малък' : ' малки', q.x === 1 ? ' малий' : ' малих') + ' &nbsp;→&nbsp; ' + q.ans;
 }
 KIND.bouquets = { draw:drawBouquets, eq:eqBouquets, why:whyBouquets };

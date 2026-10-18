@@ -73,6 +73,6 @@ function eqCountSq(q){
 function whyCountSq(q, full){
   if(!full && q.shape === 'strip') return tr('Не само малките: всеки четири квадратчета, събрани две на две, образуват квадрат — а може да има и по-голям.', 'Не лише маленькі: кожні чотири квадратики, складені два на два, утворюють квадрат — а може бути й більший.');
   if(!full) return tr('Не само малките: и всяко каре от плочки два на два е квадрат.', 'Не лише маленькі: кожен блок плиток два на два — теж квадрат.');
-  return (q.shape === 'strip' ? countSqBig(q) : '') + q.sizes.map((n, i) => (i + 1) + '×' + (i + 1) + ': <b>' + n + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
+  return (q.shape === 'strip' ? countSqBig(q) : '') + q.sizes.map((n, i) => (i + 1) + ' на ' + (i + 1) + ': <b>' + n + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
 }
 KIND.countsq = { draw:drawCountSq, eq:eqCountSq, why:whyCountSq };

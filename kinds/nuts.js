@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 11: four squirrels share 16 nuts, each more than 2. For one to get as many
 // as possible the other three get as few as allowed — 3 each, 9 — and she gets 16 − 9 = 7.
-import { BGNUM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, SLOT, addUp, rnd, tr, ukN } from '../js/core.js';
 export function genNuts(){
   for(;;){
     const k = 3 + rnd(3), m = 1 + rnd(4), T = k*(m + 1) + 2 + rnd(12);
@@ -31,7 +31,7 @@ function drawNuts(q){
 }
 function eqNuts(q){
   if(q.shape === 'least') return q.T + ' − ' + Array(q.k - 1).fill(1).join(' − ') + ' = ' + q.ans;
-  return q.T + ' − ' + (q.k - 1) + ' · ' + (q.m + 1) + ' = ' + q.ans;
+  return q.T + ' − (' + Array(q.k - 1).fill(q.m + 1).join(' + ') + ') = ' + q.ans;
 }
 function whyNuts(q, full){
   if(q.shape === 'least'){
@@ -40,6 +40,6 @@ function whyNuts(q, full){
       Array(q.k - 1).fill(1).join(' + ') + ' = <b>' + (q.k - 1) + '</b> &nbsp;→&nbsp; ' + q.T + ' − ' + (q.k - 1) + ' = ' + q.ans;
   }
   if(!full) return tr('За да получи едната възможно най-много, другите трябва да получат възможно най-малко.', 'Щоб одна отримала якомога більше, інші мають отримати якомога менше.');
-  return tr('„повече от ' + q.m + '" значи поне ' + (q.m + 1) + ' &nbsp;→&nbsp; другите ', '«більше ніж ' + q.m + '» означає щонайменше ' + (q.m + 1) + ' &nbsp;→&nbsp; інші ') + (q.k - 1) + ': ' + (q.k - 1) + ' · ' + (q.m + 1) + ' = <b>' + (q.k - 1)*(q.m + 1) + '</b> &nbsp;→&nbsp; ' + q.T + ' − ' + (q.k - 1)*(q.m + 1) + ' = ' + q.ans;
+  return tr('„повече от ' + q.m + '" значи поне ' + (q.m + 1) + ' &nbsp;→&nbsp; другите ', '«більше ніж ' + q.m + '» означає щонайменше ' + (q.m + 1) + ' &nbsp;→&nbsp; інші ') + (q.k - 1) + ': ' + addUp(q.k - 1, q.m + 1).replace(/(\d+)$/, '<b>$1</b>') + ' &nbsp;→&nbsp; ' + q.T + ' − ' + (q.k - 1)*(q.m + 1) + ' = ' + q.ans;
 }
 KIND.nuts = { draw:drawNuts, eq:eqNuts, why:whyNuts };

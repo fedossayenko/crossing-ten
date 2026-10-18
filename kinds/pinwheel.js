@@ -26,13 +26,14 @@ function drawPinwheel(q){
     pinwheelSvg() + '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqPinwheel(q){
-  return q.P + ' : 8 = ' + q.L + (q.long ? '' : ', ' + q.L + ' : 2 = ' + q.ans) + ' → ' + q.ans;
+  return tr('8 дълги = ', '8 довгих = ') + q.P + tr(', наполовина: ', ', навпіл: ') + [q.P/2, q.P/4, q.L].concat(q.long ? [] : [q.ans]).join(' → ');
 }
 function whyPinwheel(q, full){
   if(!full) return tr('Обиколи фигурата и преброй дългите и късите страни. Колко къси правят една дълга?',
                       'Обійди фігуру й порахуй довгі й короткі сторони. Скільки коротких дорівнюють одній довгій?');
   return (q.dm ? q.P/10 + ' дм = ' + q.P + tr(' см; ', ' см; ') : '') +
     tr('наоколо има 4 дълги и 8 къси страни, а 2 къси са колкото 1 дълга → 8 дълги', 'навколо 4 довгі й 8 коротких сторін, а 2 короткі — як 1 довга → 8 довгих') +
-    ' &nbsp;→&nbsp; ' + q.P + ' : 8 = <b>' + q.L + '</b> ' + 'см' + (q.long ? '' : ' &nbsp;→&nbsp; ' + q.L + ' : 2 = ' + q.ans);
+    tr(' = ', ' = ') + q.P + ' &nbsp;→&nbsp; ' + tr('наполовина: 4 дълги — ', 'навпіл: 4 довгі — ') + q.P + ' = ' + q.P/2 + ' + ' + q.P/2 + tr(', 2 дълги — ', ', 2 довгі — ') + q.P/2 + ' = ' + q.P/4 + ' + ' + q.P/4 +
+    tr(', 1 дълга — ', ', 1 довга — ') + q.P/4 + ' = ' + q.L + ' + ' + q.L + ' &nbsp;→&nbsp; <b>' + q.L + '</b> см' + (q.long ? '' : ' &nbsp;→&nbsp; ' + q.L + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans);
 }
 KIND.pinwheel = { draw:drawPinwheel, eq:eqPinwheel, why:whyPinwheel };

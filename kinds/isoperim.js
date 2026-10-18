@@ -12,7 +12,7 @@
 // equilateral triangle with side 2 см — three equal sides, 2 + 2 + 2 = 6. Аз и числата 2026, задача 8 (shape 'back'):
 // the perimeter 21 см, two sides 5 и 9 — the third is 21 − 5 − 9 = 7; 2023, задача 9, the same about a triangular tree,
 // 68 м with sides 16 и 26: 26. The slips: one side taken away, not both; a side for the perimeter; four sides for three.
-import { CM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { CM, KIND, SLOT, addUp, rnd, shuffle, tr } from '../js/core.js';
 import { triSideSvg } from './tritype.js';
 // the triangle's sides as [base, left, right]: the longest across, so it stands
 const triPerimSides = s => { const x = s.slice().sort((p, q) => q - p); return [x[0], x[1], x[2]]; };
@@ -147,31 +147,31 @@ function drawIsoPerim(q){
 }
 function eqIsoPerim(q){
   if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return eqTriPerim(q);
-  if(q.shape === 2) return q.laps + ' · ' + 3*q.a + ' = ' + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
-  if(q.shape === 3) return q.b + ' + 2 · ' + tr('бедро', 'бічна') + ' = ' + q.P + ' → ' + q.ans;
-  if(q.shape === 1) return q.T + ' − 4 · ' + q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' → ' + q.ans;
-  return q.P + ' : 4 = ' + q.s + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
+  if(q.shape === 2) return (q.laps > 1 ? Array(q.laps).fill(3*q.a).join(' + ') + ' = ' : '') + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
+  if(q.shape === 3) return q.b + ' + ' + tr('бедро + бедро', 'бічна + бічна') + ' = ' + q.P + ' → ' + q.ans;
+  if(q.shape === 1) return q.T + ' − ' + 4*q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' = ' + q.b + ' + ' + q.b + ' → ' + q.ans;
+  return q.P + ' = ' + Array(4).fill(q.s).join(' + ') + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
 }
 function whyIsoPerim(q, full){
   if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return whyTriPerim(q, full);
   if(q.shape === 2){
     if(!full) return tr('Колко отсечки има всеки път и колко е дълга всяка? Внимавай кои страни на MEK са равни.', 'Скільки відрізків у кожному шляху і яка довжина кожного? Зверни увагу, які сторони MEK рівні.');
     const segs = []; for(let i = 1; i < q.route.length; i++) segs.push('ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg);
-    return tr('мравката: ', 'мурашка: ') + (q.laps > 1 ? q.laps + ' · ' : '') + '(' + q.a + ' + ' + q.a + ' + ' + q.a + ') = <b>' + q.ant + '</b>, ' + tr('костенурката: ', 'черепаха: ') + segs.join(' + ') + ' = <b>' + q.tort + '</b> &nbsp;→&nbsp; ' +
+    return tr('мравката: ', 'мурашка: ') + Array(q.laps).fill(q.a + ' + ' + q.a + ' + ' + q.a).join(tr(' и пак ', ' і знову ')) + ' = <b>' + q.ant + '</b>, ' + tr('костенурката: ', 'черепаха: ') + segs.join(' + ') + ' = <b>' + q.tort + '</b> &nbsp;→&nbsp; ' +
       Math.max(q.ant, q.tort) + ' − ' + Math.min(q.ant, q.tort) + ' = ' + q.ans;
   }
   if(q.shape === 3){
     if(!full) return tr('Обиколката на равнобедрения е основата и две равни бедра. Четно или нечетно число излиза?', 'Периметр рівнобедреного — основа й дві рівні бічні сторони. Парне чи непарне число виходить?');
-    return tr('две равни бедра дават четно число, с основа ' + q.b + ' обиколката е нечетна', 'дві рівні бічні сторони дають парне число, з основою ' + q.b + ' периметр непарний') + ' &nbsp;→&nbsp; <b>' + q.P + '</b> &nbsp;→&nbsp; (' + q.P + ' − ' + q.b + ') : 2 = ' + q.ans;
+    return tr('две равни бедра дават четно число, с основа ' + q.b + ' обиколката е нечетна', 'дві рівні бічні сторони дають парне число, з основою ' + q.b + ' периметр непарний') + ' &nbsp;→&nbsp; <b>' + q.P + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + q.b + ' = ' + (q.P - q.b) + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans;
   }
   if(q.shape === 1){
     if(!full) return tr('Дециметрите в сантиметри. Колко бедра има общо — и колко остава за двете основи?', 'Дециметри — у сантиметри. Скільки всього бічних сторін — і скільки залишається на дві основи?');
     const B = q.T - 4*q.leg;
-    return q.T / 10 + tr(' дм = ', ' дм = ') + q.T + tr(' см; четири бедра: ', ' см; чотири бічні сторони: ') + 4*q.leg + ' &nbsp;→&nbsp; ' + tr('двете основи: ', 'дві основи: ') + q.T + ' − ' + 4*q.leg + ' = <b>' + B +
-      '</b> &nbsp;→&nbsp; ' + B + ' − ' + q.d + ' = ' + 2*q.b + ', ' + 2*q.b + ' : 2 = <b>' + q.b + '</b>' + (q.short ? '' : ', ' + q.b + ' + ' + q.d + ' = ' + q.ans);
+    return q.T / 10 + tr(' дм = ', ' дм = ') + q.T + tr(' см; четири бедра: ', ' см; чотири бічні сторони: ') + addUp(4, q.leg) + ' &nbsp;→&nbsp; ' + tr('двете основи: ', 'дві основи: ') + q.T + ' − ' + 4*q.leg + ' = <b>' + B +
+      '</b> &nbsp;→&nbsp; ' + B + ' − ' + q.d + ' = ' + 2*q.b + ' = ' + q.b + ' + ' + q.b + ' &nbsp;→&nbsp; <b>' + q.b + '</b>' + (q.short ? '' : ', ' + q.b + ' + ' + q.d + ' = ' + q.ans);
   }
   if(!full) return tr('Първо страната на квадрата, после бедрото, после основата. Бедрата са две.', 'Спершу сторона квадрата, потім бічна сторона, потім основа. Бічних сторін дві.');
-  return tr('страната на квадрата: ', 'сторона квадрата: ') + q.P + ' : 4 = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('бедрото: ', 'бічна сторона: ') + q.s + ' + ' + q.up + ' = <b>' + q.leg +
+  return tr('страната на квадрата: ', 'сторона квадрата: ') + q.P + ' = ' + Array(4).fill(q.s).join(' + ') + ' &nbsp;→&nbsp; <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('бедрото: ', 'бічна сторона: ') + q.s + ' + ' + q.up + ' = <b>' + q.leg +
     '</b> &nbsp;→&nbsp; ' + tr('основата: ', 'основа: ') + q.leg + ' − ' + q.down + ' = <b>' + q.base + '</b> &nbsp;→&nbsp; ' + q.leg + ' + ' + q.leg + ' + ' + q.base + ' = ' + q.ans;
 }
 KIND.isoperim = { draw:drawIsoPerim, eq:eqIsoPerim, why:whyIsoPerim };

@@ -67,10 +67,13 @@ function drawPaintRow(q){
     ', причому <b>два сусідні</b> квадратики не можуть бути одного кольору.' + (end ? ' Перший квадратик уже зафарбовано в зелений колір.' : '') + ' Скількома способами можна їх зафарбувати?') + '</div>' +
     paintRowSvg(q.n, end ? PAINT_FILL[q.cols[0]] : '') + '<div class="line xl">' + SLOT + '</div>';
 }
+// the ways so far, each taken again for every colour the next one may have: 3 → 3 + 3 = 6 → 6 + 6 = 12 (not 3 · 2 · 2, before the times table)
+const paintChain = ks => { let t = ks[0]; const parts = [String(t)];
+  ks.slice(1).forEach(k => { if(k > 1){ parts.push(Array(k).fill(t).join(' + ') + ' = ' + t*k); t *= k; } }); return parts.join(' → '); };
 function eqPaintRow(q){
-  if(q.shape === 'end') return Array(q.n).fill(1).join(' · ') + ' = ' + q.ans;
-  if(q.kind === 'paintrow' && q.fig) return q.c + ' · ' + (q.c - 1) + ' · ' + (q.c - 2) + ' = ' + q.ans;
-  if(q.kind === 'paintrow') return [q.c].concat(Array(q.n - 1).fill(q.c - 1)).join(' · ') + ' = ' + q.ans;
+  if(q.shape === 'end') return tr('всеки път по 1 начин → ', 'щоразу 1 спосіб → ') + q.ans;
+  if(q.kind === 'paintrow' && q.fig) return paintChain([q.c, q.c - 1, q.c - 2]);
+  if(q.kind === 'paintrow') return paintChain([q.c].concat(Array(q.n - 1).fill(q.c - 1)));
 }
 function whyPaintRow(q, full){
   if(q.fig){

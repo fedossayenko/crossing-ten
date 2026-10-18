@@ -3,7 +3,7 @@
 // МБГ Зима 2022, задача 13: a 4 by 5 rectangle cut into 1 by 2, 2 by 3 and X by 4. The small
 // squares are what is shared out: 20 = 2 + 6 + 4 · X, so 4 · X = 12 and X = 3. Generated from
 // real cuts — a strip off one side, then the rest in two — so the pieces always fit.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, addUp, rnd, shuffle, tr } from '../js/core.js';
 export function genCutRect(){
   for(;;){
     const W = 3 + rnd(4), H = 3 + rnd(4);
@@ -36,12 +36,13 @@ function drawCutRect(q){
 }
 const cutRectRest = q => q.W*q.H - q.pieces.filter((_, i) => i !== q.at).reduce((t, p) => t + p[0]*p[1], 0);
 function eqCutRect(q){
-  return q.W + '·' + q.H + ' − ' + q.pieces.filter((_, i) => i !== q.at).map(p => p[0] + '·' + p[1]).join(' − ') + ' = ' + cutRectRest(q) + ' = X·' + q.other + ' → ' + q.ans;
+  return q.W*q.H + ' − ' + q.pieces.filter((_, i) => i !== q.at).map(p => p[0]*p[1]).join(' − ') + ' = ' + cutRectRest(q) + ' = ' + Array(q.other).fill('X').join(' + ') + ' → ' + q.ans;
 }
 function whyCutRect(q, full){
   if(!full) return tr('Раздели всичко на квадратчета със страна един сантиметър. Колко са в големия? А в двете известни парчета?', 'Поділи все на квадратики зі стороною один сантиметр. Скільки їх у великому? А у двох відомих частинах?');
   const known = q.pieces.filter((_, i) => i !== q.at), rest = cutRectRest(q);
-  return tr('квадратчета: ', 'квадратиків: ') + q.W + ' · ' + q.H + ' = <b>' + q.W*q.H + '</b>, ' + tr('в известните ', 'у відомих ') + known.map(p => p[0] + ' · ' + p[1] + ' = ' + p[0]*p[1]).join(tr(' и ', ' і ')) +
-    ' &nbsp;→&nbsp; ' + tr('остават ', 'лишається ') + rest + ' = X · ' + q.other + ' &nbsp;→&nbsp; X = ' + q.ans;
+  // counted row by row («5 на 3: 3 + 3 + 3 + 3 + 3 = 15»), the times table not yet taught
+  return tr('квадратчета: ', 'квадратиків: ') + q.W + ' на ' + q.H + ': ' + addUp(q.W, q.H).replace(/(\d+)$/, '<b>$1</b>') + ', ' + tr('в известните ', 'у відомих ') + known.map(p => p[0] + ' на ' + p[1] + ': ' + addUp(p[0], p[1])).join(tr(' и ', ' і ')) +
+    ' &nbsp;→&nbsp; ' + tr('остават ', 'лишається ') + rest + ' = ' + Array(q.other).fill('X').join(' + ') + ' &nbsp;→&nbsp; X = ' + q.ans;
 }
 KIND.cutrect = { draw:drawCutRect, eq:eqCutRect, why:whyCutRect };

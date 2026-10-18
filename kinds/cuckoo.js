@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 13: the clock's cuckoo calls 3 times every 4 seconds; in 16 seconds that is
 // four lots of 4 seconds, so 4 · 3 = 12 calls.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, addUp, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 export function genCuckoo(){
   const k = 2 + rnd(4), s = 2 + rnd(5), m = 2 + rnd(4);
   return {kind:'cuckoo', k, s, m, t: s*m, ans: k*m};
@@ -13,7 +13,7 @@ function drawCuckoo(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCuckoo(q){
-  return q.t + ' : ' + q.s + ' = ' + q.m + ', ' + q.m + ' · ' + q.k + ' = ' + q.ans;
+  return q.t + ' = ' + Array(q.m).fill(q.s).join(' + ') + ' → ' + addUp(q.m, q.k);
 }
 // The picture counts both at once, with no proportion: the time line is cut into lots of so many
 // seconds, each lot fills with its calls, and the seconds below and the calls above run on together
@@ -35,6 +35,6 @@ function cuckooSvg(q){
 }
 function whyCuckoo(q, full){
   if(!full) return tr('Колко пъти по толкова секунди се събират в цялото време?', 'Скільки разів по стільки секунд уміщається в увесь час?');
-  return tr(q.t + ' секунди са ' + q.m + ' пъти по ', ukN(q.t, 'секунда', 'секунди', 'секунд') + ' — це ' + ukN(q.m, 'раз', 'рази', 'разів') + ' по ') + q.s + ' &nbsp;→&nbsp; ' + q.m + ' · ' + q.k + ' = ' + q.ans + cuckooSvg(q);
+  return tr(q.t + ' секунди са ' + q.m + ' пъти по ', ukN(q.t, 'секунда', 'секунди', 'секунд') + ' — це ' + ukN(q.m, 'раз', 'рази', 'разів') + ' по ') + q.s + ': ' + q.t + ' = ' + Array(q.m).fill(q.s).join(' + ') + ' &nbsp;→&nbsp; ' + addUp(q.m, q.k) + cuckooSvg(q);
 }
 KIND.cuckoo = { draw:drawCuckoo, eq:eqCuckoo, why:whyCuckoo };

@@ -24,11 +24,11 @@ function drawSqRect(q){
     '<div class="line xl">' + SLOT + CM + '</div>';
 }
 function eqSqRect(q){
-  return q.a + ' = ' + q.b + ' + ' + q.b + ', P = ' + q.P + (q.asksP ? '' : ', ' + q.P + ' : 4 = ' + q.ans);
+  return q.a + ' = ' + q.b + ' + ' + q.b + ', P = ' + q.P + (q.asksP ? '' : ', ' + q.P + ' = ' + Array(4).fill(q.ans).join(' + ') + ' → ' + q.ans);
 }
 function whySqRect(q, full){
   if(!full) return tr('Страните на правоъгълника са a, b, a, b. Коя страна може да е сбор от две други?', 'Сторони прямокутника — a, b, a, b. Яка сторона може дорівнювати сумі двох інших?');
   return tr('само голямата = малката + малката', 'лише більша = менша + менша') + ' &nbsp;→&nbsp; ' + tr('малката е ', 'менша — ') + q.b + ' (' + (q.b + 1) + ' + ' + (q.b + 1) + ' = ' + (2*q.b + 2) + tr(' е твърде много', ' — забагато') + '), ' +
-    tr('голямата ', 'більша ') + q.a + ' &nbsp;→&nbsp; P = ' + q.a + ' + ' + q.b + ' + ' + q.a + ' + ' + q.b + ' = ' + q.P + (q.asksP ? '' : ' &nbsp;→&nbsp; ' + q.P + ' : 4 = ' + q.ans);
+    tr('голямата ', 'більша ') + q.a + ' &nbsp;→&nbsp; P = ' + q.a + ' + ' + q.b + ' + ' + q.a + ' + ' + q.b + ' = ' + q.P + (q.asksP ? '' : ' &nbsp;→&nbsp; ' + q.P + ' = ' + Array(4).fill(q.ans).join(' + ') + ' &nbsp;→&nbsp; ' + q.ans);
 }
 KIND.sqrect = { draw:drawSqRect, eq:eqSqRect, why:whySqRect };
