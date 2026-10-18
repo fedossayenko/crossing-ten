@@ -47,7 +47,7 @@ export function genSumDiffPair(){
   for(;;){
     const small = 1 + rnd(25), d = 1 + rnd(20), big = small + d, S = small + big;
     if(S > 60) continue;
-    return {kind:'sumdiff', shape:'two', S, d, small, big, slots:2, ans: big, alt:[small]};
+    return {kind:'sumdiff', shape:'two', S, d, small, big, slots:2, stated:true, ans: big, alt:[small]};
   }
 }
 export function genSumDiff(){
@@ -55,7 +55,7 @@ export function genSumDiff(){
   if(Math.random() < 0.4) return genGap();
   const d = 1 + rnd(6);
   const a = d + rnd(9);          // the smaller number stays at or above zero, so both sums exist
-  return {kind:'sumdiff', a, d, slots:2, ans: 2*a + d, alt:[2*a - d]};
+  return {kind:'sumdiff', a, d, slots:2, stated:true, ans: 2*a + d, alt:[2*a - d]};
 }
 
 function drawSumdiff(q){

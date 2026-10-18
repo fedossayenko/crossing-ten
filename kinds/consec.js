@@ -14,7 +14,7 @@ export function genConsec(){
   const q = consecOld();
   if(Math.random() < 0.2){
     const m = 2 + rnd(31);
-    return {kind:'consec', shape:'three', m, S: 3*m, slots:3, ans: m - 1, alt:[m, m + 1]};
+    return {kind:'consec', shape:'three', m, S: 3*m, slots:3, stated:true, ans: m - 1, alt:[m, m + 1]};
   }
   return q;
 }

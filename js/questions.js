@@ -53,6 +53,10 @@ export function genForFact(key){
 }
 export const answer = q => q.kind ? q.ans : (q.op === '-' ? q.a - q.b : q.a + q.b);
 export const answers = q => [answer(q)].concat(q.alt || []);
+// On paper nothing says how many answers a task has unless its question does («кои три числа»): a task of a kind
+// shows one box, and she opens another herself (app.js). A row or an equation (`ordered`) and a question that names
+// its count (`stated`) keep all their boxes; a plain sum and А/Б/В/Г have one answer and nothing to open.
+export const openAns = q => !!q.kind && !q.options && !((q.slots || 1) > 1 && (q.ordered || q.stated));
 // One box: any accepted answer will do. Several: every answer, once each, in any
 // order — and the count is taken from the question, never from what was typed.
 export function accepts(q, parts){
@@ -64,13 +68,13 @@ export function accepts(q, parts){
   return want.length === n && got.every((v, i) => want.indexOf(v) >= 0 && got.indexOf(v) === i);
 }
 // A competition's marks, by МБГ's rules: 2 points for the answer; 1 when a task has several answers and at least
-// half of them are given; 0 otherwise. Its other 1 point, the answer written beside one wrong one, is that same case
-// here: there are as many boxes as answers.
+// half of them are given, or when its one answer is written beside one wrong one; 0 otherwise.
+// ponytail: МБГ says no more for several answers beside wrong ones; a list of every number would take the 1 point
 export function mbgPts(q, parts){
   if(!parts) return 0;
   if(accepts(q, parts)) return 2;
-  const want = answers(q), found = new Set(parts.map(Number).filter(v => want.indexOf(v) >= 0)).size;
-  return (q.slots || 1) > 1 && 2 * found >= (q.slots || 1) ? 1 : 0;
+  const want = answers(q), got = parts.map(Number), found = new Set(got.filter(v => want.indexOf(v) >= 0)).size, n = q.slots || 1;
+  return n > 1 ? (2 * found >= n ? 1 : 0) : found && got.length === 2 ? 1 : 0;
 }
 
 export function drawQ(q){
@@ -165,6 +169,12 @@ export function tenFrame(q){
 // big one, a carried ten dropped, or the wrong sign. A worksheet kind names only the misreadings its own
 // slip() knows by an exact value (a step of the way given as the answer, the run continued the wrong way).
 export function slipOf(q, parts){
+  // a task whose answers she counts herself: some of them and nothing wrong, or all of them and one more
+  if(q.kind && openAns(q) && !parts.includes('')){
+    const all = answers(q), want = all.slice(0, q.slots || 1), got = parts.map(Number), wrong = got.filter(v => !all.includes(v)).length;
+    if(!wrong && new Set(got).size === got.length && got.length < want.length) return 'notAll';
+    if(wrong && want.every(v => got.includes(v))) return 'extra';
+  }
   if(q.kind && KIND[q.kind].slip) return parts.includes('') ? null : KIND[q.kind].slip(q, parts);
   if(parts.length !== 1 || parts[0] === '') return null;
   // a ± chain worked left to right: one sign read the other way round

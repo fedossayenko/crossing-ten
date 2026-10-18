@@ -11,7 +11,7 @@ export function genDropOne(){
     nums.sort((a, b) => a - b);
     const tot = nums.reduce((a, b) => a + b, 0), out = nums.filter(v => (tot - v) % m === 0);
     if(out.length < 1 || out.length > 2) continue;
-    return {kind:'dropone', nums, m, tot, slots: out.length, ans: out[0], alt: out.slice(1)};
+    return {kind:'dropone', nums, m, tot, slots: out.length, stated: out.length > 1, ans: out[0], alt: out.slice(1)};
   }
 }
 function drawDropOne(q){

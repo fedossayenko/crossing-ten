@@ -71,7 +71,7 @@
   {
     const markup = src.split('<script>')[0];
     const have = new Set([...markup.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
-    ['slot0','slot1','wave1','wave2','waveX','pAdd','reveal','compClock','statsNext','retryBtn'].forEach(i => have.add(i));   // drawn at runtime
+    ['slot0','slot1','wave1','wave2','waveX','pAdd','reveal','compClock','statsNext','retryBtn','more'].forEach(i => have.add(i));   // drawn at runtime
     const looked = [...new Set([...js.matchAll(/\$\('([^']+)'\)/g)].map(m => m[1]))];
     const gone = looked.filter(i => !have.has(i));
     if(gone.length) throw new Error('the script looks up elements that are not in the page: ' + gone.join(', '));
@@ -276,7 +276,11 @@
    [{kind:'both', T:19, A:13, B:7, both:1, lang:['английски', 'немски'], asksBoth:false, ans:6}, '7', 'otherQuestion'],
    [{kind:'sqcut', shape:4, mm:15, t:3, P:6, p:9, ans:3}, '9', 'otherQuestion'],
    [{kind:'segcount', shape:'dots', n:3, d:4, L:12, asks:0, ans:7}, '4', 'leftOut'],
-   [{kind:'named', shape:3, loose:true, S:12, ans:9}, '7', null], [{kind:'bucket', p:2, q:6, V:10, ans:2}, '1', null]
+   [{kind:'named', shape:3, loose:true, S:12, ans:9}, '7', null], [{kind:'bucket', p:2, q:6, V:10, ans:2}, '1', null],
+   // a task whose answers she counts herself (one box and a +): some of them, or all and one more; a stated count is not hers to find
+   [{kind:'weekday', n:32, q:4, r:4, slots:2, ans:4, alt:[5]}, '4', 'notAll'], [{kind:'weekday', n:32, q:4, r:4, slots:2, ans:4, alt:[5]}, '5 · 4 · 6', 'extra'],
+   [{kind:'three', a:7, b:9, slots:2, ans:2, alt:[16]}, '16', 'notAll'], [{kind:'three', a:7, b:9, slots:2, ans:2, alt:[16]}, '2 · 16', null],
+   [{kind:'consec', shape:'three', m:14, S:42, slots:3, stated:true, ans:13, alt:[14, 15]}, '13 · 14 · 16', null]
   ].forEach(([q, typed, want]) => {
     const got = Q.slipOf(q, typed.split(' · '));
     if(got !== want) throw new Error(q.kind + ' typed ' + typed + ' is read as ' + got + ', not ' + want);
@@ -288,7 +292,7 @@
     if(right) throw new Error('level ' + L.id + ': the right answer is named ' + right + ' ' + JSON.stringify(q));
     [q.ans + 1, q.ans - 1, 2*q.ans, q.ans + 10].forEach(v => { const k = Q.slipOf(q, [String(v)].concat((q.alt || []).map(String))); if(k) names.add(k); });
   }
-  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', 'leftOut', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
+  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', 'leftOut', 'notAll', 'extra', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
   Q.setLang('bg');
   console.log('misreadings: her 2026-10-18 papers named (8 of 9 and 4 of 6), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
 }

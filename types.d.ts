@@ -14,6 +14,8 @@ interface Question {
   slots?: number;
   /** the boxes take ans, then alt, in that order (a row, an equation); otherwise in any order */
   ordered?: boolean;
+  /** the question says how many answers there are («кои три числа», «двата сбора»): all its boxes are shown */
+  stated?: boolean;
   // a plain sum is a, op, b — kinds reuse those names for their own things, so they stay untyped
   /** А/Б/В/Г */
   options?: { id: number; v: any; text: [string, string] | string }[];

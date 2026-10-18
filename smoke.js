@@ -65,6 +65,8 @@ const server = http.createServer((req, res) => {
     const tick = () => new Promise(r => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(0); });
     const key = k => document.querySelector('.key[data-k="' + k + '"]').click();
     const type = v => String(v).split('').forEach(key);
+    // her answers: ✓ after each box of the task's own; a task whose answers she counts herself opens a box with + for each
+    const enter = vs => { vs.forEach((v, j) => { if(j && $('more')) $('more').click(); type(v); if(!$('more')) key('go'); }); if($('more')) key('go'); };
     const out = [];
     if(!navigator.serviceWorker.controller) out.push('the service worker is not serving the page');
     for(const l of LEVELS){
@@ -77,9 +79,9 @@ const server = http.createServer((req, res) => {
         if(shown.has($('stage').innerHTML)) out.push('level ' + l.id + ': task ' + (i + 1) + ' of ' + S.qs.length + ' repeats an earlier one');
         shown.add($('stage').innerHTML);
         if(i === 0){
-          for(let t = 0; t < 2; t++){ want.forEach(v => { type(v + 100 > 999 ? 1 : v + 100); key('go'); }); await tick(); }
+          for(let t = 0; t < 2; t++){ enter(want.map(v => v + 100 > 999 ? 1 : v + 100)); await tick(); }
         } else {
-          want.forEach(v => { type(v); key('go'); });
+          enter(want);
           if(!S.settled) out.push('level ' + l.id + ': right answer ' + want + ' not accepted');
         }
         await tick();
@@ -129,6 +131,21 @@ const server = http.createServer((req, res) => {
     document.querySelector('#pickGrades [data-v="1"]').click(); PICK_FOR = null; buildPicker();
     r.grade1 = PICK_GRADE === 1 && LEVELS.find(l => l.id === +document.querySelector('#nextUp [data-lvl]').dataset.lvl).grade === 1;
     document.querySelector('#pickGrades [data-v="2"]').click(); return r; })()`);
+  // A task whose answers she counts herself shows one box and a dashed +: how many answers there are is not given away.
+  // One right answer of two is «not all yet»; + opens a box, ⌫ on it empty closes it; on paper one of two is 1 point and
+  // the one answer beside a wrong one is 1 too. A question that names its count («кои три последователни числа») keeps its boxes.
+  const ob = await page(`(() => { const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), type = v => String(v).split('').forEach(K), boxes = () => document.querySelectorAll('#stage .slot:not(.more)').length;
+    let q; for(let i = 0; i < 200 && !(q && q.slots === 2); i++) q = raw(41);
+    newRound([q, raw(41)]); const r = { one: boxes() === 1 && !!$('more') && !$('more').hidden, hint: $('typeHint').textContent === t('typeHintMore') };
+    type(answers(q)[0]); $('more').click(); r.two = boxes() === 2 && S.at === 1; K('del'); r.closed = boxes() === 1 && S.parts.length === 1;
+    $('more').click(); K('go'); r.notAll = boxes() === 1 && S.slip[0] === 'notAll' && !S.settled;
+    type(answers(q)[1]); $('more').click(); type(answers(q)[0]); K('go'); r.both = S.settled && S.results[0] === false && $('more').hidden;
+    r.pts = [mbgPts(q, [String(answers(q)[0])]), mbgPts(q, answers(q).map(String)), mbgPts({ kind:'x', ans:5 }, ['5', '7']), mbgPts({ kind:'x', ans:5 }, ['5', '7', '8'])].join();
+    let c; for(let i = 0; i < 200 && !(c && c.kind === 'consec'); i++) c = raw(93);
+    newRound([c]); r.three = boxes() === 3 && !$('more') && $('typeHint').textContent === t('typeHint');
+    S.level = 1; paintPill(); newRound(); r.sum = !$('more');
+    return r; })()`);
+  expect(ob.one && ob.hint && ob.two && ob.closed && ob.notAll && ob.both && ob.pts === '1,2,1,0' && ob.three && ob.sum, 'a task whose answers she counts herself went wrong: ' + JSON.stringify(ob));
   expect(filt.grade === '2' && filt.papersHidden && filt.g2 && filt.papersWait && filt.papersShown && filt.y24 > 0 && filt.other && filt.back && filt.rounds && filt.winter && filt.focus && filt.grade1, 'the picker filters are wrong: ' + JSON.stringify(filt));
   // R4: the list beside the task holds the played level's group with it marked; on the levels page its group is
   // open and others folded, a fold she makes is kept, and a level played shows its first-try share
@@ -382,6 +399,7 @@ const server = http.createServer((req, res) => {
     const cp = JSON.parse(await run(`(async () => {
       const wait = ms => new Promise(r => setTimeout(r, ms));
       const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+      const enter = vs => { vs.forEach((v, j) => { if(j && $('more')) $('more').click(); [...String(v)].forEach(K); if(!$('more')) K('go'); }); if($('more')) K('go'); };
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100); $('compGo').click(); await wait(100);
       const out = { n: S.qs.length, choice: S.qs.filter(q => q.options && !q.own).length, two: S.qs.every(q => q.pts === 2), drill: S.qs.filter(q => !q.kind).length, clock: !!$('compClock'), skip: !$('skipBtn').hidden,
         header: $('levelName').textContent + ' ' + $('sub').textContent,
@@ -398,7 +416,7 @@ const server = http.createServer((req, res) => {
           await wait(200); if(S.i !== at) out.movedAlone = true;   // a choice waits for Next (a typed answer moves on at 150 ms)
           $('nextBtn').click();   // Next moves on at once
         } else {
-          for(let slot = 0; slot < (q.slots || 1); slot++){ [...(right ? String(answers(q)[slot]) : '999')].forEach(K); K('go'); }
+          enter(right ? answers(q).slice(0, q.slots || 1) : Array(q.slots || 1).fill(999));
           // a typed answer moves on by itself after 150 ms: wait for the next task, not a fixed time
           for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
         }
@@ -434,7 +452,7 @@ const server = http.createServer((req, res) => {
       $('levelPill').click(); await wait(100); $('compStart').click(); await wait(100); $('compGo').click(); await wait(100);
       { const q = S.qs[S.i];   // the first task right, as А/Б/В/Г or typed (a task with several boxes stays typed)
         if(q.options) document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click();
-        else for(let slot = 0; slot < (q.slots || 1); slot++){ [...String(answers(q)[slot])].forEach(K); K('go'); } }
+        else enter(answers(q).slice(0, q.slots || 1)); }
       await wait(50); if(COMP && COMP.ans[S.i]) await wait(250); $('quitBtn').click(); await wait(50);
       const r2 = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.quit = !$('sheet').hidden && COMP === null && r2.level === 'comp' && r2.t.filter(x => x[4] === -1).length === 19 && r2.t.filter(x => x[4] === 1).length === 1 &&

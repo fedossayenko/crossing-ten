@@ -1,5 +1,5 @@
 import { $, rnd, seeded, shuffle } from './core.js';
-import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, raw, setW, slipOf, why } from './questions.js';
+import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, openAns, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
@@ -379,15 +379,17 @@ function clock(){
 document.addEventListener('visibilitychange', clock);
 export function show(){
   const q = S.qs[S.i];
-  S.parts = Array(q.slots || 1).fill(''); S.at = 0;
+  S.parts = Array(openAns(q) ? 1 : q.slots || 1).fill(''); S.at = 0;
   S.tries = 0; S.revealed = false; S.settled = false; S.wrong = false; clock();
   clearTimers();
   $('stage').innerHTML = drawQ(q);
+  if(openAns(q)) oneBox(q);
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
   $('compRow').hidden = $('compNote').hidden = !COMP; $('compTop').hidden = !COMP; $('levelPill').hidden = !!COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
   $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = $('sideBtn').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options; $('typeHint').hidden = !!q.options || !!COMP;
+  $('typeHint').textContent = t($('more') ? 'typeHintMore' : 'typeHint');
   if(q.options) paintChoices();
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
@@ -409,7 +411,24 @@ function saveRound(){
       slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, ms:S.ms, after:S.after } }));
   } catch(e){}
 }
+// A task whose answers she counts herself (openAns): its first box and a dashed + after it, which opens another; the
+// kind's other boxes and the words between them go. A box she opens follows a comma whatever the kind writes, so
+// nothing on the screen says how many answers there are, as on paper.
+function oneBox(q){
+  const s0 = $('slot0'), last = $('slot' + ((q.slots || 1) - 1));
+  if(!s0) return;
+  if(last && last !== s0){ const r = document.createRange(); r.setStartAfter(s0); r.setEndAfter(last); r.deleteContents(); }
+  s0.insertAdjacentHTML('afterend', '<button class="slot more" id="more" aria-label="' + t('moreAns') + '">+</button>');
+  $('more').onclick = e => { e.stopPropagation(); press('more'); };
+}
+// her boxes, n of them (one at least): opened after the last, closed from the end
+function setBoxes(n){
+  while(S.parts.length < n){ const k = S.parts.length; S.parts.push(''); $('more').insertAdjacentHTML('beforebegin', '<span class="sep" id="sep' + k + '">, </span><span class="slot" id="slot' + k + '"></span>'); }
+  while(S.parts.length > Math.max(n, 1)){ const k = S.parts.length - 1; S.parts.pop(); $('slot' + k).remove(); $('sep' + k).remove(); }
+  S.at = Math.min(S.at, S.parts.length - 1);
+}
 function paintSlot(){
+  if($('more')) $('more').hidden = S.settled || S.wrong;
   S.parts.forEach((p, i) => {
     const el = $('slot' + i);
     if(!el) return;
@@ -440,6 +459,7 @@ function paintDots(){
 }
 function press(k){
   wake();
+  if(k === 'more' && (S.settled || !$('more'))) return;   // only a task whose answers she counts herself opens boxes
   // Settled: any key moves on, but a digit must not be eaten by the advance —
   // it is the first digit of the next answer. A shown solution waits for →: a stray digit must not skip it.
   if(S.settled){
@@ -448,14 +468,20 @@ function press(k){
     if(k >= '0' && k <= '9'){ S.parts[0] = k; sfx.tap(); paintSlot(); }
     return;
   }
-  if(S.wrong){ retry(); if(k === 'del' || k === 'go') return; }   // the first digit after a miss starts a new answer
+  if(S.wrong){ retry(); if(k === 'del' || k === 'go' || k === 'more') return; }   // the first digit after a miss starts a new answer
+  if(k === 'more'){   // another box, once this one has an answer
+    if(S.parts[S.at] !== '' && S.parts.length < 6){ setBoxes(S.parts.length + 1); S.at = S.parts.length - 1; sfx.tap(); paintSlot(); }
+    return;
+  }
   if(k === 'del'){
-    if(S.parts[S.at] === '' && S.at > 0) S.at--;
+    if(S.parts[S.at] === '' && S.at > 0){ if($('more')) setBoxes(S.parts.length - 1); else S.at--; }   // an empty box she opened closes
     else S.parts[S.at] = S.parts[S.at].slice(0,-1);
     paintSlot(); return;
   }
   if(k === 'go'){
-    // With more than one box, ✓ fills the next one before it submits.
+    // Boxes she opened are hers: ✓ hands them in (an empty last one closes). With more than one box of the task's own,
+    // ✓ fills the next one before it submits.
+    if($('more')){ if(S.parts.length > 1 && S.parts[S.at] === '') setBoxes(S.parts.length - 1); check(); return; }
     if(S.at < S.parts.length - 1 && S.parts[S.at] !== ''){ S.at++; paintSlot(); return; }
     check(); return;
   }
@@ -501,6 +527,7 @@ function check(){
     quick ? sfx.good() : sfx.ok();
     S.settled = true; clock();
     $('go').textContent = '→';
+    if($('more')) $('more').hidden = true;
     paintDots();
     // a solution picture plays step by step and is there to be looked at: it waits for her tap on → or the card; a treat is eaten to the end
     if(!shown.includes('<svg')) S.timers.push(setTimeout(next, cheer === 'eat' ? 2800 : quick ? 1900 : 2700));
@@ -535,6 +562,7 @@ function check(){
 }
 // After a miss: the struck answer goes, the keys come back, the hint stays.
 function retry(){
+  if($('more')) setBoxes(1);
   S.wrong = false; S.parts = S.parts.map(() => ''); S.at = 0;
   $('card').classList.remove('missed');
   paintSlot();
@@ -546,6 +574,7 @@ function reveal(){
   S.revealed = true; S.settled = true; S.wrong = false; clock();
   S.after[S.i] = S.tries > 1 ? 3 : 2;   // missed twice, or she asked for it after one miss
   $('card').classList.remove('missed');
+  if($('more')) setBoxes(q.slots || 1);   // every answer, in as many boxes
   S.parts = answers(q).slice(0, S.parts.length).map(String);
   $('verdict').className = 'verdict';
   $('verdict').textContent = eqText(q);
@@ -1595,6 +1624,7 @@ document.addEventListener('keydown', e => {
   }
   if(e.key >= '0' && e.key <= '9') press(e.key);
   else if(e.key === 'Backspace') press('del');
+  else if(e.key === ',' || e.key === '+' || e.key === ';') press('more');
   else if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); press('go'); }
 });
 
@@ -1675,7 +1705,7 @@ startSync();
 Object.defineProperties(window, Object.fromEntries(Object.entries({
   $: () => $, ARCHIVE: () => ARCHIVE, BADGES: () => BADGES, COMP: () => COMP, IN: () => IN, LEVELS: () => LEVELS, LOCAL: () => LOCAL, LS: () => LS,
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
-  answer: () => answer, answers: () => answers, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
+  answer: () => answer, answers: () => answers, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
   notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

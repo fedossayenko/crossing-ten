@@ -10,7 +10,7 @@ export function genMissing(){
     const a0 = 1 + rnd(6), s0 = 1 + rnd(3), seq = [a0];
     for(let i = 0; i < 9; i++) seq.push(seq[i] + s0 + i);
     const g1 = 4 + rnd(2), g2 = g1 + 2;
-    return {kind:'missing', grows:1, seq, gaps:[g1, g2], slots:2, ans: seq[g1], alt:[seq[g2]]};
+    return {kind:'missing', grows:1, seq, gaps:[g1, g2], slots:2, stated:true, ans: seq[g1], alt:[seq[g2]]};
   }
   if(Math.random() < 0.3){
     // Задача 6: a single gap, and the missing number itself is the answer. The rule has
