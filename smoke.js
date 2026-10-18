@@ -141,7 +141,7 @@ const server = http.createServer((req, res) => {
     $('more').click(); K('go'); r.notAll = boxes() === 1 && S.slip[0] === 'notAll' && !S.settled;
     type(answers(q)[1]); $('more').click(); type(answers(q)[0]); K('go'); r.both = S.settled && S.results[0] === false && $('more').hidden;
     r.pts = [mbgPts(q, [String(answers(q)[0])]), mbgPts(q, answers(q).map(String)), mbgPts({ kind:'x', ans:5 }, ['5', '7']), mbgPts({ kind:'x', ans:5 }, ['5', '7', '8'])].join();
-    let c; for(let i = 0; i < 200 && !(c && c.kind === 'consec'); i++) c = raw(93);
+    let c; for(let i = 0; i < 200 && !(c && c.slots === 3); i++) c = raw(93);
     newRound([c]); r.three = boxes() === 3 && !$('more') && $('typeHint').textContent === t('typeHint');
     S.level = 1; paintPill(); newRound(); r.sum = !$('more');
     return r; })()`);
@@ -407,7 +407,7 @@ const server = http.createServer((req, res) => {
       out.top = !$('compTop').hidden && $('levelPill').hidden && document.querySelectorAll('#dots .step').length === 20 && !$('compNote').hidden;
       $('skipBtn').click(); await wait(50); out.afterSkip = S.i; out.skipSeg = !!document.querySelector('#dots .step.skip') && $('qnum').textContent.includes(t('skippedN', 1));
       const order = [];
-      for(let step = 0; step < 25 && COMP; step++){
+      for(let step = 0; step < 25 && COMP && !COMP.check; step++){
         const q = S.qs[S.i], right = order.length < 12, at = S.i;
         order.push(S.i);
         if(q.options){
@@ -421,6 +421,17 @@ const server = http.createServer((req, res) => {
           for(let t = 0; t < 100 && COMP && S.i === at; t++) await wait(20);
         }
       }
+      // «Провери»: every task answered, the paper waits with her answers listed; a row opens its task with her answer in it,
+      // «Към проверката» goes back, ✓ on it comes back too, and «Предай листа» hands it in
+      out.check = !!COMP && COMP.check && $('stage').querySelectorAll('.chk').length === 20 && $('sheet').hidden && $('pad').hidden && !!$('handIn');
+      { const k = order[0], q = S.qs[k];
+        $('stage').querySelector('.chk[data-k="' + k + '"]').click(); await wait(50);
+        out.reopen = S.i === k && !COMP.check && (q.options ? !!document.querySelector('#choices .ch.picked, #choices [aria-pressed="true"]') || COMP.picked[k] !== undefined : S.parts.join() === COMP.ans[k].join()) && $('skipBtn').textContent === t('toCheck');
+        $('skipBtn').click(); await wait(50); out.backList = COMP.check && $('stage').querySelectorAll('.chk').length === 20;
+        $('stage').querySelector('.chk[data-k="' + k + '"]').click(); await wait(50);
+        if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(50); $('nextBtn').click(); } else K('go');
+        for(let t = 0; t < 50 && !COMP.check; t++) await wait(20);
+        out.again = COMP.check; $('handIn').click(); await wait(50); }
       out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
       const r = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.round = { level: r.level, n: r.n, firstTry: r.firstTry, pts: r.pts, max: r.max, levels: (r.levels || []).length, secs: Number.isInteger(r.secs),
@@ -483,7 +494,7 @@ const server = http.createServer((req, res) => {
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
-      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.marks && cp.marks.easy && cp.marks.fix && cp.marks.right && cp.marks.mark && cp.marks.met && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
+      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.check && cp.reopen && cp.backList && cp.again && cp.marks && cp.marks.easy && cp.marks.fix && cp.marks.right && cp.marks.mark && cp.marks.met && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);

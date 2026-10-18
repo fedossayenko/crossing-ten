@@ -779,6 +779,12 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .crow .co{font-weight:600; font-family:Fredoka,var(--ui-font)}
 .crow.ok .co{color:var(--good)} .crow.no .co{color:var(--bad)} .crow.skip .co{color:var(--muted); font-family:inherit; font-weight:500}
 .crow .cp{text-align:right; color:var(--muted); font-variant-numeric:tabular-nums}
+/* a paper's check before it is handed in: each task a row to open, the quick ones (under a minute) marked */
+.check{display:flex; flex-direction:column; gap:12px; width:100%}
+.check .meta{font-size:14px; color:var(--muted); margin:0}
+.crow.chk{width:100%; background:transparent; border:0; color:var(--ink); text-align:left; font:inherit; font-size:15px; cursor:pointer}
+.crow.chk.quick .cp{color:var(--warmink); font-weight:700}
+.crow.chk.quick{background:color-mix(in srgb, var(--warmbg) 55%, transparent)}
 .clegend{font-size:13px; color:var(--muted); padding:12px 16px 4px}   /* in a .gcard.list, which has no padding of its own */
 /* competition: how far through the paper, and the clock, in place of the dots */
 /* a paper's top bar: ✕, its clock, how many answered; its segments mark answered (accent) and skipped (outlined) */

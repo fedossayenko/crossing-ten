@@ -12,7 +12,8 @@ import { accepts, seededRaw, slipOf } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, back, clearTimers, compFocus, compTick, finish, go, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, go, groupOf, newRound, setComp, sfx, show } from './app.js';
+import { letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
@@ -80,7 +81,7 @@ export function paintCompSheet(){
   const f = compFocus(), best = bestComp(NEXT || f.key);
   $('compFrom').innerHTML = '<span class="lab">' + t('compFrom') + '</span><b>' + (NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name) + '</b>' +
     '<span class="meta">' + t(NEXT ? 'compForecastHow' : 'compHow') + '</span>' + (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '');
-  $('compRules').innerHTML = [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRulePts', 2 * COMP_N)].map(s => '<li>' + s + '</li>').join('');
+  $('compRules').innerHTML = [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('compRulePts', 2 * COMP_N)].map(s => '<li>' + s + '</li>').join('');
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.
 export function compAnswer(){
@@ -98,9 +99,28 @@ function compNext(){
   if(!COMP) return;
   clearTimers();
   COMP.queue = COMP.queue.filter(k => !COMP.ans[k]);
-  if(!COMP.queue.length){ compEnd(); return; }
+  if(!COMP.queue.length){ compCheck(); return; }
   S.i = COMP.queue[0];
   show();
+}
+// Every task has an answer: before it is handed in, her answers to look over, as on paper, where she can turn back
+// to any task. A tap opens it with her answer in it, to keep (back to the list) or change (✓). The quick ones are
+// marked: her halfway numbers on 2026-10-18 each took under a minute. «Предай» hands it in; so does the clock.
+export function compCheck(){
+  clearTimers(); S.settled = true; clock();   // the last task's time stops here
+  COMP.check = COMP.done = true;
+  const said = k => S.qs[k].options ? letterOf(COMP.picked[k]) : COMP.ans[k].join(', ');
+  $('stage').innerHTML = '<div class="check"><p class="meta">' + t('checkHow') + '</p><div class="gcard list">' + S.qs.map((q, k) => {
+    const ms = S.ms[k] || 0;
+    return '<button class="crow chk' + (ms < 60000 ? ' quick' : '') + '" data-k="' + k + '"><span class="cn">' + (k + 1) + '</span><span class="cg">' +
+      groupOf(LEVELS.find(l => l.id === q.lvl)) + '</span><span class="co">' + said(k) + '</span><span class="cp">' + compTime(ms) + '</span></button>';
+  }).join('') + '</div><button class="btn" id="handIn">' + t('handIn') + '</button></div>';
+  $('qnum').textContent = t('checkTitle'); $('run').innerHTML = '';   // no task's points: the whole paper
+  $('compCount').textContent = String(S.qs.length); $('dots').querySelectorAll('.step').forEach(s => { s.className = 'step done'; });   // every task has its answer
+  $('pad').hidden = $('choices').hidden = $('typeHint').hidden = $('compRow').hidden = $('compNote').hidden = true;
+  $('verdict').textContent = ''; $('hint').innerHTML = '';
+  $('stage').querySelectorAll('.chk').forEach(b => b.onclick = () => { COMP.check = false; S.i = +b.dataset.k; show(); });
+  $('handIn').onclick = e => { e.stopPropagation(); compEnd(); };
 }
 export function compEnd(){
   if(!COMP) return;
@@ -125,6 +145,7 @@ export function paintCompCard(){
 export function startCompete(){
   $('skipBtn').onclick = () => {
     if(!COMP) return;
+    if(COMP.done){ compCheck(); return; }   // after the check has opened, this button goes back to it
     (COMP.skipped = COMP.skipped || new Set()).add(S.i);   // drawn outlined until she answers it
     COMP.queue.push(COMP.queue.shift());
     S.i = COMP.queue[0];

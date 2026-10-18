@@ -371,7 +371,7 @@ function letSleep(){ const p = awake; awake = null; if(p) p.then(l => l && l.rel
 document.addEventListener('visibilitychange', keepAwake);
 // Her time on each task (S.ms): only while it is on screen and still open, so a hidden app, a locked iPad, another
 // screen or a round picked up again next morning add nothing. A paper's own time is its hour, as on paper.
-function clock(){
+export function clock(){
   const now = Date.now();
   if(S.on) S.ms[S.cur] = (S.ms[S.cur] || 0) + now - S.on;
   S.cur = S.i; S.on = ROUTE === 'play' && document.visibilityState === 'visible' && !S.settled && S.qs.length ? now : 0;
@@ -384,9 +384,12 @@ export function show(){
   clearTimers();
   $('stage').innerHTML = drawQ(q);
   if(openAns(q)) oneBox(q);
+  // a paper's task opened again from the check: her answer in its boxes, to keep or to change
+  const had = COMP && !q.options && COMP.ans[S.i];
+  if(had){ if($('more')) setBoxes(had.length); S.parts = had.slice(); S.at = S.parts.length - 1; }
   $('qnum').textContent = COMP ? t('compTask', S.i + 1, groupOf(LEVELS.find(l => l.id === q.lvl))) : t('taskOf', S.i + 1, S.qs.length);
   // a paper: Skip, and Next once an option is chosen (a typed answer goes on with ✓); ✕ ends it instead of Home
-  $('compRow').hidden = $('compNote').hidden = !COMP; $('compTop').hidden = !COMP; $('levelPill').hidden = !!COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
+  $('compRow').hidden = !COMP; $('compNote').hidden = !COMP || !!COMP.done; $('skipBtn').textContent = t(COMP && COMP.done ? 'toCheck' : 'skip'); $('compTop').hidden = !COMP; $('levelPill').hidden = !!COMP; $('nextBtn').hidden = !(COMP && q.options); $('nextBtn').disabled = !COMP || !COMP.ans[S.i];
   $('quitBtn').hidden = !COMP; $('homeBtn').hidden = !!COMP; $('side').hidden = $('sideBtn').hidden = !!COMP;
   $('choices').hidden = !q.options; $('pad').hidden = !!q.options; $('typeHint').hidden = !!q.options || !!COMP;
   $('typeHint').textContent = t($('more') ? 'typeHintMore' : 'typeHint');
@@ -459,6 +462,7 @@ function paintDots(){
 }
 function press(k){
   wake();
+  if(COMP && COMP.check) return;   // the check's list is on screen: nothing to type into
   if(k === 'more' && (S.settled || !$('more'))) return;   // only a task whose answers she counts herself opens boxes
   // Settled: any key moves on, but a digit must not be eaten by the advance —
   // it is the first digit of the next answer. A shown solution waits for →: a stray digit must not skip it.
@@ -955,7 +959,7 @@ $('homeBtn').onclick = () => go('today', true);
 // a tab swaps the section in place, so the back gesture does not walk through the tabs
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => go(b.dataset.r, true));
 
-const groupOf = l => l && t('groups')[groupKey(l)] || '';
+export const groupOf = l => l && t('groups')[groupKey(l)] || '';
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
 /* ---------- the mistakes notebook (#/notebook, drawn by js/ui/notebook.js) ----------
    Her missed tasks of the last 30 days, drawn again from their level and seed, grouped by the mistake slipOf
@@ -1594,7 +1598,7 @@ $('closePlayers').onclick = () => { chose(); back(); };
 /* ---------- controls ---------- */
 $('pad').addEventListener('click', e => { const b = e.target.closest('.key'); if(b) press(b.dataset.k); });
 $('again').onclick = () => newRound();
-$('card').addEventListener('click', () => { if(S.settled) next(); });
+$('card').addEventListener('click', () => { if(S.settled && !(COMP && COMP.check)) next(); });   // a paper's check list is settled, not done
 // A sheet up: the task under it is out of reach (no Tab into the hidden keys), and focus starts in the sheet
 // that just opened, where a keyboard or a screen reader should be.
 const SHEETS = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.sheet')]);
