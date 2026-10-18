@@ -22,12 +22,13 @@ const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kin
 // Nor a level only Аз и числата asks, a school contest far easier than an olympiad paper, unless that contest is the focus.
 // A paper is for one grade and keeps to the focus; a focus with nothing to draw from is the whole grade.
 const olympiad = f => LEVELS.filter(l => l.src !== 'basics' && (f.comp === 'ach' || l.papers.some(p => !p.startsWith('ach-'))) && f.has(l));
+const poolOf = f => { const ls = olympiad(f); return ls.length ? ls : olympiad({ comp: '', has: l => l.grade === f.grade }); };
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 // drawn by how often real papers ask it: an every-year task turns up more than a one-off
 const pick = pool => { let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0)); return pool.find(l => (w -= 1 + l.freq) < 0); };
 export function compTasks(paper, f = compFocus()){
   if(paper === 'forecast') return FORECAST.map(task);
-  const focused = olympiad(f), OLYMPIAD = focused.length ? focused : olympiad({ comp: '', has: l => l.grade === f.grade });
+  const OLYMPIAD = poolOf(f);
   // one year's paper has fewer levels than tasks: each of them once, then some again with other numbers, easiest first
   if(OLYMPIAD.length <= COMP_N){
     const ls = OLYMPIAD.slice();
@@ -47,7 +48,9 @@ export function compTasks(paper, f = compFocus()){
     used.add(l.id); lastGrp = l.grp;
     out.push(task(l.id));
   }
-  return out;
+  // easiest first, as on a paper: the bands overlap, so within a band too (stable: one difficulty keeps the order drawn)
+  const d = x => LEVELS.find(l => l.id === x.lvl).d;
+  return out.sort((a, b) => d(a) - d(b));
 }
 // her best paper from the same place (compFocus's key, or 'forecast'); a paper marked the old way
 // (3–5 points a task, some А/Б/В/Г) doesn't compare: only those at 2 points a task
@@ -110,10 +113,13 @@ export function compEnd(){
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){
-  const f = compFocus(), best = bestComp(f.key);
+  const f = compFocus(), best = bestComp(f.key), pool = poolOf(f);
+  // how much of what a paper draws from she has met in one
+  const seen = new Set(LOCAL.rounds.filter(r => r.level === 'comp').flatMap(r => (r.t || []).map(e => e[0]))), met = pool.filter(l => seen.has(l.id)).length;
   $('compStart').innerHTML = '<span class="compicon">' + ICON(GLYPH.stopwatch[1]) + '</span><span class="nm"><span class="lab">' +
     t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b><span class="meta">' + f.name + '</span>' +
-    (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');
+    (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') +
+    (met ? '<span class="meta">' + t('compMet', met, pool.length) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');
 }
 // The buttons, wired once app.js has set the page up (as a module this file runs first).
 export function startCompete(){

@@ -417,6 +417,16 @@ const server = http.createServer((req, res) => {
           $('toStats').textContent === t('backToday') && row.getAttribute('aria-expanded') === 'true' && !row.nextElementSibling.hidden && row.nextElementSibling.textContent.length > 3; }
       out.table = $('compTable').querySelectorAll('.crow.ok').length === 12 && $('compTable').querySelectorAll('.crow').length === 20 && !$('compWrap').hidden;
       out.cps = [...$('compTable').querySelectorAll('.crow .cp')].reduce((a, e) => a + +e.textContent, 0);   // each row: the points it got
+      // the paper went easiest first; the levels page marks its levels ✓/✗ and lists first the ones it found wrong (no round
+      // of their own since), and the paper's card says how many of the levels a paper draws from she has met in one
+      { const easy = S.qs.map(q => LEVELS.find(l => l.id === q.lvl).d).every((d, i, a) => !i || d >= a[i - 1]);
+        $('sheet').hidden = true; $('levelPill').click(); await wait(100);
+        const lastOk = {}; r.t.forEach(x => { lastOk[x[0]] = x[4] === 1; }), rows = [...$('pickFix').querySelectorAll('.pick')];
+        const met = new RegExp(t('compMet', '§', '¤').replace('§', '[1-9][0-9]*').replace('¤', '[0-9]+'));
+        out.marks = { easy, fix: rows.length > 0 && rows.every(b => lastOk[b.dataset.lvl] === false && b.querySelector('.ppr.no i.no')),
+          right: Object.keys(lastOk).every(id => !lastOk[id] || !$('pickFix').querySelector('[data-lvl="' + id + '"]')),
+          mark: Object.keys(lastOk).every(id => [...document.querySelectorAll('#pickAll .pick[data-lvl="' + id + '"]')].every(b => b.querySelector('.ppr' + (lastOk[id] ? ':not(.no)' : '.no')))),
+          met: met.test($('compStart').textContent) }; }
       // a second paper, stopped with ✕ after one answer: that answer counts, the other 19 are unanswered, the best so far is shown;
       // a paper marked the old way (3–5 points a task, some А/Б/В/Г) is no paper to beat: its 60 / 64 is not the best so far
       const old = Object.assign({}, LOCAL.rounds[LOCAL.rounds.length - 1], { id: 'old', pts: 60, max: 64 }); LOCAL.rounds.push(old);
@@ -455,7 +465,7 @@ const server = http.createServer((req, res) => {
     const want = cp.round && cp.round.pts + ' / ' + cp.round.max;
     expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
-      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
+      cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.marks && cp.marks.easy && cp.marks.fix && cp.marks.right && cp.marks.mark && cp.marks.met && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
       cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);

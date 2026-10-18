@@ -1158,12 +1158,14 @@ function ago(ts){
   if(days < 7) return t('daysAgo', days);
   return new Date(ts).toLocaleDateString(LANG_TAG[LANG], { day:'numeric', month:'short' });
 }
+// A level's own rounds, and its tasks in papers (`paper`, oldest first): a level met only in a paper has no `last`.
 function levelHistory(rounds){
-  const m = {};
+  const m = {}, of = id => m[id] || (m[id] = { last:null, n:0, f:0, rounds:0, paper:[] });
   rounds.forEach(r => {
-    const h = m[r.level] || (m[r.level] = { last:null, n:0, f:0, rounds:0 });
+    const h = of(r.level);
     h.n += r.n; h.f += r.firstTry; h.rounds++;
     if(!h.last || r.ts > h.last.ts) h.last = r;
+    if(r.level === 'comp') (r.t || []).forEach(e => of(e[0]).paper.push({ ts:r.ts, ok:!!e[4] }));
   });
   return m;
 }
@@ -1248,16 +1250,27 @@ const myGrade = () => PLAYER.grade || 2;
 const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
   [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
 const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
+// Her last three answers to it in papers, ✓ or ✗, oldest first: one task a paper, so what happened there, not a grade.
+// Practice can read 100% on a level a paper found wrong (no hint there, no second try): the mark says so beside it.
+function paperMark(h){
+  const p = h ? h.paper : [], k = p.filter(x => x.ok).length;
+  return p.length ? '<span class="ppr' + (p[p.length - 1].ok ? '' : ' no') + '" title="' + t('inPapers', k, p.length) + '" aria-label="' + t('inPapers', k, p.length) + '">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + GLYPH.stopwatch[1] + '"/></svg>' +
+    p.slice(-3).map(x => '<i class="' + (x.ok ? 'ok">✓' : 'no">✗') + '</i>').join('') + '</span>' : '';
+}
+// To put right: her last answer to it in a paper was wrong, and no round of its own has gone well since (4 in 5 first try).
+const toFix = h => { const p = h && h.paper[h.paper.length - 1];
+  return !!p && !p.ok && !(h.last && h.last.ts > p.ts && h.last.n && h.last.firstTry / h.last.n >= 0.8); };
 function levelStatus(l, m, hist){
   if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
   const h = hist[l.id];
-  if(!h) return LOCAL.rounds.length ? '<span class="isnew">' + t('isNew') + '</span>' : '';   // before her first round every level is new: no tag on each
+  if(!h || !h.last) return h || !LOCAL.rounds.length ? '' : '<span class="isnew">' + t('isNew') + '</span>';   // before her first round every level is new: no tag on each; met in a paper, it is not new
   const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
   return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + ago(h.last.ts) + '</i></span>';
 }
 const levelRow = (l, m, hist, tags = '') => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
   '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + tags + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
-  hard(l) + levelStatus(l, m, hist) + '</button>';
+  paperMark(hist[l.id]) + hard(l) + levelStatus(l, m, hist) + '</button>';
 // The list beside the task on a wide screen (app.css shows it): the levels of the one being played.
 // ponytail: redrawn when the level changes or a round ends; 20-odd rows, cheap.
 function paintSide(){
@@ -1365,6 +1378,9 @@ function buildPicker(){
   $('pickDue').hidden = !due.length;
   $('pickDue').innerHTML = '<span class="nm"><span class="lab">' + t('forToday') + '</span><span class="eq">' + t('dueLearned', due.length) + '</span></span>' + CHEV;
   $('pickDue').onclick = () => { if(due.length){ S.level = due[0].id; paintPill(); newRound(); } };
+  // first, what a paper found wrong and no good round has put right since, easiest first
+  const fix = listed.filter(l => toFix(hist[l.id])).sort((a, b) => a.d - b.d || b.freq - a.freq);
+  $('pickFix').innerHTML = fix.length ? '<div class="grouphead"><b>' + t('paperMissed') + '</b><span>' + t('fixUntil') + '</span></div><div class="gcard list">' + fix.map(row).join('') + '</div>' : '';
   // a competition picked is something to train for: one path through its levels, easiest first,
   // in the order the suggestion takes them
   const path = focused() && LEVELS.filter(l => shown(l) && (!PICK_TOPIC || groupKey(l) === PICK_TOPIC)).sort((a, b) => a.d - b.d || b.freq - a.freq);

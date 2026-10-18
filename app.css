@@ -481,6 +481,11 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .tick{width:26px; height:26px; border-radius:50%; background:var(--goodbg); color:var(--good); display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto}
 .tick svg{width:16px; height:16px}
 .isnew{font-size:11px; font-weight:700; padding:3px 8px; border-radius:999px; background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--accent-ink)}
+/* a level's answers in papers: ✓/✗ each, the pill green or red by the last one */
+.ppr{flex:0 0 auto; display:inline-flex; align-items:center; gap:1px; padding:2px 6px 2px 4px; border-radius:999px; background:var(--goodbg); color:var(--goodink); font-size:12px; font-weight:800}
+.ppr.no{background:var(--badbg); color:var(--badink)}
+.ppr svg{width:13px; height:13px; margin-right:2px}
+.ppr i{font-style:normal} .ppr i.ok{color:var(--goodink)} .ppr i.no{color:var(--badink)}
 .nextcard{
   display:flex; align-items:center; gap:14px; width:100%; text-align:left; padding:12px 16px; border-radius:18px;
   border:2px solid var(--accent) !important; color:var(--ink);
