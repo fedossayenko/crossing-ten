@@ -105,4 +105,9 @@ function whySegCount(q, full){
   }
   return tr('от първата ', 'від першої ') + (q.n - 1) + tr(', от втората още ', ', від другої ще ') + (q.n - 2) + ', … &nbsp;→&nbsp; ' + segCountSum(q.n) + ' = ' + q.ans + segArcs(q.n, true);
 }
-KIND.segcount = { draw:drawSegCount, eq:eqSegCount, why:whySegCount };
+// the total with one colour left out: yellow and red without the blue (her 4 for 7 on 2026-10-18), or any one of them
+function slipSegCount(q, parts){
+  if(q.shape !== 'dots' || q.asks !== 0) return null;
+  return [q.n + 1, q.n + 2, 2*q.n - 1].includes(+parts[0]) ? 'leftOut' : null;
+}
+KIND.segcount = { draw:drawSegCount, eq:eqSegCount, why:whySegCount, slip:slipSegCount };

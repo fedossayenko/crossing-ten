@@ -36,9 +36,12 @@ export const ARCHIVE = (() => {
 })();
 // What a player keeps: rounds since her last reset, and none a grown-up struck out (`dropped`, synced on her record)
 export const keeps = p => r => r.ts >= (p.resetAt || 0) && !(p.dropped || []).includes(r.id);
+// A round of tasks from other levels (a paper's redo, the misses practised) is no level's record: 'mix', its levels
+// listed as a paper's are. Until 2026-10-18 it went under the level picked before it; read back, it is put right.
+export const unmix = r => { if(typeof r.level === 'number' && Array.isArray(r.t) && r.t.some(e => e[0] !== r.level)) Object.assign(r, { level:'mix', levels:r.t.map(e => e[0]) }); return r; };
 // Two logs of one player as one, each round once, oldest first.
 export function unionRounds(a, b){
   const seen = new Set(), out = [];
-  a.concat(b).forEach(r => { if(r && !seen.has(r.id)){ seen.add(r.id); out.push(r); } });
+  a.concat(b).forEach(r => { if(r && !seen.has(r.id)){ seen.add(r.id); out.push(unmix(r)); } });
   return out.sort((x, y) => x.ts - y.ts);
 }

@@ -269,7 +269,14 @@
    [{kind:'coins', shape:'mix', n:4, vals:[5,6,7], ans:5, alt:[6,7]}, '3 · 2 · 1', 'otherQuestion'],
    [{kind:'paint', R:5, C:7, r:3, c:1, left:12, asksLeft:true, ans:12}, '16', 'rowsCols'],
    [{kind:'shared', shape:0, P:19, p1:11, p2:12, ans:2}, '4', 'twice'],
-   [{kind:'sums', shape:2, top:9, ans:10}, '45', 'countThem'], [{kind:'sums', shape:2, top:9, ans:10}, '9', 'zero']
+   [{kind:'sums', shape:2, top:9, ans:10}, '45', 'countThem'], [{kind:'sums', shape:2, top:9, ans:10}, '9', 'zero'],
+   // her second paper that day (28 / 40): 4 of 6 named; 7 for 9 (digits adding to 12) and 1 for 2 (the bucket) are not
+   [{kind:'sumdiff', a:7, d:4, slots:2, ans:18, alt:[10]}, '11 · 3', 'otherQuestion'], [{kind:'sumdiff', a:7, d:4, slots:2, ans:18, alt:[10]}, '18 · 3', null],
+   [{kind:'both', T:19, A:13, B:7, both:1, lang:['английски', 'немски'], asksBoth:false, ans:6}, '1', 'otherQuestion'],
+   [{kind:'both', T:19, A:13, B:7, both:1, lang:['английски', 'немски'], asksBoth:false, ans:6}, '7', 'otherQuestion'],
+   [{kind:'sqcut', shape:4, mm:15, t:3, P:6, p:9, ans:3}, '9', 'otherQuestion'],
+   [{kind:'segcount', shape:'dots', n:3, d:4, L:12, asks:0, ans:7}, '4', 'leftOut'],
+   [{kind:'named', shape:3, loose:true, S:12, ans:9}, '7', null], [{kind:'bucket', p:2, q:6, V:10, ans:2}, '1', null]
   ].forEach(([q, typed, want]) => {
     const got = Q.slipOf(q, typed.split(' · '));
     if(got !== want) throw new Error(q.kind + ' typed ' + typed + ' is read as ' + got + ', not ' + want);
@@ -281,9 +288,19 @@
     if(right) throw new Error('level ' + L.id + ': the right answer is named ' + right + ' ' + JSON.stringify(q));
     [q.ans + 1, q.ans - 1, 2*q.ans, q.ans + 10].forEach(v => { const k = Q.slipOf(q, [String(v)].concat((q.alt || []).map(String))); if(k) names.add(k); });
   }
-  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
+  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', 'leftOut', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
   Q.setLang('bg');
-  console.log('misreadings: her 2026-10-18 paper named (8 of 9; 129 for 139 is a sum slip), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
+  console.log('misreadings: her 2026-10-18 papers named (8 of 9 and 4 of 6), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
+}
+
+/* A round of tasks from other levels is no level's record: her paper's redo of 2026-10-18 was logged under 112, the level
+   picked before it; read back it is 'mix', with its levels. A level's own round and a paper stay as they are. */
+{
+  const redo = { id:'x', level:112, n:2, firstTry:1, t:[[21, 5, 1, null, 1, 42], [55, 1, 2, '48', 0, 47]] };
+  const own = { id:'y', level:21, n:1, firstTry:1, t:[[21, 5, 1, null, 1, 42]] }, comp = { id:'z', level:'comp', n:1, firstTry:1, t:[[21, 5, 1, null, 1, 42]] };
+  const [a, b, c] = APP.unionRounds([redo, own, comp], []);
+  if(a.level !== 'mix' || a.levels.join() !== '21,55' || b.level !== 21 || c.level !== 'comp') throw new Error('mixed round read back as ' + JSON.stringify([a.level, b.level, c.level]));
+  console.log('rounds: a mix of levels (a paper\'s redo, the misses practised) is logged as no level\'s, her 112 put right on reading');
 }
 
 

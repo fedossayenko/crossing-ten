@@ -397,6 +397,7 @@ function whySqcutText(q, full){
 }
 // Her misreading on shape 5: every square taken as the small one, in one row or two (4 squares of 3: 30 or 24).
 function slipSqcut(q, parts){
+  if(q.shape === 4) return +parts[0] !== q.ans && [q.P, q.p].includes(+parts[0]) ? 'otherQuestion' : null;   // one perimeter, not their difference (her 9 on 2026-10-18)
   if(q.shape !== 5 || q.rev || q.few === q.n) return null;
   const v = +parts[0], ways = [2*(q.n + 1)*q.side];
   for(let r = 2; r < q.n; r++) if(q.n % r === 0) ways.push(2*(r + q.n/r)*q.side);

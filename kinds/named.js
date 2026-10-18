@@ -258,6 +258,8 @@ function eqNamed(q){
   return q.shape === 0 ? tr(q.nm, namedUk[q.nm]) + ' = ' + q.ans
     : '10 + 9 = 19, ' + (q.R > 19 ? q.R + ' − 19' : '19 − ' + q.R) + ' = ' + q.ans;
 }
+// «Няколко» digits adding up to S with 0 and 9 the ends: what is left over, taken from 8 down (12: 0 + 3 + 9)
+const looseWit = S => { const mid = []; for(let d = 8, r = S - 9; r > 0 && d > 0; d--) if(d <= r){ mid.unshift(d); r -= d; } return [0, ...mid, 9]; };
 function whyNamed(q, full){
   if(q.shape === 'boxes'){
     if(!full) return tr('Първото число трябва да е колкото може по-малко, а второто — колкото може по-голямо.', 'Перше число має бути якомога меншим, а друге — якомога більшим.');
@@ -308,10 +310,8 @@ function whyNamed(q, full){
   if(!full && q.shape === 3) return tr('Опитай се да включиш най-малката и най-голямата цифра.',
     'Спробуй узяти найменшу й найбільшу цифри.');
   if(q.shape === 3) return q.loose
-    ? tr('вземаме <b>0</b> и <b>9</b>; останалите трябва да дадат ' + (q.S - 9) +
-      ', което може с различни цифри',
-      'беремо <b>0</b> і <b>9</b>; решта мають дати ' + (q.S - 9) +
-      ', а це можна зробити різними цифрами') + ' &nbsp;→&nbsp; 9 − 0 = ' + q.ans
+    ? tr('нулата също е едноцифрено число: вземаме <b>0</b> и <b>9</b>, например ', 'нуль теж одноцифрове число: беремо <b>0</b> і <b>9</b>, наприклад ') +
+      looseWit(q.S).join(' + ') + ' = ' + q.S + ' &nbsp;→&nbsp; 9 − 0 = ' + q.ans
     : tr('например ', 'наприклад ') + q.wit.join(' + ') + ' = ' + q.S + ' &nbsp;→&nbsp; ' +
       q.wit[q.wit.length-1] + ' − ' + q.wit[0] + ' = ' + q.ans;
   if(!full) return q.shape === 2 ? tr('Вземи възможно най-' + (q.small ? 'малките' : 'големите') + ' различни числа.',

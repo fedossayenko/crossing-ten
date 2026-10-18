@@ -57,9 +57,11 @@ function bucketSvg(q){
 function whyBucket(q, full){
   if(!full) return tr('Кога съдът ще е пълен при едната кофа, а при другата още не?',
                       'Коли посудина буде повна з одним відром, а з іншим ще ні?');
-  const big = [], small = [];
+  const big = [], small = [], k = q.ans - 1;
   for(let i = 1; i <= q.ans; i++){ big.push(i*q.q); small.push(i*q.p); }
-  return tr('ако е ' + q.q + ' л: ' + big.join(', ') + (q.ans*q.q > q.V ? ' — съдът прелива' : ' — съдът е пълен догоре') + '; ако е ' + q.p + ' л: ' +
+  // why fewer will not do: until then the vessel is not full with either bucket, so nothing tells them apart
+  return tr('след ' + k + (k === 1 ? ' пълнене' : ' пълнения') + ' съдът не е пълен и с двете кофи — още не се знае коя е; ',
+    'після ' + k + (k === 1 ? ' наповнення' : ' наповнень') + ' посудина не повна з жодним відром — ще не відомо, яке це відро; ') + tr('ако е ' + q.q + ' л: ' + big.join(', ') + (q.ans*q.q > q.V ? ' — съдът прелива' : ' — съдът е пълен догоре') + '; ако е ' + q.p + ' л: ' +
     small.join(', ') + ' — още не е пълен &nbsp;→&nbsp; различават се при пълнене номер ',
     'якщо відро ' + q.q + ' л: ' + big.join(', ') + (q.ans*q.q > q.V ? ' — посудина переливається' : ' — посудина повна вщерть') + '; якщо ' + q.p + ' л: ' +
     small.join(', ') + ' — ще не повна &nbsp;→&nbsp; їх можна розрізнити на наповненні номер ') + q.ans + bucketSvg(q);

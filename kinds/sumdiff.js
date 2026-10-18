@@ -177,7 +177,13 @@ function whySumdiff(q, full){
   if(!full) return tr('Другото число може да е по-малко или по-голямо — намери и двата сбора.',
     'Інше число може бути меншим або більшим — знайди обидві суми.');
   return tr('другото е <b>', 'інше — <b>') + (q.a - q.d) + tr('</b> или <b>', '</b> або <b>') + (q.a + q.d) + '</b>' + sumdiffSvg(q) +
-    q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
+    tr('въпросът е за сборовете: ', 'питають про суми: ') + q.a + ' + ' + (q.a - q.d) + ' = ' + (2*q.a - q.d) + ', &nbsp;' + q.a + ' + ' + (q.a + q.d) +
     ' = ' + q.ans;
 }
-KIND.sumdiff = { draw:drawSumdiff, eq:eqSumdiff, why:whySumdiff };
+// the other number, both ways (her «11 · 3» for 10 and 18 on 2026-10-18): the question asks for the sums
+function slipSumdiff(q, parts){
+  if(q.shape || parts.length !== 2) return null;
+  const v = parts.map(Number).sort((x, y) => x - y);
+  return v[0] === q.a - q.d && v[1] === q.a + q.d ? 'otherQuestion' : null;
+}
+KIND.sumdiff = { draw:drawSumdiff, eq:eqSumdiff, why:whySumdiff, slip:slipSumdiff };

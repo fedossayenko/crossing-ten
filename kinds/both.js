@@ -83,10 +83,18 @@ function whyBoth(q, full){
   if(!full) return tr('Събери двата броя — излиза повече от учениците. Кой се брои два пъти?',
     'Додай обидва числа — вийде більше, ніж учнів у класі. Кого пораховано двічі?');
   const head = tr(q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учениците са ' + q.T + ' &nbsp;→&nbsp; <b>' +
-    q.both + '</b> учат и двата езика',
+    q.both + '</b> ' + (q.both === 1 ? 'учи' : 'учат') + ' и двата езика',
     q.A + ' + ' + q.B + ' = ' + (q.A + q.B) + ', а учнів ' + q.T + ' &nbsp;→&nbsp; <b>' +
     q.both + '</b> ' + bothUkStudy(q.both) + ' обидві мови');
   return (q.asksBoth ? head : head + tr(' &nbsp;→&nbsp; само ' + q.lang[1] + ': ',
-    ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans) + bothSvg(q);
+    ' &nbsp;→&nbsp; лише ' + bothUkLang[q.lang[1]] + ': ') + q.B + ' − ' + q.both + ' = ' + q.ans +
+    tr(', без тези, които учат и двата', ', без тих, хто вивчає обидві')) + bothSvg(q);
 }
-KIND.both = { draw:drawBoth, eq:eqBoth, why:whyBoth };
+// another group's count: those taking both (her 1 for 6 on 2026-10-18) or all of the second language (her 7s on
+// 10-10) when it asks for only the second; the ones taking only one when it asks for both
+function slipBoth(q, parts){
+  if(q.shape === 'venn') return null;
+  const v = +parts[0];
+  return v !== q.ans && (q.asksBoth ? [q.A - q.both, q.B - q.both] : [q.both, q.B]).includes(v) ? 'otherQuestion' : null;
+}
+KIND.both = { draw:drawBoth, eq:eqBoth, why:whyBoth, slip:slipBoth };

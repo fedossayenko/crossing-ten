@@ -483,9 +483,13 @@ const server = http.createServer((req, res) => {
       document.querySelector('#compList .rrow').click(); await wait(50);
       const lvs = new Set(miss.map(e => e[0])); $('reviewFix').click(); await wait(100);
       out.fix = COMP === null && $('review').hidden && S.qs.length >= 10 && S.qs.every(q => lvs.has(q.lvl));
+      // ended, it is logged as no level's round: named so in the list, no bar of its own among the levels
+      finish(); await wait(30); $('sheet').hidden = true; const last = LOCAL.rounds[LOCAL.rounds.length - 1];
+      $('tabParents').click(); await wait(50); renderStats();
+      out.mix = last.level === 'mix' && last.levels.every(l => lvs.has(l)) && document.querySelector('#roundList .rrow .eq').textContent === t('mixName') && !/mix/.test($('byLevel').textContent);
       newRound(); await wait(30);
       return JSON.stringify(out); })()`) || '{}');
-    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.round && rv.fix, 'the past rounds went wrong: ' + JSON.stringify(rv));
+    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.round && rv.fix && rv.mix, 'the past rounds went wrong: ' + JSON.stringify(rv));
   }
   // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
   // say where its tasks come from; its best is the best of papers from the same place.

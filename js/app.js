@@ -2,7 +2,7 @@ import { $, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
-import { ARCHIVE, keeps, unionRounds } from './archive.js';
+import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
@@ -167,7 +167,7 @@ export function statsFrom(rounds){
     if(r.lang) langs[r.lang] = true;
     if(r.redo) fixed += r.firstTry;                        // mistakes put right in "practise the misses"
     if(r.level === 'comp') comps++;                        // a competition spans many levels: it is no level's record
-    else { const L = lvl[r.level] || (lvl[r.level] = {n:0,f:0}); L.n += r.n; L.f += r.firstTry; }
+    else if(r.level !== 'mix'){ const L = lvl[r.level] || (lvl[r.level] = {n:0,f:0}); L.n += r.n; L.f += r.firstTry; }   // nor is a mix of levels
     (r.levels || [r.level]).forEach(id => { const l = LEVELS.find(x => x.id === id); if(l) grps[groupKey(l)] = true; });
     (r.seen||[]).forEach(k => { seen[k] = (seen[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].seen++; });
     (r.missed||[]).forEach(k => { miss[k] = (miss[k]||0)+1; if(byOp[k[0]]) byOp[k[0]].miss++; });
@@ -674,6 +674,7 @@ export function finish(){
     t: S.qs.map((q, k) => [q.lvl || S.level, q.shape ?? null, q.seed ?? null, S.typed[k] ?? null, S.skipped[k] ? -1 : S.results[k] ? 1 : 0, answer(q),
       Math.round((S.ms[k] || 0) / 1000), S.after[k] || 0])
   };
+  unmix(round);
   LOCAL.rounds.push(round);
   ARCHIVE.put(PLAYER.id, [round]);
   saveLocal();
@@ -847,7 +848,7 @@ export function renderParent(){
   }).join('');
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
-const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
+const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
   r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : ''].filter(Boolean).join(' · ');
 // A level after a round: its tasks in her later rounds, and how many of them right first time
@@ -898,7 +899,7 @@ function csvOf(rounds){
   const q = v => '"' + String(v).replace(/"/g, '""') + '"';
   const rows = [t('csvHead')].concat(rounds.map(r => {
     const d = new Date(r.ts), lv = LEVELS.find(l => l.id === r.level);
-    return [dayKey(r.ts), d.toTimeString().slice(0, 5), r.level, lv ? levelName(lv) : r.level === 'comp' ? t('compName') + ' · ' + r.pts + ' / ' + r.max : '', r.n, r.firstTry,
+    return [dayKey(r.ts), d.toTimeString().slice(0, 5), r.level, lv ? levelName(lv) : r.level === 'comp' ? t('compName') + ' · ' + r.pts + ' / ' + r.max : r.level === 'mix' ? t('mixName') : '', r.n, r.firstTry,
             (r.slips || []).map(s => t('slip')[s] ? t('slip')[s][0] : s).join('; ')];
   }));
   return rows.map(row => row.map(v => q(/^[=+\-@]/.test(String(v)) ? "'" + v : v)).join(',')).join('\r\n');
