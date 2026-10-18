@@ -39,6 +39,11 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - A level whose generator draws several `shape`s rates each on its row (`shapes: { name: d }`, the rubric
   in `README.md`); none above the level's `d` (`check/shapes.js`). A harder shape gets a level of its own
   (`only(gen, shape)` there, `without(gen, shape)` on the old one), and its printed tasks move with it.
+- One level is one layer of difficulty, whatever round printed it: its shapes differ by one dot at most, and a
+  2nd-grade level before the times table (no `needs` path to 141) shows no ×, ÷, «a : b» or «дели се» anywhere
+  (README, How difficulty is assigned). A form two dots harder, or one that needs the times table, is a layer of
+  its own (`only`/`without`, `needs` the easier one). Before splitting or widening, find which papers print each
+  form and rate it; a widening stays within the printed difficulty.
 - A level from another paper says so on its row (`grade:3`, `src:'mbg-winter-2024'`; `src` defaults to `'mbg-autumn'`).
   A task that another paper also asks, at the same difficulty, tags the existing level with `also:['mbg-winter-2024-2']`
   instead of a copy; easier or harder is a new level with its own `d`. A new paper needs its name in

@@ -860,7 +860,7 @@ console.log('given away: the rest is the whole minus the named colour, worksheet
 // задача 10: two numbers a given distance from the same anchor
 let anchored = 0;
 for(let i = 0; i < 4000; i++){
-  const q = raw(17);
+  const q = raw(303);
   if(q.shape !== 'gap') continue;
   anchored++;
   if(q.d1 === q.d2) throw new Error('equal distances make the two letters interchangeable');
@@ -1311,7 +1311,7 @@ console.log('numbers from three digits: no leading zero, worksheet instance give
 // задача 9: how often a digit turns up across a run
 const runShapes = {};
 for(let i = 0; i < 4000; i++){
-  const q = raw(55);
+  const q = raw(i % 2 ? 302 : 55);   // 302 is 55's harder layer: where the run must stop
   runShapes[q.shape] = 1;
   if(q.shape === 2){ if(q.ans !== q.list.reduce((t, v) => t + String(v).length, 0)) throw new Error('digits of a list: ' + JSON.stringify(q)); continue; }
   const hits = (to) => { let n = 0; for(let v = q.from; v <= to; v++) n += String(v).split(String(q.d)).length - 1; return n; };

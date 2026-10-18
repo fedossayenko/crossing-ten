@@ -296,7 +296,28 @@ easy level. Where the harder shapes are a quarter or more of a level's questions
 up; where they are fewer, they get a level of their own, which needs the level they came from
 (`only()` / `without()` in `js/levels.js`). So 197–202 were split from 10, 11, 23, 32, 164 and 19, and
 17, 79, 96, 97, 175 and 180 went up a dot (2026-10-05, each shape rated twice, blind; only shapes both
-ratings put above their level were moved).
+ratings put above their level were moved). On 2026-10-18 the layers rule below split the seven levels whose
+shapes were two dots apart: 300 from 79 (Зима 2020–2023's long chains), 301 from 24 (Зима 2023's sums from a
+list), 302 from 55 (where the run must stop, Есен 2019 and 2020 #9), 303 from 17 (the widest gap, Есен 2022 #10),
+304 before 21 (a square cut into squares), 305 before 146 (the boxes) and 306 before 154 (one leg's minutes);
+24, 55, 79 and 17 went down a dot with their hard shape gone.
+
+**One level is one layer of difficulty.** A task the papers ask in several forms (another year, a later
+round, another competition, a harder variant) stays one level only while its forms are about equally hard:
+its shapes may differ by one dot at most (`check/shapes.js`). A form two dots away is a layer of its own:
+`only()` / `without()` on the same generator, `needs` the easier layer, tagged with the papers that print it.
+So a ✓ on the easy layer never stands for the hard one, and a focus on one round draws the layers its papers
+ask. Which round printed a form does not decide it: the same difficulty in autumn and in winter is one level
+with both tags. A generator may widen a printed task (other numbers, other names) but not past the printed
+difficulty: 49 asks two and three equal addends, as every paper did, not four and three.
+
+**What she has been taught by then is difficulty too.** The 2nd-grade programme (МОН 2023) teaches its four
+topics in order: numbers to 100, ± without crossing ten, ± with crossing, and the times table last. No МБГ
+paper before spring asks anything that needs × or ÷ (they say «равни събираеми», «два пъти»), so a 2nd-grade
+level with no `needs` path to the times table (141) shows no ×, ÷, «a : b» or «дели се» in its task, hint or
+solution: it adds, counts in steps (3, 6, 9, …) or halves (17 + 17 = 34). A form that needs the times table is
+a layer after 141. Before a split or a widening, look first: which papers print each form, its rubric score,
+and what a child has been taught by that round.
 
 **This rating is a prior, not a verdict.** The picker also shows her real first-try
 rate per level, which is the honest measure; when the two disagree, believe the data.

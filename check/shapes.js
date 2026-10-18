@@ -19,6 +19,10 @@
       if(d > L.d) throw new Error('level ' + L.id + ' (d' + L.d + ') hides a harder shape: ' + s + ' is d' + d + ' (' + Math.round(seen[s] / 30) + '% of its questions) — give it a level of its own, or rate the level up');
       rated++;
     }
+    // one level is one layer: shapes two dots apart are two layers, and a ✓ on the easy one would stand for both
+    const ds = Object.values(L.shapes), lo = Math.min(...ds), hi = Math.max(...ds);
+    if(hi - lo > 1) throw new Error('level ' + L.id + ' mixes layers: ' + Object.entries(L.shapes).filter(([, d]) => d === lo).map(([s]) => s).join(', ') + ' d' + lo +
+      ' beside ' + Object.entries(L.shapes).filter(([, d]) => d === hi).map(([s]) => s).join(', ') + ' d' + hi + ' — give one side a level of its own (only/without, needs the easier)');
   }
-  console.log('shapes: ' + mixing + ' levels draw several shapes; all ' + rated + ' are rated, none harder than its level');
+  console.log('shapes: ' + mixing + ' levels draw several shapes; all ' + rated + ' are rated, none harder than its level, none two dots from another');
 }

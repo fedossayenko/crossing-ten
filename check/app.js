@@ -9,7 +9,7 @@
   const block = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
   const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d),(?: shapes:\{[^}]*\},)? eq:(?:'(.*?)'|\{ bg:'(.*?)'.*?\}), desc/g)]
     .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] || m[7] }));
-  if(rows.length !== 57) throw new Error('parsed ' + rows.length + ' levels, expected 57');
+  if(rows.length !== 58) throw new Error('parsed ' + rows.length + ' levels, expected 58');
   const seen = new Set();
   rows.forEach(r => {
     if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
