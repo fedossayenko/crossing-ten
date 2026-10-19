@@ -265,12 +265,14 @@ const server = http.createServer((req, res) => {
       shapes: $('shapeWrap').hidden || (!bad($('byShape').textContent) && $('byShape').children.length > 0) };
     // R9.8: the rule for "learned" under the groups; "practise these" plays a round of the shapes she misses
     r.rule = $('groupWrap').hidden || $('groupWrap').textContent.includes(t('learnedRuleNote'));
-    { const mk = (seed, ok) => { const q = seeded(seed, () => raw(2)); return [2, null, seed, ok ? null : '1', ok, answer(q)]; };
-      LOCAL.rounds.push({ id: 'shape-test', ts: Date.now(), day: '', level: 2, n: 5, firstTry: 3, t: [mk(7, 0), mk(8, 0), mk(9, 1), mk(10, 1), mk(11, 1)] });
+    // (a miss whose recorded answer its seed no longer draws, its generator changed since, is not played as that task)
+    { const mk = (seed, ok) => { const q = seeded(seed, () => raw(2)); return [2, null, seed, ok ? null : '1', ok, answer(q)]; }, gone = mk(6, 0);
+      gone[5] += 100;
+      LOCAL.rounds.push({ id: 'shape-test', ts: Date.now(), day: '', level: 2, n: 6, firstTry: 3, t: [mk(7, 0), mk(8, 0), gone, mk(9, 1), mk(10, 1), mk(11, 1)] });
       renderParent();
       r.listed = !$('shapeWrap').hidden;
       $('shapeGo').click(); await tick();
-      r.practise = r.listed && S.qs.length === 10 && $('parent').hidden && S.qs.every(q => Number.isInteger(q.lvl)) && S.qs.some(q => q.seed === 7);
+      r.practise = r.listed && S.qs.length === 10 && $('parent').hidden && S.qs.every(q => Number.isInteger(q.lvl)) && S.qs.some(q => q.seed === 7) && !S.qs.some(q => q.seed === 6);
       LOCAL.rounds = LOCAL.rounds.filter(x => x.id !== 'shape-test'); saveLocal(); $('tabParents').click(); await tick(); }
     const g0 = PLAYER.grade || 2, t0 = Date.now();
     document.querySelector('#gradeSeg [data-g="3"]').click();
@@ -431,12 +433,24 @@ const server = http.createServer((req, res) => {
         $('stage').querySelector('.chk[data-k="' + k + '"]').click(); await wait(50);
         if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(50); $('nextBtn').click(); } else K('go');
         for(let t = 0; t < 50 && !COMP.check; t++) await wait(20);
-        out.again = COMP.check; $('handIn').click(); await wait(50); }
+        out.again = COMP.check;
+        // what the check did is logged task by task: the first one kept, a wrong one put right, a right one changed to a wrong one
+        // (12 right still); each with the answer it had before the check
+        const redo = async (k, right) => { const q = S.qs[k]; $('stage').querySelector('.chk[data-k="' + k + '"]').click(); await wait(50);
+          if(q.options){ document.querySelector('#choices .ch[data-o="' + (right ? q.pick : q.options.find(o => o.id !== q.pick).id) + '"]').click(); await wait(50); $('nextBtn').click(); }
+          else { for(let i = 0; i < 30; i++) K('del'); enter(right ? answers(q).slice(0, q.slots || 1) : Array(q.slots || 1).fill(999)); }
+          for(let t = 0; t < 50 && !COMP.check; t++) await wait(20); };
+        const was = k => COMP.ans[k].join(' · ');
+        out.was = [was(order[12]), was(order[1])];
+        await redo(order[12], true); await redo(order[1], false);
+        $('handIn').click(); await wait(50); }
       out.order = order; out.sheet = !$('sheet').hidden; out.score = $('score').textContent;
       const r = LOCAL.rounds[LOCAL.rounds.length - 1];
       out.round = { level: r.level, n: r.n, firstTry: r.firstTry, pts: r.pts, max: r.max, levels: (r.levels || []).length, secs: Number.isInteger(r.secs),
         // each task's record: drawn again from its level and seed, it has the recorded answer; its right/wrong marks add up
         tasks: r.t.length, redrawn: r.t.every(x => Number.isInteger(x[2]) && answer(seeded(x[2], () => raw(x[0]))) === x[5]), right: r.t.filter(x => x[4] === 1).length,
+        checked: r.t.every((x, k) => k === order[0] ? x[7] === 4 && x.length === 8 : k === order[12] ? x[7] === 5 && x[8] === out.was[0] :
+          k === order[1] ? x[7] === 7 && x[8] === out.was[1] : x[7] === 0 && x.length === 8),
         small: JSON.stringify(r).length < 4096 };   // the sync server drops a round over 4 KB (MAX_ROUND)
       out.badge = $('earnedWrap').textContent.indexOf(badgeName(BADGES.find(b => b.id === 'racer'))) >= 0; out.comp = COMP;
       out.pillBack = !$('levelPill').hidden && $('compTop').hidden;
@@ -497,7 +511,7 @@ const server = http.createServer((req, res) => {
     expect(cp.n === 20 && cp.drill === 0 && cp.choice === 0 && cp.two && cp.clock && cp.skip && cp.afterSkip === 1 && cp.order.length === 20 && cp.order[19] === 0 &&
       cp.sheet && cp.score === want && cp.round.level === 'comp' && cp.round.firstTry === 12 && cp.round.levels === 20 &&
       cp.round.pts === 24 && cp.round.max === 40 && cp.cps === 24 && cp.check && cp.reopen && cp.backList && cp.again && cp.marks && cp.marks.easy && cp.marks.fix && cp.marks.right && cp.marks.mark && cp.marks.met && cp.marks.next && cp.expired && cp.notG3 && cp.forecast && cp.forecastSheet && cp.forecastAgain && cp.oldBest && cp.oldCard &&
-      cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.small &&
+      cp.round.secs && cp.round.tasks === 20 && cp.round.redrawn && cp.round.right === 12 && cp.round.checked && cp.round.small &&
       cp.badge && cp.comp === null && !/undefined|NaN/.test(cp.header) && cp.chip && cp.quitShown && !cp.movedAlone && cp.table && cp.quit && cp.top && cp.skipSeg && cp.pillBack && cp.end && cp.backToday, 'the competition went wrong: ' + JSON.stringify(cp));
     await run(`$('sheet').hidden = true; 1`);
     // The grown-ups list her papers and her last rounds; one opens task by task, each task drawn again from its seed
@@ -517,6 +531,12 @@ const server = http.createServer((req, res) => {
       const miss = r.t.filter(e => e[4] !== 1), rows = [...$('reviewList').querySelectorAll('.crow.no, .crow.skip')], later = t('sinceRight', 0, 1).split(':')[0];
       out.since = rows.length === miss.length && rows.every(b => b.querySelector('.cg').textContent.includes(t('sinceNone')) || b.querySelector('.cg').textContent.includes(later)) && !$('reviewFix').hidden;
       $('reviewBack').click(); await wait(50); out.back = $('review').hidden && !$('parent').hidden;
+      // the paper whose answers «Провери» changed: its line says what the check did (3 looked at, 2 changed, 1 put right), each task how
+      { const p = LOCAL.rounds.find(x => x.level === 'comp' && Array.isArray(x.t) && x.t.some(e => e[7] === 5)), note = { 4: () => t('checkKept'), 5: w => t('checkFixed', w), 7: w => t('checkSpoiled', w) };
+        document.querySelector('#compList .rrow[data-r="' + p.id + '"]').click(); await wait(50);
+        const rows = [...$('reviewList').querySelectorAll('.crow .cg')];
+        out.checked = $('reviewSub').textContent.includes(t('checkSum', 3, 2, 1)) && p.t.every((e, k) => !note[e[7]] || rows[k].textContent.includes(note[e[7]](e[8])));
+        $('reviewBack').click(); await wait(50); }
       const top = document.querySelector('#roundList .rrow'), name = top.querySelector('.eq').textContent; top.click(); await wait(50);
       out.round = !$('review').hidden && $('reviewTitle').textContent === name && $('reviewList').querySelectorAll('.crow').length === LOCAL.rounds.filter(x => Array.isArray(x.t)).pop().t.length;
       $('reviewBack').click(); await wait(50);
@@ -530,7 +550,7 @@ const server = http.createServer((req, res) => {
       out.mix = last.level === 'mix' && last.levels.every(l => lvs.has(l)) && document.querySelector('#roundList .rrow .eq').textContent === t('mixName') && !/mix/.test($('byLevel').textContent);
       newRound(); await wait(30);
       return JSON.stringify(out); })()`) || '{}');
-    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.round && rv.fix && rv.mix, 'the past rounds went wrong: ' + JSON.stringify(rv));
+    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.checked && rv.round && rv.fix && rv.mix, 'the past rounds went wrong: ' + JSON.stringify(rv));
   }
   // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
   // say where its tasks come from; its best is the best of papers from the same place.

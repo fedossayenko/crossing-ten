@@ -109,6 +109,7 @@ function compNext(){
 export function compCheck(){
   clearTimers(); S.settled = true; clock();   // the last task's time stops here
   COMP.check = COMP.done = true;
+  COMP.first = COMP.first || Object.assign({}, COMP.ans);   // her answers as the check found them
   const said = k => S.qs[k].options ? letterOf(COMP.picked[k]) : COMP.ans[k].join(', ');
   $('stage').innerHTML = '<div class="check"><p class="meta">' + t('checkHow') + '</p><div class="gcard list">' + S.qs.map((q, k) => {
     const ms = S.ms[k] || 0;
@@ -119,12 +120,16 @@ export function compCheck(){
   $('compCount').textContent = String(S.qs.length); $('dots').querySelectorAll('.step').forEach(s => { s.className = 'step done'; });   // every task has its answer
   $('pad').hidden = $('choices').hidden = $('typeHint').hidden = $('compRow').hidden = $('compNote').hidden = true;
   $('verdict').textContent = ''; $('hint').innerHTML = '';
-  $('stage').querySelectorAll('.chk').forEach(b => b.onclick = () => { COMP.check = false; S.i = +b.dataset.k; show(); });
+  $('stage').querySelectorAll('.chk').forEach(b => b.onclick = () => { COMP.check = false; S.i = +b.dataset.k; (COMP.looked = COMP.looked || new Set()).add(S.i); show(); });
   $('handIn').onclick = e => { e.stopPropagation(); compEnd(); };
 }
 export function compEnd(){
   if(!COMP) return;
   clearInterval(compTick); clearTimeout(COMP.go);
+  // what the check did to each task she opened in it, for the round's record: 4 looked at (or right before and after),
+  // 5 put right, 6 changed and still wrong, 7 a right answer changed to a wrong one
+  (COMP.looked || []).forEach(k => { const was = COMP.first[k], before = accepts(S.qs[k], was), now = !!S.results[k];
+    S.after[k] = was.join() === COMP.ans[k].join() || before && now ? 4 : now ? 5 : before ? 7 : 6; });
   S.skipped = S.qs.map((_, k) => S.results[k] === undefined);                         // kept apart in the round's record
   S.qs.forEach((_, k) => { if(S.results[k] === undefined) S.results[k] = false; });   // unanswered is not right
   finish();

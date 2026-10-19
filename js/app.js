@@ -703,9 +703,10 @@ export function finish(){
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
     // generator has changed since is told apart, never shown as something it was not; then her seconds on it
-    // (on screen only), and after a miss: 1 right on the second try, 2 the solution opened, 3 wrong again
+    // (on screen only), and after a miss: 1 right on the second try, 2 the solution opened, 3 wrong again; on a paper, a task
+    // opened in «Провери» (compEnd): 4 looked at, 5 put right, 6 changed and still wrong, 7 a right one changed, then what it was
     t: S.qs.map((q, k) => [q.lvl || S.level, q.shape ?? null, q.seed ?? null, S.typed[k] ?? null, S.skipped[k] ? -1 : S.results[k] ? 1 : 0, answer(q),
-      Math.round((S.ms[k] || 0) / 1000), S.after[k] || 0])
+      Math.round((S.ms[k] || 0) / 1000), S.after[k] || 0].concat(S.after[k] > 4 ? [COMP.first[k].join(' · ')] : []))
   };
   unmix(round);
   LOCAL.rounds.push(round);
@@ -856,15 +857,15 @@ export function renderParent(){
 
   // the shapes of a level she misses most (each round logs a task's shape): a task of it, and how often it went wrong
   const by = {};
-  LOCAL.rounds.filter(r => r.ts > Date.now() - 30*DAY && Array.isArray(r.t)).forEach(r => r.t.forEach(([lv, shape, seed, wrote, ok]) => {
+  LOCAL.rounds.filter(r => r.ts > Date.now() - 30*DAY && Array.isArray(r.t)).forEach(r => r.t.forEach(([lv, shape, seed, wrote, ok, ans]) => {
     if(ok === -1) return;
-    const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, n: 0, miss: 0, seed: null, seeds: [] };
-    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed)){ x.seed = seed; x.seeds.push(seed); if(x.seeds.length > 3) x.seeds.shift(); } }   // her latest three misses of it
+    const k = lv + '|' + (shape ?? ''), x = by[k] = by[k] || { lv, shape, n: 0, miss: 0, seeds: [] };
+    x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed) && !x.seeds.some(s => s[0] === seed)){ x.seeds.push([seed, ans]); if(x.seeds.length > 3) x.seeds.shift(); } }   // her latest three misses of it, a task missed twice once
   }));
   const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
   // practise these: the very tasks she missed (drawn again from their seeds), and new ones from those levels up to ten
   $('shapeGo').onclick = () => {
-    const set = worst.flatMap(x => x.seeds.map(seed => { try { return Object.assign(seeded(seed, () => raw(x.lv)), { seed, lvl: x.lv }); } catch(e){ return null; } })).filter(Boolean).slice(0, 10);
+    const set = worst.flatMap(x => x.seeds.map(([seed, ans]) => { const q = replay(x.lv, x.shape, seed, ans); return q && Object.assign(q, { seed, lvl: x.lv }); })).filter(Boolean).slice(0, 10);
     newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
   };
   // her papers, and her last rounds: each opens task by task
@@ -875,15 +876,16 @@ export function renderParent(){
   $('shapeWrap').hidden = !worst.length;
   $('byShape').innerHTML = worst.map(x => {
     const l = LEVELS.find(y => y.id === x.lv);
-    let ex = '';
-    try { if(x.seed !== null) ex = eqText(seeded(x.seed, () => raw(x.lv))); } catch(e){}
+    const q = x.seeds.map(([seed, ans]) => replay(x.lv, x.shape, seed, ans)).filter(Boolean).pop(), ex = q ? eqText(q) : '';   // her latest that still draws
     return '<div class="nbitem"><span class="eq">' + (ex || (l ? levelName(l) : x.lv)) + '</span><span class="smeta">' + (l ? levelName(l) + ' · ' : '') + t('shapeMiss', x.miss, x.n) + '</span></div>';
   }).join('');
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : ''].filter(Boolean).join(' · ');
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : ''].filter(Boolean).join(' · ');
+// what «Провери» did on a paper: the tasks she opened in it, the answers she changed, the ones that became right
+const checkSum = r => { const a = r.t.filter(e => e[7] >= 4); return a.length ? t('checkSum', a.length, a.filter(e => e[7] > 4).length, a.filter(e => e[7] === 5).length) : ''; };
 // A level after a round: its tasks in her later rounds, and how many of them right first time
 const since = (lv, ts) => LOCAL.rounds.reduce((s, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === lv && e[4] !== -1){ s.n++; if(e[4] === 1) s.ok++; } }); return s; }, { n: 0, ok: 0 });
 // the levels a round missed (or never reached) that she has not played since
@@ -893,17 +895,22 @@ const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><s
 // came after a miss. A task whose generator has changed since is named, never shown as something it was not.
 // ponytail: the round to show is kept here only; a reload on #/review shows her latest
 let REVIEW = null;
+// A task of hers drawn again from its level and seed when that still draws the one she had (its answer and shape):
+// after its generator has changed, the seed draws another task, never to be shown or played as hers
+function replay(lv, shape, seed, ans){
+  try { const d = Number.isInteger(seed) ? seeded(seed, () => raw(lv)) : null; return d && answer(d) === ans && (d.shape ?? null) === shape ? d : null; } catch(e){ return null; }
+}
 function paintReview(){
   const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), r = logged.find(x => x.id === REVIEW) || logged[logged.length - 1];
   $('reviewTitle').textContent = r ? roundName(r) : ''; $('reviewSub').textContent = r ? roundMeta(r) : '';
-  const comp = r && r.level === 'comp', AFTER = ['', t('secondTry'), t('openedSol'), t('wrongTwice')];
-  $('reviewList').innerHTML = !r ? '' : r.t.map(([lv, shape, seed, wrote, ok, ans, secs, after], k) => {
-    let q = null;
-    try { const d = seed === null ? null : seeded(seed, () => raw(lv)); if(d && answer(d) === ans && (d.shape ?? null) === shape) q = d; } catch(e){}
+  const comp = r && r.level === 'comp', AFTER = ['', t('secondTry'), t('openedSol'), t('wrongTwice'), t('checkKept')];
+  $('reviewList').innerHTML = !r ? '' : r.t.map(([lv, shape, seed, wrote, ok, ans, secs, after, was], k) => {
+    const q = replay(lv, shape, seed, ans);
     const L = LEVELS.find(l => l.id === lv), st = ok === -1 ? 'skip' : ok ? 'ok' : 'no';
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
-    const note = [AFTER[after] || '', Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    const did = after === 5 ? t('checkFixed', esc(was ?? '')) : after === 6 ? t('checkStill', esc(was ?? '')) : after === 7 ? t('checkSpoiled', esc(was ?? '')) : AFTER[after] || '';
+    const note = [did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
@@ -916,9 +923,7 @@ function paintReview(){
   const missed = r ? r.t.filter(e => e[4] !== 1) : [];
   $('reviewFix').hidden = !missed.length;
   $('reviewFix').onclick = () => {
-    const set = missed.map(([lv, shape, seed, , , ans]) => {
-      try { const d = Number.isInteger(seed) ? seeded(seed, () => raw(lv)) : null; return d && answer(d) === ans && (d.shape ?? null) === shape ? Object.assign(d, { seed, lvl: lv }) : null; } catch(e){ return null; }
-    }).filter(Boolean).slice(0, 12);
+    const set = missed.map(([lv, shape, seed, , , ans]) => { const d = replay(lv, shape, seed, ans); return d && Object.assign(d, { seed, lvl: lv }); }).filter(Boolean).slice(0, 12);
     newRound(shuffle(addFresh(set, Math.max(10, set.length), [...new Set(missed.map(e => e[0]))])));
   };
   $('reviewList').querySelectorAll('.crow').forEach(b => b.onclick = () => {
