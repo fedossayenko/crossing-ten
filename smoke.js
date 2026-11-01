@@ -548,9 +548,21 @@ const server = http.createServer((req, res) => {
       finish(); await wait(30); $('sheet').hidden = true; const last = LOCAL.rounds[LOCAL.rounds.length - 1];
       $('tabParents').click(); await wait(50); renderStats();
       out.mix = last.level === 'mix' && last.levels.every(l => lvs.has(l)) && document.querySelector('#roundList .rrow .eq').textContent === t('mixName') && !/mix/.test($('byLevel').textContent);
+      // it is listed under the rounds of mistakes: how many of the paper's misses it put right and where they came from;
+      // opened, each task says whether it was a miss before or a new one
+      { const old = last.t.map(e => r.t.some(m => m[0] === e[0] && m[2] === e[2] && m[4] !== 1)), k = old.filter(Boolean).length, fx = document.querySelector('#fixList .rrow');
+        out.fixes = !$('fixesWrap').hidden && k > 0 && fx.dataset.r === last.id && fx.textContent.includes(t('fixedOf', last.t.filter((e, j) => old[j] && e[4] === 1).length, k, document.querySelector('#compList .rrow[data-r="' + r.id + '"] .eq').textContent));
+        fx.click(); await wait(50);
+        const cg = [...$('reviewList').querySelectorAll('.crow .cg')];
+        out.fixRows = cg.length === last.t.length && cg.every((c, j) => c.textContent.includes(t(old[j] ? 'oldMiss' : 'newTask')));
+        $('reviewBack').click(); await wait(50); }
+      // past twenty rounds, «Покажи всички» lists every one
+      { const n = LOCAL.rounds.filter(x => Array.isArray(x.t)).length, b = $('roundsAll');
+        if(n > 20){ out.all = !b.hidden && b.textContent === t('showAll', n); b.click(); out.all = out.all && b.hidden && $('roundList').children.length === n; }
+        else out.all = b.hidden && $('roundList').children.length === n; }
       newRound(); await wait(30);
       return JSON.stringify(out); })()`) || '{}');
-    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.checked && rv.round && rv.fix && rv.mix, 'the past rounds went wrong: ' + JSON.stringify(rv));
+    expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.checked && rv.round && rv.fix && rv.mix && rv.fixes && rv.fixRows && rv.all, 'the past rounds went wrong: ' + JSON.stringify(rv));
   }
   // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
   // say where its tasks come from; its best is the best of papers from the same place.

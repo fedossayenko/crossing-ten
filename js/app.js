@@ -868,11 +868,14 @@ export function renderParent(){
     const set = worst.flatMap(x => x.seeds.map(([seed, ans]) => { const q = replay(x.lv, x.shape, seed, ans); return q && Object.assign(q, { seed, lvl: x.lv }); })).filter(Boolean).slice(0, 10);
     newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
   };
-  // her papers, and her last rounds: each opens task by task
-  const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), comps = logged.filter(r => r.level === 'comp').reverse();
-  $('compsWrap').hidden = !comps.length; $('compList').innerHTML = comps.map(roundRow).join('');
-  $('roundsWrap').hidden = !logged.length; $('roundList').innerHTML = logged.slice(-20).reverse().map(roundRow).join('');
-  document.querySelectorAll('#compList .rrow, #roundList .rrow').forEach(b => b.onclick = () => { REVIEW = b.dataset.r; go('review'); });
+  // her papers, her rounds of mistakes, and her last rounds (all of them on a tap): each opens task by task
+  const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), comps = logged.filter(r => r.level === 'comp').reverse(), fixes = logged.filter(r => r.level === 'mix').reverse();
+  const list = (id, rs) => { $(id).innerHTML = rs.map(roundRow).join(''); $(id).querySelectorAll('.rrow').forEach(b => b.onclick = () => { REVIEW = b.dataset.r; go('review'); }); };
+  $('compsWrap').hidden = !comps.length; list('compList', comps);
+  $('fixesWrap').hidden = !fixes.length; list('fixList', fixes);
+  $('roundsWrap').hidden = !logged.length; list('roundList', logged.slice(-20).reverse());
+  $('roundsAll').hidden = logged.length <= 20; $('roundsAll').textContent = t('showAll', logged.length);
+  $('roundsAll').onclick = () => { list('roundList', logged.slice().reverse()); $('roundsAll').hidden = true; };
   $('shapeWrap').hidden = !worst.length;
   $('byShape').innerHTML = worst.map(x => {
     const l = LEVELS.find(y => y.id === x.lv);
@@ -883,7 +886,16 @@ export function renderParent(){
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : ''].filter(Boolean).join(' · ');
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
+// A round of her mistakes: each task's earlier round that missed it (its level and seed; the latest such), or none for
+// a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from
+const missedIn = (r, [lv, , seed]) => Number.isInteger(seed) ? LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === lv && e[2] === seed && e[4] !== 1)).pop() : undefined;
+const fixSum = r => {
+  if(r.level !== 'mix') return '';
+  const old = r.t.map(e => [e, missedIn(r, e)]).filter(x => x[1]), from = [...new Set(old.map(x => x[1]))];
+  return !old.length ? '' : t('fixedOf', old.filter(x => x[0][4] === 1).length, old.length,
+    from.length > 1 ? t('rounds', from.length) : roundName(from[0]) + ', ' + ago(from[0].ts) + ' ' + new Date(from[0].ts).toTimeString().slice(0, 5));
+};
 // what «Провери» did on a paper: the tasks she opened in it, the answers she changed, the ones that became right
 const checkSum = r => { const a = r.t.filter(e => e[7] >= 4); return a.length ? t('checkSum', a.length, a.filter(e => e[7] > 4).length, a.filter(e => e[7] === 5).length) : ''; };
 // A level after a round: its tasks in her later rounds, and how many of them right first time
@@ -910,7 +922,7 @@ function paintReview(){
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
     const did = after === 5 ? t('checkFixed', esc(was ?? '')) : after === 6 ? t('checkStill', esc(was ?? '')) : after === 7 ? t('checkSpoiled', esc(was ?? '')) : AFTER[after] || '';
-    const note = [did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape, seed]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
