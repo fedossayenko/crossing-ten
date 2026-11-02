@@ -3,6 +3,7 @@ import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgP
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
+import { dailyPlan } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
@@ -334,8 +335,10 @@ export function newRound(qs, comp){
   if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
-  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.ms = []; S.after = []; S.on = 0;
+  const wasDaily = S.daily;
+  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.daily = false; S.ms = []; S.after = []; S.on = 0;
   $('sheet').hidden = true;
+  if(wasDaily) paintPill();   // the pill names the level again
   if(routeNow() !== 'play') go('play', true);
   $('confetti').innerHTML = '';
   show();
@@ -411,7 +414,7 @@ function saveRound(){
   try {
     if(COMP) localStorage.removeItem(RS);
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
-      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, ms:S.ms, after:S.after } }));
+      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, ms:S.ms, after:S.after } }));
   } catch(e){}
 }
 // A task whose answers she counts herself (openAns): its first box and a dashed + after it, which opens another; the
@@ -612,7 +615,7 @@ export function finish(){
   const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
   $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
   const secs = Math.round(S.ms.reduce((a, x) => a + x, 0) / 1000), ended = COMP ? Math.min(Date.now(), COMP.end) : Date.now();
-  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(ended - COMP.t0)) : t('firstTryAt', levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
+  $('scoreSub').textContent = COMP ? t('compSub', got, n, compTime(ended - COMP.t0)) : t('firstTryAt', S.daily ? t('dailyName') : new Set(S.qs.map(q => q.lvl ?? S.level)).size > 1 ? t('mixName') : levelName(lv)) + ' · ' + t('took', Math.floor(secs / 60), secs % 60);
   const stars = pts === max ? 3 : pts >= .8*max ? 2 : pts >= .5*max ? 1 : 0;
   $('stars').innerHTML = [1, 2, 3].map(k => STAR(k <= stars)).join('');
   if(COMP) /** @type {HTMLElement} */ ($('scoreBar').firstElementChild).style.width = Math.round(100 * pts / max) + '%';
@@ -659,9 +662,9 @@ export function finish(){
     b.closest('.miss').querySelector('.why').hidden = !open;
     if(open){ LOCAL.whys = (LOCAL.whys || 0) + 1; saveLocal(); }
   });
-  const padFrom = COMP ? missed.map(x => x.q.lvl) : [S.level];   // a paper's redo is padded from its own levels, not the one picked before it
-  $('redo').onclick = () => {
-    newRound(shuffle(addFresh(missed.map(x => x.q), Math.min(12, Math.max(6, missed.length*2)), padFrom)));
+  const padFrom = COMP || S.daily ? missed.map(x => x.q.lvl) : [S.level];   // a paper's (or today's practice's) redo is padded from its own levels, not the one picked before it
+  $('redo').onclick = () => {   // tasks like the ones she missed, other numbers: the very task again would teach its answer
+    newRound(shuffle(addFresh(missed.map(x => twin(x.q.lvl ?? S.level, x.q.shape, drawQ(plainQ(x.q)))), Math.min(12, Math.max(6, missed.length*2)), padFrom)));
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
 
@@ -693,13 +696,13 @@ export function finish(){
   const round = {
     id: 'r' + now + '_' + Math.random().toString(36).slice(2,7),
     ts: now, day: dayKey(now),
-    level: COMP ? 'comp' : S.level, n, firstTry: got, best, lang: LANG,
+    level: COMP ? 'comp' : S.daily ? 'mix' : S.level, n, firstTry: got, best, lang: LANG,
     pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: COMP ? Math.round((Math.min(now, COMP.end) - COMP.t0) / 1000) : secs,
-    levels: COMP ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined,
+    levels: COMP || S.daily ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
-    redo: S.redo || undefined,
+    redo: S.redo || undefined, daily: S.daily || undefined,
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
     // generator has changed since is told apart, never shown as something it was not; then her seconds on it
@@ -733,7 +736,8 @@ export function finish(){
   }).join('');
   if(fresh.length && !REDUCED) putCat('sheetcat', 'party');
   const paper = COMP && COMP.paper;   // a new paper of the same kind: the forecast's again, or one drawn afresh
-  $('again').onclick = COMP ? () => startComp(paper) : () => newRound();
+  $('again').onclick = COMP ? () => startComp(paper) : S.daily ? () => { newRound(); go('today', true); } : () => newRound();
+  if(S.daily) $('again').textContent = t('backToday');
   if(COMP){ COMP = null; clearInterval(compTick); paintPill(); $('quitBtn').hidden = true; $('homeBtn').hidden = false; $('side').hidden = $('sideBtn').hidden = false; $('levelPill').hidden = false; $('compTop').hidden = true; }
 
   $('sheet').hidden = false;
@@ -863,9 +867,9 @@ export function renderParent(){
     x.n++; if(ok === 0){ x.miss++; if(Number.isInteger(seed) && !x.seeds.some(s => s[0] === seed)){ x.seeds.push([seed, ans]); if(x.seeds.length > 3) x.seeds.shift(); } }   // her latest three misses of it, a task missed twice once
   }));
   const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
-  // practise these: the very tasks she missed (drawn again from their seeds), and new ones from those levels up to ten
+  // practise these: a task like each she missed (its level and shape, other numbers), and new ones from those levels up to ten
   $('shapeGo').onclick = () => {
-    const set = worst.flatMap(x => x.seeds.map(([seed, ans]) => { const q = replay(x.lv, x.shape, seed, ans); return q && Object.assign(q, { seed, lvl: x.lv }); })).filter(Boolean).slice(0, 10);
+    const set = worst.flatMap(x => x.seeds.map(([seed, ans]) => { const q = replay(x.lv, x.shape, seed, ans); return twin(x.lv, x.shape, q && drawQ(q)); })).slice(0, 10);
     newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
   };
   // her papers, her rounds of mistakes, and her last rounds (all of them on a tap): each opens task by task
@@ -884,12 +888,13 @@ export function renderParent(){
   }).join('');
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
-const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
+const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.daily ? t('dailyName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
   r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
-// A round of her mistakes: each task's earlier round that missed it (its level and seed; the latest such), or none for
-// a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from
-const missedIn = (r, [lv, , seed]) => Number.isInteger(seed) ? LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === lv && e[2] === seed && e[4] !== 1)).pop() : undefined;
+// A round of her mistakes: each task's earlier round that missed one like it (its level and shape; the latest such), or none
+// for a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from.
+// Like it, not the same: a mistake is practised with other numbers (twin)
+const missedIn = (r, [lv, shape]) => LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === lv && (e[1] ?? null) === (shape ?? null) && e[4] !== 1)).pop();
 const fixSum = r => {
   if(r.level !== 'mix') return '';
   const old = r.t.map(e => [e, missedIn(r, e)]).filter(x => x[1]), from = [...new Set(old.map(x => x[1]))];
@@ -912,6 +917,21 @@ let REVIEW = null;
 function replay(lv, shape, seed, ans){
   try { const d = Number.isInteger(seed) ? seeded(seed, () => raw(lv)) : null; return d && answer(d) === ans && (d.shape ?? null) === shape ? d : null; } catch(e){ return null; }
 }
+// A task like one she missed: its level and shape, other numbers (not: the missed task as drawn, to steer clear of).
+// The very task again teaches its answer, not its way: Em's rounds of mistakes redrew them, and an answer came back
+// on the next task of the level that asked something else (201: «24», a sum, for «how many», 2026-11-01).
+// ponytail: 60 draws find the shape; a level that rarely draws it gives any task of the level
+function twin(lv, shape, not){
+  for(let i = 0; i < 60; i++){ const q = gen(lv); if((q.shape ?? null) === (shape ?? null) && drawQ(q) !== not) return Object.assign(q, { lvl: lv }); }
+  return Object.assign(gen(lv), { lvl: lv });
+}
+// Today's practice (js/daily.js picks the levels): a level missed in a mixed set as a task like it, a level to go over as any task of it
+export function startDaily(){
+  const p = dailyPlan(LOCAL.rounds, LEVELS);
+  if(!p.items.length) return;
+  newRound(p.items.map(x => x.miss ? twin(x.id, x.shape, (q => q && drawQ(q))(replay(x.id, x.shape ?? null, x.seed, x.ans))) : Object.assign(gen(x.id), { lvl: x.id })));
+  S.daily = true; saveRound(); paintPill();
+}
 function paintReview(){
   const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), r = logged.find(x => x.id === REVIEW) || logged[logged.length - 1];
   $('reviewTitle').textContent = r ? roundName(r) : ''; $('reviewSub').textContent = r ? roundMeta(r) : '';
@@ -922,7 +942,7 @@ function paintReview(){
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
     const did = after === 5 ? t('checkFixed', esc(was ?? '')) : after === 6 ? t('checkStill', esc(was ?? '')) : after === 7 ? t('checkSpoiled', esc(was ?? '')) : AFTER[after] || '';
-    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape, seed]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
@@ -931,11 +951,11 @@ function paintReview(){
       '</span><span class="co">' + said + '</span><span class="cp">' + pts + '</span></button><div class="why" hidden>' +
       (q ? '<div class="stage rtask">' + drawQ(q).replace(/ id="slot\d+"/g, '') + '</div><div class="eq">' + eqText(q) + '</div>' + why(q, true) : t('taskGone')) + '</div>';
   }).join('');
-  // practise this round's misses: the very tasks again (when their level still draws them), and new ones from those levels up to ten
+  // practise this round's misses: a task like each (its level and shape, other numbers), and new ones from those levels up to ten
   const missed = r ? r.t.filter(e => e[4] !== 1) : [];
   $('reviewFix').hidden = !missed.length;
   $('reviewFix').onclick = () => {
-    const set = missed.map(([lv, shape, seed, , , ans]) => { const d = replay(lv, shape, seed, ans); return d && Object.assign(d, { seed, lvl: lv }); }).filter(Boolean).slice(0, 12);
+    const set = missed.map(([lv, shape, seed, , , ans]) => { const d = replay(lv, shape, seed, ans); return twin(lv, shape, d && drawQ(d)); }).slice(0, 12);
     newRound(shuffle(addFresh(set, Math.max(10, set.length), [...new Set(missed.map(e => e[0]))])));
   };
   $('reviewList').querySelectorAll('.crow').forEach(b => b.onclick = () => {
@@ -980,7 +1000,7 @@ export const groupOf = l => l && t('groups')[groupKey(l)] || '';
 // What Today shows (js/ui/today.js draws it): the level to play now, the round under way, the levels due again.
 /* ---------- the mistakes notebook (#/notebook, drawn by js/ui/notebook.js) ----------
    Her missed tasks of the last 30 days, drawn again from their level and seed, grouped by the mistake slipOf
-   names (else by the level's group). "Put right" plays those very tasks, padded with new ones from their levels;
+   names (else by the level's group). "Put right" plays a task like each (level and shape, other numbers), padded with new ones from their levels;
    all right first time puts the kind right: its older misses leave the notebook, and a week later it asks to be
    checked again with new tasks. A round says what it fixed: redo { fix: kind } or { check: kind }. */
 const DAY = 864e5;
@@ -1009,17 +1029,17 @@ export function notebookData(now = Date.now()){
     when: new Date(p.ts).toLocaleDateString(LANG_TAG[LANG], { weekday:'long' }) }));
   return { open, done, total: open.reduce((s, g) => s + g.items.length, 0) };
 }
-// Put a kind right: its tasks again, and new ones from their levels up to five (at most twelve); or check it, five new
+// Put a kind right: a task like each of its tasks, and new ones from their levels up to five (at most twelve); or check it, five new
 export function fixKind(kind, check){
   const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
   if(!levels.length) return;
-  const set = check ? [] : g.items.filter(x => x.q).map(x => x.q).slice(0, 12);
+  const set = check ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
   newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels)));
   S.redo = check ? { check: kind } : { fix: kind };
 }
-// Put them all right: every kind's missed tasks in one round (at most twelve, the most repeated kinds first)
+// Put them all right: a task like each of every kind's missed tasks in one round (at most twelve, the most repeated kinds first)
 export function fixAll(){
-  const open = notebookData().open, set = open.flatMap(g => g.items.filter(x => x.q).map(x => x.q)).slice(0, 12);
+  const open = notebookData().open, set = open.flatMap(g => g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q)))).slice(0, 12);
   const levels = [...new Set(open.flatMap(g => g.items.map(x => x.lv)))];
   if(!levels.length) return;
   newRound(shuffle(addFresh(set, 5, levels)));
@@ -1082,7 +1102,7 @@ export function todayData(){
   const lv = LEVELS.find(l => l.id === S.level);
   return { name: playerName(PLAYER), mascot: PLAYER.mascot, streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
-    next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, due: LEVELS.filter(l => dueReview(m, l.id, now) && (!nx || l.id !== nx.id)).map(card),
+    next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, daily: dailyPlan(LOCAL.rounds, LEVELS, now),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
     compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
@@ -1194,8 +1214,9 @@ const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paper
 const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), g = groupOf(l);
-  $('levelName').textContent = levelName(l);
-  $('sub').textContent = (l.papers ? paperName(l.papers[0]) : t('practice')) + (g ? ' · ' + g : '');
+  // today's practice names no level: which kind a task is, she has to see herself, as on a paper
+  $('levelName').textContent = S.daily ? t('dailyName') : levelName(l);
+  $('sub').textContent = S.daily ? t('dailyWhat', S.qs.length) : (l.papers ? paperName(l.papers[0]) : t('practice')) + (g ? ' · ' + g : '');
   paintSide();
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
@@ -1732,7 +1753,7 @@ startSync();
 Object.defineProperties(window, Object.fromEntries(Object.entries({
   $: () => $, ARCHIVE: () => ARCHIVE, BADGES: () => BADGES, COMP: () => COMP, IN: () => IN, LEVELS: () => LEVELS, LOCAL: () => LOCAL, LS: () => LS,
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
-  answer: () => answer, answers: () => answers, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
+  answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
   notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

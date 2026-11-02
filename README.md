@@ -354,6 +354,19 @@ showing how many of the levels are learned.
   bottom of that ladder. Reviews wait until every level has been tried once — breadth first. After
   that a due review comes every other round — review, repair, review — the longest overdue for its
   step first, and the card says *Да си припомним*.
+- **Today's practice keeps them.** A round of one level shows her the way after its first task; a paper
+  does not. Em's rounds to 2026-11-01: 79% right first time in rounds of one level, 55% where levels were
+  mixed, 53% in papers, and 6 of the 78 levels she had played came back on another day. So Today opens on
+  *Тренировка за деня* (`js/daily.js`, checked in `check/daily.js`): six tasks, each from another level she
+  has met, mixed — two at most that a mixed set (a paper, a round of mistakes, this practice) found wrong,
+  the next day, as a task like it; the rest to go over, a day after a round of the level, then 3, 7, 14 and
+  30 days after each right answer here, the longest overdue first. Missed twice running, a level waits two
+  days, then three. Once a day; the pill names no level, as on a paper. Interleaved practice: Rohrer et al.
+  2020, 61% against 38% a month later. A new level is still met in a round of its own.
+- **Mistakes come back as tasks like them.** Every way of practising a mistake (the results' *Поправи
+  грешките*, the notebook, the review's *Упражни*, the grown-ups' shapes) draws a task of the same level
+  and shape with other numbers, never the very task: redrawn, an answer came back on the next task of the
+  level that asked something else (201: «24», a sum, for «how many»).
 - **What the papers ask most comes first.** Each level knows how many dated papers ask it (`freq`:
   «Колко? Сбор?» is on 8, most levels on 1). Among new levels of one difficulty the most-asked goes
   first; in repair a weak level counts 0.02 of first-try rate worse per paper, so an every-year task

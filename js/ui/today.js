@@ -1,10 +1,10 @@
 // Today (#/today), the home screen of the Десетка 2026 redesign: hello, the streak and the rounds played today and
-// this week, the level to play now (or the round to go back to), every level due again, the countdown to her next
+// this week, today's practice (six levels she has met, mixed, js/daily.js), the level to play now (or the round to go back to), the countdown to her next
 // competition with how ready she is, and the practice papers (one drawn afresh, the forecast's). Two columns on a wide screen (app.css).
 // app.js gathers the data (todayData) and does the playing; this only draws. Same classes as the picker's cards.
 import { h, render } from '../vendor/preact.js';
 import htm from '../vendor/htm.js';
-import { go, playLevel, todayData, trainFor } from '../app.js';
+import { go, playLevel, startDaily, todayData, trainFor } from '../app.js';
 import { openComp } from '../compete.js';
 import { LANG, LANG_TAG, t } from '../i18n.js';
 import { mascotSvg } from '../mascots.js';
@@ -22,8 +22,17 @@ const StartCard = ({ l, lab, main }) => html`
       <button class="btn ghost other" onClick=${e => { e.stopPropagation(); go('levels', true); }}>${t('otherLevel')}</button></span>
   </div>`;
 
+// Today's practice: what is in it, then Play; done today, how it went
+const DailyCard = ({ p, main }) => p.done ? html`
+  <div class="gcard nextcard daily done"><span class="nm"><span class="lab">${t('dailyName')}</span><span class="eq">${t('dailyDone', p.done.got, p.done.n)}</span>
+    <span class="desc">${t('dailyBack')}</span></span></div>` : html`
+  <div class=${'gcard nextcard start daily ' + (main ? 'main' : '')} onClick=${() => startDaily()}>
+    <span class="nm"><span class="lab">${t('dailyName')}</span><span class="eq">${t('dailyWhat', p.items.length)}</span><span class="desc">${t('dailyMix', p.miss, p.items.length - p.miss)}</span></span>
+    <span class="acts"><button class="btn" onClick=${e => { e.stopPropagation(); startDaily(); }}>${t('play')}</button></span>
+  </div>`;
+
 function Today(){
-  const d = todayData();
+  const d = todayData(), daily = d.daily.items.length > 0 && !d.daily.done;
   const date = new Date().toLocaleDateString(LANG_TAG[LANG], { weekday: 'long', day: 'numeric', month: 'long' });
   return html`
     <div class="bar today-bar"><div class="hello"><h1>${t('helloName', d.name)}</h1><div class="date">${date}</div></div><span class="hellocat" dangerouslySetInnerHTML=${{ __html: mascotSvg(d.mascot) }}></span></div>
@@ -35,12 +44,9 @@ function Today(){
     <div class="tcols">
       <div class="tcol">
         ${d.mid && html`<button class="gcard nextcard main" onClick=${() => go('play', true)}><span class="nm"><span class="lab">${t('goOn')}</span><span class="eq">${d.mid}</span></span>${CHEV}</button>`}
-        ${d.next ? html`<${StartCard} l=${d.next} lab=${t(d.next.fix ? 'fixNext' : d.next.review ? 'reviewNext' : 'startHere')} main=${!d.mid}/>`
+        ${(daily || d.daily.done) && html`<${DailyCard} p=${d.daily} main=${!d.mid && daily}/>`}
+        ${d.next ? html`<${StartCard} l=${d.next} lab=${t(d.next.fix ? 'fixNext' : d.next.review ? 'reviewNext' : 'startHere')} main=${!d.mid && !daily}/>`
                  : html`<div class="gcard advice">${t('allLearned')}</div>`}
-        ${d.due.length > 0 && html`<div class="gtitle"><b>${t('forToday')}</b><span>${t('dueToday', d.due.length)}</span></div>
-          <div class="gcard list duelist">${d.due.map(l => html`<button class="duerow" data-lvl=${l.id} onClick=${() => playLevel(l.id)}>
-            <span class="nm"><span class="eq">${l.name}</span><span class="meta">${l.group} · ${t('learned')}</span></span>${CHEV}</button>`)}</div>
-          <p class="nbhow">${t('spacing')}</p>`}
       </div>
       <div class="tcol">
         ${d.paper && html`<button class="gcard paperday" data-at=${d.paper.at} onClick=${() => trainFor(d.paper.at)}>

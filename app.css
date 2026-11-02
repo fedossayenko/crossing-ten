@@ -994,17 +994,12 @@ body.welcome .tabs{display:none}   /* the first-run form (app.js openEdit) */
 /* Today, as drawn: the start card with Play (and another level on a wide screen), the levels due as rows, the
    next badge, and on a tablet the week's days */
 #today .start{flex-wrap:wrap; cursor:pointer; box-sizing:border-box}   /* a div, not a button: border-box, or its padding widens it past 100% */
-#today .start .desc{font-size:14px; color:var(--muted)}
+#today .start .desc, #today .daily .desc{font-size:14px; color:var(--muted)}
+#today .daily.done{box-sizing:border-box}   /* a div too: today's practice, played */
 #today .start .acts{display:flex; gap:10px; flex:1 1 100%}
 #today .start .acts .btn{flex:0 1 auto; min-height:48px; padding:0 28px}
 #today .start .other{display:none}
 @media (min-width:700px){ #today .start .other{display:flex} }
-.duerow{display:flex; align-items:center; gap:12px; width:100%; min-height:56px; padding:8px 14px; background:none; border:0; border-bottom:1px solid var(--line); color:var(--ink); font:inherit; text-align:left; cursor:pointer}
-.duerow .nm{flex:1; display:flex; flex-direction:column; gap:2px}
-.duerow .eq{font-family:Fredoka,var(--ui-font); font-size:18px}
-.duerow .meta{font-size:13px; color:var(--muted)}
-.duerow > svg{width:20px; height:20px; color:var(--muted)}
-.duelist > :last-child{border-bottom:0}
 .weekstrip{display:none}
 @media (min-width:700px){ .weekstrip{display:flex} }
 .weekstrip .days{display:flex; justify-content:space-between}

@@ -189,11 +189,31 @@ const server = http.createServer((req, res) => {
     // R9.5: Today as drawn — Play on the start card, the next badge, the week's seven days, the sidebar's week block
     $('tabToday').click(); await tick();
     r.today = !!document.querySelector('#today .start .acts .btn') && !!document.querySelector('#today .badgecard') &&
-      document.querySelectorAll('#today .weekstrip .days span').length === 7 && $('tabWeek').textContent.includes(t('thisWeek')) &&
-      (!document.querySelector('#today .duelist') || (!!document.querySelector('#today .duerow[data-lvl]') && $('today').textContent.includes(t('spacing'))));
+      document.querySelectorAll('#today .weekstrip .days span').length === 7 && $('tabWeek').textContent.includes(t('thisWeek')) && !document.querySelector('#today .duelist');
+    // today's practice: six levels she has met, each once, mixed; a level a mixed set missed comes as a task like it, never
+    // the one she missed; played, it is logged as no level's and the card says how it went, the next level main again
+    { const D = 864e5, now = Date.now(), mk = (lv, seed, ok) => { const q = seeded(seed, () => raw(lv)); return [lv, q.shape ?? null, seed, ok ? null : '1', ok, answer(q)]; };
+      const miss = [mk(10, 7, 0), mk(11, 8, 0)], keep = LOCAL.rounds;
+      LOCAL.rounds = [2, 5, 8, 9].map((lv, k) => ({ id: 'daily-' + lv, ts: now - (3 + k) * D, day: '', level: lv, n: 10, firstTry: 9 }))
+        .concat([{ id: 'daily-comp', ts: now - D, day: '', level: 'comp', n: 3, firstTry: 1, t: miss.concat([mk(12, 9, 1)]) }]);
+      $('tabToday').click(); await tick();
+      const card = document.querySelector('#today .daily.start');
+      r.dailyCard = !!card && card.classList.contains('main') && card.textContent.includes(t('dailyMix', 2, 4)) && !document.querySelector('#today .start.main:not(.daily)');
+      if(card) card.querySelector('.btn').click(); await tick();
+      const lv = S.qs.map(q => q.lvl), was = miss.map(e => drawQ(seeded(e[2], () => raw(e[0]))));
+      r.dailyPlay = S.daily === true && S.qs.length === 6 && new Set(lv).size === 6 && [2, 5, 8, 9, 10, 11].every(x => lv.includes(x)) &&
+        !S.qs.some(q => was.includes(drawQ(q))) && ![10, 11].includes(S.qs[0].lvl) && $('today').hidden && $('levelName').textContent === t('dailyName');
+      finish(); await tick(); $('sheet').hidden = true;
+      const last = LOCAL.rounds[LOCAL.rounds.length - 1];
+      r.dailyLog = last.daily === true && last.level === 'mix' && last.t.length === 6 && last.levels.length === 6;
+      $('tabToday').click(); await tick();
+      r.dailyDone = !document.querySelector('#today .daily.start') && !!document.querySelector('#today .daily.done') &&
+        document.querySelector('#today .daily.done').textContent.includes(t('dailyDone', last.firstTry, 6)) && !!document.querySelector('#today .start.main:not(.daily)');
+      newRound(); await tick(); r.dailyPill = $('levelName').textContent !== t('dailyName');   // a round after it names its level again
+      LOCAL.rounds = keep; saveLocal(); }
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
-  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today, 'the next competition went wrong: ' + JSON.stringify(r5));
+  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today && r5.dailyCard && r5.dailyPlay && r5.dailyLog && r5.dailyDone && r5.dailyPill, 'the next competition or today\'s practice went wrong: ' + JSON.stringify(r5));
   // two right in a row earn a treat: her mascot eats it beside the praise; the third gets star eyes, not another treat
   const treat = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
     const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 5;
@@ -204,7 +224,7 @@ const server = http.createServer((req, res) => {
     LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(r); })()`));
   expect(treat.join() === 'happy,eat,star', 'two right in a row should earn the mascot a treat: ' + JSON.stringify(treat));
   // R6: a task missed as a forgotten borrow lands in the notebook under that mistake, drawn again from its seed;
-  // "put right" plays it with new ones, all right puts the kind right, and a week on it asks to be checked again
+  // "put right" plays tasks like it (its level, other numbers, never the very task), all right puts the kind right, and a week on it asks to be checked again
   const r6 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
     const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
     const answerAll = async () => { for(let i = 0; i < 20 && !$('sheet').hidden === false; i++){ const q = S.qs[S.i];
@@ -219,7 +239,7 @@ const server = http.createServer((req, res) => {
     const card = document.querySelector('#notebook .nbkind[data-kind="forgotBorrow"]');
     r.shown = !$('notebook').hidden && !!card && card.textContent.includes(wrong);
     card.querySelector('.btn').click(); await tick();
-    r.round = S.qs.length === 5 && S.redo && S.redo.fix === 'forgotBorrow' && S.qs.some(x => x.a === q.a && x.b === q.b) && $('notebook').hidden;
+    r.round = S.qs.length === 5 && S.redo && S.redo.fix === 'forgotBorrow' && S.qs.every(x => x.lvl === 2) && !S.qs.some(x => x.a === q.a && x.b === q.b) && $('notebook').hidden;
     await answerAll();
     const last = LOCAL.rounds[LOCAL.rounds.length - 1], after = notebookData();
     r.fixed = last.redo && last.redo.fix === 'forgotBorrow' && last.firstTry === 5 && !after.open.some(x => x.kind === 'forgotBorrow') &&
@@ -272,7 +292,8 @@ const server = http.createServer((req, res) => {
       renderParent();
       r.listed = !$('shapeWrap').hidden;
       $('shapeGo').click(); await tick();
-      r.practise = r.listed && S.qs.length === 10 && $('parent').hidden && S.qs.every(q => Number.isInteger(q.lvl)) && S.qs.some(q => q.seed === 7) && !S.qs.some(q => q.seed === 6);
+      const was = [7, 8].map(sd => drawQ(seeded(sd, () => raw(2))));
+      r.practise = r.listed && S.qs.length === 10 && $('parent').hidden && S.qs.every(q => q.lvl === 2) && !S.qs.some(q => was.includes(drawQ(q)));
       LOCAL.rounds = LOCAL.rounds.filter(x => x.id !== 'shape-test'); saveLocal(); $('tabParents').click(); await tick(); }
     const g0 = PLAYER.grade || 2, t0 = Date.now();
     document.querySelector('#gradeSeg [data-g="3"]').click();
@@ -543,15 +564,18 @@ const server = http.createServer((req, res) => {
       // «Упражни тези грешки»: a round of the paper's missed levels only, ten tasks or more, not a paper
       document.querySelector('#compList .rrow').click(); await wait(50);
       const lvs = new Set(miss.map(e => e[0])); $('reviewFix').click(); await wait(100);
-      out.fix = COMP === null && $('review').hidden && S.qs.length >= 10 && S.qs.every(q => lvs.has(q.lvl));
+      const was = miss.map(e => { const d = seeded(e[2], () => raw(e[0])); return answer(d) === e[5] ? drawQ(d) : null; }).filter(Boolean);
+      out.fix = COMP === null && $('review').hidden && S.qs.length >= 10 && S.qs.every(q => lvs.has(q.lvl)) && !S.qs.some(q => was.includes(drawQ(q)));
       // ended, it is logged as no level's round: named so in the list, no bar of its own among the levels
       finish(); await wait(30); $('sheet').hidden = true; const last = LOCAL.rounds[LOCAL.rounds.length - 1];
       $('tabParents').click(); await wait(50); renderStats();
       out.mix = last.level === 'mix' && last.levels.every(l => lvs.has(l)) && document.querySelector('#roundList .rrow .eq').textContent === t('mixName') && !/mix/.test($('byLevel').textContent);
       // it is listed under the rounds of mistakes: how many of the paper's misses it put right and where they came from;
       // opened, each task says whether it was a miss before or a new one
-      { const old = last.t.map(e => r.t.some(m => m[0] === e[0] && m[2] === e[2] && m[4] !== 1)), k = old.filter(Boolean).length, fx = document.querySelector('#fixList .rrow');
-        out.fixes = !$('fixesWrap').hidden && k > 0 && fx.dataset.r === last.id && fx.textContent.includes(t('fixedOf', last.t.filter((e, j) => old[j] && e[4] === 1).length, k, document.querySelector('#compList .rrow[data-r="' + r.id + '"] .eq').textContent));
+      // (an old miss: an earlier round missed a task of the same level and shape; it is practised with other numbers)
+      { const before = LOCAL.rounds.filter(x => x.ts < last.ts && Array.isArray(x.t)), fx = document.querySelector('#fixList .rrow');
+        const old = last.t.map(e => before.some(x => x.t.some(m => m[0] === e[0] && (m[1] ?? null) === (e[1] ?? null) && m[4] !== 1))), k = old.filter(Boolean).length;
+        out.fixes = !$('fixesWrap').hidden && k > 0 && fx.dataset.r === last.id && fx.textContent.includes(t('fixedOf', last.t.filter((e, j) => old[j] && e[4] === 1).length, k, '').trim());
         fx.click(); await wait(50);
         const cg = [...$('reviewList').querySelectorAll('.crow .cg')];
         out.fixRows = cg.length === last.t.length && cg.every((c, j) => c.textContent.includes(t(old[j] ? 'oldMiss' : 'newTask')));
