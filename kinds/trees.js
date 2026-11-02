@@ -103,4 +103,12 @@ function whyTreesText(q){
     ' &nbsp;→&nbsp; деревець на одне більше: ' + q.ans);
   return between + ' &nbsp;→&nbsp; ' + tr('всичките са равни и заедно правят ' + q.len + ' м: ', 'усі однакові й разом становлять ' + q.len + ' м: ') + addUp(gaps, q.ans) + ' → ' + q.ans;
 }
-KIND.trees = { draw:drawTrees, eq:eqTrees, why:whyTrees };
+// As many gaps as trees (31: «46» for 23 trees 2 м apart, «42» for 14 trees 3 дм apart; «10» trees for 30 м in 3 м
+// steps, 2026-10-11)
+function slipTrees(q, parts){
+  const v = +parts[0];
+  if(parts.length !== 1 || v === q.ans) return null;
+  if(q.shape === 0 || q.shape === 3) return v === q.n * q.d || v === (q.n + 1) * q.d ? 'gaps' : null;
+  return q.shape === 1 && v === q.n - 1 ? 'gaps' : null;
+}
+KIND.trees = { draw:drawTrees, eq:eqTrees, why:whyTrees, slip:slipTrees };

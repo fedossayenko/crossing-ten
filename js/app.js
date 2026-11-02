@@ -1,4 +1,4 @@
-import { $, rnd, seeded, shuffle } from './core.js';
+import { $, KIND, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, openAns, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
@@ -336,7 +336,7 @@ export function newRound(qs, comp){
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   const wasDaily = S.daily;
-  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.daily = false; S.ms = []; S.after = []; S.on = 0;
+  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.daily = false; S.asks = []; S.ms = []; S.after = []; S.on = 0;
   $('sheet').hidden = true;
   if(wasDaily) paintPill();   // the pill names the level again
   if(routeNow() !== 'play') go('play', true);
@@ -400,6 +400,8 @@ export function show(){
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
   $('hint').innerHTML = '';
+  S.ask = asksOf(q);
+  if(S.ask) paintAsk();
   $('go').textContent = '✓';
   mood(S.i === 0 ? 'tilt' : 'idle');                // a wave hello at the start of a round
   if(S.i === 0) S.timers.push(setTimeout(() => { if(!S.settled && $('cat').dataset.mood === 'tilt') mood('idle'); }, 1400));
@@ -414,7 +416,7 @@ function saveRound(){
   try {
     if(COMP) localStorage.removeItem(RS);
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
-      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, ms:S.ms, after:S.after } }));
+      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, asks:S.asks, ms:S.ms, after:S.after } }));
   } catch(e){}
 }
 // A task whose answers she counts herself (openAns): its first box and a dashed + after it, which opens another; the
@@ -466,6 +468,7 @@ function paintDots(){
 function press(k){
   wake();
   if(COMP && COMP.check) return;   // the check's list is on screen: nothing to type into
+  if(S.ask && !S.settled){ askFirst(); return; }   // what it asks comes first
   if(k === 'more' && (S.settled || !$('more'))) return;   // only a task whose answers she counts herself opens boxes
   // Settled: any key moves on, but a digit must not be eaten by the advance —
   // it is the first digit of the next answer. A shown solution waits for →: a stray digit must not skip it.
@@ -507,6 +510,7 @@ function paintChoices(){
 function choose(id){
   wake();
   if(S.settled){ next(); return; }
+  if(S.ask){ askFirst(); return; }
   const q = S.qs[S.i];
   S.parts = [String(q.options[id].v)];
   if(COMP) COMP.picked[S.i] = id;
@@ -703,6 +707,8 @@ export function finish(){
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
     redo: S.redo || undefined, daily: S.daily || undefined,
+    // the step before answering (asksOf): wrong picks before the right one, by task; null where it was not asked
+    asked: S.asks.some(w => w !== undefined && w !== null) ? S.qs.map((_, k) => S.asks[k] ?? null) : undefined,
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
     // generator has changed since is told apart, never shown as something it was not; then her seconds on it
@@ -912,6 +918,40 @@ const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><s
 // came after a miss. A task whose generator has changed since is named, never shown as something it was not.
 // ponytail: the round to show is kept here only; a reload on #/review shows her latest
 let REVIEW = null;
+// What a task asks, picked before she answers, on a kind whose one setting can ask different things (KIND.x.asks: how
+// many, which or their sum; the difference or one of the numbers). Em answered another question there, fast (12: «2»
+// for which, 201: «24», a sum, for how many; 195, 179, 208), and the word in bold (201 «сбора») did not stop it. A
+// level stops asking once she has picked right first time three times running; a paper never asks.
+const ASK_RUN = 3;
+function asksOf(q){
+  const a = !COMP && q.kind && KIND[q.kind].asks ? KIND[q.kind].asks(q) : null;
+  if(!a || S.asks[S.i] !== undefined) return null;   // picked already (a round picked up again)
+  const lv = q.lvl ?? S.level, run = [];
+  LOCAL.rounds.forEach(r => (r.asked || []).forEach((w, k) => { if(w !== null && r.t && r.t[k] && r.t[k][0] === lv) run.push(w); }));
+  S.asks.forEach((w, k) => { if(w !== undefined && w !== null && (S.qs[k].lvl ?? S.level) === lv) run.push(w); });
+  return run.length >= ASK_RUN && run.slice(-ASK_RUN).every(w => w === 0) ? null : Object.assign({ crossed: [] }, a);
+}
+function paintAsk(){
+  const a = S.ask;
+  $('hint').innerHTML = '<div class="whatq"><b>' + t('asksQ') + '</b><div class="whatopts">' + t('asks')[a.set].map((l, k) =>
+    '<button class="btn ghost askpick' + (a.crossed.includes(k) ? ' no' : '') + '" data-k="' + k + '"' + (a.crossed.includes(k) ? ' disabled' : '') + '>' + l + '</button>').join('') + '</div></div>';
+  $('hint').querySelectorAll('.askpick').forEach(b => b.onclick = e => { e.stopPropagation(); pickAsk(+(/** @type {HTMLElement} */ (b)).dataset.k); });
+}
+function pickAsk(k){
+  const a = S.ask;
+  if(!a) return;
+  if(k !== a.pick){ a.crossed.push(k); sfx.bad(); paintAsk(); return; }
+  S.asks[S.i] = a.crossed.length; S.ask = null; sfx.tap();
+  $('hint').innerHTML = '<div class="whatq done">' + t('asksOk') + ' <b>' + t('asks')[a.set][k] + '</b></div>';
+  saveRound();
+}
+// a key before the pick: the question again, and the buttons nudge
+function askFirst(){
+  const w = $('hint').querySelector('.whatq');
+  if(!w) return;
+  w.querySelector('b').textContent = t('asksFirst');
+  w.classList.remove('nudge'); void (/** @type {HTMLElement} */ (w)).offsetWidth; w.classList.add('nudge');
+}
 // A task of hers drawn again from its level and seed when that still draws the one she had (its answer and shape):
 // after its generator has changed, the seed draws another task, never to be shown or played as hers
 function replay(lv, shape, seed, ans){

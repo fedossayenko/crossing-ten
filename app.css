@@ -887,6 +887,14 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 @media (min-width:900px) and (max-height:600px){ .pickside{position:static} }   /* taller than the window: scroll with the list */
 /* the first-miss feedback, compact: the wrong answer on one slim line, the solution button inside the hint */
 .hint .fb.status{padding:2px 4px}   /* the first miss: her mascot and one line, no box around it */
+/* what the task asks, picked before she answers (app.js asksOf); a key pressed first nudges it */
+.whatq{display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center}
+.whatq > b{font-size:15px}
+.whatopts{display:flex; flex-wrap:wrap; justify-content:center; gap:8px}
+.whatopts .askpick{min-height:44px; padding:0 16px; font-size:15px}
+.whatopts .askpick.no{text-decoration:line-through; opacity:.55}
+.whatq.done{flex-direction:row; justify-content:center; gap:6px; font-size:14px; color:var(--muted)}
+.whatq.nudge{animation:shake .32s}
 .fb.tip .tiptext{flex:1 1 180px}
 .fb.tip .reveal{min-height:36px; padding:0 14px; font-size:13px; flex:0 0 auto}
 /* A phone or narrow window, upright: while a hint is showing, the keys and the drawing give up some

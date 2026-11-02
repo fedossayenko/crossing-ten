@@ -63,4 +63,12 @@ function whyUnits(q, full){
   if(q.askBig) return one + T + ' ' + q.small + ' = ' + q.a*q.k + ' ' + q.small + ' + ' + q.b + ' ' + q.small + ', ' + q.a*q.k + ' ' + q.small + ' = <b>' + q.ans + '</b> ' + q.big;
   return one + q.a + ' ' + q.big + ' = ' + q.a*q.k + ' ' + q.small + ', ' + T + ' − ' + q.a*q.k + ' = <b>' + q.ans + '</b> ' + q.small;
 }
-KIND.units = { draw:drawUnits, eq:eqUnits, why:whyUnits };
+// Converted the wrong way or by the wrong step (268: «700» for 7 см in мм, «800» for 80 мм in см, 2026-10-11); two units
+// put side by side or a metre taken for ten centimetres (268: «55» for 5 м 5 см, «37» for 2 м 17 см)
+function slipUnits(q, parts){
+  const v = +parts[0];
+  if(parts.length !== 1 || v === q.ans) return null;
+  if(q.shape === 'down' || q.shape === 'up') return q.traps.includes(v) ? 'unitsWay' : null;
+  return q.shape === 'join' && (q.traps.includes(v) || v === q.a * q.k / 10 + q.b) ? 'unitsJoin' : null;
+}
+KIND.units = { draw:drawUnits, eq:eqUnits, why:whyUnits, slip:slipUnits };

@@ -86,4 +86,6 @@ function whyBlind(q, full){
     ? tr('най-лошото: първо вземаш всичките ' + most + ' ' + c[0] + ' — още са от един цвят; следващото не може да е от тях', 'найгірше: спершу береш усі ' + most + ' ' + (most < 5 ? c[1] : c[2]) + ' — вони ще одного кольору; наступний уже іншого') + ' &nbsp;→&nbsp; ' + most + ' + 1 = ' + q.ans
     : tr('най-лошото: по едно от всеки цвят — ' + q.n.length + ' различни; следващото повтаря цвят', 'найгірше: по одному кожного кольору — ' + q.n.length + ' різні; наступний повторює колір') + ' &nbsp;→&nbsp; ' + q.n.length + ' + 1 = ' + q.ans;
 }
-KIND.blind = { draw:drawBlind, eq:eqBlind, why:whyBlind };
+// The lucky hand for the sure one: two cubes (189: «2», 2026-10-26), one pen (189: «1», 10-31)
+const slipBlind = (q, parts) => parts.length === 1 && +parts[0] === (q.shape === 'one' ? 1 : 2) && +parts[0] !== q.ans ? 'lucky' : null;
+KIND.blind = { draw:drawBlind, eq:eqBlind, why:whyBlind, slip:slipBlind };

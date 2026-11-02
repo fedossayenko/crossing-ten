@@ -57,4 +57,14 @@ function whyTwodig(q, full){
     q.hi + '</b> &nbsp;→&nbsp; ' +
     (q.ask === 0 ? q.hi + ' − ' + q.lo + ' = ' + q.ans : tr('търсеното е ', 'шукане число — ') + q.ans);
 }
-KIND.twodig = { draw:drawTwodig, eq:eqTwodig, why:whyTwodig };
+// Another question's answers: the differences for the bigger number (195: «1 · 2 · 3 · 4 · 5» for 11 … 15, twice), a
+// number of the pairs for their differences (195: «10»); one pair: its other number, or their difference
+function slipTwodig(q, parts){
+  const vs = parts.map(Number), all = q.shape === 'under' ? [q.ans].concat(q.alt) : [q.ans];
+  if(vs.every(v => all.includes(v))) return null;
+  const other = q.shape === 'under' ? (q.ask ? q.pairs.map(([lo, hi]) => hi - lo) : q.pairs.flat()) : [q.hi - q.lo, q.hi, q.lo].filter(v => v !== q.ans);
+  return vs.every(v => other.includes(v)) ? 'otherQuestion' : null;
+}
+// What it asks: the difference, the bigger number, the smaller one
+const asksTwodig = q => ({ set: 'twodig', pick: q.ask });
+KIND.twodig = { draw:drawTwodig, eq:eqTwodig, why:whyTwodig, slip:slipTwodig, asks:asksTwodig };

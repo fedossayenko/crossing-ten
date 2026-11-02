@@ -35,4 +35,11 @@ function whyBetween(q, full){
     a + ', ' + b + tr('</b> и <b>', '</b> і <b>') + c + '</b> &nbsp;→&nbsp; ' + LADYBIRD + ' + ' + BEE + ': ' +
     a + ' + ' + b + ' = ' + q.ans + ', ' + a + ' + ' + c + ' = ' + q.alt[0] + ', ' + b + ' + ' + c + ' = ' + q.alt[1];
 }
-KIND.between = { draw:drawBetween, eq:eqBetween, why:whyBetween };
+// The numbers themselves for their sums (179: «5 · 6 · 7» for 11, 12, 13, 2026-10-31)
+function slipBetween(q, parts){
+  const vs = parts.map(Number), sums = [q.ans].concat(q.alt);
+  return !vs.every(v => sums.includes(v)) && vs.every(v => v > q.lo && v < q.hi) ? 'numbersNotSums' : null;
+}
+// What it asks: the two numbers, their sum, or how many there are
+const asksBetween = () => ({ set: 'between', pick: 1 });
+KIND.between = { draw:drawBetween, eq:eqBetween, why:whyBetween, slip:slipBetween, asks:asksBetween };

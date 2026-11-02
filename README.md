@@ -367,6 +367,17 @@ showing how many of the levels are learned.
   грешките*, the notebook, the review's *Упражни*, the grown-ups' shapes) draws a task of the same level
   and shape with other numbers, never the very task: redrawn, an answer came back on the next task of the
   level that asked something else (201: «24», a sum, for «how many»).
+- **What it asks, first.** Where one setting can ask different things (`KIND.x.asks`: how many, which or their sum
+  — levels 12, 164, 201; the difference or one of the numbers — 35, 195; the sum of the two — 179; how many cards —
+  208), a practice task asks «Какво търсим?» before the keys work: a wrong pick is crossed out, a key pressed first
+  says to pick. Em answered another question there, fast, and the word in bold on the task (201 «сбора») did not stop
+  it; a highlight alone was ruled out for that. A level stops asking once she has picked right first time three times
+  running (logged as `round.asked`); a paper never asks. `check/app.js` holds every right choice to the question's own
+  words.
+- **Her misreadings, named on the first miss.** `slip(q, parts)` on the kinds of her 1st-grade misses of
+  2026-10-19 … 11-01: how many for which, the sum for how many, the numbers written out, an end number left out
+  («НЕ по-малки от 4» as more than 4), the numbers for their sums, the lucky hand for «със сигурност», the first day
+  counted, units the wrong way, as many gaps as trees (of her 212 misses that still draw, 59 are named now, 27 before; pinned in `check/app.js`).
 - **What the papers ask most comes first.** Each level knows how many dated papers ask it (`freq`:
   «Колко? Сбор?» is on 8, most levels on 1). Among new levels of one difficulty the most-asked goes
   first; in repair a weak level counts 0.02 of first-try rate worse per paper, so an every-year task

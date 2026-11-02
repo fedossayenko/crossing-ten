@@ -264,4 +264,24 @@ function whyCount(q, full){
   return (q.hi - q.lo <= 3 ? Array.from({length: q.hi - q.lo + 1}, (_, i) => q.lo + i).join(', ') : q.lo + ', ' + (q.lo + 1) + ', …, ' + q.hi) +
     ' &nbsp;(' + edge + (zero ? '; ' + zero : '') + ') &nbsp;→&nbsp; ' + q.ans + countLine(q, true);
 }
-KIND.count = { draw:drawCount, eq:eqCount, why:whyCount };
+// Her misreadings of a range (2026-10-19 … 11-01), each from what she wrote: how many for which (12: «2» for 10 and 11),
+// the sum for how many (201: «24», 7 + 8 + 9, for how many from 7), how many for the sum, the numbers written out for how
+// many, zero left out (164: «8» for 0 … 8), an end number left out or let in (201: «НЕ по-малки от 4» read as more than 4,
+// four times; 12: «2» for 48 … 51). The shapes of one range only: a list (5), all ten digits (7) and the rest (8) are not.
+const COUNT_RANGE = [0, 1, 2, 3, 4, 6];
+function slipCount(q, parts){
+  if(!COUNT_RANGE.includes(q.shape)) return null;
+  const n = (lo, hi) => hi - lo + 1, s = (lo, hi) => (lo + hi) * n(lo, hi) / 2, val = (lo, hi) => q.sum ? s(lo, hi) : n(lo, hi);
+  if(q.name) return parts.length === 1 && +parts[0] === n(q.lo, q.hi) ? 'counted' : null;   // shape 4: which they are
+  if(parts.length > 1) return parts.every(p => +p >= q.lo && +p <= q.hi) ? 'listed' : null;
+  const v = +parts[0];
+  if(v === q.ans) return null;
+  if(!q.sum && v === s(q.lo, q.hi)) return 'sumNotCount';
+  if(q.sum && v === n(q.lo, q.hi)) return 'countNotSum';
+  if(q.lo === 0 && v === n(1, q.hi) && !q.sum) return 'zero';
+  return [[q.lo + 1, q.hi], [q.lo, q.hi - 1], [q.lo + 1, q.hi - 1], [q.lo - 1, q.hi], [q.lo, q.hi + 1], [q.lo - 1, q.hi + 1]]
+    .some(([lo, hi]) => lo >= 0 && hi >= lo && val(lo, hi) === v) ? 'edge' : null;
+}
+// What it asks, picked before she answers (app.js): how many, which, or their sum
+const asksCount = q => COUNT_RANGE.includes(q.shape) ? { set: 'count', pick: q.name ? 1 : q.sum ? 2 : 0 } : null;
+KIND.count = { draw:drawCount, eq:eqCount, why:whyCount, slip:slipCount, asks:asksCount };

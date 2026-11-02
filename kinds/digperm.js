@@ -113,4 +113,9 @@ function whyDigPerm(q, full){
   return tr('от ', 'з ') + q.ds.join(', ') + ': <b>' + q.nums.join(', ') + '</b>' + (q.ds.includes(0) ? tr(' (0 не стои отпред)', ' (0 не стоїть попереду)') : '') +
     ' &nbsp;→&nbsp; ' + (q.shape === 'count' ? tr('на брой ', 'усього ') + q.ans : q.nums.join(' + ') + ' = ' + q.ans);
 }
-KIND.digperm = { draw:drawDigPerm, eq:eqDigPerm, why:whyDigPerm };
+// The numbers written out for how many (208: «10 · 16 · 60» for 7, 2026-10-31)
+const slipDigPerm = (q, parts) => q.shape && parts.length > 1 && parts.every(p => q.nums.includes(+p)) ? 'listed' : null;
+// What it asks, on the cards one may turn (208: «Колко са всички двуцифрени числа…»): how many. The other shapes find a
+// rule from worked examples or say «и ги събери» outright; there the choices would give the rule away or say nothing.
+const asksDigPerm = q => q.shape === 'flip' ? { set: 'count', pick: 0 } : null;
+KIND.digperm = { draw:drawDigPerm, eq:eqDigPerm, why:whyDigPerm, slip:slipDigPerm, asks:asksDigPerm };

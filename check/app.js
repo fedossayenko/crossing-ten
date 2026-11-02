@@ -280,7 +280,36 @@
    // a task whose answers she counts herself (one box and a +): some of them, or all and one more; a stated count is not hers to find
    [{kind:'weekday', n:32, q:4, r:4, slots:2, ans:4, alt:[5]}, '4', 'notAll'], [{kind:'weekday', n:32, q:4, r:4, slots:2, ans:4, alt:[5]}, '5 · 4 · 6', 'extra'],
    [{kind:'three', a:7, b:9, slots:2, ans:2, alt:[16]}, '16', 'notAll'], [{kind:'three', a:7, b:9, slots:2, ans:2, alt:[16]}, '2 · 16', null],
-   [{kind:'consec', shape:'three', m:14, S:42, slots:3, stated:true, ans:13, alt:[14, 15]}, '13 · 14 · 16', null]
+   [{kind:'consec', shape:'three', m:14, S:42, slots:3, stated:true, ans:13, alt:[14, 15]}, '13 · 14 · 16', null],
+   // her 1st-grade papers and rounds of 2026-10-19 … 11-01, each as she wrote it
+   [{kind:'count', shape:4, name:1, sum:false, natural:false, two:false, a:9, b:12, lo:10, hi:11, slots:2, ans:10, alt:[11]}, '2', 'counted'],
+   [{kind:'count', shape:2, sum:false, natural:true, two:false, a:48, b:51, lo:48, hi:51, ans:4}, '2', 'edge'],
+   [{kind:'count', shape:6, one:true, sum:false, natural:false, two:false, a:3, lo:3, hi:9, ans:7}, '6', 'edge'],
+   [{kind:'count', shape:6, one:true, sum:true, natural:false, two:false, a:6, lo:6, hi:9, ans:30}, '24', 'edge'],
+   [{kind:'count', shape:6, one:true, sum:false, natural:false, two:false, a:7, lo:7, hi:9, ans:3}, '24', 'sumNotCount'],
+   [{kind:'count', shape:6, one:true, sum:false, natural:false, two:false, a:4, lo:4, hi:9, ans:6}, '5', 'edge'],
+   [{kind:'count', shape:0, one:true, sum:false, natural:false, two:false, n:8, lo:0, hi:8, ans:9}, '8', 'zero'],
+   [{kind:'count', shape:1, sum:true, natural:false, two:false, n:7, lo:0, hi:6, ans:21}, '20', null],
+   [{kind:'twodig', shape:'under', B:26, ask:1, pairs:[[10,11],[10,12],[10,13],[10,14],[10,15],[11,12],[11,13],[11,14],[12,13]], slots:5, ans:11, alt:[12,13,14,15]}, '1 · 2 · 3 · 4 · 5', 'otherQuestion'],
+   [{kind:'twodig', shape:'under', B:23, ask:1, pairs:[[10,11],[10,12]], slots:2, ans:11, alt:[12]}, '12 · 20', null],
+   [{kind:'twodig', shape:'under', B:25, ask:0, pairs:[[10,11],[10,12],[10,13],[10,14],[11,12],[11,13]], slots:4, ans:1, alt:[2,3,4]}, '10', 'otherQuestion'],
+   [{kind:'between', p:7, s1:3, s2:1, lo:4, hi:8, slots:3, ans:11, alt:[12,13]}, '5 · 6 · 7', 'numbersNotSums'],
+   [{kind:'between', p:7, s1:3, s2:1, lo:4, hi:8, slots:3, ans:11, alt:[12,13]}, '11', 'notAll'],
+   [{kind:'digperm', shape:'flip', ds:[0,1,6], nums:[10,16,19,60,61,90,91], traps:[4], ans:7}, '10 · 16 · 60', 'listed'],
+   [{kind:'blind', cols:[3,2], n:[4,3], T:7, diff:true, traps:[4,3], ans:5}, '2', 'lucky'],
+   [{kind:'blind', shape:'one', cols:[2,0], n:[2,4], T:6, slots:2, ans:5, alt:[6]}, '1', 'lucky'],
+   [{kind:'blind', cols:[1,3], n:[2,3], T:5, diff:true, traps:[3,3], ans:4}, '1', null],
+   [{kind:'weekday', shape:'after', mon:['март', 31], d1:{nm:'събота'}, day:{nm:'четвъртък'}, first:6, ans:4}, '30', 'otherQuestion'],
+   [{kind:'weekday', shape:'after', mon:['март', 31], d1:{nm:'събота'}, day:{nm:'четвъртък'}, first:6, ans:4}, '3', null],
+   [{kind:'weekday', shape:'after', mon:['април', 30], d1:{nm:'понеделник'}, day:{nm:'понеделник'}, first:8, ans:4}, '5', 'firstDay'],
+   [{kind:'units', shape:'down', big:'см', small:'мм', k:10, a:7, ans:70, traps:[700]}, '700', 'unitsWay'],
+   [{kind:'units', shape:'up', big:'см', small:'мм', k:10, a:8, ans:8, traps:[800]}, '800', 'unitsWay'],
+   [{kind:'units', shape:'join', big:'м', small:'см', k:100, a:5, b:5, ans:505, traps:[55]}, '55', 'unitsJoin'],
+   [{kind:'units', shape:'join', big:'м', small:'см', k:100, a:2, b:17, ans:217, traps:[19]}, '37', 'unitsJoin'],
+   [{kind:'trees', who:'Хари', did:'посадил', n:23, d:2, shape:0, len:44, ans:44}, '46', 'gaps'],
+   [{kind:'trees', who:'Борис', did:'посадил', n:14, d:3, dm:30, shape:3, len:39, ans:39}, '42', 'gaps'],
+   [{kind:'trees', who:'Ния', did:'посадила', n:11, d:3, shape:1, len:30, ans:11}, '10', 'gaps'],
+   [{kind:'trees', who:'Мая', did:'посадила', n:8, d:1, shape:0, len:7, ans:7}, '5', null]
   ].forEach(([q, typed, want]) => {
     const got = Q.slipOf(q, typed.split(' · '));
     if(got !== want) throw new Error(q.kind + ' typed ' + typed + ' is read as ' + got + ', not ' + want);
@@ -294,7 +323,29 @@
   }
   for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); ['otherQuestion', 'twice', 'sameDigits', 'direction', 'rowsCols', 'countThem', 'zero', 'allSame', 'leftOut', 'notAll', 'extra', ...names].forEach(k => { const v = Q.t('slip')[k]; if(!v || !v[0] || !v[1]) throw new Error('slip ' + k + ' has no words in ' + lang); }); }
   Q.setLang('bg');
-  console.log('misreadings: her 2026-10-18 papers named (8 of 9 and 4 of 6), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
+  console.log('misreadings: her 2026-10-18 papers named (8 of 9 and 4 of 6), her answers of 10-19 … 11-01 (23 of 29 pinned), a right answer never named, ' + names.size + ' names seen in a sweep, all in three languages');
+}
+/* What a task asks, picked before she answers (KIND.x.asks, app.js asksOf): a set of choices there in all three
+   languages, and the right one the very thing the printed question asks — how many, which, their sum; the difference,
+   the bigger or the smaller number. */
+{
+  const Q = APP, strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+  const WORD = { count: [/Колко|колко/, /Кои|кои/, /сбор|събер/], twodig: [/извад|разлик/, /по-голямо/, /по-малко/], between: [null, /\+/, null] };
+  let asked = 0;
+  for(const lang of ['en', 'bg', 'uk']){ Q.setLang(lang); Object.keys(WORD).forEach(k => { const v = Q.t('asks')[k]; if(!Array.isArray(v) || v.length !== 3 || v.some(x => !x)) throw new Error('asks ' + k + ' has no three choices in ' + lang); }); }
+  Q.setLang('bg');
+  for(const L of Q.LEVELS) for(let i = 0; i < 60; i++){
+    const q = Q.raw(L.id); if(!q.kind || !Q.KIND[q.kind].asks) break;
+    const a = Q.KIND[q.kind].asks(q); if(!a) continue;
+    asked++;
+    const text = strip(Q.drawQ(q)), re = WORD[a.set][a.pick];
+    if(!(a.set in WORD) || !(a.pick >= 0 && a.pick < 3)) throw new Error('level ' + L.id + ': asks ' + JSON.stringify(a));
+    // the question's own words name the pick (a sum's «сбор», «Кои», «по-голямото»), and not another choice's
+    if(re && !re.test(text)) throw new Error('level ' + L.id + ' asks ' + Q.t('asks')[a.set][a.pick] + ' but reads: ' + text);
+    if(a.set === 'count' && a.pick === 0 && /сбор/.test(text)) throw new Error('level ' + L.id + ' asks how many but reads: ' + text);
+  }
+  if(asked < 100) throw new Error('only ' + asked + ' tasks ask what they ask');
+  console.log('what it asks: ' + asked + ' tasks, the right choice named by the question\'s own words, all three choices in three languages');
 }
 
 /* A round of tasks from other levels is no level's record: her paper's redo of 2026-10-18 was logged under 112, the level

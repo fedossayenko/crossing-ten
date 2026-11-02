@@ -78,6 +78,7 @@ const server = http.createServer((req, res) => {
         const q = S.qs[S.i], want = answers(q).slice(0, q.slots || 1);
         if(shown.has($('stage').innerHTML)) out.push('level ' + l.id + ': task ' + (i + 1) + ' of ' + S.qs.length + ' repeats an earlier one');
         shown.add($('stage').innerHTML);
+        if(S.ask) document.querySelector('#hint .askpick[data-k="' + S.ask.pick + '"]').click();   // what it asks, first (asksOf)
         if(i === 0){
           for(let t = 0; t < 2; t++){ enter(want.map(v => v + 100 > 999 ? 1 : v + 100)); await tick(); }
         } else {
@@ -223,6 +224,28 @@ const server = http.createServer((req, res) => {
       r.push((document.querySelector('#hint .treat .cat') || {}).dataset?.mood || $('cat').dataset.mood); if(r.length < 3) K('go'); await tick(); }
     LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(r); })()`));
   expect(treat.join() === 'happy,eat,star', 'two right in a row should earn the mascot a treat: ' + JSON.stringify(treat));
+  // what a task asks comes first where one setting can ask several things: a key does nothing until it is picked, a wrong
+  // pick is crossed out, the right one opens the keys; logged by task; right first time three times running, the level asks no more
+  const ask = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level, keep = LOCAL.rounds.slice();
+    const mk = sum => ({ kind:'count', shape:6, one:true, sum, natural:false, two:false, a:4, lo:4, hi:9, ans: sum ? 39 : 6, lvl:201 });
+    const pick = k => document.querySelector('#hint .askpick[data-k="' + k + '"]').click();
+    LOCAL.choice = false; S.level = 201; $('sheet').hidden = true; LOCAL.rounds = [];   // the full sweep above picked 201 right already
+    newRound([mk(false), mk(true), mk(false), mk(false)]); await tick();
+    const r = { shown: !!document.querySelector('#hint .whatq') && document.querySelectorAll('#hint .askpick').length === 3 };
+    K('6'); r.blocked = S.parts[0] === '' && $('hint').textContent.includes(t('asksFirst'));
+    pick(2); await tick(); r.crossed = !!document.querySelector('#hint .askpick.no[data-k="2"]') && !!S.ask;
+    pick(0); await tick(); r.open = !S.ask && S.asks[0] === 1 && $('hint').textContent.includes(t('asks').count[0]);
+    K('6'); K('go'); await tick(); r.right = S.results[0] === true; next(); await tick();
+    for(const [k, a] of [[2, '39'], [0, '6'], [0, '6']]){ r.shown = r.shown && !!document.querySelector('#hint .whatq'); pick(k); await tick(); [...a].forEach(K); K('go'); await tick(); next(); await tick(); }
+    const last = LOCAL.rounds[LOCAL.rounds.length - 1];
+    r.logged = JSON.stringify(last.asked) === '[1,0,0,0]' && last.firstTry === 4;
+    $('sheet').hidden = true; newRound([mk(false)]); await tick();
+    r.faded = !document.querySelector('#hint .whatq') && !S.ask;
+    LOCAL.rounds = keep; saveLocal(); LOCAL.choice = was; S.level = lvWas; newRound(); await tick();
+    r.back = !document.querySelector('#hint .whatq') || !!S.ask;
+    return JSON.stringify(r); })()`));
+  expect(ask.shown && ask.blocked && ask.crossed && ask.open && ask.right && ask.logged && ask.faded && ask.back, 'what a task asks went wrong: ' + JSON.stringify(ask));
   // R6: a task missed as a forgotten borrow lands in the notebook under that mistake, drawn again from its seed;
   // "put right" plays tasks like it (its level, other numbers, never the very task), all right puts the kind right, and a week on it asks to be checked again
   const r6 = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));

@@ -293,4 +293,11 @@ function whyWeekdayText(q, full){
       (q.day.f ? 'по една ' : 'по един ') + q.day.nm + ', значи ' + q.q + '; ' + extra + ' → ' + (q.q + 1);
   }
 }
-KIND.weekday = { draw:drawWeekday, eq:eqWeekday, why:whyWeekday };
+// The days after the 1st for the weekdays among them (191: «30», March, 2026-11-01); the 1st counted when it is that
+// weekday itself (191: «5» for the Mondays of April after a Monday 1st)
+function slipWeekday(q, parts){
+  if(q.shape !== 'after' || parts.length !== 1) return null;
+  const v = +parts[0];
+  return v === q.mon[1] - 1 || v === q.mon[1] ? 'otherQuestion' : v === q.ans + 1 && q.d1.nm === q.day.nm ? 'firstDay' : null;
+}
+KIND.weekday = { draw:drawWeekday, eq:eqWeekday, why:whyWeekday, slip:slipWeekday };
