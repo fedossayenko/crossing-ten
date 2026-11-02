@@ -641,6 +641,12 @@ const server = http.createServer((req, res) => {
       $('compStart').click(); await wait(100);
       out.sheet = location.hash === '#/paper' && !$('compSheet').hidden && !COMP && $('compSheet').textContent.includes(t('comps').ach) &&
         $('compSheet').textContent.includes(t('compRulePts', 40)) && $('compSheet').textContent.includes(t('compRuleTime', 20, 60));
+      // «Отпечатай»: the same paper on paper, each task with a place for its answer, the answers after them; none of it on her screen
+      const print = window.print; window.print = () => { out.printed = true; };
+      $('compPrint').click(); await wait(100); window.print = print;
+      const pt = [...$('print').querySelectorAll('.ptask')];
+      out.print = !!out.printed && pt.length === 20 && $('print').querySelectorAll('.pkey li').length === 20 && getComputedStyle($('print')).display === 'none' &&
+        pt.every(s => s.querySelector('.pblank, .pchoices')) && document.querySelectorAll('#slot0').length <= 1 && !COMP;
       $('compGo').click(); await wait(100);
       out.started = !!COMP && $('compSheet').hidden && $('sub').textContent.includes(t('comps').ach);
       $('quitBtn').click(); await wait(50);
@@ -648,7 +654,7 @@ const server = http.createServer((req, res) => {
       // back to her own grade, all competitions, for the checks after
       $('sheet').hidden = true; $('levelPill').click(); await wait(100); chip('pickComps', ''); chip('pickGrades', String(PLAYER.grade));
       return JSON.stringify(out); })()`) || '{}');
-    expect(fo.g2 && fo.g1 && fo.chips && fo.autumn && fo.paper && fo.ach && fo.card && fo.sheet && fo.started && fo.from === 'g2-ach',
+    expect(fo.g2 && fo.g1 && fo.chips && fo.autumn && fo.paper && fo.ach && fo.card && fo.sheet && fo.print && fo.started && fo.from === 'g2-ach',
       'a paper does not keep to the focus: ' + JSON.stringify(fo));
     await run(`$('sheet').hidden = true; newRound(); 1`);
   }

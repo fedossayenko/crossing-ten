@@ -8,12 +8,12 @@
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
 import { $, rnd } from './core.js';
-import { accepts, seededRaw, slipOf } from './questions.js';
+import { accepts, answers, drawQ, openAns, seededRaw, slipOf } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
-import { t } from './i18n.js';
+import { LANG, t } from './i18n.js';
 import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, go, groupOf, newRound, setComp, sfx, show } from './app.js';
-import { letterOf } from './choice.js';
+import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
@@ -82,6 +82,27 @@ export function paintCompSheet(){
   $('compFrom').innerHTML = '<span class="lab">' + t('compFrom') + '</span><b>' + (NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name) + '</b>' +
     '<span class="meta">' + t(NEXT ? 'compForecastHow' : 'compHow') + '</span>' + (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '');
   $('compRules').innerHTML = [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('compRulePts', 2 * COMP_N)].map(s => '<li>' + s + '</li>').join('');
+}
+// The same paper on paper: 20 tasks drawn as the sheet would start them, each with a blank where its answer goes
+// (one blank where she counts the answers herself, as on a real paper), and a page of answers for a grown-up after
+// them. Shown only in print (app.css): her screen never shows the answers. Nothing is recorded; the grown-up marks it.
+export function printComp(){
+  const f = compFocus(), qs = compTasks(NEXT, f), box = document.createElement('div');
+  const blank = q => {
+    box.innerHTML = drawQ(q);
+    const s = box.querySelectorAll('.slot');
+    if(openAns(q) && s.length > 1){ const r = document.createRange(); r.setStartAfter(s[0]); r.setEndAfter(s[s.length - 1]); r.deleteContents(); }
+    box.querySelectorAll('.slot').forEach(e => { e.removeAttribute('id'); e.className = 'slot pblank'; });   // no second #slot0 beside the task's own
+    return box.innerHTML + (q.options ? '<div class="pchoices">' + choiceHtml(q) + '</div>' : '');
+  };
+  // every answer of a task with several; one of them for a one-box task that takes any
+  const key = q => q.options ? letterOf(q.pick) : answers(q).join((q.slots || 1) > 1 ? ', ' : ' / ');
+  const name = NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name;
+  $('print').innerHTML = '<header class="phead"><b>' + t('compName') + ' · ' + name + '</b><span>' + t('compWhat', COMP_N, COMP_MIN).replace(/ · [^·]*$/, '') +
+    ' · ' + t('compRulePts', 2 * COMP_N) + '</span><span>' + t('printName') + ' ______________________ &nbsp; ' + new Date().toLocaleDateString(LANG) + '</span></header>' +
+    qs.map((q, k) => '<section class="ptask"><span class="pn">' + (k + 1) + '.</span><div class="stage">' + blank(q) + '</div></section>').join('') +
+    '<section class="pkey"><b>' + t('printKey') + ' · ' + name + '</b><ol>' + qs.map(q => '<li>' + key(q) + '</li>').join('') + '</ol></section>';
+  window.print();
 }
 // Her answer is kept, not marked: a tap on another option before it moves on changes it.
 export function compAnswer(){
@@ -160,5 +181,6 @@ export function startCompete(){
   $('quitBtn').onclick = () => { if(COMP && confirm(t('quitAsk'))) compEnd(); };   // what she has answered counts, the rest is unanswered
   $('compStart').onclick = () => openComp();
   $('compGo').onclick = () => startComp(NEXT);
+  $('compPrint').onclick = printComp;
   $('compBack').onclick = back;
 }
