@@ -74,9 +74,11 @@ try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCA
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
 // localStorage holds the settings and the last 400 rounds; the archive (js/archive.js) holds them all.
-// Full storage keeps fewer recent rounds here rather than losing the settings.
+// Full storage keeps fewer recent rounds here rather than losing the settings; if even 100 do not fit, the copy
+// already there stays as it was (every round is in the archive too) and a grown-up is told, on the line under Parents.
 export function saveStore(key, store){
-  for(const keep of [400, 100, 0]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: keep ? store.rounds.slice(-keep) : [] }))); return; } catch(e){}
+  for(const keep of [400, 100]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: store.rounds.slice(-keep) }))); return; } catch(e){}
+  try { $('synced').textContent = t('storageFull'); } catch(e){}
 }
 export function saveLocal(){ saveStore(LS, LOCAL); }
 export const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
@@ -116,6 +118,8 @@ function actx(){
   if(AC.state === 'suspended') AC.resume();
   return AC;
 }
+// made on the first touch or key anywhere, not on the first key of a task: building it costs about 75 ms, a tap she would feel
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => actx(), { once: true, capture: true }));
 function tone(freq, at, dur, peak, type){
   const c = actx(); if(!c) return;
   const o = c.createOscillator(), g = c.createGain();
@@ -332,7 +336,7 @@ const plainQ = q => q.own ? q : (({ options, pick, pts, ...rest }) => rest)(q); 
 // another level (a paper's redo, the notebook) is logged under its own level and seed
 // comp: a competition's own tasks, which come with their options and points already
 export function newRound(qs, comp){
-  if(!comp){ COMP = null; clearInterval(compTick); try { localStorage.removeItem(PS); } catch(e){} if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
+  if(!comp){ COMP = null; clearInterval(compTick); try { localStorage.removeItem(PS); } catch(e){} setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   const wasDaily = S.daily;
@@ -1073,7 +1077,7 @@ export function notebookData(now = Date.now()){
 export function fixKind(kind, check){
   const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
   if(!levels.length) return;
-  const set = check ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
+  const set = check || !g ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
   newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels)));
   S.redo = check ? { check: kind } : { fix: kind };
 }
@@ -1650,7 +1654,8 @@ $('pSave').onclick = () => {
   EDIT.name = $('pName').value.trim().slice(0, 20);
   EDIT.updated = Date.now();
   const old = PLAYERS.list.find(p => p.id === EDIT.id);
-  if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
+  if(old) Object.assign(old, { name: EDIT.name, mascot: EDIT.mascot, lang: EDIT.lang, grade: EDIT.grade, updated: EDIT.updated });   // only what this form edits: a sync may have changed the rest (resetAt, dropped) since it opened
+  else PLAYERS.list.push(EDIT);
   savePlayers();
   // her settings travel with her log: calmer animation (sound is set under Parents)
   const kept = storeOf(EDIT);
@@ -1670,7 +1675,7 @@ $('pDelete').onclick = () => {
   clearTimeout(delArmed); delArmed = null;
   PLAYERS.list = PLAYERS.list.filter(p => p.id !== EDIT.id);
   PLAYERS.gone.push({ id: EDIT.id, updated: Date.now() });   // so the other devices delete her too
-  try { localStorage.removeItem(roundsKey(EDIT)); } catch(e){}
+  try { const k = roundsKey(EDIT); [k, k + '.round', k + '.paper'].forEach(x => localStorage.removeItem(x)); } catch(e){}
   ARCHIVE.drop(EDIT.id); delete ARCH[EDIT.id];
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
@@ -1702,7 +1707,7 @@ document.addEventListener('keydown', e => {
     if(b) b.click();
     return;
   }
-  if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input')) return;
+  if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input') || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;   // a held key is one press; ⌘5 is no answer
   if(!$('choices').hidden){   // А/Б/В/Г: a letter picks (Cyrillic or Latin), Enter moves on; a typed digit is no answer here
     const k = e.key.toUpperCase(), id = Math.max('АБВГДЕ'.indexOf(k), 'ABCDEF'.indexOf(k));
     const b = id >= 0 && /** @type {HTMLButtonElement | null} */ ($('choices').querySelector('.ch[data-o="' + id + '"]'));
@@ -1774,8 +1779,10 @@ if((matchMedia('(display-mode: standalone)').matches || navigator.standalone) &&
 // A home-screen app, or a tab, stays open for days. At the start of a round, and coming back
 // to the screen between rounds, it picks up a newer build, told by the page's Last-Modified
 // (no header: nothing happens). Nothing is lost: it only reloads before a key is pressed.
+let buildChecked = 0;   // at most one look every 10 minutes: each fetches the whole page (36 KB, never from cache)
 function newerBuild(){
-  if(document.visibilityState !== 'visible' || midRound() || COMP) return;
+  if(document.visibilityState !== 'visible' || midRound() || COMP || Date.now() - buildChecked < 600000) return;
+  buildChecked = Date.now();
   if(BUILT_STAMP) fetch(location.pathname, { cache:'no-cache' }).then(r => r.text()).then(html => {
     const m = html.match(/<meta name="build" content="([^"]+)">/);
     if(m && Date.parse(m[1]) > builtAt()){ chose(); location.reload(); }
@@ -1785,6 +1792,12 @@ function newerBuild(){
   }).catch(() => {});
 }
 document.addEventListener('visibilitychange', newerBuild);
+// An app left open overnight comes back on yesterday's Today: a new day repaints the screen showing
+let shownDay = dayKey(Date.now());
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState !== 'visible' || dayKey(Date.now()) === shownDay) return;
+  shownDay = dayKey(Date.now()); applyRoute();
+});
 // Offline play, and the same build everywhere.
 if('serviceWorker' in navigator && window.isSecureContext)
   navigator.serviceWorker.register('sw.js').catch(() => {});
