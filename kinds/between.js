@@ -32,8 +32,9 @@ function whyBetween(q, full){
     'Обчисли обидва краї і випиши числа між ними. Сонечко — менше число.');
   const a = q.lo + 1, b = q.lo + 2, c = q.lo + 3;
   return q.p + ' − ' + q.s1 + ' = ' + q.lo + tr(' и ', ' і ') + q.p + ' + ' + q.s2 + ' = ' + q.hi + tr(' &nbsp;→&nbsp; между тях са само <b>', ' &nbsp;→&nbsp; між ними лише <b>') +
-    a + ', ' + b + tr('</b> и <b>', '</b> і <b>') + c + '</b> &nbsp;→&nbsp; ' + LADYBIRD + ' + ' + BEE + ': ' +
-    a + ' + ' + b + ' = ' + q.ans + ', ' + a + ' + ' + c + ' = ' + q.alt[0] + ', ' + b + ' + ' + c + ' = ' + q.alt[1];
+    a + ', ' + b + tr('</b> и <b>', '</b> і <b>') + c + '</b> &nbsp;→&nbsp; ' + LADYBIRD + ' + ' + BEE + ':' +
+    '<br>' + a + ': ' + a + ' + ' + b + ' = ' + q.ans + ', ' + a + ' + ' + c + ' = ' + q.alt[0] +
+    '<br>' + b + ': ' + b + ' + ' + c + ' = ' + q.alt[1];
 }
 // The numbers themselves for their sums (179: «5 · 6 · 7» for 11, 12, 13, 2026-10-31)
 function slipBetween(q, parts){

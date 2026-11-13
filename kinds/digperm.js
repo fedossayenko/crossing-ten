@@ -97,8 +97,10 @@ function whyDigPerm(q, full){
     // the picture first: the card as it lies and turned over (a number after it would be read as the answer)
     return '<svg viewBox="0 0 120 48" style="display:block; width:150px; max-width:100%; margin:0 auto 6px" role="img" aria-label="' + tr('обърната картичка', 'перевернута картка') + '">' +
       flipCard(six, 2) + svgText(60, 30, '→', 20, 'var(--ink)') + flipCard(six, 78, true) + '</svg>' +
-      plain.join(', ') + tr('; картичката ' + six + ', обърната, е ' + FLIP[six] + ': ', '; картка ' + six + ', перевернута, — це ' + FLIP[six] + ': ') + more.join(', ') +
-      ' &nbsp;→&nbsp; ' + tr('общо ', 'усього ') + '<b>' + q.ans + '</b>';
+      tr('картичката ' + six + ', обърната, е ' + FLIP[six] + ' (<b>получер</b> — числата с обърната картичка)', 'картка ' + six + ', перевернута, — це ' + FLIP[six] + ' (<b>жирним</b> — числа з перевернутою карткою)') +
+      // a row for each tens digit, in order
+      [...new Set(q.nums.map(v => Math.floor(v / 10)))].map(a => '<br>' + a + ': ' + q.nums.filter(v => Math.floor(v / 10) === a).map(v => more.includes(v) ? '<b>' + v + '</b>' : v).join(', ')).join('') +
+      '<br>' + tr('общо ', 'усього ') + '<b>' + q.ans + '</b>';
   }
   if(q.shape === 'four'){
     if(!full) return tr('Примерите изписват всички двуцифрени числа от дадените цифри, без цифра два пъти. Избери цифрата на десетиците (не 0), после цифрата на единиците — всяка от другите.',

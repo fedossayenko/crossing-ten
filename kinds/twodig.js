@@ -21,6 +21,15 @@ export function genTwoDigUnder(){
   const vals = [...new Set(pairs.map(([lo, hi]) => ask ? hi : hi - lo))].sort((a, b) => a - b);
   return {kind:'twodig', shape:'under', B, ask, pairs, slots: vals.length, ans: vals[0], alt: vals.slice(1)};
 }
+// every pair in a fixed order, a row for each smaller number, and where its row stops: the first sum that is too big, struck out
+function twoDigUnderRows(q){
+  const rows = [];
+  for(let lo = 10; ; lo++){
+    const mine = q.pairs.filter(p => p[0] === lo), hi = mine.length ? mine[mine.length - 1][1] + 1 : lo + 1;
+    rows.push(mine.map(([a, b]) => a + ' + ' + b + ' = ' + (a + b)).concat('<s>' + lo + ' + ' + hi + ' = ' + (lo + hi) + '</s>').join(', &nbsp;'));
+    if(!mine.length) return rows.join('<br>');
+  }
+}
 const twoDigUnderVals = q => [q.ans].concat(q.alt);
 
 function drawTwodig(q){
@@ -47,8 +56,9 @@ function eqTwodig(q){
 }
 function whyTwodig(q, full){
   if(q.shape === 'under'){
-    if(!full) return tr('Започни от най-малкото двуцифрено число и търси второ, различно, така че сборът да е достатъчно малък.', 'Почни з найменшого двоцифрового числа й шукай друге, інше, щоб сума була досить малою.');
-    return q.pairs.map(([lo, hi]) => lo + ' + ' + hi + ' = ' + (lo + hi)).join(', &nbsp;') + ' &nbsp;→&nbsp; ' +
+    if(!full) return tr('Търси по ред: вземи най-малкото двуцифрено число и му намирай по-големи партньори едно по едно, докато сборът стане ' + q.B + ' или повече. После вземи следващото число и пак така. Спри чак когато и най-малкият сбор е твърде голям.',
+      'Шукай по порядку: візьми найменше двоцифрове число й підбирай до нього більші, одне за одним, доки сума не стане ' + q.B + ' або більшою. Потім візьми наступне число і знову так. Зупинись, лише коли навіть найменша сума завелика.');
+    return twoDigUnderRows(q) + '<br>' +
       (q.ask ? tr('по-голямото: ', 'більше: ') + twoDigUnderVals(q).join(', ') : q.pairs.map(([lo, hi]) => hi + ' − ' + lo + ' = ' + (hi - lo)).join(', ') + ' &nbsp;→&nbsp; ' + twoDigUnderVals(q).join(', '));
   }
   if(!full) return q.three ? tr('Най-малкото трицифрено число е граница.', 'Найменше трицифрове число — це межа.')

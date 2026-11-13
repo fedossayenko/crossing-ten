@@ -1578,3 +1578,58 @@ console.log('sharing sweets: the count matches the listed ways, worksheet instan
 if(lastNum(why({kind:'units', shape:'join', big:'м', small:'см', k:100, a:1, b:5, ans:105}, true)) !== 105)
   throw new Error('1 м 5 см is 105 см, not 15');
 console.log('units of length: every drawn equation reads back equal in мм, and 1 м 5 см is 105 см');
+
+// «How many ways / list them all» (levels 195, 173, 179, 208, 215): the solution lists the ways in a fixed order, one
+// row for each first choice, and the listed ways are exactly the brute-force set; what she is told after a first miss
+// names the order. 195 also shows the step where the list stops, struck out, so a list is not ended early.
+{
+  const rows = html => why(html, true).replace(/<svg[\s\S]*?<\/svg>/g, '').split('<br>');
+  const struck = r => r.replace(/<s>[\s\S]*?<\/s>/g, '');
+  const triples = r => [...struck(r).matchAll(/(\d+) \+ (\d+) = (\d+)/g)].map(m => m[1] + '+' + m[2]);
+  const same = (got, want, what) => { if(got.slice().sort().join() !== want.slice().sort().join()) throw new Error(what + ': listed ' + got + ', brute force ' + want); };
+  const sample = (L, shape) => { for(let i = 0; i < 400; i++){ const q = raw(L); if(!shape || q.shape === shape) return q; } throw new Error('no ' + shape); };
+  for(let i = 0; i < 200; i++){
+    // 195: every pair of different two-digit numbers under B, a row for each smaller number, then the step that stops
+    const q = sample(195, 'under'), want = [];
+    for(let lo = 10; lo < 99; lo++) for(let hi = lo + 1; lo + hi < q.B; hi++) want.push(lo + '+' + hi);
+    const rs = rows(q).filter(r => triples(r).length);
+    same(rs.flatMap(triples), want, '195 B=' + q.B);
+    rs.forEach(r => { const f = triples(r).map(p => +p.split('+')[0]); if(new Set(f).size !== 1) throw new Error('195: a row mixes smaller numbers: ' + strip(r)); });
+    if(!rows(q).slice(0, rs.length + 1).every(r => /<s>[^<]*<\/s>/.test(r))) throw new Error('195: a row does not end in its struck-out stop');
+    // 179: the pairs of numbers strictly between the bounds, the smaller (ladybird) first, a row for each ladybird
+    const b = sample(179), bs = [], w2 = [];
+    for(let x = b.lo + 1; x < b.hi; x++) for(let y = x + 1; y < b.hi; y++) w2.push(x + '+' + y);
+    const rb = rows(b).slice(1).filter(r => triples(r).length);
+    same(rb.flatMap(triples), w2, '179 ' + b.lo + '..' + b.hi);
+    if(rb.length !== 2) throw new Error('179: a row for each ladybird (' + rb.length + ')');
+    // 173: the card alone and the two-digit number the other two make, 0 never in front, a row for each card alone
+    const c = sample(173), w3 = [];
+    c.cs.forEach((s, i) => { const o = c.cs.filter((_, j) => j !== i); [[o[0], o[1]], [o[1], o[0]]].forEach(([t, u]) => { if(t && !w3.includes(s + '+' + (10*t + u))) w3.push(s + '+' + (10*t + u)); }); });
+    const rc = rows(c).filter(r => triples(r).length);
+    same(rc.flatMap(triples), w3, '173 ' + c.cs);
+    rc.forEach(r => { if(new Set(triples(r).map(p => p.split('+')[0])).size !== 1) throw new Error('173: a row mixes cards alone'); });
+    // 208: every number the cards make, the 6 or 9 turned too, a row for each tens digit, in order
+    const f = sample(208, 'flip'), w4 = [];
+    const FL = { 6:9, 9:6 }, ds = f.ds;
+    ds.forEach((a, x) => ds.forEach((d, y) => { if(x !== y) [a, FL[a]].forEach(t => [d, FL[d]].forEach(u => { if(t !== undefined && u !== undefined && t) w4.push(10*t + u); })); }));
+    const rf = rows(f).map(r => strip(r).match(/^\s*(\d)\s*:\s*([\d, ]+)/)).filter(Boolean);
+    same(rf.flatMap(m => m[2].split(',').map(v => v.trim())), [...new Set(w4)].map(String), '208 ' + ds);
+    rf.forEach(m => { if(m[2].split(',').some(v => v.trim()[0] !== m[1])) throw new Error('208: a row mixes tens digits'); });
+    if(rf.some((m, k) => k && +m[1] <= +rf[k - 1][1])) throw new Error('208: the rows are not in order');
+  }
+  // 215: the picture of the ways. After a first miss: the ways that start in the first colour, in a fixed order (the method,
+  // not the count); in the solution: every way, as many as the answer
+  const ways = (n, cols, first) => { let w = [[]]; for(let i = 0; i < n; i++) w = w.flatMap(r => cols.filter(c => (!i || c !== r[i - 1]) && !(first !== undefined && !i && c !== first)).map(c => r.concat(c))); return w; };
+  const rects = h => (h.match(/<rect/g) || []).length;
+  for(const shape of ['two', 'pair', 'end']){
+    for(let i = 0; i < 50; i++){
+      const q = sample(215, shape), cols = q.cols || [0, 1, 2];
+      const all = ways(q.n, cols, shape === 'end' ? cols[0] : undefined);
+      if(all.length !== q.ans) throw new Error('215 ' + shape + ': brute force ' + all.length + ', answer ' + q.ans);
+      if(rects(why(q, true)) !== all.length*q.n) throw new Error('215 ' + shape + ': the solution does not draw every way');
+      const start = ways(q.n, cols, cols[0]);
+      if(rects(why(q)) !== (shape === 'end' ? 0 : start.length*q.n)) throw new Error('215 ' + shape + ': the hint should draw the ways that start with the first colour (' + start.length + ')');
+    }
+  }
+  console.log('ways: the solutions of 195, 173, 179, 208 and 215 list the brute-force set, one row per first choice');
+}

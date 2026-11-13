@@ -29,11 +29,12 @@ export function genPaintTwo(){
 }
 const PAINT_FILL = ['#fff', 'var(--good)', 'var(--bad)', 'var(--accent)'];   // white stays white in the dark theme
 // every way to colour the row, each a row of small squares (the first square fixed when it is painted already)
-function paintWaysSvg(q){
+// (firstOnly: just the ways that start in the first colour, the first row of the search)
+function paintWaysSvg(q, firstOnly){
   const cols = q.cols || [0, 1, 2, 3].slice(0, q.c), ways = [];
   (function go(row){
     if(row.length === q.n){ ways.push(row); return; }
-    cols.forEach(c => { if(row[row.length - 1] !== c && !(q.shape === 'end' && !row.length && c !== cols[0])) go(row.concat(c)); });
+    cols.forEach(c => { if(row[row.length - 1] !== c && !((q.shape === 'end' || firstOnly) && !row.length && c !== cols[0])) go(row.concat(c)); });
   })([]);
   const s = 18, gap = 6;
   let g = '';
@@ -81,10 +82,12 @@ function whyPaintRow(q, full){
     return tr('първият — <b>' + q.c + '</b>, вторият — <b>' + (q.c - 1) + '</b>, третият допира и двата — <b>' + (q.c - 2) + '</b>', 'перший — <b>' + q.c + '</b>, другий — <b>' + (q.c - 1) + '</b>, третій торкається обох — <b>' + (q.c - 2) + '</b>') + ' &nbsp;→&nbsp; ' + eqPaintRow(q);
   }
   if(q.shape === 'end'){
-    if(!full) return tr('Първото вече е зелено. Какъв цвят остава за съседа му? А за следващото?', 'Перший уже зелений. Який колір лишається для його сусіда? А для наступного?');
+    if(!full) return tr('Първото вече е зелено — него не го избираш. Какъв цвят остава за съседа му? А за следващото?', 'Перший уже зелений, його не вибираєш. Який колір лишається для сусіда? А для наступного?');
     return tr('първото вече е зелено, всяко следващо — само <b>1</b> цвят (другият)', 'перший уже зелений, кожен наступний — лише <b>1</b> колір (інший)') + paintWaysSvg(q) + eqPaintRow(q);
   }
-  if(q.shape === 'two' && !full) return tr('Оцвети първото квадратче. Има ли избор за следващото?', 'Зафарбуй перший квадратик. Чи є вибір для наступного?');
+  // sorted by the first square: every way that starts in the first colour, then the same for the others
+  if((q.shape === 'two' || q.shape === 'pair') && !full) return tr('Нареди ги по първото квадратче. Ето всички начини, при които то е такова:', 'Впорядкуй за першим квадратиком. Ось усі способи, де він такий:') +
+    paintWaysSvg(q, true) + tr('Сега същото с другите цветове отпред.', 'Тепер те саме з іншими кольорами спереду.');
   if(!full) return tr('Първото квадратче има ' + q.c + ' възможности. А всяко следващо?', 'Перший квадратик має ' + q.c + ' можливості. А кожен наступний?');
   if(q.shape) return tr('първото — <b>' + q.c + '</b> цвята, всяко следващо — <b>' + (q.c - 1) + '</b> (без цвета на съседа)', 'перший — <b>' + q.c + '</b> кольори, кожен наступний — <b>' + (q.c - 1) + '</b> (без кольору сусіда)') +
     paintWaysSvg(q) + eqPaintRow(q);

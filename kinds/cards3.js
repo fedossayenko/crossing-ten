@@ -34,7 +34,9 @@ function eqCards3(q){
 function whyCards3(q, full){
   if(!full) return tr('Избери коя картичка остава сама и от другите две направи двуцифрено число — по всички възможни начини.',
     'Вибери, яка картка лишається сама, а з двох інших склади двоцифрове число — усіма можливими способами.');
-  return cards3Ways(q.cs).map(([s, n]) => s + ' + ' + n + ' = ' + (s + n)).join(', &nbsp;') +
-    ' &nbsp;→&nbsp; ' + tr('различните сборове: ', 'різні суми: ') + q.sums.join(tr(' и ', ' і '));
+  // a row for each card left alone, in order: the two-digit numbers the other two make
+  const ways = cards3Ways(q.cs);
+  return [...new Set(ways.map(w => w[0]))].map(s => 'сама <b>' + s + '</b>: ' + ways.filter(w => w[0] === s).map(([, n]) => s + ' + ' + n + ' = ' + (s + n)).join(', &nbsp;')).join('<br>') +
+    '<br>' + tr('различните сборове: ', 'різні суми: ') + q.sums.join(tr(' и ', ' і '));
 }
 KIND.cards3 = { draw:drawCards3, eq:eqCards3, why:whyCards3 };
