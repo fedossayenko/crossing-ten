@@ -212,6 +212,11 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   await signup(L);
   await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map(() => call('/login', { name: L, password: 'wrong horse' })));
   ok((await call('/login', { name: L, password: 'correct horse' })).status === 429, 'eight parallel wrong passwords should lock (the lock must hold past the fifth) the account');
+  if(LOCAL){      // once a lock has run out, one wrong password is an ordinary 401 again, and a right one clears it
+    d1(`UPDATE accounts SET locked = ${Date.now() - 1000} WHERE name = '${L}'`);
+    ok((await call('/login', { name: L, password: 'wrong horse' })).status === 401, 'a wrong password after a lock has expired should be 401, not locked');
+    ok((await call('/login', { name: L, password: 'correct horse' })).status === 200 && d1(`SELECT locked FROM accounts WHERE name = '${L}'`)[0].locked === 0, 'a right password should clear the lock');
+  }
   // and one address only so often: the 11th try in a minute is refused, another address is not
   if(LOCAL){
     IP = '203.0.113.' + crypto.randomInt(250);
