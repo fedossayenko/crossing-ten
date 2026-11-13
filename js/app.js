@@ -70,6 +70,7 @@ export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:fa
 export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
+const FULL = new Set();   // the storage keys whose last save did not fit (saveStore)
 // the next paper's date was kept here, on one device; it is in the player's record now (PLAYER.next), which sync carries to the others
 if(LOCAL.next){ if(PLAYER.next === undefined){ PLAYER.next = LOCAL.next; savePlayers(); }   // updated is not bumped: this device may be the stale one, and the record with the newer updated wins a sync
   delete LOCAL.next; saveLocal(); }
@@ -79,9 +80,11 @@ document.documentElement.classList.toggle('calm', !!LOCAL.calm);
 // localStorage holds the settings and the last 400 rounds; the archive (js/archive.js) holds them all.
 // Full storage keeps fewer recent rounds here rather than losing the settings; if even 100 do not fit, the copy
 // already there stays as it was (every round is in the archive too) and a grown-up is told, on the line under Parents.
+// The warning stays on that line (builtOn adds it to every text written there) until a save of that key works again.
 export function saveStore(key, store){
-  for(const keep of [400, 100]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: store.rounds.slice(-keep) }))); return; } catch(e){}
-  try { $('synced').textContent = t('storageFull'); } catch(e){}
+  for(const keep of [400, 100]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: store.rounds.slice(-keep) }))); FULL.delete(key); return; } catch(e){}
+  FULL.add(key);
+  try { if(!$('synced').textContent.includes(t('storageFull'))) $('synced').textContent += ' · ' + t('storageFull'); } catch(e){}
 }
 export function saveLocal(){ saveStore(LS, LOCAL); }
 export const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
@@ -1734,7 +1737,8 @@ document.addEventListener('keydown', e => {
 // else the Last-Modified GitHub Pages sends, which the browser keeps as document.lastModified.
 const BUILT_STAMP = document.querySelector('meta[name="build"]')?.getAttribute('content');
 const builtAt = () => Date.parse(BUILT_STAMP || document.lastModified);
-export const builtOn = () => {
+export const builtOn = () => (FULL.size ? ' · ' + t('storageFull') : '') + builtLine();
+const builtLine = () => {
   try { return t('build') + new Date(builtAt())
     .toLocaleString(LANG_TAG[LANG], { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); }
   catch(e){ return ''; }
@@ -1820,5 +1824,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, builtOn: () => builtOn, heldHere: () => heldHere, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

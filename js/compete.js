@@ -69,7 +69,7 @@ export function resumeComp(s){
   const qs = s.tasks.map(([lvl, seed]) => Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
   run({ paper: s.paper, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
   qs.forEach((q, k) => { const a = s.ans[k]; if(a){ S.results[k] = accepts(q, a); if(!S.results[k]){ S.typed[k] = a.join(' · '); S.slip[k] = slipOf(q, a); } } });
-  S.ms = s.ms || []; S.i = s.i;
+  S.ms = s.ms || []; S.i = s.i; S.on = 0;   // the time between the first draw and here is not hers
   if(Date.now() >= s.end) compEnd(); else if(s.check) compCheck(); else show();
 }
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh

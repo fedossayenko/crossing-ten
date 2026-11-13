@@ -829,11 +829,14 @@ const server = http.createServer((req, res) => {
     LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(out); })()`) || '[]');
   expect(ky.join() === ',,,4', 'a held key or a ⌘/Ctrl digit typed into the answer: ' + JSON.stringify(ky));
   // storage too full for 100 rounds: the copy already there stays, a grown-up is told
-  const sf = JSON.parse(await run(`(() => { const set = Storage.prototype.setItem, was = localStorage.getItem(LS), line = $('synced').textContent;
+  // (it stays on the Parents line through the round count that finish() writes there, until a save works again)
+  const sf = JSON.parse(await run(`(() => { const set = Storage.prototype.setItem, was = localStorage.getItem(LS), line = $('synced').textContent, keep = LOCAL.rounds.slice(), lv = S.level;
     Storage.prototype.setItem = function(k, v){ if(k === LS && v.length > 3000) throw new Error('quota'); return set.call(this, k, v); };
-    saveLocal(); Storage.prototype.setItem = set; const out = { kept: localStorage.getItem(LS) === was && was.length > 3000, note: $('synced').textContent === t('storageFull') };
-    $('synced').textContent = line; return JSON.stringify(out); })()`) || '{}');
-  expect(sf.kept && sf.note, 'a full storage wiped the rounds kept there, or said nothing: ' + JSON.stringify(sf));
+    saveLocal(); const out = { kept: localStorage.getItem(LS) === was && was.length > 3000, note: $('synced').textContent.includes(t('storageFull')) };
+    LOCAL.choice = false; S.level = 5; newRound([{ a:27, b:15, op:'+' }]); finish(); out.afterFinish = $('synced').textContent.includes(t('storageFull'));
+    Storage.prototype.setItem = set; saveLocal(); $('synced').textContent = heldHere() + builtOn(); out.cleared = !$('synced').textContent.includes(t('storageFull'));
+    $('sheet').hidden = true; LOCAL.rounds = keep; S.level = lv; saveLocal(); $('synced').textContent = line; newRound(); return JSON.stringify(out); })()`) || '{}');
+  expect(sf.kept && sf.note && sf.afterFinish && sf.cleared, 'a full storage wiped the rounds kept there, or its warning did not stay: ' + JSON.stringify(sf));
   // putting a kind right whose misses are all gone (put right in another round) starts a round of new tasks; it did not fail
   const fk = JSON.parse(await run(`(async () => { const keep = LOCAL.rounds, now = Date.now(); let err = '';
     LOCAL.rounds = [{ id: 'fk', ts: now - 1000, day: '', level: 2, n: 5, firstTry: 5, redo: { fix: 'forgotBorrow' }, t: [[2, null, 1, null, 1, 5]] }];
