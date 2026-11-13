@@ -11,7 +11,7 @@ import { mascotSvg } from '../mascots.js';
 
 const html = htm.bind(h);
 const CHEV = html`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`;
-const Dots = ({ d }) => html`<span class="dots5" title=${t('difficulty', d)} aria-label=${t('difficulty', d)}>${[1, 2, 3, 4, 5].map(k => html`<i class=${k <= d ? 'on' : ''}></i>`)}</span>`;
+const Dots = ({ d }) => html`<span class="dots5" role="img" title=${t('difficulty', d)} aria-label=${t('difficulty', d)}>${[1, 2, 3, 4, 5].map(k => html`<i class=${k <= d ? 'on' : ''}></i>`)}</span>`;
 
 // "Започни тук": what it is, then Play — and on a wide screen, another level
 const StartCard = ({ l, lab, main }) => html`

@@ -32,7 +32,7 @@
     </button>
   </div>
   <div class="roundbar">
-    <div class="dots" id="dots" data-t-aria="progress"></div>
+    <div class="dots" id="dots" role="img" data-t-aria="progress"></div>
     <div class="segline"><span class="qnum" id="qnum"></span><span class="run" id="run"></span></div>
   </div>
 
@@ -42,7 +42,7 @@
       <div class="typehint" id="typeHint" data-t="typeHint"></div>
       <div class="choices" id="choices" role="group" data-t-aria="answers" hidden></div>
       <div class="verdict" id="verdict" role="status" aria-live="polite"></div>
-      <div class="hint" id="hint"></div>
+      <div class="hint" id="hint" aria-live="polite"></div>
       <p class="compnote" id="compNote" data-t="compNote"></p>
       <div class="comprow" id="compRow" hidden><button class="btn ghost" id="skipBtn" data-t="skip"></button><button class="btn" id="nextBtn" data-t="goNext"></button></div>
     </div>
@@ -127,7 +127,7 @@
       <div class="big" id="score"></div>
       <div class="rsub" id="scoreSub"></div>
       <div class="scorebar" id="scoreBar" hidden><i></i></div>
-      <div class="stars" id="stars"></div>
+      <div class="stars" id="stars" role="img"></div>
     </div>
     <div class="banner good" id="learnedCard" hidden></div>
     <div class="banner warm" id="compBest" hidden></div>

@@ -856,6 +856,16 @@ const server = http.createServer((req, res) => {
   const mn = await page('{ player: PLAYER.next && PLAYER.next.date, local: LOCAL.next === undefined, stored: !JSON.parse(localStorage.getItem(LS)).next }');
   expect(mn.player === '2098-01-01' && mn.local, 'a paper date in the old settings did not move into the player: ' + JSON.stringify(mn));
   await run("PLAYER.next = null; localStorage.setItem('crossingten.players', JSON.stringify(PLAYERS)); ''");
+  // a screen reader: marks drawn from spans have a role to carry their label (a bare span's aria-label is ignored), the feedback is announced,
+  // and focus goes back to the button that opened a sheet once it closes
+  const ax = JSON.parse(await run(`(async () => { try { const tick = (ms = 60) => new Promise(r => setTimeout(r, ms)), out = {};
+    newRound(); await tick(); $('levelPill').focus(); $('levelPill').click(); await tick();
+    out.bare = [...document.querySelectorAll('#picker span[aria-label]:not([role]), #picker div[aria-label]:not([role]), #dots:not([role]), #stars:not([role]), #side span[aria-label]:not([role])')].map(e => e.className || e.id);
+    $('tabToday').click(); await tick(); out.bareToday = [...document.querySelectorAll('#today span[aria-label]:not([role])')].map(e => e.className);
+    newRound(); await tick();
+    $('levelPill').focus(); $('levelPill').click(); await tick(); $('closePick').click(); await tick(); out.back = document.activeElement === $('levelPill'); out.live = $('hint').getAttribute('aria-live');
+    return JSON.stringify(out); } catch(e){ return JSON.stringify({ err: String(e) }); } })()`) || '{}');
+  expect(ax.err === undefined && ax.bare.length === 0 && ax.bareToday.length === 0 && ax.back && ax.live === 'polite', 'accessibility: ' + JSON.stringify(ax));
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){

@@ -1387,14 +1387,14 @@ const myGrade = () => PLAYER.grade || 2;
 // One level as a row — the levels page and the list beside the task (a wide screen) draw the same one.
 // How hard it is, on the rubric in the README: operations, reading, search, number size and how easy
 // the trap is to miss — five dots. Its status: learned, new, or right first time on its last round.
-const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
+const hard = l => '<span class="dots5" role="img" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
   [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
 const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
 // Her last three answers to it in papers, ✓ or ✗, oldest first: one task a paper, so what happened there, not a grade.
 // Practice can read 100% on a level a paper found wrong (no hint there, no second try): the mark says so beside it.
 function paperMark(h){
   const p = h ? h.paper : [], k = p.filter(x => x.ok).length;
-  return p.length ? '<span class="ppr' + (p[p.length - 1].ok ? '' : ' no') + '" title="' + t('inPapers', k, p.length) + '" aria-label="' + t('inPapers', k, p.length) + '">' +
+  return p.length ? '<span class="ppr' + (p[p.length - 1].ok ? '' : ' no') + '" title="' + t('inPapers', k, p.length) + '" role="img" aria-label="' + t('inPapers', k, p.length) + '">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + GLYPH.stopwatch[1] + '"/></svg>' +
     p.slice(-3).map(x => '<i class="' + (x.ok ? 'ok">✓' : 'no">✗') + '</i>').join('') + '</span>' : '';
 }
@@ -1404,11 +1404,11 @@ function paperMark(h){
 const toFix = (h, x) => { const p = h && h.paper[h.paper.length - 1];
   return !!p && !p.ok && !(x && x.at > p.ts && x.lastRate >= 0.8); };
 function levelStatus(l, m, hist){
-  if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
+  if(m[l.id] && m[l.id].done) return '<span class="tick" role="img" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
   const h = hist[l.id];
   if(!h || !h.last) return h || !LOCAL.rounds.length ? '' : '<span class="isnew">' + t('isNew') + '</span>';   // before her first round every level is new: no tag on each; met in a paper, it is not new
   const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
-  return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + dayAgo(h.last.ts) + '</i></span>';
+  return '<span class="stat" role="img" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + dayAgo(h.last.ts) + '</i></span>';
 }
 const levelRow = (l, m, hist, tags = '') => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
   '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + tags + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
@@ -1715,11 +1715,13 @@ $('card').addEventListener('click', () => { if(S.settled && !(COMP && COMP.check
 // A sheet up: the task under it is out of reach (no Tab into the hidden keys), and focus starts in the sheet
 // that just opened, where a keyboard or a screen reader should be.
 const SHEETS = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.sheet')]);
-let shown = new Set();
+let shown = new Set(), opener = null;   // opener: what had focus when the first sheet opened, to give focus back when the last closes
 const paintInert = () => {
   const open = new Set(SHEETS.filter(s => !s.hidden));
   /** @type {HTMLElement} */ (document.querySelector('.app')).inert = open.size > 0;
+  if(open.size && !shown.size && document.activeElement !== document.body) opener = document.activeElement;
   open.forEach(s => { if(!shown.has(s)){ s.tabIndex = -1; s.focus({ preventScroll: true }); } });
+  if(!open.size && shown.size && opener){ if(opener.isConnected && !/** @type {HTMLElement} */ (opener).closest('[hidden]')) /** @type {HTMLElement} */ (opener).focus({ preventScroll: true }); opener = null; }
   shown = open;
 };
 const sheetWatch = new MutationObserver(paintInert);
