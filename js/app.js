@@ -3,7 +3,7 @@ import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgP
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
-import { dailyPlan } from './daily.js';
+import { dailyPlan, mistakePick, trapShown } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
@@ -61,7 +61,7 @@ addEventListener('popstate', () => { ROUTE = routeOfAddress(); applyRoute(); });
 document.addEventListener('scroll', e => { const el = /** @type {HTMLElement} */ (e.target); if(el.classList && el.classList.contains('sheet')) el.classList.toggle('scrolled', el.scrollTop > 6); }, true);
 const START_ROUTE = routeNow();   // the address it was opened (or reloaded) on
 
-export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], ms:[], after:[], on:0, cur:0, timers:[] };
+export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:false, settled:false, wrong:false, results:[], skipped:[], mist:[], judged:[], ms:[], after:[], on:0, cur:0, timers:[] };
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
@@ -345,7 +345,7 @@ export function newRound(qs, comp){
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   const wasDaily = S.daily;
-  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.daily = false; S.asks = []; S.ms = []; S.after = []; S.on = 0;
+  S.i = 0; S.results = []; S.skipped = []; S.typed = []; S.slip = []; S.second = []; S.crossed = []; S.redo = false; S.daily = false; S.asks = []; S.mist = []; S.judged = []; S.ms = []; S.after = []; S.on = 0;
   $('sheet').hidden = true;
   if(wasDaily) paintPill();   // the pill names the level again
   if(routeNow() !== 'play') go('play', true);
@@ -409,8 +409,8 @@ export function show(){
   $('card').className = 'card';
   $('verdict').className = 'verdict'; $('verdict').textContent = '';
   $('hint').innerHTML = '';
-  S.ask = asksOf(q);
-  if(S.ask) paintAsk();
+  S.ask = mistOf() || asksOf(q);
+  if(S.ask) S.ask.mist ? paintMist() : paintAsk();
   $('go').textContent = '✓';
   mood(S.i === 0 ? 'tilt' : 'idle');                // a wave hello at the start of a round
   if(S.i === 0) S.timers.push(setTimeout(() => { if(!S.settled && $('cat').dataset.mood === 'tilt') mood('idle'); }, 1400));
@@ -425,7 +425,7 @@ export function saveRound(){
   try {
     if(COMP){ localStorage.removeItem(RS); localStorage.setItem(PS, JSON.stringify(paperSnap())); }
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
-      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, asks:S.asks, ms:S.ms, after:S.after } }));
+      slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, asks:S.asks, mist:S.mist, judged:S.judged, ms:S.ms, after:S.after } }));
   } catch(e){}
 }
 // A task whose answers she counts herself (openAns): its first box and a dashed + after it, which opens another; the
@@ -699,6 +699,8 @@ export function finish(){
     redo: S.redo || undefined, daily: S.daily || undefined,
     // the step before answering (asksOf): wrong picks before the right one, by task; null where it was not asked
     asked: S.asks.some(w => w !== undefined && w !== null) ? S.qs.map((_, k) => S.asks[k] ?? null) : undefined,
+    // «Намери грешката» (mistakePick): per task null, or [the wrong answer shown, 1 she called it wrong / 0 she called it right (a miss)]
+    judged: S.mist.some(v => v != null) ? S.qs.map((_, k) => S.mist[k] == null ? null : [S.mist[k], S.judged[k] ?? null]) : undefined,
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
     // generator has changed since is told apart, never shown as something it was not; then her seconds on it
@@ -887,7 +889,7 @@ export function renderParent(){
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.daily ? t('dailyName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
 const toPractiseNote = r => { const n = toPractise(r); return n ? t('toPractise', n) : ''; };
 const roundMeta = r => [dayAgo(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' ? toPractiseNote(r) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' ? toPractiseNote(r) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r), (r.judged || []).some(Boolean) ? t('judgedSum') : ''].filter(Boolean).join(' · ');
 // A round of her mistakes: each task's earlier round that missed one like it (its level and shape; the latest such), or none
 // for a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from.
 // Like it, not the same: a mistake is practised with other numbers (twin)
@@ -948,11 +950,36 @@ function pickAsk(k){
   $('hint').innerHTML = '<div class="whatq done">' + t('asksOk') + ' <b>' + t('asks')[a.set][k] + '</b></div>';
   saveRound();
 }
+// «Намери грешката» (js/daily.js mistakePick): a task of today's practice that shows a typical wrong answer first. «Грешно»
+// is the right call, and she then types the answer as usual; «Вярно» is a miss: the answer and why the shown one is wrong.
+function mistOf(){
+  const shown = S.mist[S.i];
+  return !COMP && shown != null && S.judged[S.i] == null ? { mist: true, shown } : null;
+}
+function paintMist(){
+  const a = S.ask;
+  $('hint').innerHTML = '<div class="whatq"><b>' + t('mistQ', a.shown) + '</b><div class="whatopts">' +
+    ['mistRight', 'mistWrong'].map((k, j) => '<button class="btn ghost askpick" data-j="' + j + '">' + t(k) + '</button>').join('') + '</div></div>';
+  $('hint').querySelectorAll('.askpick').forEach(b => b.onclick = e => { e.stopPropagation(); judge(+(/** @type {HTMLElement} */ (b)).dataset.j); });
+}
+// said: 1 «Грешно», 0 «Вярно»
+function judge(said){
+  const a = S.ask, q = S.qs[S.i];
+  if(!a || !a.mist) return;
+  S.judged[S.i] = said; S.ask = null;
+  if(said){ sfx.tap(); $('hint').innerHTML = '<div class="whatq done">' + t('mistOk', a.shown) + '</div>'; saveRound(); return; }
+  S.typed[S.i] = String(a.shown); S.slip[S.i] = slipOf(q, [String(a.shown)]);
+  sfx.bad();
+  reveal(); S.after[S.i] = 0;   // the answer and its way; not a try (after counts tries)
+  const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
+  $('hint').insertAdjacentHTML('afterbegin', '<div class="fb status">' + mascotSvg(PLAYER.mascot, 'thinking') + '<div><b>' + t('mistNo') + '</b> ' + (nudge || t('mistWhy', a.shown)) + '</div></div>');
+  saveRound();
+}
 // a key before the pick: the question again, and the buttons nudge
 function askFirst(){
   const w = $('hint').querySelector('.whatq');
   if(!w) return;
-  w.querySelector('b').textContent = t('asksFirst');
+  w.querySelector('b').textContent = t(S.ask && S.ask.mist ? 'mistFirst' : 'asksFirst');
   w.classList.remove('nudge'); void (/** @type {HTMLElement} */ (w)).offsetWidth; w.classList.add('nudge');
 }
 // A task of hers drawn again from its level and seed when that still draws the one she had (its answer and shape):
@@ -972,7 +999,10 @@ function twin(lv, shape, not){
 export function startDaily(){
   const p = dailyPlan(LOCAL.rounds, LEVELS);
   if(!p.items.length) return;
-  newRound(p.items.map(x => x.miss ? twin(x.id, x.shape, (q => q && drawQ(q))(replay(x.id, x.shape ?? null, x.seed, x.ans))) : Object.assign(gen(x.id), { lvl: x.id })));
+  const qs = p.items.map(x => x.miss ? twin(x.id, x.shape, (q => q && drawQ(q))(replay(x.id, x.shape ?? null, x.seed, x.ans))) : Object.assign(gen(x.id), { lvl: x.id }));
+  const m = mistakePick(p.items, qs, rnd);   // «Намери грешката»: at most one task a day (never the first, so newRound's show() has none to ask)
+  newRound(qs);
+  if(m) S.mist[m.k] = m.shown;
   S.daily = true; saveRound(); paintPill();
 }
 function paintReview(){
@@ -985,7 +1015,7 @@ function paintReview(){
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
     const did = after === 5 ? t('checkFixed', esc(was ?? '')) : after === 6 ? t('checkStill', esc(was ?? '')) : after === 7 ? t('checkSpoiled', esc(was ?? '')) : AFTER[after] || '';
-    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : ''].filter(Boolean).join(' · ');
+    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : '', r.judged && r.judged[k] ? t(r.judged[k][1] === 1 ? 'judgedOk' : 'judgedMiss', r.judged[k][0]) : ''].filter(Boolean).join(' · ');
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
@@ -1822,7 +1852,7 @@ startSync();
 Object.defineProperties(window, Object.fromEntries(Object.entries({
   $: () => $, ARCHIVE: () => ARCHIVE, BADGES: () => BADGES, COMP: () => COMP, IN: () => IN, LEVELS: () => LEVELS, LOCAL: () => LOCAL, LS: () => LS,
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
-  answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
+  answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, trapShown: () => trapShown, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
   notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, builtOn: () => builtOn, heldHere: () => heldHere, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

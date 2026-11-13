@@ -7,6 +7,8 @@
 // after a round of it, then 3, 7, 14 and 30 days after each right answer here. Interleaved practice: Rohrer et al.
 // 2020, 61% against 38% a month later.
 // Pure: her rounds and the levels in, the plan out; app.js draws the tasks and plays them.
+import { KIND } from './core.js';
+import { accepts } from './questions.js';
 const DAILY_N = 6, DAILY_MISS = 2;
 const GAPS = [1, 3, 7, 14, 30];
 const day0 = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return +d; };
@@ -38,4 +40,20 @@ export function dailyPlan(rounds, levels, now = Date.now()){
   while(rv.length || ms.length){ if(rv.length) items.push(rv.shift()); if(ms.length) items.push(ms.shift()); }
   const enough = items.length >= 3;   // fewer levels met: nothing to mix yet
   return { items: enough ? items : [], miss: enough ? ms0 : 0, done };
+}
+// «Намери грешката»: one task of the six is shown with a typical wrong answer («Мишо answered 35»), and she says
+// whether it is right before she answers it herself (Barbieri 2023; erroneous examples). The wrong answer is one of the
+// task's own traps (q.traps: what Em wrote when she dropped a boundary, added instead of comparing, ...), never an
+// answer the task accepts. Only a task with one typed box, whose answer does not depend on what it asks (KIND.asks).
+export function trapShown(q){
+  if(!q.kind || q.own || q.options || (q.slots || 1) > 1 || KIND[q.kind].asks) return [];
+  return [...new Set(q.traps || [])].filter(v => Number.isInteger(v) && v >= 0 && v < 1000 && !accepts(q, [String(v)]));
+}
+// Which of today's tasks, and which trap: not the first (she starts on one she knows), a level she missed before the others;
+// none when no task has a trap. rnd(n) is a whole number below n.
+export function mistakePick(items, qs, rnd){
+  const ok = qs.map((q, k) => k > 0 && trapShown(q).length ? k : -1).filter(k => k >= 0), miss = ok.filter(k => items[k] && items[k].miss), from = miss.length ? miss : ok;
+  if(!from.length) return null;
+  const k = from[rnd(from.length)], traps = trapShown(qs[k]);
+  return { k, shown: traps[rnd(traps.length)] };
 }
