@@ -759,6 +759,66 @@ const server = http.createServer((req, res) => {
       'a paper does not keep to the focus: ' + JSON.stringify(fo));
     await run(`$('sheet').hidden = true; newRound(); 1`);
   }
+  // A Кенгуру paper (the Кенгуру competition picked): 26 tasks in 90 minutes, tasks 1–24 А–Д with five options, 25–26 a typed
+  // number, 3 / 4 / 5 points by place and nothing off for a wrong answer; kept and drawn again at a reload, saved with its format
+  {
+    const lv = `const lv = q => LEVELS.find(l => l.id === q.lvl), ptsAt = k => k < 10 ? 3 : k < 20 ? 4 : 5;`;
+    const e1 = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms)); ${lv}
+      $('levelPill').click(); await wait(100);
+      const chip = (row, v) => { const b = $(row).querySelector('[data-v="' + v + '"]'); if(b) b.click(); return !!b; };
+      const out = { chips: chip('pickGrades', '2') && chip('pickComps', 'ek') };
+      const qs = Array.from({ length: 5 }, () => compTasks()), q0 = qs[0];
+      out.tasks = qs.every(q => q.length === 26 && q.every(x => lv(x).papers.some(p => p.startsWith('ek-'))) &&
+        q.slice(0, 24).every(x => x.options && x.options.length === 5 && new Set(x.options.map(o => o.v)).size === 5 && !!x.options[x.pick]) &&
+        q.slice(24).every(x => !x.options && (x.slots || 1) === 1 && Number.isInteger(answer(x))) && q.every((x, k) => x.pts === ptsAt(k)) &&
+        q.slice(0, 24).every((x, k, a) => !k || lv(a[k - 1]).d <= lv(x).d));
+      out.sum = q0.reduce((a, x) => a + x.pts, 0); out.hard = lv(q0[25]).d >= 4;
+      $('sheet').hidden = true; $('compStart').click(); await wait(100);
+      out.sheet = !$('compSheet').hidden && $('compRules').textContent.includes(t('ekRulePts', out.sum)) && $('compRules').textContent.includes(t('compRuleTime', 26, 90));
+      const print = window.print; window.print = () => { out.printed = true; }; $('compPrint').click(); await wait(100); window.print = print;
+      const pt = [...$('print').querySelectorAll('.ptask')];
+      out.print = !!out.printed && pt.length === 26 && pt.slice(0, 24).every(p => p.querySelectorAll('.pchoices .ch').length === 5) && pt.slice(24).every(p => p.querySelector('.pblank')) &&
+        $('print').querySelectorAll('.pkey li').length === 26 && $('print').textContent.includes(t('ekRulePts', out.sum));
+      $('compGo').click(); await wait(100);
+      out.start = !!COMP && COMP.fmt === 'ek' && S.qs.length === 26 && COMP.end - COMP.t0 === 90 * 60000 && !!$('run').querySelector('.ptschip') && $('run').textContent.includes(t('ptsN', 3));
+      const q = S.qs[S.i], wrong = q.options.find(o => o.id !== q.pick).id;
+      document.querySelector('#choices .ch[data-o="' + wrong + '"]').click(); await wait(100);
+      out.letters = [...document.querySelectorAll('#choices .ch .lt')].map(e => e.textContent).join('');
+      out.held = JSON.stringify(COMP.ans); out.qs = S.qs.map(drawQ).join('|').length; out.opts = JSON.stringify(S.qs.map(x => x.options)); out.i = S.i;
+      return JSON.stringify(out); })()`) || '{}');
+    await cmd('Page.reload'); await settle();
+    const e2 = await page(`COMP ? { fmt: COMP.fmt, n: S.qs.length, held: JSON.stringify(COMP.ans), qs: S.qs.map(drawQ).join('|').length, opts: JSON.stringify(S.qs.map(x => x.options)), i: S.i, pts: S.qs.every((q, k) => q.pts === (k < 10 ? 3 : k < 20 ? 4 : 5)) } : null`);
+    expect(e1.chips && e1.tasks && e1.sum === 100 && e1.hard && e1.sheet && e1.print && e1.start && /^([А-Д]{5}|[A-E]{5})$/.test(e1.letters) && e2 && e2.fmt === 'ek' && e2.n === 26 && e2.held === e1.held && e2.qs === e1.qs && e2.opts === e1.opts && e2.i === e1.i && e2.pts,
+      'the Кенгуру paper went wrong: ' + JSON.stringify({ e1, e2 }));
+    const e3 = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms)); ${lv}
+      const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+      // the first five tasks right, the rest of the choices wrong, both typed ones right: 5 x 3 + 2 x 5
+      for(let step = 0; step < 40 && COMP && !COMP.check; step++){
+        const q = S.qs[S.i], at = S.i;
+        if(q.options){ const id = at < 5 ? q.pick : q.options.find(o => o.id !== q.pick).id; document.querySelector('#choices .ch[data-o="' + id + '"]').click(); await wait(60); $('nextBtn').click(); }
+        else { [...String(answer(q))].forEach(K); K('go'); for(let t = 0; t < 100 && COMP && !COMP.check && S.i === at; t++) await wait(20); }
+      }
+      const out = { check: !!COMP && COMP.check && $('stage').querySelectorAll('.chk').length === 26 };
+      $('handIn').click(); await wait(50);
+      const r = LOCAL.rounds[LOCAL.rounds.length - 1];
+      out.round = { fmt: r.fmt, n: r.n, pts: r.pts, max: r.max, from: r.from, tasks: r.t.length, small: JSON.stringify(r).length < 4096 };
+      out.score = $('score').textContent; out.rows = $('compTable').querySelectorAll('.crow').length;
+      out.cps = [...$('compTable').querySelectorAll('.crow .cp')].map(e => +e.textContent);
+      out.foot = $('compFoot').textContent === t('ekFoot');
+      out.review = LOCAL.rounds.filter(x => x.fmt === 'ek').length === 1;
+      // an МБГ-style round with a better mark from the same place is no Кенгуру best; a Кенгуру paper beats only Кенгуру papers
+      LOCAL.rounds.push({ id: 'mbgish', ts: Date.now(), level: 'comp', n: 20, firstTry: 20, pts: 40, max: 40, from: r.from });
+      $('sheet').hidden = true; $('levelPill').click(); await wait(100);
+      out.card = $('compStart').textContent.includes(t('compBest', r.pts, r.max)); LOCAL.rounds.pop();
+      $('sheet').hidden = true; newRound(); await wait(50);
+      return JSON.stringify(out); })()`) || '{}');
+    expect(e3.check && e3.round.fmt === 'ek' && e3.round.n === 26 && e3.round.pts === 25 && e3.round.max === 100 && e3.round.tasks === 26 && e3.round.small && e3.score === '25 / 100' &&
+      e3.rows === 26 && e3.cps.reduce((a, b) => a + b, 0) === 25 && e3.cps.slice(0, 5).every(v => v === 3) && e3.cps[5] === 0 && e3.cps[24] === 5 && e3.cps[25] === 5 && e3.foot && e3.card,
+      'the Кенгуру result went wrong: ' + JSON.stringify(e3));
+    await run(`$('sheet').hidden = true; $('levelPill').click(); { const b = $('pickComps').querySelector('[data-v=""]'); if(b) b.click(); const g = $('pickGrades').querySelector('[data-v="' + PLAYER.grade + '"]'); if(g) g.click(); } newRound(); 1`);
+  }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task
   {
     const want = await run(`S.level = 4; newRound(); S.results.push(true); next(); S.results.push(false); next(); JSON.stringify(S.qs[2])`);

@@ -7,7 +7,7 @@ import { dailyPlan, mistakePick, trapShown } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
+import { compDims, ekPts, paperPts, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -513,6 +513,7 @@ const box = (kind, head, body, side) => '<div class="fb ' + kind + '"><div class
 // A tap on А/Б/В/Г is the same as typing that number and pressing ✓.
 function paintChoices(){
   const q = S.qs[S.i];
+  $('choices').dataset.n = String(q.options.length);
   $('choices').innerHTML = choiceHtml(q, S.crossed[S.i], S.settled && !COMP, COMP ? COMP.picked[S.i] : undefined);
   $('choices').querySelectorAll('.ch').forEach(b => b.onclick = e => { e.stopPropagation(); choose(+b.dataset.o); });   // not also the card's "tap to go on"
 }
@@ -624,7 +625,7 @@ export function finish(){
   let best = 0, run = 0;
   S.results.forEach(r => { run = r ? run+1 : 0; if(run > best) best = run; });
   // a competition counts points as МБГ marks them; its time stops at the hour, even if the app was away for longer
-  const pts = COMP ? S.qs.reduce((a, q, k) => a + mbgPts(q, COMP.ans[k]), 0) : got;
+  const pts = COMP ? S.qs.reduce((a, q, k) => a + paperPts(q, COMP.ans[k]), 0) : got;
   const max = COMP ? S.qs.reduce((a, q) => a + q.pts, 0) : n;
   $('score').textContent = COMP ? t('pointsBig', pts, max) : t('scoreBig', got, n);
   const secs = Math.round(S.ms.reduce((a, x) => a + x, 0) / 1000), ended = COMP ? Math.min(Date.now(), COMP.end) : Date.now();
@@ -693,7 +694,7 @@ export function finish(){
     ts: now, day: dayKey(now),
     level: COMP ? 'comp' : S.daily ? 'mix' : S.level, n, firstTry: got, best, lang: LANG,
     pts: COMP ? pts : undefined, max: COMP ? max : undefined, secs: COMP ? Math.round((Math.min(now, COMP.end) - COMP.t0) / 1000) : secs,
-    levels: COMP || S.daily ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined,
+    levels: COMP || S.daily ? S.qs.map(q => q.lvl) : undefined, from: COMP ? COMP.from : undefined, fmt: COMP && COMP.fmt || undefined,
     seen: S.qs.map(factKey),
     missed: S.qs.filter((_, k) => !S.results[k]).map(factKey),
     slips: S.slip.filter(Boolean),
@@ -1032,7 +1033,7 @@ function paintReview(){
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
-    const pts = !comp ? '' : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
+    const pts = !comp ? '' : r.fmt === 'ek' ? (ok === 1 ? ekPts(k) : 0) : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
     return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + task + (note ? '<small>' + note + '</small>' : '') + (note2 ? '<small>' + note2 + '</small>' : '') +
       '</span><span class="co">' + said + '</span><span class="cp">' + pts + '</span></button><div class="why" hidden>' +
       (q ? '<div class="stage rtask">' + drawQ(q).replace(/ id="slot\d+"/g, '') + '</div><div class="eq">' + eqText(q) + '</div>' + why(q, true) : t('taskGone')) + '</div>';
@@ -1206,7 +1207,7 @@ function buildToday(now){
     next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, daily: dailyPlan(LOCAL.rounds, LEVELS, now),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
-    compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
+    compN: compDims()[0], compMin: compDims()[1], forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
 }
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }
@@ -1458,7 +1459,7 @@ function paintSide(){
     '<div class="progress"><span class="track"><i style="width:' + Math.round(100 * learned / LEVELS.length) + '%"></i></span><span>' + t('learnedOf', learned, LEVELS.length) + '</span></div>' +
     '<div class="grouphead"><b>' + groupOf(l) + '</b><span>' + t('learnedGroup', mine.filter(x => m[x.id] && m[x.id].done).length, mine.length) + '</span></div>' +
     '<div class="gcard list">' + mine.map(x => levelRow(x, m, hist)).join('') + '</div>' +
-    '<button class="gcard nextcard comp sidecomp"><span class="nm"><span class="lab">' + t('compName') + '</span><span class="eq">' + t('compWhat', COMP_N, COMP_MIN) + '</span></span>' + CHEV + '</button>';
+    '<button class="gcard nextcard comp sidecomp"><span class="nm"><span class="lab">' + t('compName') + '</span><span class="eq">' + t('compWhat', ...compDims()) + '</span></span>' + CHEV + '</button>';
   $('side').querySelectorAll('[data-lvl]').forEach(b => b.onclick = () => {
     if(+b.dataset.lvl === S.level || (midRound() && !confirm(t('pickWarn')))) return;
     S.level = +b.dataset.lvl; paintPill(); newRound();

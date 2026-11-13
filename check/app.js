@@ -350,6 +350,12 @@
       if(right.length !== 1 || right[0].id !== q.pick) throw new Error('level ' + L.id + ': ' + right.length + ' right options in ' + vs.join(', '));
       if(vs.some((v, k) => k && v < vs[k - 1])) throw new Error('level ' + L.id + ': options out of order ' + vs.join(', '));
       if(vs.some(v => Math.abs(v - q.options[q.pick].v) === 10)) slipsOffered++;
+      // a Кенгуру paper asks five (А–Д): the same rules, one more wrong option
+      if(!q.own){
+        const f = Q.withChoices(Q.raw(L.id), 5), fv = (f.options || []).map(o => o.v);
+        if(f.options && !f.own && (f.options.length !== 5 || new Set(fv).size !== 5 || fv.some(v => !Number.isInteger(v) || v < 0) || fv.some((v, k) => k && v < fv[k - 1]) || f.options.filter(o => Q.accepts(f, [String(o.v)])).length !== 1 || !Q.accepts(f, [String(f.options[f.pick].v)])))
+          throw new Error('level ' + L.id + ': bad five options ' + fv.join(', '));
+      }
       const r0 = Q.R(); Q.choiceHtml(q, [q.pick === 0 ? 1 : 0], true, 2);
       if(Q.R() !== r0) throw new Error('level ' + L.id + ': drawing the options drew a random number');
     }

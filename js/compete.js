@@ -8,13 +8,22 @@
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    A reload keeps the paper (paperSnap, resumeComp). */
 import { $, esc, rnd, seeded } from './core.js';
-import { accepts, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipOf, why } from './questions.js';
+import { accepts, answer, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipOf, why } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
 import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, saveRound, setComp, sfx, show } from './app.js';
-import { choiceHtml, letterOf } from './choice.js';
+import { choiceHtml, letterOf, withChoices } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
+// A Кенгуру paper (focus: the Кенгуру competition): 26 tasks in 90 minutes. Tasks 1–24 are А–Д choices with one right
+// option, 25–26 (the tie-breakers) a typed number; 3 points a task for 1–10, 4 for 11–20, 5 for 21–26, and a wrong or
+// blank answer costs nothing. ponytail: the brief said «112 in all»; its own 3/4/5 bands add up to EK_MAX = 100.
+export const EK_N = 26, EK_MIN = 90, EK_CHOICE = 24, EK_OPTS = 5;
+export const ekPts = k => k < 10 ? 3 : k < 20 ? 4 : 5;
+export const EK_MAX = Array.from({ length: EK_N }, (_, k) => ekPts(k)).reduce((a, b) => a + b, 0);
+const isEk = (f, paper) => !paper && f.comp === 'ek';
+// the task count and the minutes of the paper the picker's focus starts (the forecast is an МБГ paper)
+export const compDims = () => isEk(compFocus()) ? [EK_N, EK_MIN] : [COMP_N, COMP_MIN];
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
 const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
@@ -27,8 +36,66 @@ const poolOf = f => { const ls = olympiad(f); return ls.length ? ls : olympiad({
 const BANDS = [[2, 3], [3, 4], [4, 4], [4, 5]];              // difficulty of tasks 1–5, 6–10, 11–15, 16–20
 // drawn by how often real papers ask it: an every-year task turns up more than a one-off
 const pick = pool => { let w = rnd(pool.reduce((t, l) => t + 1 + l.freq, 0)); return pool.find(l => (w -= 1 + l.freq) < 0); };
+// A Кенгуру task from its level and seed: the same options and points again at a reload (options are seeded too)
+const ekBuild = (lvl, seed, k) => {
+  const q = seeded(seed, () => raw(lvl));
+  return Object.assign(k < EK_CHOICE ? seeded(seed ^ 0x2545F491, () => withChoices(q, EK_OPTS)) : q, { seed, lvl, pts: ekPts(k) });
+};
+// can the level's task be asked that way: 5 options (its own, or made from a whole number), or one typed whole number
+const ekFits = (q, k) => k < EK_CHOICE ? !!q.options && q.options.length === EK_OPTS && new Set(q.options.map(o => o.v)).size === EK_OPTS :
+  !q.own && !q.options && (q.slots || 1) === 1 && Number.isInteger(answer(q));
+// a drawn task of this level for slot k, or null when its draws do not fit (a level of 3 options, of several answers)
+const ekDraw = (l, k) => {
+  for(let i = 0; i < 30; i++){
+    const seed = 1 + Math.floor(Math.random() * 2147483646);
+    if(ekFits(ekBuild(l.id, seed, k), k)) return { lvl: l.id, seed };
+  }
+  return null;
+};
+function ekTasks(f){
+  const ek = LEVELS.filter(l => l.papers.some(p => p.startsWith('ek-')) && f.has(l)), pool = ek.length ? ek : poolOf(f);
+  const chosen = [], used = new Set(), dead = new Set();
+  let lastGrp = null;
+  // the next level from cands that gives a fitting task for slot k (a level that never fits is dropped for good)
+  const take = (cands, k) => {
+    for(let c = cands.filter(l => !dead.has(l.id)); c.length;){
+      const other = c.filter(l => l.grp !== lastGrp), l = pick(other.length ? other : c), d = ekDraw(l, k);
+      if(d){ lastGrp = l.grp; used.add(l.id); return Object.assign(d, { d: l.d }); }
+      dead.add(l.id); c = c.filter(x => x !== l);
+    }
+    return null;
+  };
+  // 25–26: the hardest levels that can be typed (one whole number)
+  const typed = pool.filter(l => ekDraw(l, EK_CHOICE)), top = Math.max(...typed.map(l => l.d)), hard = typed.filter(l => l.d >= top - 1);
+  for(let k = EK_CHOICE; k < EK_N; k++){
+    const free = (hard.length > 1 ? hard : typed).filter(l => !used.has(l.id));
+    chosen.push(take(free.length ? free : typed, k));
+  }
+  // 1–24, easiest first in three bands; a year's few levels once each, then again
+  const rest = pool.filter(l => !used.has(l.id)), few = pool.length <= EK_N;
+  let plan = [];
+  if(few){ plan = rest.slice(); while(plan.length < EK_CHOICE) plan.push(pick(pool)); plan.sort((a, b) => a.d - b.d); }
+  lastGrp = null;
+  const low = [];
+  for(let k = 0; k < EK_CHOICE; k++){
+    let c;
+    if(few) c = [plan[k]];
+    else {
+      const [lo, hi] = k < 10 ? [2, 3] : k < 20 ? [3, 4] : [4, 5];
+      c = rest.filter(l => l.d >= lo && l.d <= hi && !used.has(l.id));
+      if(!c.length) c = rest.filter(l => l.d >= lo && !used.has(l.id));
+      if(!c.length) c = rest.filter(l => !used.has(l.id));
+    }
+    // a level that cannot fit: the nearest in difficulty that can
+    const t = take(c, k) || take(pool.slice().sort((a, b) => Math.abs(a.d - (plan[k] || c[0] || pool[0]).d) - Math.abs(b.d - (plan[k] || c[0] || pool[0]).d)), k);
+    low.push(t);
+  }
+  low.sort((a, b) => a.d - b.d);
+  return low.concat(chosen).map((x, k) => ekBuild(x.lvl, x.seed, k));
+}
 export function compTasks(paper, f = compFocus()){
   if(paper === 'forecast') return FORECAST.map(task);
+  if(isEk(f, paper)) return ekTasks(f);
   const OLYMPIAD = poolOf(f);
   // one year's paper has fewer levels than tasks: each of them once, then some again with other numbers, easiest first
   if(OLYMPIAD.length <= COMP_N){
@@ -55,28 +122,31 @@ export function compTasks(paper, f = compFocus()){
 }
 // her best paper from the same place (compFocus's key, or 'forecast'); a paper marked the old way
 // (3–5 points a task, some А/Б/В/Г) doesn't compare: only those at 2 points a task
-export const bestComp = from => LOCAL.rounds.filter(r => r.level === 'comp' && r.max === 2 * r.n && r.from === from).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
+// a Кенгуру paper (fmt 'ek') is compared only with Кенгуру papers from the same place, an МБГ one (no fmt) only with those
+export const bestComp = (from, fmt = '') => LOCAL.rounds.filter(r => r.level === 'comp' && r.from === from && (fmt === 'ek' ? r.fmt === 'ek' : !r.fmt && r.max === 2 * r.n)).sort((a, b) => b.pts / b.max - a.pts / a.max)[0];
 export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+// the points of a task as the paper in progress marks it: Кенгуру all or nothing, МБГ as mbgPts
+export const paperPts = (q, parts) => COMP && COMP.fmt === 'ek' ? (parts && accepts(q, parts) ? q.pts : 0) : mbgPts(q, parts);
 export const compLeft = () => compTime(COMP.end - Date.now());
 
 // The paper under way, kept at every task (app.js saveRound) so a reload, or an iPad dropping the app, does not end it:
 // its tasks by level and seed, her answers, the clock's start and end. The clock is real time: it ran while the app was away.
-export const paperSnap = () => ({ at: Date.now(), tasks: S.qs.map(q => [q.lvl, q.seed]), paper: COMP.paper || '', from: COMP.from, t0: COMP.t0, end: COMP.end,
+export const paperSnap = () => ({ at: Date.now(), tasks: S.qs.map(q => [q.lvl, q.seed]), paper: COMP.paper || '', fmt: COMP.fmt || '', from: COMP.from, t0: COMP.t0, end: COMP.end,
   ans: COMP.ans, picked: COMP.picked, queue: COMP.queue, skipped: [...(COMP.skipped || [])], looked: [...(COMP.looked || [])], first: COMP.first,
   done: !!COMP.done, check: !!COMP.check, i: S.i, ms: S.ms });
 // The paper again from its snapshot, on the task and the screen she left it on; over if its hour has gone by
 export function resumeComp(s){
-  const qs = s.tasks.map(([lvl, seed]) => Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
-  run({ paper: s.paper, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
+  const qs = s.tasks.map(([lvl, seed], k) => s.fmt === 'ek' ? ekBuild(lvl, seed, k) : Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
+  run({ paper: s.paper, fmt: s.fmt, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
   qs.forEach((q, k) => { const a = s.ans[k]; if(a){ S.results[k] = accepts(q, a); if(!S.results[k]){ S.typed[k] = a.join(' · '); S.slip[k] = slipOf(q, a); } } });
   S.ms = s.ms || []; S.i = s.i; S.on = 0;   // the time between the first draw and here is not hers
   if(Date.now() >= s.end) compEnd(); else if(s.check) compCheck(); else show();
 }
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
 export function startComp(paper){
-  const f = compFocus(), qs = compTasks(paper, f), now = Date.now();
+  const f = compFocus(), qs = compTasks(paper, f), now = Date.now(), ek = isEk(f, paper);
   // queue: the tasks not answered yet, the one on screen first
-  run({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, qs);
+  run({ paper, fmt: ek ? 'ek' : '', from: paper || f.key, t0: now, end: now + (ek ? EK_MIN : COMP_MIN) * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, qs);
 }
 function run(c, qs){
   clearInterval(compTick);
@@ -94,16 +164,17 @@ function run(c, qs){
 let NEXT = '';   // the paper the sheet is for: 'forecast', or one drawn from the focus
 export function openComp(paper){ NEXT = paper || ''; go('paper'); }
 export function paintCompSheet(){
-  const f = compFocus(), best = bestComp(NEXT || f.key);
+  const f = compFocus(), ek = isEk(f, NEXT), best = bestComp(NEXT || f.key, ek ? 'ek' : '');
   $('compFrom').innerHTML = '<span class="lab">' + t('compFrom') + '</span><b>' + (NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name) + '</b>' +
     '<span class="meta">' + t(NEXT ? 'compForecastHow' : 'compHow') + '</span>' + (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '');
-  $('compRules').innerHTML = [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('compRulePts', 2 * COMP_N)].map(s => '<li>' + s + '</li>').join('');
+  $('compRules').innerHTML = (ek ? [t('compRuleTime', EK_N, EK_MIN), t('ekRuleOpts', EK_CHOICE, EK_OPTS), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('ekRulePts', EK_MAX)] :
+    [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('compRulePts', 2 * COMP_N)]).map(s => '<li>' + s + '</li>').join('');
 }
 // The same paper on paper: 20 tasks drawn as the sheet would start them, each with a blank where its answer goes
 // (one blank where she counts the answers herself, as on a real paper), and a page of answers for a grown-up after
 // them. Shown only in print (app.css): her screen never shows the answers. Nothing is recorded; the grown-up marks it.
 export function printComp(){
-  const f = compFocus(), qs = compTasks(NEXT, f), box = document.createElement('div');
+  const f = compFocus(), qs = compTasks(NEXT, f), ek = isEk(f, NEXT), [n, min] = ek ? [EK_N, EK_MIN] : [COMP_N, COMP_MIN], box = document.createElement('div');
   const blank = q => {
     box.innerHTML = drawQ(q);
     const s = box.querySelectorAll('.slot');
@@ -114,8 +185,8 @@ export function printComp(){
   // every answer of a task with several; one of them for a one-box task that takes any
   const key = q => q.options ? letterOf(q.pick) : answers(q).join((q.slots || 1) > 1 ? ', ' : ' / ');
   const name = NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name;
-  $('print').innerHTML = '<header class="phead"><b>' + t('compName') + ' · ' + name + '</b><span>' + t('compWhat', COMP_N, COMP_MIN).replace(/ · [^·]*$/, '') +
-    ' · ' + t('compRulePts', 2 * COMP_N) + '</span><span>' + t('printName') + ' ______________________ &nbsp; ' + new Date().toLocaleDateString(LANG) + '</span></header>' +
+  $('print').innerHTML = '<header class="phead"><b>' + t('compName') + ' · ' + name + '</b><span>' + t('compWhat', n, min).replace(/ · [^·]*$/, '') +
+    ' · ' + (ek ? t('ekRuleOpts', EK_CHOICE, EK_OPTS) + ' ' + t('ekRulePts', EK_MAX) : t('compRulePts', 2 * COMP_N)) + '</span><span>' + t('printName') + ' ______________________ &nbsp; ' + new Date().toLocaleDateString(LANG) + '</span></header>' +
     qs.map((q, k) => '<section class="ptask"><span class="pn">' + (k + 1) + '.</span><div class="stage">' + blank(q) + '</div></section>').join('') +
     '<section class="pkey"><b>' + t('printKey') + ' · ' + name + '</b><ol>' + qs.map(q => '<li>' + key(q) + '</li>').join('') + '</ol></section>';
   window.print();
@@ -182,14 +253,15 @@ export function paintPaperResult(pts, max){
     const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
       t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
     return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
-      '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
+      '</span><span class="co">' + said + '</span><span class="cp">' + paperPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
   }).join('');
   // a row opens its task and how it is solved
   $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
     const open = b.getAttribute('aria-expanded') !== 'true';
     b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
   });
-  const prev = bestComp(COMP.from);
+  $('compFoot').textContent = t(COMP.fmt === 'ek' ? 'ekFoot' : 'compFoot');
+  const prev = bestComp(COMP.from, COMP.fmt);
   if(prev){
     $('compBest').hidden = false;
     $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
@@ -198,11 +270,11 @@ export function paintPaperResult(pts, max){
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){
-  const f = compFocus(), best = bestComp(f.key), pool = poolOf(f);
+  const f = compFocus(), ek = isEk(f), best = bestComp(f.key, ek ? 'ek' : ''), pool = poolOf(f);
   // how much of what a paper draws from she has met in one
   const seen = new Set(LOCAL.rounds.filter(r => r.level === 'comp').flatMap(r => (r.t || []).map(e => e[0]))), met = pool.filter(l => seen.has(l.id)).length;
   $('compStart').innerHTML = '<span class="compicon">' + ICON(GLYPH.stopwatch[1]) + '</span><span class="nm"><span class="lab">' +
-    t('compName') + '</span><b>' + t('compWhat', COMP_N, COMP_MIN) + '</b><span class="meta">' + f.name + '</span>' +
+    t('compName') + '</span><b>' + t('compWhat', ...compDims()) + '</b><span class="meta">' + f.name + '</span>' +
     (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '') +
     (met ? '<span class="meta">' + t('compMet', met, pool.length) + '</span>' : '') + '</span>' + ICON('M9 5l7 7-7 7');
 }
