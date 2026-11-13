@@ -5,7 +5,7 @@
 // next 2 new ones, then 1: 3 + 2 + 1.
 // Есен 2019, задача 14: a 30 см segment, its two ends yellow; red points cut it into 10 pieces of
 // 3 см, so 9 red; then a blue point inside each piece, 10 blue. 2 + 9 + 10 = 21.
-import { KIND, answerLine, bgList, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, bgList, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 // МБГ Полуфинал 2022 and 2023, 1 клас, задача 14: points A, B, C on a line, «Тук са 3 отсечки: AB, AC и BC» (2023
 // only «Тук са 3 отсечки.»); then A, B, C, D — how many segments? From A 3, from B 2 more, from C 1: 6. The
 // example has a point fewer; the slips: a segment per gap (n − 1), or the example's number again.
@@ -27,7 +27,7 @@ function segCountSvg(n){
   let pts = '', labs = '';
   for(let i = 1; i <= n; i++){
     pts += '<circle cx="' + (i*gap).toFixed(1) + '" cy="20" r="4.5" fill="var(--accent)"/>';
-    labs += '<text x="' + (i*gap).toFixed(1) + '" y="42" text-anchor="middle" font-size="13" font-weight="800" fill="var(--muted)" font-family="Nunito, sans-serif">' + 'ABCDEF'[i - 1] + '</text>';
+    labs += '<text x="' + (i*gap).toFixed(1) + '" y="42" text-anchor="middle" font-size="13" font-weight="800" fill="var(--muted)" ' + SVG_FONT + '>' + 'ABCDEF'[i - 1] + '</text>';
   }
   return '<div class="fig wide"><svg viewBox="0 0 ' + W + ' 50" role="img" aria-label="' + tr('точки върху права', 'точки на прямій') + '">' +
     '<line x1="4" y1="20" x2="' + (W - 4) + '" y2="20" stroke="var(--ink)" stroke-width="2"/>' + pts + labs + '</svg></div>';

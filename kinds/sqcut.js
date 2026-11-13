@@ -1,5 +1,5 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-import { CM, KIND, SLOT, UKNUM, addUp, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, UKNUM, addUp, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -15,9 +15,9 @@ function cutRectSvg(a, extra){
     '<rect x="0" y="0" width="' + W + '" height="' + H.toFixed(1) + '"/>' +
     '<line x1="' + (a*u).toFixed(1) + '" y1="0" x2="' + (a*u).toFixed(1) + '" y2="' + H.toFixed(1) + '"/></g>' +
     '<text x="' + (a*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">A</text>' +
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>A</text>' +
     '<text x="' + (a*u + extra*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">B</text></svg></div>';
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>B</text></svg></div>';
 }
 // Задача 13: a rectangle tiled by squares. The figure gives the shape, one line of text
 // gives the scale — everything else is read off the picture.
@@ -81,7 +81,7 @@ function triSqSvg(q){
   const ax = (L*L + r*r - p*p) / (2*L), ay = Math.sqrt(Math.max(1, r*r - ax*ax));
   const S = q.inCm ? q.dm : 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
   const t = (x, y, txt, anchor) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
-    '" text-anchor="' + (anchor || 'middle') + '" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
+    '" text-anchor="' + (anchor || 'middle') + '" font-size="13" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + txt + '</text>';
   const sx = (L + 4) * u;
   return '<div class="fig"><svg viewBox="-16 -16 ' + (232).toFixed(0) + ' ' + (H + 34).toFixed(1) +
     '" role="img" aria-label="' + tr('триъгълник и квадрат', 'трикутник і квадрат') + '">' +
@@ -144,7 +144,7 @@ function stripSvg(k, side){
     '" role="img" aria-label="' + (k === 1 ? tr('квадрат', 'квадрат') : tr('квадрат, разрязан на еднакви ивици', 'квадрат, розрізаний на однакові смужки')) + '">' +
     '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
     '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
-    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+    'fill="var(--muted)" ' + SVG_FONT + '>' + side + ' см</text></svg></div>';
 }
 function sqSvg(parts, side){
   const S = 118, u = S/parts;
@@ -155,7 +155,7 @@ function sqSvg(parts, side){
   return '<div class="fig"><svg viewBox="-8 -24 ' + (S+16) + ' ' + (S+32) + '" role="img" aria-label="' + tr('квадрат, разрязан на еднакви квадрати', 'квадрат, розрізаний на однакові квадрати') + '">' +
     '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
     '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
-    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+    'fill="var(--muted)" ' + SVG_FONT + '>' + side + ' см</text></svg></div>';
 }
 
 function drawSqcut(q){

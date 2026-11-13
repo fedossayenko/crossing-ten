@@ -2,7 +2,7 @@
 
 // МБГ Зима 2024, задача 11: a 10 by 6 sheet, each cut takes off the largest square there
 // is. The square's side is always the shorter side of what is left: 6, 4, 2, 2 → 4 squares.
-import { KIND, answerLine, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 function sqOffCuts(W, H){
   const cuts = [];
   while(W && H){ const s = Math.min(W, H); cuts.push(s); if(W > H) W -= s; else H -= s; }
@@ -16,7 +16,7 @@ export function genSqOff(){
 }
 function sqOffSvg(q){
   const u = 180 / q.W, w = q.W*u, h = q.H*u;
-  const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + t + ' см</text>';
+  const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + t + ' см</text>';
   return '<div class="fig"><svg viewBox="0 0 ' + (w + 70).toFixed(1) + ' ' + (h + 40).toFixed(1) + '" role="img" aria-label="' + tr('правоъгълен лист', 'прямокутний аркуш') + '">' +
     '<rect x="40" y="10" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="none" stroke="var(--ink)" stroke-width="2.2"/>' +
     lab(40 + w/2, h + 30, q.W) + lab(20, 14 + h/2, q.H) + '</svg></div>';

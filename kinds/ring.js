@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 19: to Петър's left, between him and Иван, 4 children; to his right 6. The
 // two groups fill the circle between the two boys — and the boys themselves count: 4 + 6 + 2 = 12.
-import { KIND, answerLine, popAt, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, popAt, rnd, tr, ukN } from '../js/core.js';
 export function genRing(){
   const l = 1 + rnd(9), r = 1 + rnd(9);
   return {kind:'ring', l, r, ans: l + r + 2};
@@ -23,21 +23,21 @@ export function ringSvg(q, full){
   const N = q.l + q.r + 2, R = 75, at = k => { const a = Math.PI/2 + k*2*Math.PI/N; return [100 + R*Math.cos(a), 100 + R*Math.sin(a)]; };
   const f = v => v.toFixed(1), col = k => k <= q.l ? 'var(--accent)' : 'var(--warm)';
   const boy = (k, name, d) => { const [x, y] = at(k);
-    return '<g' + (full ? popAt(d) : '') + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="16" fill="var(--good)"/><text x="' + f(x) + '" y="' + f(y + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + name + '</text></g>'; };
+    return '<g' + (full ? popAt(d) : '') + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="16" fill="var(--good)"/><text x="' + f(x) + '" y="' + f(y + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="#fff" ' + SVG_FONT + '>' + name + '</text></g>'; };
   let g = '<circle cx="100" cy="100" r="' + R + '" fill="none" stroke="var(--line)" stroke-width="3"/>';
   if(full){
     // left 1…l, then right l+1…l+r, numbered in the order she would count them
     for(let k = 1; k <= q.l + q.r + 1; k++){
       if(k === q.l + 1) continue;                     // Иван's place
       const n = k <= q.l ? k : k - 1, [x, y] = at(k);
-      g += '<g' + popAt(n) + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="10.5" fill="' + col(k) + '"/><text x="' + f(x) + '" y="' + f(y + 4.2) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" font-family="Nunito, sans-serif">' + n + '</text></g>';
+      g += '<g' + popAt(n) + '><circle cx="' + f(x) + '" cy="' + f(y) + '" r="10.5" fill="' + col(k) + '"/><text x="' + f(x) + '" y="' + f(y + 4.2) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#fff" ' + SVG_FONT + '>' + n + '</text></g>';
     }
   } else {
     // each group as a thick arc between the boys, its count beside it
     [[1, q.l], [q.l + 2, q.r]].forEach(([k0, c]) => {
       const [x0, y0] = at(k0 - 0.3), [x1, y1] = at(k0 + c - 0.7), [mx, my] = at(k0 + (c - 1) / 2), lx = 100 + (mx - 100) * 1.32, ly = 100 + (my - 100) * 1.32;
       g += '<path d="M' + f(x0) + ',' + f(y0) + ' A' + R + ',' + R + ' 0 ' + (c / N > 0.5 ? 1 : 0) + ' 1 ' + f(x1) + ',' + f(y1) + '" stroke="' + col(k0) + '" stroke-width="9" stroke-linecap="round" fill="none"/>' +
-        '<text x="' + f(lx) + '" y="' + f(ly + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="' + col(k0) + '" font-family="Nunito, sans-serif">' + c + '</text>';
+        '<text x="' + f(lx) + '" y="' + f(ly + 6) + '" text-anchor="middle" font-size="17" font-weight="800" fill="' + col(k0) + '" ' + SVG_FONT + '>' + c + '</text>';
     });
   }
   g += boy(0, tr('П', 'П'), q.l + q.r + 1) + boy(q.l + 1, tr('И', 'І'), q.l + q.r + 2);

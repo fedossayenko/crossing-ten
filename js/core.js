@@ -32,7 +32,8 @@ export const addUp = (n, k) => n < 2 ? String(n*k) : n <= 5 ? Array(n).fill(k).j
 // (still, all at once, when motion is reduced). Attributes for an SVG element: '<g' + popAt(3) + '>'.
 export const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
 // a label in a solution picture, centred on x
-export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
+export const SVG_FONT = 'font-family="Nunito, sans-serif"';   // every drawn <text> uses it
+export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" ' + SVG_FONT + '>' + t + '</text>\n';   // the line break keeps labels apart as text
 // About how wide a label draws (the widths of the app's bold font, measured in Safari: a space .2 em, a capital .7,
 // · : , .25, → .96, a digit, a sign or a small letter .63; SVG keeps one of several spaces), and a picture's left and
 // right edges pushed out where a label centred on cx would run past them: a picture clips at its viewBox

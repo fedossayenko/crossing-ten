@@ -1,12 +1,12 @@
 // Question kind 'shared': level 22 Обща страна — Two figures share an edge — what it costs the outline.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
-import { CM, KIND, SLOT, addUp, popAt, rnd, roomFor, svgFrame, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, addUp, popAt, rnd, roomFor, svgFrame, svgText, tr } from '../js/core.js';
 import { sqWalkSvg } from './sqcut.js';
 function stackSvg(q){
   const u = 150 / (q.a + q.h), W = q.a * u, hh = q.h * u, aa = q.a * u;
   const lab = (x, y, txt) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
-    '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' +
+    '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' +
     txt + '</text>';
   return '<div class="fig"><svg viewBox="-24 -22 ' + (W + 48).toFixed(1) + ' ' + (hh + aa + 44).toFixed(1) +
     '" role="img" aria-label="' + tr('квадрат с правоъгълник върху него', 'квадрат із прямокутником над ним') + '">' +

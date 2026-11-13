@@ -4,7 +4,7 @@
 // Задача 15: a corner cut out of a rectangle. Two of the six sides are never labelled,
 // so they have to be worked out — and the outline is the same length as the uncut
 // rectangle's, which is the surprise.
-import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genStep(){
   for(;;){
     const W = 5 + rnd(5), H = 4 + rnd(5);
@@ -25,7 +25,7 @@ function stepSvg(q){
   const u = 150 / Math.max(q.W, q.H), X = v => 44 + v*u, Y = v => 14 + (q.H - v)*u;
   const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
     '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" ' +
-    'font-family="Nunito, sans-serif">' + t + ' см</text>';
+    SVG_FONT + '>' + t + ' см</text>';
   const d = 'M' + X(0) + ' ' + Y(0) + 'H' + X(q.W) + 'V' + Y(q.H - q.h) + 'H' + X(q.W - q.w) +
             'V' + Y(q.H) + 'H' + X(0) + 'Z';
   return '<div class="fig"><svg viewBox="0 0 ' + (q.W*u + 90).toFixed(1) + ' ' + (q.H*u + 44).toFixed(1) +

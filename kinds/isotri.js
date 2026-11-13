@@ -3,7 +3,7 @@
 // Коледно състезание 2025, задача 1: seven triangles on squared paper, how many are NOT
 // isosceles (4). On a grid the tell is the apex: straight over the middle of a flat side,
 // or a right angle with two equal legs. Checked by the squared side lengths, never by eye.
-import { KIND, answerLine, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 const isoSq = (a, b) => (a[0] - b[0])**2 + (a[1] - b[1])**2;
 export function isoTriIs(t){
   const [p, q, r] = t, x = isoSq(p, q), y = isoSq(q, r), z = isoSq(r, p);
@@ -42,7 +42,7 @@ function isoTriSvg(q){
   q.tris.forEach((x, i) => {
     const pts = x.t.map(([a, b]) => (a*u).toFixed(1) + ',' + ((y + b)*u).toFixed(1)).join(' ');
     shapes += '<polygon points="' + pts + '" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linejoin="round"/>';
-    nums += '<text x="-10" y="' + ((y + x.h/2)*u + 5).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="var(--muted)" font-family="Nunito, sans-serif">' + (i + 1) + '</text>';
+    nums += '<text x="-10" y="' + ((y + x.h/2)*u + 5).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="var(--muted)" ' + SVG_FONT + '>' + (i + 1) + '</text>';
     y += x.h;
   });
   for(let k = 0; k <= 5; k++) grid += '<line x1="' + k*u + '" y1="0" x2="' + k*u + '" y2="' + y*u + '"/>';

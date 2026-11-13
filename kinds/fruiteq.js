@@ -1,7 +1,7 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
 // Level 233 (3rd grade): two flowers, two lines with counts (genFlowerEq, shapes 'sum' and 'diff').
 // Level 279: a star and a pentagon, each once doubled (genFigTwins, shape 'twin').
-import { KIND, SLOT, answerLine, fruitBody, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, answerLine, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
 export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
 
@@ -136,7 +136,7 @@ function drawFruiteq(q){
   if(q.shape === 'twin') return drawFigTwins(q);
   if(q.shape) return drawFlowerEq(q);
   if(q.tri){
-    const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
+    const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" ' + SVG_FONT + '>' + t + '</text>';
     return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="fig"><svg viewBox="0 0 160 100" style="max-width:220px" role="img" aria-label="' + tr('три равенства с фигури', 'три рівності з фігурами') + '">' +
       row(26, '● + ○ = ' + q.s1) + row(58, '○ + ■ = ' + q.s2) + row(90, '■ + ● = ' + q.s3) + '</svg></div>' +
       '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div>' + answerLine('xl');

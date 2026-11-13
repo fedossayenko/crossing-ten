@@ -4,7 +4,7 @@
 // cross. A triangle with a corner at A has its other two corners on two different lines through
 // A, and those two corners joined by a third line: 3 on the top side, 3 on the bottom, 1 on each
 // end — 8. Each figure is its points and its lines, a line listing every point on it in order.
-import { KIND, answerLine, popAt, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, popAt, rnd, tr } from '../js/core.js';
 export const VTRI = [
   { pts:{a:[0,0], b:[2,0], c:[4,0], d:[0,2], e:[2,2], f:[4,2], o:[2,1]},                         // the paper's
     lines:['abc', 'def', 'ad', 'cf', 'boe', 'aof', 'doc'] },
@@ -63,7 +63,7 @@ function vtriSvg(q){
   return '<div class="fig"><svg viewBox="-16 -16 ' + (w + 32) + ' ' + (h + 32) + '" style="max-width:' + (w + 32)*1.3 + 'px" role="img" aria-label="' + tr('чертеж с отсечки', 'рисунок з відрізками') + '">' +
     F.lines.map(l => { const [x1, y1] = P(l[0]), [x2, y2] = P(l[l.length - 1]); return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--ink)" stroke-width="1.6"/>'; }).join('') +
     Object.keys(F.pts).map(n => { const [x, y] = P(n); return '<circle cx="' + x + '" cy="' + y + '" r="' + (n === q.V ? 5 : 3) + '" fill="' + (n === q.V ? 'var(--accent)' : 'var(--ink)') + '"/>'; }).join('') +
-    '<text x="' + (vx + (vx >= w ? -14 : 8)) + '" y="' + (vy + (vy >= h ? -8 : vy > 0 && vy < h ? 5 : 16)) + '" font-size="15" font-weight="800" fill="var(--accent)" font-family="Nunito, sans-serif">A</text></svg></div>';
+    '<text x="' + (vx + (vx >= w ? -14 : 8)) + '" y="' + (vy + (vy >= h ? -8 : vy > 0 && vy < h ? 5 : 16)) + '" font-size="15" font-weight="800" fill="var(--accent)" ' + SVG_FONT + '>A</text></svg></div>';
 }
 // Коледно 2023, задача 1: a square, its two midlines and the rhombus through their ends — 12 triangles and
 // 6 squares (the rhombus is one), so 6 more triangles. Коледно 2022, задача 6: a 3 × 3 grid with one inner line

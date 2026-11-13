@@ -4,7 +4,7 @@
 // from point 3 as from point 9, so it is point (3 + 9) : 2 = 6; from point 6 to point 11 are 5 parts of 100 : 10 = 10 см:
 // 50 см. The slips: 10 − 6 = 4 parts (the last number is not the number of parts), or point 6 taken as 6 parts from A.
 // Other lengths (1 or 2 м, 3 to 9 дм), 4 to 10 parts, C at a numbered point, measured to B or to A.
-import { CM, KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, rnd, tr, ukN } from '../js/core.js';
 export function genSegNum(){
   for(;;){
     const n = 4 + rnd(7), m = Math.random() < 0.6, L = m ? 100*(1 + rnd(2)) : 10*(3 + rnd(7));
@@ -18,7 +18,7 @@ const segNumLen = q => q.m ? q.L / 100 + ' м' : q.L / 10 + ' дм';
 // the points numbered above, A and B under the ends; the worked picture marks the two points and C between them
 function segNumSvg(q, mark){
   const W = 250, at = k => (12 + (k - 1) / q.n * (W - 24)).toFixed(1), text = (x, y, t, col) =>
-    '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="13" font-weight="700" fill="' + col + '" font-family="Nunito, sans-serif">' + t + '</text>';
+    '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="13" font-weight="700" fill="' + col + '" ' + SVG_FONT + '>' + t + '</text>';
   let g = '<line x1="' + at(1) + '" y1="0" x2="' + at(q.n + 1) + '" y2="0" stroke="var(--ink)" stroke-width="2.4"/>';
   for(let k = 1; k <= q.n + 1; k++){
     const col = mark && k === q.c ? 'var(--warm)' : mark && (k === q.i || k === q.j) ? 'var(--accent)' : 'var(--ink)';

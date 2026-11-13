@@ -3,7 +3,7 @@
 // МБГ Зима 2022, задача 13: a 4 by 5 rectangle cut into 1 by 2, 2 by 3 and X by 4. The small
 // squares are what is shared out: 20 = 2 + 6 + 4 · X, so 4 · X = 12 and X = 3. Generated from
 // real cuts — a strip off one side, then the rest in two — so the pieces always fit.
-import { KIND, SLOT, addUp, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, addUp, rnd, shuffle, tr } from '../js/core.js';
 export function genCutRect(){
   for(;;){
     const W = 3 + rnd(4), H = 3 + rnd(4);
@@ -20,8 +20,8 @@ function cutThreeSvg(q){
   const u = 16, gap = 18;
   let x = 0, out = '';
   const rect = (w, h, lw, lh) => { const s = '<g transform="translate(' + x + ',' + (6*u - h*u) + ')"><rect x="0" y="0" width="' + w*u + '" height="' + h*u + '" fill="none" stroke="var(--ink)" stroke-width="2"/>' +
-      '<text x="' + (w*u/2) + '" y="' + (h*u + 15) + '" text-anchor="middle" font-size="13" font-weight="800" fill="var(--muted)" font-family="Nunito, sans-serif">' + lw + '</text>' +
-      '<text x="-6" y="' + (h*u/2 + 5) + '" text-anchor="end" font-size="13" font-weight="800" fill="var(--muted)" font-family="Nunito, sans-serif">' + lh + '</text></g>'; x += w*u + gap + 10; return s; };
+      '<text x="' + (w*u/2) + '" y="' + (h*u + 15) + '" text-anchor="middle" font-size="13" font-weight="800" fill="var(--muted)" ' + SVG_FONT + '>' + lw + '</text>' +
+      '<text x="-6" y="' + (h*u/2 + 5) + '" text-anchor="end" font-size="13" font-weight="800" fill="var(--muted)" ' + SVG_FONT + '>' + lh + '</text></g>'; x += w*u + gap + 10; return s; };
   x = 14;
   out += rect(q.W, q.H, q.W, q.H);
   q.pieces.forEach(([w, h], i) => { out += rect(w, h, i === q.at && q.side === 0 ? 'X' : w, i === q.at && q.side === 1 ? 'X' : h); });

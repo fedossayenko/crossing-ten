@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, answerLine, popAt, rnd, shuffle, svgFrame, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, answerLine, popAt, rnd, shuffle, svgFrame, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -29,7 +29,7 @@ const bothUkStudy = n => ukWord(n, 'вивчає', 'вивчають', 'вивч
 function vennSvg(tl, tr_, a, m, b){
   const box = (x, y) => '<rect x="' + (x - 8) + '" y="' + (y - 14) + '" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2"/>';
   const tri = (x, y) => '<polygon points="' + (x - 9) + ',' + (y + 2) + ' ' + (x + 9) + ',' + (y + 2) + ' ' + x + ',' + (y - 14) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
-  const t = (x, y, v, big) => v === '□' ? box(x, y) : v === '△' ? tri(x, y) : '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + (big ? 17 : 15) + '" font-weight="800" fill="' + (big ? 'var(--ink)' : 'var(--muted)') + '" font-family="Nunito, sans-serif">' + v + '</text>';
+  const t = (x, y, v, big) => v === '□' ? box(x, y) : v === '△' ? tri(x, y) : '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + (big ? 17 : 15) + '" font-weight="800" fill="' + (big ? 'var(--ink)' : 'var(--muted)') + '" ' + SVG_FONT + '>' + v + '</text>';
   return '<svg viewBox="0 0 132 92" style="max-width:150px" role="img" aria-label="' + tr('два кръга', 'два кола') + '">' +
     '<circle cx="48" cy="56" r="30" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="84" cy="56" r="30" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
     t(40, 16, tl) + t(92, 16, tr_) + t(32, 62, a, 1) + t(66, 62, m, 1) + t(100, 62, b, 1) + '</svg>';

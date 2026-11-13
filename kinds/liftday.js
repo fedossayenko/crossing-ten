@@ -4,7 +4,7 @@
 // rides the lift up — 30 minutes there and back, so 15 one way — rests 32 minutes, walks the 2 км slope down at
 // 6 км an hour (20 minutes) and the flat back (1 hour). Off at 8:54: 2 h 35 travel + 32 rest = 3 h 07, home at 12:01.
 // Asked part by part, like the paper's marking; the clock time cannot be typed, so that part brings А/Б/В/Г.
-import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, rnd, shuffle, tr, ukN } from '../js/core.js';
 const liftClock = t => Math.floor(t / 60) % 24 + ':' + String(t % 60).padStart(2, '0');
 export function genLiftDay(){
   const shape = rnd(4);
@@ -24,7 +24,7 @@ export function genLiftDay(){
   }
 }
 function liftSvg(q){
-  const lab = (x, y, t, a) => '<text x="' + x + '" y="' + y + '" text-anchor="' + (a || 'middle') + '" font-size="12" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
+  const lab = (x, y, t, a) => '<text x="' + x + '" y="' + y + '" text-anchor="' + (a || 'middle') + '" font-size="12" font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + t + '</text>';
   return '<div class="fig wide"><svg viewBox="0 0 250 86" style="max-width:clamp(210px,40vw,300px)" role="img" aria-label="' + tr('стадионът и двете станции', 'стадіон і дві станції') + '">' +
     '<path d="M14 62 H170 L222 14" fill="none" stroke="var(--ink)" stroke-width="2.4"/>' +
     '<circle cx="14" cy="62" r="5" fill="var(--ink)"/><circle cx="170" cy="62" r="5" fill="var(--ink)"/><circle cx="222" cy="14" r="5" fill="var(--ink)"/>' +

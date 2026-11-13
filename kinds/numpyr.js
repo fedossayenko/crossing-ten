@@ -8,7 +8,7 @@
 // 55, 22, 22 and 11 are shown; the letters are found row by row, from wherever only one box is missing:
 // A = 99 − 55 = 44, Б = 33, В = 22, then down to the base. (A+Б+В) − (Г+Д+Е+Ж+З+И+К) = 99 − 55 = 44 (here A … M).
 // rows[r][i]: row r from the top. Shown are the paper's five places; every other box has a letter.
-import { KIND, answerLine, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 export const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
 /** @type {[number, number, string][]} */
@@ -29,8 +29,8 @@ function pyrOneSvg(q){
   for(let r = 0; r < 5; r++) for(let i = 0; i <= r; i++){
     const x = (4 - r)*w/2 + i*w, y = r*h, shown = PYR_SHOWN.some(([a, b]) => a === r && b === i), L = PYR_LET.find(([a, b]) => a === r && b === i);
     s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="none" stroke="var(--ink)" stroke-width="1.4"/>' +
-      (shown ? '<text x="' + (x + w/2) + '" y="' + (y + 18) + '" text-anchor="middle" font-size="14" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + q.rows[r][i] + '</text>' : '') +
-      (L ? '<text x="' + (x + 4) + '" y="' + (y + 11) + '" font-size="10" font-weight="800" fill="var(--accent)" font-family="Nunito, sans-serif">' + L[2] + '</text>' : '');
+      (shown ? '<text x="' + (x + w/2) + '" y="' + (y + 18) + '" text-anchor="middle" font-size="14" font-weight="800" fill="var(--ink)" ' + SVG_FONT + '>' + q.rows[r][i] + '</text>' : '') +
+      (L ? '<text x="' + (x + 4) + '" y="' + (y + 11) + '" font-size="10" font-weight="800" fill="var(--accent)" ' + SVG_FONT + '>' + L[2] + '</text>' : '');
   }
   return '<div class="fig"><svg viewBox="-3 -3 ' + (5*w + 6) + ' ' + (5*h + 6) + '" style="height:clamp(110px,19vh,170px)" role="img" aria-label="' + tr('пирамида от числа', 'піраміда з чисел') + '">' + s + '</svg></div>';
 }
@@ -47,13 +47,13 @@ export function genNumPyr(){
 }
 function numPyrSvg(q){
   const w = 30, h = 24, cell = (x, y, t, star) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + (star ? 'var(--solid)' : 'none') + '" stroke="var(--ink)" stroke-width="1.4"/>' +
-    (t === '' ? '' : '<text x="' + (x + w/2) + '" y="' + (y + 17) + '" text-anchor="middle" font-size="14" font-weight="800" fill="' + (star ? 'var(--accent)' : 'var(--ink)') + '" font-family="Nunito, sans-serif">' + t + '</text>');
+    (t === '' ? '' : '<text x="' + (x + w/2) + '" y="' + (y + 17) + '" text-anchor="middle" font-size="14" font-weight="800" fill="' + (star ? 'var(--accent)' : 'var(--ink)') + '" ' + SVG_FONT + '>' + t + '</text>');
   let s = '';
   // the upper pyramid: row r from the top has r + 1 boxes; what the paper shows is filled in
   const shown = [['★'], ['', ''], ['', '', q.r2[2]], [q.r1[0], '', q.r1[2], ''], [q.b[0], q.b[1], q.b[2], '', '']];
   shown.forEach((row, r) => row.forEach((t, i) => { s += cell((4 - r)*w/2 + i*w, r*h, t, t === '★'); }));
   s += cell(5*w, 4*h, q.z);
-  for(let i = 0; i < 6; i++) s += '<text x="' + (i*w + w/2) + '" y="' + (5*h + 17) + '" text-anchor="middle" font-size="16" font-weight="800" fill="var(--muted)" font-family="Nunito, sans-serif">‖</text>';
+  for(let i = 0; i < 6; i++) s += '<text x="' + (i*w + w/2) + '" y="' + (5*h + 17) + '" text-anchor="middle" font-size="16" font-weight="800" fill="var(--muted)" ' + SVG_FONT + '>‖</text>';
   [q.b[0], q.b[1], q.b[2], '', '', ''].forEach((t, i) => { s += cell(i*w, 6*h, t); });
   s += cell(3.5*w, 7*h, '') + cell(4.5*w, 7*h, '') + cell(4*w, 8*h, '★', true);
   return '<div class="fig tall"><svg viewBox="-4 -4 ' + (6*w + 8) + ' ' + (9*h + 8) + '" role="img" aria-label="' + tr('две пирамиди от числа', 'дві піраміди з чисел') + '">' + s + '</svg></div>';
