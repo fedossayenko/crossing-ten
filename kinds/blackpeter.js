@@ -4,7 +4,7 @@
 // Back from 8 8 8: Тошо lost, so the others had half before (4 4) and he had 8 + 4 + 4 = 16; then Пепи lost: Жоро 2, Тошо 8,
 // Пепи 4 + 2 + 8 = 14; then Жоро lost: Пепи 7, Тошо 4, Жоро 2 + 7 + 4 = 13. The losers are asked in any order, 8 or 16 chips each at the end
 // (halved three times without a fraction).
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, ordBg, rnd, shuffle, tr } from '../js/core.js';
 // names: [Bulgarian, Ukrainian], f: feminine
 const BP_NAMES = [{ f:false, n:[['Жоро', 'Жоро'], ['Пепи', 'Пепі'], ['Тошо', 'Тошо']] }, { f:true, n:[['Ани', 'Аня'], ['Мая', 'Мая'], ['Яна', 'Яна']] }];
 const BP_BG = ['първата', 'втората', 'третата'], BP_UK = ['першу', 'другу', 'третю'];
@@ -39,7 +39,7 @@ function whyBlackPeter(q, full){
   let out = tr('в края: ', 'наприкінці: ') + st[3].join(', ');
   for(let g = 2; g >= 0; g--){
     const L = q.order[g], b = st[g], a = st[g + 1], half = a.filter((_, i) => i !== L).map(v => v / 2);
-    out += '<br>' + tr('преди ' + (g + 1) + '-та игра (' + nm(L) + ' губи): ', 'перед ' + (g + 1) + '-ю грою (' + nm(L) + ' програє): ') +
+    out += '<br>' + tr('преди ' + ordBg(g + 1, 'f') + 'та игра (' + nm(L) + ' губи): ', 'перед ' + (g + 1) + '-ю грою (' + nm(L) + ' програє): ') +
       b.map((v, i) => nm(i) + ' ' + (i === L ? a[L] + ' + ' + half.join(' + ') + ' = <b>' + v + '</b>' : v)).join(', ');
   }
   return out + '<br>' + tr('отначало ', 'спочатку ') + nm(q.who) + ': <b>' + q.ans + '</b>';

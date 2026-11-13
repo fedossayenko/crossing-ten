@@ -5,7 +5,7 @@
 // Кенгуру 2023, задача 21 (shape 'last'): Ема is 3rd, 3 dancers between her and the last — 3 + 3 + 1 = 7 (the last one counts too).
 // Кенгуру 2025, задача 14 (shape 'span'): 12 in a row, Георги 5th from the left, Виктор 4th from the right; counting from Георги
 // (he is 1st), which place is Виктор? Виктор is 12 − 4 + 1 = 9th from the left, so 9 − 5 + 1 = 5.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukPl } from '../js/core.js';
+import { KIND, SLOT, ordBg, ordUk, popAt, rnd, svgText, tr, ukPl } from '../js/core.js';
 const M_BG = ['', 'първи', 'втори', 'трети', 'четвърти', 'пети', 'шести', 'седми', 'осми', 'девети', 'десети'];
 const M_UK = ['', 'перший', 'другий', 'третій', 'четвертий', 'п’ятий', 'шостий', 'сьомий', 'восьмий', 'дев’ятий', 'десятий'];
 const N_BG = ['', 'първо', 'второ', 'трето', 'четвърто', 'пето', 'шесто', 'седмо', 'осмо', 'девето', 'десето'];
@@ -83,10 +83,10 @@ function whyInRow(q, full){
   }
   if(q.shape === 'last'){
     if(!full) return tr('Не забравяй самата последна — и тя е участничка.', 'Не забудь саму останню — вона теж учасниця.');
-    return rowSvg(q.k + q.m + 1, [q.k, q.ans], q.k, q.ans, q.m) + tr('тя е ' + q.k + '-а, после ' + q.m + ' между, и още една — последната', 'вона ' + q.k + '-а, потім ' + q.m + ' між, і ще одна — остання') + ' &nbsp;→&nbsp; ' + eqInRow(q);
+    return rowSvg(q.k + q.m + 1, [q.k, q.ans], q.k, q.ans, q.m) + tr('тя е ' + ordBg(q.k, 'f') + ', после ' + q.m + ' между, и още една — последната', 'вона ' + ordUk(q.k, 'f') + ', потім ' + q.m + ' між, і ще одна — остання') + ' &nbsp;→&nbsp; ' + eqInRow(q);
   }
   const pos = q.n - q.b + 1;
   if(!full) return tr('Кое по ред е вторият отляво? После брой от първия като от 1.', 'Яке місце має другий зліва? Потім рахуй від першого як від 1.');
-  return rowSvg(q.n, [q.a, pos], q.a, pos, pos - q.a - 1) + tr('вторият е отляво ' + q.n + ' − ' + q.b + ' + 1 = ' + pos + '-и; от първия (той е 1-ви) броим: ' + pos + ' − ' + q.a + ' + 1', 'другий зліва ' + q.n + ' − ' + q.b + ' + 1 = ' + pos + '-й; від першого (він 1-й) рахуємо: ' + pos + ' − ' + q.a + ' + 1') + ' = <b>' + q.ans + '</b>';
+  return rowSvg(q.n, [q.a, pos], q.a, pos, pos - q.a - 1) + tr('вторият е отляво ' + q.n + ' − ' + q.b + ' + 1 = ' + ordBg(pos, 'm') + '; от първия (той е 1-ви) броим: ' + pos + ' − ' + q.a + ' + 1', 'другий зліва ' + q.n + ' − ' + q.b + ' + 1 = ' + ordUk(pos, 'm') + '; від першого (він 1-й) рахуємо: ' + pos + ' − ' + q.a + ' + 1') + ' = <b>' + q.ans + '</b>';
 }
 KIND.inrow = { draw:drawInRow, eq:eqInRow, why:whyInRow };

@@ -26,6 +26,9 @@ export const ukN = (n, one, few, many) => n + ' ' + ukWord(n, one, few, many);
 // the same with the number in the page's number style (a .num span), and a count in both languages: 1 ябълка, 2 ябълки, 0 банана
 export const ukPl = (n, one, few, many) => numSpan(n) + ' ' + ukWord(n, one, few, many);
 export const trN = (n, bgOne, bgMany, ukOne, ukFew, ukMany) => tr(n + ' ' + (n === 1 ? bgOne : bgMany), ukN(n, ukOne, ukFew, ukMany));
+// a digit ordinal with the ending its number needs, g = 'm' | 'f' | 'n': Bulgarian 1-ви, 2-ра, 3-ти, 7-ма, 12-та, 8-мо; Ukrainian 3-й, 3-я, 3-є, 5-а
+export const ordBg = (n, g) => n + '-' + ({1: 'в', 2: 'р', 7: 'м', 8: 'м'}[n % 100 >= 11 && n % 100 <= 19 ? 0 : n % 10] || 'т') + ({m: 'и', f: 'а', n: 'о'}[g]);
+export const ordUk = (n, g) => n + '-' + (g === 'm' ? 'й' : n % 10 === 3 && n % 100 !== 13 ? (g === 'f' ? 'я' : 'є') : (g === 'f' ? 'а' : 'е'));
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 export const SLOT = '<span class="slot" id="slot0"></span>';

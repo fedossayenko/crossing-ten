@@ -6,7 +6,7 @@
 // how many sisters has Стела?): the boys b are twice b − 1, so b = 2, the girls are 7 − 2 = 5 and Стела has 5 − 1 = 4 sisters.
 // Кенгуру 2021, задача 22 (each son has as many brothers as sisters, each daughter twice as many brothers as sisters —
 // how many children?): the boys are one more than the girls; a daughter's brothers are twice her sisters → 3 girls, 4 boys.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, rnd, tr, trN, ukN } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
 // «twice» and «three times» are worked by adding, never by ×: 3 + 3, 2 + 2 + 2
 const sibsPlus = (k, x) => Array(k).fill(x).join(' + ');
@@ -14,7 +14,7 @@ const SIBS_TIMES = { 2: ['два пъти', 'вдвічі'], 3: ['три път�
 // the mother, her young (bg), the boys, the girls; then the same in Ukrainian
 const SIBS_ANIMALS = [
   ['котка', 'котенца', 'мъжките котенца', 'женските котенца', 'кішка', 'кошенят', 'кошенят-хлопчиків', 'кошенят-дівчаток'],
-  ['кучка', 'кученца', 'мъжките кученца', 'женските кученца', 'собака', 'цуценят', 'цуценят-хлопчиків', 'цуценят-дівчаток'],
+  ['коза', 'козлета', 'мъжките козлета', 'женските козлета', 'коза', 'козенят', 'козенят-хлопчиків', 'козенят-дівчаток'],
   ['зайка', 'зайчета', 'мъжките зайчета', 'женските зайчета', 'зайчиха', 'зайченят', 'зайченят-хлопчиків', 'зайченят-дівчаток'],
 ];
 // Bulgarian boy, girl; Ukrainian boy, girl; and the same two in the Ukrainian genitive (the hints: «брати Міли», «у Міли»)
@@ -54,7 +54,7 @@ function whySibs(q, full){
     return tr('Ако момчетата са ' + q.b + ', ' + ab + ' има ' + (q.b - 1) + ' брат, а ' + sb + ' има ' + q.b + ' братя: ' + q.b + ' = ' + sibsPlus(2, q.b - 1) + ', два пъти повече. Момичетата са ' + q.n + ' − ' + q.b + ' = <b>' + q.g + '</b>.',
               'Якщо хлопчиків ' + q.b + ', то в ' + uab + ' ' + (q.b - 1) + ' брат, а в ' + usb + ' ' + q.b + ' брати: ' + q.b + ' = ' + sibsPlus(2, q.b - 1) + ', вдвічі більше. Дівчат ' + q.n + ' − ' + q.b + ' = <b>' + q.g + '</b>.') + tail;
   return tr('Ако момчетата са ' + q.b + ', ' + sb + ' има ' + q.b + ' братя, а ' + ab + ' има два пъти повече сестри: ' + sibsPlus(2, q.b) + ' = <b>' + q.g + '</b> момичета. ' + q.b + ' + ' + q.g + ' = ' + q.n + ', колкото са малките — съвпада.',
-            'Якщо хлопчиків ' + q.b + ', у ' + usb + ' ' + q.b + ' брати, а в ' + uab + ' сестер вдвічі більше: ' + sibsPlus(2, q.b) + ' = <b>' + q.g + '</b> дівчат. ' + q.b + ' + ' + q.g + ' = ' + q.n + ' — збігається.') + tail;
+            'Якщо хлопчиків ' + q.b + ', у ' + usb + ' ' + q.b + ' брати, а в ' + uab + ' сестер вдвічі більше: ' + sibsPlus(2, q.b) + ' = <b>' + ukN(q.g, 'дівчина', 'дівчини', 'дівчат') + '</b>. ' + q.b + ' + ' + q.g + ' = ' + q.n + ' — збігається.') + tail;
 }
 KIND.sibs = { draw:drawSibs, eq:eqSibs, why:whySibs };
 
@@ -84,13 +84,14 @@ function eqSibsAll(q){
 }
 function whySibsAll(q, full){
   // the kind whose members have as many of each (o + 1 of them) and the kind with o members
-  const [many, few] = q.sw ? [tr('момичета', 'дівчат'), tr('момчета', 'хлопчиків')] : [tr('момчета', 'хлопчиків'), tr('момичета', 'дівчат')];
+  const boys = n => trN(n, 'момче', 'момчета', 'хлопчик', 'хлопчики', 'хлопчиків'), girls = n => trN(n, 'момиче', 'момичета', 'дівчина', 'дівчини', 'дівчат');
+  const [many, few] = q.sw ? [girls, boys] : [boys, girls];   // the kind with o + 1 members, the kind with o
   if(!full) return tr('Първите имат толкова братя, колкото и сестри — колко са те в сравнение с другите? После пробвай с малък брой от другите, един по един.',
                       'Перші мають стільки братів, скільки й сестер — скільки їх порівняно з іншими? Потім пробуй малу кількість інших, по одному.');
   const lines = [];
   for(let o = 1; o <= q.o; o++){
     // o of the few: the many are o + 1; one of the few has o + 1 of the other kind and o − 1 of its own
-    lines.push(o + ' ' + few + ' → ' + (o + 1) + ' ' + many + ': ' + (o + 1) + ' ' + tr('срещу', 'проти') + ' ' + (o - 1) + (o > 1 ? ' (' + sibsPlus(q.k, o - 1) + ' = ' + q.k*(o - 1) + ')' : '') + (o === q.o ? ' ✓' : ' ✗'));
+    lines.push(few(o) + ' → ' + many(o + 1) + ': ' + (o + 1) + ' ' + tr('срещу', 'проти') + ' ' + (o - 1) + (o > 1 ? ' (' + sibsPlus(q.k, o - 1) + ' = ' + q.k*(o - 1) + ')' : '') + (o === q.o ? ' ✓' : ' ✗'));
   }
   return tr('Тези с толкова братя, колкото и сестри, са с един повече от другите. Пробвам: ', 'Тих, у кого стільки братів, скільки й сестер, на одного більше, ніж інших. Пробую: ') + lines.join('; ') +
     ' &nbsp;→&nbsp; ' + q.boys + ' + ' + q.girls + ' = <b>' + (q.boys + q.girls) + '</b>' + (q.asksBoys ? tr('; момчетата са ' + q.boys, '; хлопчиків ' + q.boys) : '');

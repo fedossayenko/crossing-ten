@@ -31,6 +31,6 @@ function boardsSvg(q, full){
 function whyBoards(q, full){
   if(!full) return tr('Нарисувай дъските и скоковете между тях. Колко са скоковете — повече или по-малко от дъските?', 'Намалюй дошки й стрибки між ними. Скільки стрибків — більше чи менше, ніж дошок?') + boardsSvg(q, false);
   return boardsSvg(q, true) + tr('от № ' + q.a + ' до № ' + q.b + ' са <b>' + q.n + '</b> скока (' + q.b + ' − ' + q.a + ' = ' + q.n + '), а не ' + (q.n + 1) + '. Всеки е ' + q.t + ' ' + secBg + ': ' + addUp(q.n, q.t) + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>',
-    'від № ' + q.a + ' до № ' + q.b + ' — <b>' + q.n + '</b> стрибків (' + q.b + ' − ' + q.a + ' = ' + q.n + '), а не ' + (q.n + 1) + '. Кожен триває ' + ukN(q.t, 'секунду', 'секунди', 'секунд') + ': ' + addUp(q.n, q.t) + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>');
+    'від № ' + q.a + ' до № ' + q.b + ' — <b>' + ukN(q.n, 'стрибок', 'стрибки', 'стрибків') + '</b> (' + q.b + ' − ' + q.a + ' = ' + q.n + '), а не ' + (q.n + 1) + '. Кожен триває ' + ukN(q.t, 'секунду', 'секунди', 'секунд') + ': ' + addUp(q.n, q.t) + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>');
 }
 KIND.boards = { draw:drawBoards, eq:eqBoards, why:whyBoards };
