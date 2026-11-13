@@ -761,6 +761,13 @@ const server = http.createServer((req, res) => {
       newRound(); delete navigator.wakeLock; return JSON.stringify(out); })()`) || '{}');
     expect(wl.task === 1 && wl.today === 0 && wl.again === 1 && wl.end === 0 && wl.asked === 2, 'the wake lock is not held on a task only: ' + JSON.stringify(wl));
   }
+  // A run of days is counted by day number, not by the milliseconds between two noons: the night the clocks go back
+  // (Sofia, 25 Oct 2026) is 25 hours long, and the days either side of it are still in a row
+  await cmd('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Sofia' });
+  const dst = await page(`(() => { const rs = d => ({ id: d, ts: 0, day: d, level: 2, n: 10, firstTry: 8 });
+    return { best: statsFrom(['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-03-28', '2026-03-29', '2026-03-30'].map(rs)).streakBest }; })()`);
+  await cmd('Emulation.setTimezoneOverride', { timezoneId: '' });
+  expect(dst.best === 4, 'a run of days across the clocks going back was cut short (Sofia, 24 to 26 Oct): ' + JSON.stringify(dst));
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){
