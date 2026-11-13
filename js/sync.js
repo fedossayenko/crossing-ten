@@ -302,4 +302,23 @@ document.addEventListener('visibilitychange', () => { if(document.visibilityStat
 new MutationObserver(() => { if(!$('parent').hidden && IN() && SYNC_ON) googleButton($('gLink')); }).observe($('parent'), { attributes:true, attributeFilter:['hidden'] });
 // The first paint and sync, once app.js has set the page up: as a module this file runs before app.js
 // (app.js imports it), and paintSync reads what app.js defines.
-export function startSync(){ paintSync(); syncNow(); }
+export function startSync(){ paintSync(); syncNow(); hello(); }
+
+// A visit count, once per device per UTC day: the site this page is served from and whether this device is signed in,
+// nothing else (no id; the Worker keeps a counter per day, site and signed-in). Fire and forget: offline, or a failed
+// call, simply tries again at the next launch. A page on localhost counts only when it was pointed at a Worker of its own
+// (smoke.js), never into the real one.
+const HELLO_KEY = 'crossingten.hello';
+function hello(){
+  try {
+    const host = location.hostname, local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(host);
+    if(!SYNC_ON || navigator.onLine === false || (local && !localStorage.getItem('crossingten.syncurl'))) return;
+    const day = new Date().toISOString().slice(0, 10);
+    if(localStorage.getItem(HELLO_KEY) === day) return;
+    localStorage.setItem(HELLO_KEY, day);
+    const site = host === 'fedossayenko.github.io' ? 'pages' : host === 'crossing-ten.sayenkofedor.workers.dev' ? 'cf' : 'other';
+    // text/plain keeps it a simple request (no preflight), which a keepalive call wants
+    fetch(SYNC_URL + '/hello', { method: 'POST', keepalive: true, headers: { 'content-type': 'text/plain' }, body: JSON.stringify({ site, signed: IN() }) })
+      .then(r => { if(!r.ok) try { localStorage.removeItem(HELLO_KEY); } catch(e){} }, () => { try { localStorage.removeItem(HELLO_KEY); } catch(e){} });
+  } catch(e){}
+}

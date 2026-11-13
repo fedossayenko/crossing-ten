@@ -51,3 +51,13 @@ CREATE TABLE IF NOT EXISTS google (
   sub TEXT PRIMARY KEY,
   family TEXT NOT NULL
 );
+
+-- Visits per UTC day, site and signed-in or not (POST /hello); nothing else is kept. An existing database gets
+-- it from migrations/0002_hello.sql.
+CREATE TABLE IF NOT EXISTS hello (
+  day TEXT NOT NULL,
+  site TEXT NOT NULL,
+  signed INTEGER NOT NULL,
+  n INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, site, signed)
+);
