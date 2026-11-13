@@ -269,7 +269,7 @@ so an easy paper is never the record for a hard one. Today also offers a 2nd-gra
 with new numbers every time. The tasks come from the levels' own generators,
 never from the competitions' papers, which are copyrighted. A paper is saved as one round
 with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round. While it runs it is
-saved at every task under `<roundsKey>.paper`, so a reload resumes it (and ends it at once if its hour has passed).
+saved at every task under `<roundsKey>.paper`, so a reload resumes it (on the check screen too; it ends at once if its hour has passed).
 The next paper's date is `PLAYER.next`, so it travels with the player record.
 Two badges go with it: **Състезател** (finish a competition) and **Изследовател** (tasks
 from all nine groups), sixteen in all.
@@ -420,7 +420,7 @@ The Pages copy plays with no network at all — on a plane, say. `sw.js` fetches
 file it names and every module those import when it installs (a missing file fails the install; `check/app.js`
 runs the install against the disk), so a single visit online is enough. After
 that it stays network-first (the newest build whenever there is a connection) and falls back to its
-copy when the network fails, takes over 3.5 s, or a wifi login page answers through a redirect. Rounds are kept on the
+copy when the network fails or a wifi login page answers through a redirect. Rounds are kept on the
 device and sync with the family when the connection is back. On an iPad it should be opened from the
 home-screen icon: Safari can clear a website's storage after a week unused, a home-screen app it keeps.
 `node smoke.js` ends by stopping its server and playing a round from the copy.
