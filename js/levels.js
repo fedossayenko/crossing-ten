@@ -109,6 +109,15 @@ import { genCutRect } from '../kinds/cutrect.js';
 import { genAlternate } from '../kinds/alternate.js';
 import { genPages } from '../kinds/pages.js';
 import { genPairSum } from '../kinds/pairsum.js';
+import { genEqBoxes, genEqSwap } from '../kinds/eqrows.js';
+import { genCardSum } from '../kinds/cardsum.js';
+import { genCardCount } from '../kinds/cardcount.js';
+import { genBlackPeter } from '../kinds/blackpeter.js';
+import { genCake } from '../kinds/cake.js';
+import { genBoards } from '../kinds/boards.js';
+import { genFruitWeek } from '../kinds/fruitweek.js';
+import { genEarlyWatch } from '../kinds/earlywatch.js';
+import { genEaten } from '../kinds/eaten.js';
 import { genEraseDig } from '../kinds/erasedig.js';
 import { genReplaced } from '../kinds/replaced.js';
 import { genBlocks } from '../kinds/blocks.js';
@@ -311,6 +320,16 @@ export const LEVELS = [
   { id:140, op:'w', grp:'find', needs:[46], src:'mbg-spring-2025', d:4, eq:'a > 5 > b > c', desc:{ en:'Three numbers with a known sum and order, one of them odd', bg:'Три числа с известен сбор и подредба, едното нечетно', uk:'Три числа з відомою сумою й порядком, одне з них непарне' }, gen:genIneqSum },
   { id:124, op:'w', grp:'find', needs:[11], src:'kms-2024', d:4, shapes:{ '-':4, one:3 }, eq:{ bg:'Пирамиди от числа', uk:'Піраміди з чисел' }, desc:{ en:'Two number pyramids that share a row, and the stars at their tips', bg:'Две пирамиди от числа с общ ред и звездичките на върховете им', uk:'Дві піраміди з чисел зі спільним рядом і зірочки на їхніх верхівках' }, also:['kms-2023-2'], gen:genNumPyr },
   { id:109, op:'w', grp:'find', needs:[11], src:'mbg-winter-2021', d:3, eq:'□ + □ = □ + □', desc:{ en:'Four of five numbers into two equal sums: which one is left out', bg:'Четири от пет числа в два равни сбора: кое остава', uk:'Чотири з п’яти чисел у дві рівні суми: яке залишається' }, also:['ek-2025-2'], gen:genPairSum },
+  { id:340, op:'w', grp:'find', needs:[11], src:'ek-2021', d:3, eq:{ bg:'Две кутии', uk:'Дві коробки' }, desc:{ en:'Cards in two boxes with equal sums: which card is with the given one', bg:'Карти в две кутии с равни сборове: коя е с дадената', uk:'Картки у двох коробках з рівними сумами: яка разом із заданою' }, gen:genEqBoxes },
+  { id:341, op:'w', grp:'find', needs:[11], src:'ek-2026', d:4, eq:{ bg:'Два реда жетони', uk:'Два ряди жетонів' }, desc:{ en:'Two rows of tokens: swap one with one so the sums are equal', bg:'Два реда жетони: размени по един, за да са сборовете равни', uk:'Два ряди жетонів: поміняй по одному, щоб суми були рівні' }, gen:genEqSwap },
+  { id:342, op:'w', grp:'num', needs:[13], src:'ek-2025', d:3, eq:{ bg:'Най-голям сбор', uk:'Найбільша сума' }, desc:{ en:'Four digits into □□ + □□ for the largest — or smallest — sum', bg:'Четири цифри в □□ + □□ за най-голям — или най-малък — сбор', uk:'Чотири цифри в □□ + □□ для найбільшої — або найменшої — суми' }, gen:genCardSum },
+  { id:343, op:'w', grp:'num', needs:[45], src:'ek-2023', d:5, eq:{ bg:'Различни резултати', uk:'Різні результати' }, desc:{ en:'Three of four cards make a two-digit minus a one-digit number: count the different results', bg:'Три от четири карти правят двуцифрено минус едноцифрено: преброй различните резултати', uk:'Три з чотирьох карток дають двоцифрове мінус одноцифрове: порахуй різні результати' }, gen:genCardCount },
+  { id:344, op:'w', grp:'find', needs:[11], src:'ek-2021', d:4, eq:{ bg:'Черен Петър', uk:'Чорний Петро' }, desc:{ en:'Three players, the loser doubles the others’ chips: work back to the start', bg:'Трима играчи, загубилият удвоява жетоните на другите: върни се до началото', uk:'Троє гравців, програвший подвоює жетони інших: повернись до початку' }, gen:genBlackPeter },
+  { id:345, op:'w', grp:'word', src:'ek-2026', d:3, eq:{ bg:'Торта', uk:'Торт' }, desc:{ en:'A cake cut one way and then across: pieces as rows added', bg:'Торта, разрязана по един начин и после напреки: парчетата като редове, които се събират', uk:'Торт, розрізаний в один бік і потім упоперек: шматки як ряди, що додаються' }, gen:genCake },
+  { id:346, op:'w', grp:'word', src:'ek-2026', d:3, eq:{ bg:'Папагалът Пиер', uk:'Папуга П’єр' }, desc:{ en:'Jumps from board to board, so many seconds each: one fewer jump than boards', bg:'Скокове от дъска на дъска, по толкова секунди: със скок по-малко от дъските', uk:'Стрибки з дошки на дошку, по стільки секунд: на стрибок менше, ніж дошок' }, gen:genBoards },
+  { id:347, op:'w', grp:'word', src:'ek-2021', d:3, eq:{ bg:'Плодове през седмицата', uk:'Фрукти впродовж тижня' }, desc:{ en:'A week’s pattern of fruit, added over two or three weeks', bg:'Седмичен ред на плодове, събран за две или три седмици', uk:'Тижневий розпорядок фруктів, доданий за два або три тижні' }, gen:genFruitWeek },
+  { id:348, op:'w', grp:'word', src:'ek-2021', d:4, shapes:{ slow:4, fast:4 }, eq:{ bg:'Часовникът на Ясен', uk:'Годинник Ясена' }, desc:{ en:'Early by a watch that is slow — or fast — and a show that starts late: how long he waits', bg:'Рано по часовник, който изостава — или избързва — и представление със закъснение: колко чака', uk:'Рано за годинником, що відстає — або поспішає — і вистава із запізненням: скільки чекає' }, gen:genEarlyWatch },
+  { id:349, op:'w', grp:'word', src:'ek-2025', d:2, eq:{ bg:'Колко са били?', uk:'Скільки було?' }, desc:{ en:'So many left after some were eaten: how many were there', bg:'Колко са останали след като част са изядени: колко са били', uk:'Скільки залишилось після того, як частину з’їли: скільки було' }, gen:genEaten },
   { id:110, op:'w', grp:'find', needs:[11], src:'mbg-winter-2020', d:4, eq:{ bg:'Изтритата цифра', uk:'Стерта цифра' }, desc:{ en:'A sum that went wrong when one digit was rubbed out', bg:'Сбор, развален от една изтрита цифра', uk:'Сума, зіпсована однією стертою цифрою' }, gen:genEraseDig },
   { id:81, op:'w', grp:'find', needs:[11], src:'mbg-winter-2024', d:3, eq:'88 − ■ = 88 − 11', desc:{ en:'The box read off an equality, then used', bg:'Числото в квадратчето се чете от равенството, после се използва', uk:'Число в квадратику читається з рівності, потім використовується' }, gen:genSameSub },
   { id:92, op:'w', grp:'find', needs:[30], src:'kms-2025', d:2, eq:{ bg:'Най-малкото умаляемо', uk:'Найменше зменшуване' }, desc:{ en:'The smallest a number can be, given a difference — 0 counts', bg:'Най-малкото число при дадена разлика — и 0 се брои', uk:'Найменше число за даною різницею — і 0 рахується' }, gen:genMinuend },
