@@ -774,7 +774,8 @@ const server = http.createServer((req, res) => {
     startComp(); await tick();
     for(let n = 0; n < 3; n++){ const q = S.qs[S.i];
       if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); $('nextBtn').click(); }
-      else { [...String(answers(q)[0])].forEach(K); K('go'); }
+      else { const want = answers(q).slice(0, q.slots || 1).map(String);   // each box; a task she counts herself opens them with +
+        want.forEach((v, k) => { [...v].forEach(K); if($('more')){ if(k < want.length - 1) K('more'); } else K('go'); }); if($('more')) K('go'); }
       await tick(300); }
     return JSON.stringify({ i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length }); })()`;
   const pa = JSON.parse(await run(paperDo) || '{}');

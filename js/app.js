@@ -6,8 +6,8 @@ import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
 import { dailyPlan } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
-import { choiceHtml, letterOf, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
+import { choiceHtml, withChoices } from './choice.js';
+import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -677,28 +677,9 @@ export function finish(){
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
 
-  // a paper: task by task, and against her best paper before this one
+  // a paper: task by task, and against her best paper before this one (js/compete.js)
   $('compWrap').hidden = !COMP; $('compBest').hidden = true;
-  if(COMP){
-    const n = k => S.qs.filter((_, j) => k(j)).length, right = n(j => S.results[j]), none = n(j => S.skipped[j]);
-    $('compTable').innerHTML = '<div class="clegend">' + t('compLegend', right, S.qs.length - right - none, none) + '</div>' + S.qs.map((q, k) => {
-      const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
-      const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
-        t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
-      return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
-        '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
-    }).join('');
-    // a row opens its task and how it is solved
-    $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
-      const open = b.getAttribute('aria-expanded') !== 'true';
-      b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
-    });
-    const prev = bestComp(COMP.from);
-    if(prev){
-      $('compBest').hidden = false;
-      $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
-    }
-  }
+  if(COMP) paintPaperResult(pts, max);
 
   const before = earnedSet(LOCAL.rounds), was = mastery(LOCAL.rounds)[S.level];
   const now = Date.now();

@@ -7,8 +7,8 @@
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
    A reload keeps the paper (paperSnap, resumeComp). */
-import { $, rnd, seeded } from './core.js';
-import { accepts, answers, drawQ, openAns, raw, seededRaw, slipOf } from './questions.js';
+import { $, esc, rnd, seeded } from './core.js';
+import { accepts, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipOf, why } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
@@ -172,6 +172,27 @@ export function compEnd(){
   finish();
 }
 
+// The result sheet of a paper: her tasks one by one (a row opens its task and how it is solved), and against her best paper before this one
+export function paintPaperResult(pts, max){
+  const n = k => S.qs.filter((_, j) => k(j)).length, right = n(j => S.results[j]), none = n(j => S.skipped[j]);
+  $('compTable').innerHTML = '<div class="clegend">' + t('compLegend', right, S.qs.length - right - none, none) + '</div>' + S.qs.map((q, k) => {
+    const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
+    const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
+      t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
+    return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
+      '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
+  }).join('');
+  // a row opens its task and how it is solved
+  $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
+  });
+  const prev = bestComp(COMP.from);
+  if(prev){
+    $('compBest').hidden = false;
+    $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
+  }
+}
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){
