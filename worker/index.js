@@ -49,7 +49,7 @@ const same = (a, b) => a.length === b.length && crypto.subtle.timingSafeEqual(en
 async function wrongPass(db, name, now){
   const row = await db.prepare(`UPDATE accounts SET fails = CASE WHEN fails + 1 >= ?2 THEN 0 ELSE fails + 1 END,
     locked = CASE WHEN fails + 1 >= ?2 THEN ?3 ELSE locked END WHERE name = ?1 RETURNING locked`).bind(name, FAILS, now + LOCK_MS).first();
-  return !!row && row.locked > 0;
+  return !!row && row.locked > now;
 }
 const keyOf = name => String(name || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
 
@@ -134,7 +134,7 @@ export default {
         const lock = await wrongPass(db, a.name, now);
         return lock ? reply(429, { error: 'locked', retry: LOCK_MS / 1000 }) : reply(401, { error: 'wrong' });
       }
-      if(a.fails) await db.prepare('UPDATE accounts SET fails = 0 WHERE name = ?1').bind(a.name).run();
+      if(a.fails || a.locked) await db.prepare('UPDATE accounts SET fails = 0, locked = 0 WHERE name = ?1').bind(a.name).run();
       return reply(200, { token: await session(db, a.family), name: a.display });
     }
     if(route === '/google'){
