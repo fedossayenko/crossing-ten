@@ -65,11 +65,13 @@ export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:fals
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:false, next:/** @type {{ at:string, date:string } | undefined} */ (undefined) };
+export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:false };
 // a competition under way (js/compete.js), and its clock
 export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
+// the next paper's date was kept here, on one device; it is in the player's record now (PLAYER.next), which sync carries to the others
+if(LOCAL.next){ if(PLAYER.next === undefined){ PLAYER.next = LOCAL.next; PLAYER.updated = Date.now(); savePlayers(); } delete LOCAL.next; }
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
@@ -1156,7 +1158,7 @@ const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.se
 let TODAY = null;
 export function todayData(){
   const now = Date.now(), key = [LOCAL.rounds.length, (LOCAL.rounds[LOCAL.rounds.length - 1] || {}).id, Math.floor(now / 60000), LANG, PLAYER.id, PLAYER.name, PLAYER.mascot, PLAYER.grade,
-    JSON.stringify(LOCAL.next), [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER].join(), S.level, S.i, S.qs.length, !!COMP, midRound()].join('|');
+    JSON.stringify(PLAYER.next), [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER].join(), S.level, S.i, S.qs.length, !!COMP, midRound()].join('|');
   if(TODAY && TODAY.rounds === LOCAL.rounds && TODAY.key === key) return TODAY.data;
   const data = buildToday(now);
   TODAY = { rounds: LOCAL.rounds, key, data };
@@ -1215,17 +1217,18 @@ $('sideBtn').onclick = () => { const open = !document.body.classList.contains('s
 const paperAt = () => [...new Set(LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => compOf(p) === 'mbg' ? 'mbg-' + roundOf(p) : compOf(p)))];
 const paperAtName = at => t('comps')[at.split('-')[0]] + (at.includes('-') ? ' ' + t('mbgRounds')[at.split('-')[1]] : '');
 function paintPaperSet(){
-  const nx = LOCAL.next || { at:'', date:'' };
+  const nx = PLAYER.next || { at:'', date:'' };
   $('paperAt').innerHTML = '<option value="">' + t('noPaper') + '</option>' + paperAt().map(a => '<option value="' + a + '"' + (a === nx.at ? ' selected' : '') + '>' + paperAtName(a) + '</option>').join('');
   $('paperDate').value = nx.date || ''; $('paperDate').hidden = !nx.at;
 }
 $('paperAt').onchange = $('paperDate').onchange = () => {
-  LOCAL.next = $('paperAt').value ? { at: $('paperAt').value, date: $('paperDate').value } : undefined; saveLocal(); paintPaperSet();
+  PLAYER.next = $('paperAt').value ? { at: $('paperAt').value, date: $('paperDate').value } : null;   // null, not deleted: a sync copies fields over, it never removes one
+  PLAYER.updated = Date.now(); savePlayers(); syncSoon(); paintPaperSet();
 };
 // The countdown on Today: how many days to it, and how ready she is — the levels its papers ask (her grade) learned,
 // each counting 1 + how many dated papers ask it. Nothing once the day has passed or no date is set.
 export function nextPaper(){
-  const nx = LOCAL.next;
+  const nx = PLAYER.next;
   if(!nx || !nx.at || !/^\d{4}-\d\d-\d\d$/.test(nx.date || '')) return null;
   const [y, mo, d] = nx.date.split('-').map(Number), when = new Date(y, mo - 1, d), today = new Date();
   today.setHours(0, 0, 0, 0);

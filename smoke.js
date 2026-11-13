@@ -180,13 +180,13 @@ const server = http.createServer((req, res) => {
     const set = (at, date) => { $('paperAt').value = at; $('paperAt').onchange(); $('paperDate').value = date; $('paperDate').onchange(); };
     $('tabParents').click(); await tick();
     const r = { options: [...$('paperAt').options].map(o => o.value).includes('mbg-autumn') };
-    set('mbg-autumn', day(5)); r.saved = LOCAL.next && LOCAL.next.at === 'mbg-autumn' && LOCAL.next.date === day(5);
+    set('mbg-autumn', day(5)); r.saved = PLAYER.next && PLAYER.next.at === 'mbg-autumn' && PLAYER.next.date === day(5) && JSON.parse(localStorage.getItem('crossingten.players')).list.find(p => p.id === PLAYER.id).next.date === day(5);   // in the player's record, which sync carries
     $('tabToday').click(); await tick();
     const card = document.querySelector('#today .paperday'), ready = card && +card.querySelector('.ready b').textContent.replace('%', '');
     r.card = !!card && /5/.test(card.textContent) && Number.isInteger(ready) && ready >= 0 && ready <= 100;
     card.click(); await tick(); r.trains = !$('picker').hidden && PICK_COMP === 'mbg' && PICK_ROUND === 'autumn';
     set('mbg-autumn', day(-1)); $('tabToday').click(); await tick(); r.past = !document.querySelector('#today .paperday');
-    set('', ''); r.cleared = LOCAL.next === undefined;
+    set('', ''); r.cleared = !PLAYER.next;
     // R9.5: Today as drawn — Play on the start card, the next badge, the week's seven days, the sidebar's week block
     $('tabToday').click(); await tick();
     r.today = !!document.querySelector('#today .start .acts .btn') && !!document.querySelector('#today .badgecard') &&
@@ -838,8 +838,8 @@ const server = http.createServer((req, res) => {
   // Today's data is worked out once for the two paints of one opening (it replays the notebook's seeds and walks every round), and
   // again as soon as a round is logged or the next paper's date is set
   const tdm = JSON.parse(await run(`(() => { const a = todayData(), b = todayData(), out = { same: a === b };
-    const keep = LOCAL.rounds, was = LOCAL.next; LOCAL.rounds = keep.concat([Object.assign({}, keep[keep.length - 1], { id: 'tdm', ts: Date.now() })]); out.round = todayData() !== a;
-    const c = todayData(); LOCAL.next = { at: 'mbg-autumn', date: '2099-01-01' }; out.next = todayData() !== c && !!todayData().paper; LOCAL.next = was; LOCAL.rounds = keep; return JSON.stringify(out); })()`) || '{}');
+    const keep = LOCAL.rounds, was = PLAYER.next; LOCAL.rounds = keep.concat([Object.assign({}, keep[keep.length - 1], { id: 'tdm', ts: Date.now() })]); out.round = todayData() !== a;
+    const c = todayData(); PLAYER.next = { at: 'mbg-autumn', date: '2099-01-01' }; out.next = todayData() !== c && !!todayData().paper; PLAYER.next = was; LOCAL.rounds = keep; return JSON.stringify(out); })()`) || '{}');
   expect(tdm.same && tdm.round && tdm.next, 'todayData is not kept between its two paints, or is kept past a change: ' + JSON.stringify(tdm));
   // the grown-ups' lists find a round's earlier misses and a level's later tasks through an index of the log: the same answers as scanning it
   const ix = JSON.parse(await run(`(() => { const keep = LOCAL.rounds, lv = [2, 5, 8, 10, 11], sh = [null, 'a', 'b']; let s = 7; const rnd = n => (s = (s * 1103515245 + 12345) % 2147483648) % n;
@@ -849,6 +849,13 @@ const server = http.createServer((req, res) => {
     let bad = 0, n = 0; LOCAL.rounds.forEach(r => r.t.forEach(e => { n++; if(missedIn(r, e) !== oldMissedIn(r, e) || JSON.stringify(since(e[0], r.ts)) !== JSON.stringify(oldSince(e[0], r.ts))) bad++; }));
     LOCAL.rounds = keep; return JSON.stringify({ bad, n }); })()`) || '{}');
   expect(ix.n === 480 && ix.bad === 0, 'the log index answers differently from scanning the log: ' + JSON.stringify(ix));
+  // a paper date kept on this device by an older build (in the settings) moves into the player's record, where sync carries it
+  await run(`(() => { const v = JSON.parse(localStorage.getItem(LS)); v.next = { at: 'mbg-autumn', date: '2098-01-01' }; localStorage.setItem(LS, JSON.stringify(v));
+    const p = JSON.parse(localStorage.getItem('crossingten.players')); delete p.list.find(x => x.id === PLAYER.id).next; localStorage.setItem('crossingten.players', JSON.stringify(p)); return ''; })()`);
+  await cmd('Page.reload'); await settle();
+  const mn = await page('{ player: PLAYER.next && PLAYER.next.date, local: LOCAL.next === undefined, stored: !JSON.parse(localStorage.getItem(LS)).next }');
+  expect(mn.player === '2098-01-01' && mn.local, 'a paper date in the old settings did not move into the player: ' + JSON.stringify(mn));
+  await run("PLAYER.next = null; localStorage.setItem('crossingten.players', JSON.stringify(PLAYERS)); ''");
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){
