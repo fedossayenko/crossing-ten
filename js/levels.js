@@ -137,6 +137,12 @@ import { genInRow, genInRowSpan } from '../kinds/inrow.js';
 import { genHeights } from '../kinds/heights.js';
 import { genSwaps } from '../kinds/swaps.js';
 import { genFigRow } from '../kinds/figrow.js';
+import { genCubeTower } from '../kinds/cubetower.js';
+import { genCubeGlue } from '../kinds/cubeglue.js';
+import { genCubePaint } from '../kinds/cubepaint.js';
+import { genSymTable } from '../kinds/symtable.js';
+import { genNbrSum } from '../kinds/nbrsum.js';
+import { genComboTab } from '../kinds/combotab.js';
 import { genLiars } from '../kinds/liars.js';
 import { genGifts } from '../kinds/gifts.js';
 import { genLanterns } from '../kinds/lanterns.js';
@@ -342,6 +348,12 @@ export const LEVELS = [
   { id:347, op:'w', grp:'word', src:'ek-2021', d:3, eq:{ bg:'Плодове през седмицата', uk:'Фрукти впродовж тижня' }, desc:{ en:'A week’s pattern of fruit, added over two or three weeks', bg:'Седмичен ред на плодове, събран за две или три седмици', uk:'Тижневий розпорядок фруктів, доданий за два або три тижні' }, gen:genFruitWeek },
   { id:348, op:'w', grp:'word', src:'ek-2021', d:4, shapes:{ slow:4, fast:4 }, eq:{ bg:'Часовникът на Ясен', uk:'Годинник Ясена' }, desc:{ en:'Early by a watch that is slow — or fast — and a show that starts late: how long he waits', bg:'Рано по часовник, който изостава — или избързва — и представление със закъснение: колко чака', uk:'Рано за годинником, що відстає — або поспішає — і вистава із запізненням: скільки чекає' }, gen:genEarlyWatch },
   { id:349, op:'w', grp:'word', src:'ek-2025', d:2, eq:{ bg:'Колко са били?', uk:'Скільки було?' }, desc:{ en:'So many left after some were eaten: how many were there', bg:'Колко са останали след като част са изядени: колко са били', uk:'Скільки залишилось після того, як частину з’їли: скільки було' }, gen:genEaten },
+  { id:380, op:'w', grp:'count', src:'ek-2026', d:2, eq:{ bg:'Кули от кубчета', uk:'Вежі з кубиків' }, desc:{ en:'Towers of cubes whose colours alternate, seen from above: how many of one colour in all', bg:'Кули от кубчета с редуващи се цветове, гледани отгоре: колко са кубчетата от един цвят', uk:'Вежі з кубиків із чергуванням кольорів, вигляд зверху: скільки кубиків одного кольору' }, gen:genCubeTower },
+  { id:381, op:'w', grp:'geo', src:'ek-2023', d:3, eq:{ bg:'Капки лепило', uk:'Краплі клею' }, desc:{ en:'Cubes stuck together, a drop for every two that touch: how many drops', bg:'Залепени кубчета, по една капка за всеки две, които се допират: колко капки', uk:'Склеєні кубики, по краплі на кожні два, що торкаються: скільки крапель' }, gen:genCubeGlue },
+  { id:382, op:'w', grp:'geo', src:'ek-2019', d:3, eq:{ bg:'Най-малко боя', uk:'Найменше фарби' }, desc:{ en:'Solids of the same cubes: which one has the smallest surface to paint', bg:'Тела от еднакви кубчета: кое има най-малка повърхнина за боядисване', uk:'Тіла з однакових кубиків: яке має найменшу поверхню для фарбування' }, gen:genCubePaint },
+  { id:383, op:'w', grp:'find', src:'ek-2022', also:['ek-2024-2'], d:3, eq:{ bg:'Числа под фигурките', uk:'Числа під фігурками' }, desc:{ en:'Each figure hides a number, rows and columns add up: one figure, or a column', bg:'Всяка фигурка крие число, редове и колони се събират: една фигурка или колона', uk:'Кожна фігурка ховає число, рядки й стовпці додаються: одна фігурка або стовпець' }, gen:genSymTable },
+  { id:384, op:'w', grp:'find', src:'ek-2024', d:3, eq:{ bg:'Равни на съседите си', uk:'Рівні сусідам' }, desc:{ en:'Numbers joined by lines: how many equal the sum of those joined to them', bg:'Числа, свързани с линии: колко са равни на сбора на свързаните с тях', uk:'Числа, з’єднані лініями: скільки дорівнюють сумі з’єднаних з ними' }, gen:genNbrSum },
+  { id:385, op:'w', grp:'find', src:'ek-2026', d:3, eq:{ bg:'Под мастилото', uk:'Під чорнилом' }, desc:{ en:'A table of shapes and animals with ink over some squares: which pair is under the X', bg:'Таблица от фигури и животни с мастило върху някои квадратчета: коя двойка е под X', uk:'Таблиця з фігур і тварин, чорнило закриває клітинки: яка пара під X' }, gen:genComboTab },
   { id:110, op:'w', grp:'find', needs:[11], src:'mbg-winter-2020', d:4, eq:{ bg:'Изтритата цифра', uk:'Стерта цифра' }, desc:{ en:'A sum that went wrong when one digit was rubbed out', bg:'Сбор, развален от една изтрита цифра', uk:'Сума, зіпсована однією стертою цифрою' }, gen:genEraseDig },
   { id:81, op:'w', grp:'find', needs:[11], src:'mbg-winter-2024', d:3, eq:'88 − ■ = 88 − 11', desc:{ en:'The box read off an equality, then used', bg:'Числото в квадратчето се чете от равенството, после се използва', uk:'Число в квадратику читається з рівності, потім використовується' }, gen:genSameSub },
   { id:92, op:'w', grp:'find', needs:[30], src:'kms-2025', d:2, eq:{ bg:'Най-малкото умаляемо', uk:'Найменше зменшуване' }, desc:{ en:'The smallest a number can be, given a difference — 0 counts', bg:'Най-малкото число при дадена разлика — и 0 се брои', uk:'Найменше число за даною різницею — і 0 рахується' }, gen:genMinuend },
