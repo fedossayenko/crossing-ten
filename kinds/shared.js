@@ -125,7 +125,7 @@ function whyShared(q, full){
   return full && text ? text + sharedSvg(q) : text;
 }
 function whySharedText(q, full){
-  if(q.kind === 'shared' && q.shape === 2){
+  if(q.shape === 2){
     if(!full) return tr('Обиколи двата правоъгълника страна по страна. Кои страни има обиколката на ABEF, а на DCEF ги няма?',
       'Обійди обидва прямокутники сторона за стороною. Які сторони є в периметрі ABEF, а в периметрі DCEF їх немає?');
     return tr('обиколката на ABEF има всички страни на DCEF (AB е колкото DC) и още две — <b>AD</b> и <b>BC</b>',
@@ -133,20 +133,18 @@ function whySharedText(q, full){
       ' &nbsp;→&nbsp; AD + BC = ' + q.d + tr(', а AD е колкото BC', ', а AD така сама, як BC') + ': ' + q.d + ' = ' + q.a + ' + ' + q.a + ' &nbsp;→&nbsp; AD = <b>' +
       q.a + tr('</b> е страната на квадрата &nbsp;→&nbsp; ', '</b> — це сторона квадрата &nbsp;→&nbsp; ') + addUp(4, q.a);
   }
-  if(q.kind === 'shared' && q.shape === 1){
+  if(q.shape === 1){
     if(!full) return tr('Общата страна изчезва, а другите две се появяват.', 'Спільна сторона зникає, а дві інші з’являються.');
     return tr('страната на квадрата е <b>' + q.c + '</b> см &nbsp;→&nbsp; другите две страни на триъгълника са ',
       'сторона квадрата — <b>' + q.c + '</b> см &nbsp;→&nbsp; дві інші сторони трикутника разом — ') +
       q.p + ' − ' + q.c + ' = <b>' + (q.p - q.c) + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + q.c + ' + ' +
       (q.p - q.c) + ' = ' + q.ans;
   }
-  if(q.kind === 'shared'){
-    if(!full) return tr('Общата страна е в двете обиколки.', 'Спільна сторона входить в обидва периметри.');
-    return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + tr('</b>, а обиколката е ', '</b>, а периметр — ') + q.P +
-      ' &nbsp;→&nbsp; ' + (q.p1+q.p2) + ' − ' + q.P + ' = ' + (2*q.ans) +
-      tr(', това е общата страна <b>два пъти</b> (тя е и в двете малки обиколки, а в голямата я няма) &nbsp;→&nbsp; ',
-         ' — це спільна сторона, узята <b>двічі</b> (вона є в обох малих периметрах, а у великому її немає) &nbsp;→&nbsp; ') + (2*q.ans) + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans;
-  }
+  if(!full) return tr('Общата страна е в двете обиколки.', 'Спільна сторона входить в обидва периметри.');
+  return q.p1 + ' + ' + q.p2 + ' = <b>' + (q.p1+q.p2) + tr('</b>, а обиколката е ', '</b>, а периметр — ') + q.P +
+    ' &nbsp;→&nbsp; ' + (q.p1+q.p2) + ' − ' + q.P + ' = ' + (2*q.ans) +
+    tr(', това е общата страна <b>два пъти</b> (тя е и в двете малки обиколки, а в голямата я няма) &nbsp;→&nbsp; ',
+       ' — це спільна сторона, узята <b>двічі</b> (вона є в обох малих периметрах, а у великому її немає) &nbsp;→&nbsp; ') + (2*q.ans) + ' = ' + q.ans + ' + ' + q.ans + ' &nbsp;→&nbsp; ' + q.ans;
 }
 // Her misreading: the shared side found twice over and not halved.
 const slipShared = (q, parts) => q.shape === 0 && +parts[0] === 2*q.ans ? 'twice' : null;

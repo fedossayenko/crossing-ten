@@ -219,20 +219,20 @@ function whyMissingText(q, full){
     return run(0) + tr(', … растат с 1 → ', ', … зростають на 1 → ') + '● = ' + q.row[i] + '; &nbsp;' + run(1) + tr(', … растат с 1 → ', ', … зростають на 1 → ') + '■ = ' + q.row[j] +
       ' &nbsp;→&nbsp; ' + q.row[i] + ' + ' + q.row[j] + ' = ' + q.ans;
   }
-  if(q.kind === 'missing' && q.grows){
+  if(q.grows){
     if(!full) return tr('С колко расте всяко число? Виж как се мени и самата стъпка.', 'На скільки зростає кожне число? Подивись, як змінюється сам крок.');
     const st = q.seq.slice(1).map((v, i) => v - q.seq[i]);
     return tr('стъпките растат с по 1: ', 'кроки зростають на 1: ') + st.join(', ') + ' &nbsp;→&nbsp; ' +
       q.gaps.map(g => q.seq[g - 1] + ' + ' + st[g - 1] + ' = <b>' + q.seq[g] + '</b>').join(', ');
   }
-  if(q.kind === 'missing' && q.woven){
+  if(q.woven){
     if(!full) return tr('Погледни числата през едно — това са две редици.', 'Подивись на числа через одне — це два ряди.');
     const grow = tr(', … растат с <b>', ', … зростають на <b>');
     return q.runA.slice(0, 3).join(', ') + grow + q.dA + '</b> → ★ = ' + q.star +
       '; &nbsp;' + q.runB.slice(0, 2).join(', ') + grow + q.dB + '</b> → ● = ' + q.dot +
       ' &nbsp;→&nbsp; ' + q.star + ' − ' + q.dot + ' = ' + q.ans;
   }
-  if(q.kind === 'missing' && q.one){
+  if(q.one){
     if(!full) return tr('Виж как се получава всяко число от тези преди него.', 'Подивись, як кожне число виходить із попередніх.');
     const a = q.seq[q.at - 1], b = q.seq[q.at - 2];
     return q.rule === 0 ? tr('всяко е сборът на двете преди него', 'кожне — сума двох попередніх') + ' &nbsp;→&nbsp; ' + b + ' + ' + a + ' = ' + q.ans
@@ -240,16 +240,14 @@ function whyMissingText(q, full){
                           (q.seq[1] - q.seq[0]) + ' = ' + q.ans
          : tr('всяко е двойно по-голямо от предното', 'кожне вдвічі більше за попереднє') + ' &nbsp;→&nbsp; ' + a + ' + ' + a + ' = ' + q.ans;
   }
-  if(q.kind === 'missing'){
-    if(!full) return q.rule === 0 ? tr('Всяко число е сборът на двете преди него.', 'Кожне число — сума двох попередніх.')
-            : q.rule === 1 ? tr('Стъпката между числата е една и съща.', 'Крок між числами однаковий.')
-            : tr('Всяко число е двойно по-голямо от предното.', 'Кожне число вдвічі більше за попереднє.');
-    const dg = v => String(v).length === 1 ? tr('1 цифра', '1 цифру') : String(v).length + ' цифри';
-    const head = tr('липсват <b>', 'пропущено <b>') + q.hidden[0] + tr('</b> и <b>', '</b> і <b>') + q.hidden[1] + '</b> &nbsp;→&nbsp; ';
-    const has = tr(' има ', ' має ');
-    return head + (q.asksDigits
-      ? q.hidden[0] + has + dg(q.hidden[0]) + ', ' + q.hidden[1] + has + dg(q.hidden[1]) + ' &nbsp;→&nbsp; ' + q.ans
-      : q.hidden[0] + ' + ' + q.hidden[1] + ' = ' + q.ans);
-  }
+  if(!full) return q.rule === 0 ? tr('Всяко число е сборът на двете преди него.', 'Кожне число — сума двох попередніх.')
+          : q.rule === 1 ? tr('Стъпката между числата е една и съща.', 'Крок між числами однаковий.')
+          : tr('Всяко число е двойно по-голямо от предното.', 'Кожне число вдвічі більше за попереднє.');
+  const dg = v => String(v).length === 1 ? tr('1 цифра', '1 цифру') : String(v).length + ' цифри';
+  const head = tr('липсват <b>', 'пропущено <b>') + q.hidden[0] + tr('</b> и <b>', '</b> і <b>') + q.hidden[1] + '</b> &nbsp;→&nbsp; ';
+  const has = tr(' има ', ' має ');
+  return head + (q.asksDigits
+    ? q.hidden[0] + has + dg(q.hidden[0]) + ', ' + q.hidden[1] + has + dg(q.hidden[1]) + ' &nbsp;→&nbsp; ' + q.ans
+    : q.hidden[0] + ' + ' + q.hidden[1] + ' = ' + q.ans);
 }
 KIND.missing = { draw:drawMissing, eq:eqMissing, why:whyMissing };

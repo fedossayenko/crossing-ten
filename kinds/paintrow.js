@@ -72,8 +72,8 @@ const paintChain = ks => { let t = ks[0]; const parts = [String(t)];
   ks.slice(1).forEach(k => { if(k > 1){ parts.push(Array(k).fill(t).join(' + ') + ' = ' + t*k); t *= k; } }); return parts.join(' → '); };
 function eqPaintRow(q){
   if(q.shape === 'end') return tr('всеки път по 1 начин → ', 'щоразу 1 спосіб → ') + q.ans;
-  if(q.kind === 'paintrow' && q.fig) return paintChain([q.c, q.c - 1, q.c - 2]);
-  if(q.kind === 'paintrow') return paintChain([q.c].concat(Array(q.n - 1).fill(q.c - 1)));
+  if(q.fig) return paintChain([q.c, q.c - 1, q.c - 2]);
+  return paintChain([q.c].concat(Array(q.n - 1).fill(q.c - 1)));
 }
 function whyPaintRow(q, full){
   if(q.fig){

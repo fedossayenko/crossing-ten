@@ -235,15 +235,15 @@ function whyWeekday(q, full){
   return full && text ? text + weekdaySvg(q) : text;
 }
 function whyWeekdayText(q, full){
-  if(q.kind === 'weekday' && q.shape === 'back'){
+  if(q.shape === 'back'){
     if(!full) return tr('Един и същи ден от седмицата се повтаря през всеки седем дни: върви назад от последния.', 'Той самий день тижня повторюється кожні сім днів: іди назад від останнього.');
     return tr(q.day.nm + ' е на ', weekdayUk[q.day.nm].nm + ' — ') + backDates(q).join(', ') + tr(' (още седмица назад е предишният месец)', ' (ще тиждень назад — уже попередній місяць)') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'weekday' && q.shape === 'after'){
+  if(q.shape === 'after'){
     if(!full) return tr('Един и същи ден от седмицата се повтаря през всеки седем дни. Първият ден не се брои.', 'Той самий день тижня повторюється кожні сім днів. Перший день не рахується.');
     return tr(q.day.nm + ' е на ', weekdayUk[q.day.nm].nm + ' — ') + afterDates(q).join(', ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'weekday' && q.shape === 'bound'){
+  if(q.shape === 'bound'){
     if(!full) return tr('Колко цели седмици се събират, и какво остава след тях?',
       'Скільки цілих тижнів уміщається і що лишається після них?');
     const w = Math.floor(q.n / 7), r = q.n % 7, head = q.n + ' = ' + Array(w).fill(7).join(' + ') + ' + ' + r;
@@ -254,7 +254,7 @@ function whyWeekdayText(q, full){
       (r === 1 ? '1 день, що лишився, може ' : weekdayDays(r) + ', що лишилися, можуть ') +
       (q.most ? 'дати ще один такий день' : 'не дати жодного') + ' &nbsp;→&nbsp; ' + q.ans);
   }
-  if(q.kind === 'weekday' && q.shape === 'which'){
+  if(q.shape === 'which'){
     if(!full) return tr('Само остатъкът след цели седмици мести деня.', 'День зсуває лише остача після цілих тижнів.');
     const gap = q.n - 1, weeks = Math.floor(gap / 7), left = gap % 7;
     return tr('от първия до ' + q.n + '-ия ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + (weeks === 1 ? '1 цяла седмица' : weeks + ' цели седмици') + ' и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
@@ -264,7 +264,7 @@ function whyWeekdayText(q, full){
       ' і ще ' + left + ' &nbsp;→&nbsp; ' + weekdayUk[q.d1.nm].nm + ' + ' + left + ' = <b>' +
       weekdayUk[DAYS[q.ans - 1].nm].nm + '</b>, тобто номер ' + q.ans);
   }
-  if(q.kind === 'weekday' && q.shape === 'last'){
+  if(q.shape === 'last'){
     if(!full) return tr('Един и същи ден от седмицата се повтаря през всеки седем дни.',
       'Той самий день тижня повторюється кожні сім днів.');
     const all = [];
@@ -277,20 +277,18 @@ function whyWeekdayText(q, full){
       ' &nbsp;→&nbsp; ' + (u.f ? 'наступна була б ' : 'наступний був би ') + (q.ans + 7) + '-го, а в ' +
       weekdayMonUk[q.mon[0]][2] + ' ' + weekdayDays(q.mon[1]) + ' &nbsp;→&nbsp; ' + q.ans);
   }
-  if(q.kind === 'weekday'){
-    if(!full) return tr('Колко цели седмици се събират в толкова дни?', 'Скільки цілих тижнів уміщається в стільки днів?');
-    const u = weekdayUk[q.day.nm];
-    if(LANG === 'uk') return weekdayDays(q.n) + ' — це <b>' + q.q + ' ' + ukWord(q.q, 'тиждень', 'тижні', 'тижнів') +
-      '</b> і ще ' + weekdayDays(q.r) + ' &nbsp;→&nbsp; у кожному тижні є ' + u.po + ', отже ' + q.q + '; ' +
-      (q.r === 1 ? 'якщо й останній день — ' + u.nm
-                 : 'якщо й один із ' + q.r + ' днів, що лишилися, — ' + u.nm) + ' → ' + (q.q + 1);
-    const weeks = q.q === 1 ? '1 седмица' : q.q + ' седмици';
-    const left = q.r === 1 ? 'още 1 ден' : 'още ' + q.r + ' дни';
-    const extra = q.r === 1 ? 'ако и последният ден е ' + q.day.nm
-                            : 'ако и някой от останалите ' + q.r + ' дни е ' + q.day.nm;
-    return q.n + ' дни са <b>' + weeks + '</b> и ' + left + ' &nbsp;→&nbsp; във всяка седмица има ' +
-      (q.day.f ? 'по една ' : 'по един ') + q.day.nm + ', значи ' + q.q + '; ' + extra + ' → ' + (q.q + 1);
-  }
+  if(!full) return tr('Колко цели седмици се събират в толкова дни?', 'Скільки цілих тижнів уміщається в стільки днів?');
+  const u = weekdayUk[q.day.nm];
+  if(LANG === 'uk') return weekdayDays(q.n) + ' — це <b>' + q.q + ' ' + ukWord(q.q, 'тиждень', 'тижні', 'тижнів') +
+    '</b> і ще ' + weekdayDays(q.r) + ' &nbsp;→&nbsp; у кожному тижні є ' + u.po + ', отже ' + q.q + '; ' +
+    (q.r === 1 ? 'якщо й останній день — ' + u.nm
+               : 'якщо й один із ' + q.r + ' днів, що лишилися, — ' + u.nm) + ' → ' + (q.q + 1);
+  const weeks = q.q === 1 ? '1 седмица' : q.q + ' седмици';
+  const left = q.r === 1 ? 'още 1 ден' : 'още ' + q.r + ' дни';
+  const extra = q.r === 1 ? 'ако и последният ден е ' + q.day.nm
+                          : 'ако и някой от останалите ' + q.r + ' дни е ' + q.day.nm;
+  return q.n + ' дни са <b>' + weeks + '</b> и ' + left + ' &nbsp;→&nbsp; във всяка седмица има ' +
+    (q.day.f ? 'по една ' : 'по един ') + q.day.nm + ', значи ' + q.q + '; ' + extra + ' → ' + (q.q + 1);
 }
 // The days after the 1st for the weekdays among them (191: «30», March, 2026-11-01); the 1st counted when it is that
 // weekday itself (191: «5» for the Mondays of April after a Monday 1st)

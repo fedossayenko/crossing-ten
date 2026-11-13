@@ -89,24 +89,22 @@ function whyStep(q, full){
   return full && text ? text + stepWalkSvg(q) : text;
 }
 function whyStepText(q, full){
-  if(q.kind === 'step'){
-    if(!full) return q.shape === 1 ? tr('Изрязването мести страните, но не ги скъсява.', 'Вирізання пересуває сторони, але не робить їх коротшими.')
-                                   : tr('Двете неозначени страни се получават от означените.', 'Дві непозначені сторони можна знайти з позначених.');
-    const missing = tr('неозначените са ' + (q.W - q.w) + ' и ' + q.h, 'непозначені — це ' + (q.W - q.w) + ' і ' + q.h);
-    if(q.shape === 0){
-      const groups = {};
-      q.sides.forEach(v => { groups[v] = (groups[v] || 0) + 1; });
-      const pairs = Object.keys(groups).filter(v => groups[v] > 1)
-        .map(v => groups[v] + ' по ' + v).join(', ');
-      return missing + tr(' &nbsp;→&nbsp; страните са <b>', ' &nbsp;→&nbsp; сторони: <b>') + q.sides.slice().sort((a, b) => b - a).join(', ') +
-        '</b> &nbsp;→&nbsp; ' + pairs + ' &nbsp;→&nbsp; ' + q.ans;
-    }
-    if(q.shape === 1) return tr('страните се местят, но обиколката е като на целия правоъгълник &nbsp;→&nbsp; ',
-                                'сторони пересуваються, але периметр такий самий, як у цілого прямокутника &nbsp;→&nbsp; ') +
-      q.W + ' + ' + q.H + ' = ' + (q.W + q.H) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans;
-    return tr('изправената страна на целия правоъгълник е ' + q.H + ', а долната ѝ част е ' + (q.H - q.h),
-              'вертикальна сторона цілого прямокутника — ' + q.H + ', а її нижня частина — ' + (q.H - q.h)) +
-      ' &nbsp;→&nbsp; ' + q.H + ' − ' + (q.H - q.h) + ' = ' + q.ans;
+  if(!full) return q.shape === 1 ? tr('Изрязването мести страните, но не ги скъсява.', 'Вирізання пересуває сторони, але не робить їх коротшими.')
+                                 : tr('Двете неозначени страни се получават от означените.', 'Дві непозначені сторони можна знайти з позначених.');
+  const missing = tr('неозначените са ' + (q.W - q.w) + ' и ' + q.h, 'непозначені — це ' + (q.W - q.w) + ' і ' + q.h);
+  if(q.shape === 0){
+    const groups = {};
+    q.sides.forEach(v => { groups[v] = (groups[v] || 0) + 1; });
+    const pairs = Object.keys(groups).filter(v => groups[v] > 1)
+      .map(v => groups[v] + ' по ' + v).join(', ');
+    return missing + tr(' &nbsp;→&nbsp; страните са <b>', ' &nbsp;→&nbsp; сторони: <b>') + q.sides.slice().sort((a, b) => b - a).join(', ') +
+      '</b> &nbsp;→&nbsp; ' + pairs + ' &nbsp;→&nbsp; ' + q.ans;
   }
+  if(q.shape === 1) return tr('страните се местят, но обиколката е като на целия правоъгълник &nbsp;→&nbsp; ',
+                              'сторони пересуваються, але периметр такий самий, як у цілого прямокутника &nbsp;→&nbsp; ') +
+    q.W + ' + ' + q.H + ' = ' + (q.W + q.H) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans;
+  return tr('изправената страна на целия правоъгълник е ' + q.H + ', а долната ѝ част е ' + (q.H - q.h),
+            'вертикальна сторона цілого прямокутника — ' + q.H + ', а її нижня частина — ' + (q.H - q.h)) +
+    ' &nbsp;→&nbsp; ' + q.H + ' − ' + (q.H - q.h) + ' = ' + q.ans;
 }
 KIND.step = { draw:drawStep, eq:eqStep, why:whyStep };
