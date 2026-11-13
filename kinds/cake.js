@@ -2,7 +2,7 @@
 
 // Кенгуру 2026, 2 клас, задача 11: a cake cut with 3 parallel cuts, then with 4 more across them: the first cuts make 4 strips, each
 // strip is cut by the 4 others into 5 pieces, 5 + 5 + 5 + 5 = 20. (The paper's picture shows the knife and the dashed lines.)
-import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, tr, ukN } from '../js/core.js';
 export function genCake(){
   for(;;){
     const a = 2 + rnd(4), b = 2 + rnd(4);
@@ -29,6 +29,6 @@ function cakeSvg(q, full){
 function whyCake(q, full){
   if(!full) return tr('Нарисувай тортата отгоре. Първите разрези я режат на ленти. Колко са лентите?', 'Намалюй торт зверху. Перші розрізи ріжуть його на смуги. Скільки смуг?') + cakeSvg(q, false);
   return cakeSvg(q, true) + tr(q.a + ' успоредни разреза правят <b>' + (q.a + 1) + '</b> ленти. Останалите ' + q.b + ' разреза режат всяка лента на <b>' + (q.b + 1) + '</b> парчета: ' + rows(q).join(' + ') + ' = <b>' + q.ans + '</b>',
-    q.a + ' паралельних розрізів дають <b>' + (q.a + 1) + '</b> смуг. Решта ' + q.b + ' розрізів ріжуть кожну смугу на <b>' + (q.b + 1) + '</b> шматків: ' + rows(q).join(' + ') + ' = <b>' + q.ans + '</b>');
+    ukN(q.a, 'паралельний розріз', 'паралельні розрізи', 'паралельних розрізів') + ' дають <b>' + ukN(q.a + 1, 'смугу', 'смуги', 'смуг') + '</b>. Решта ' + ukN(q.b, 'розріз', 'розрізи', 'розрізів') + ' ріжуть кожну смугу на <b>' + ukN(q.b + 1, 'шматок', 'шматки', 'шматків') + '</b>: ' + rows(q).join(' + ') + ' = <b>' + q.ans + '</b>');
 }
 KIND.cake = { draw:drawCake, eq:eqCake, why:whyCake };

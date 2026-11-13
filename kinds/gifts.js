@@ -6,10 +6,10 @@
 // for the constructor), so it is on 2 or 3: with the ball on 3 the calculator is on 4 and the constructor on 5 (the puzzle takes 1 or
 // 2), with the ball on 2 the calculator is on 3. Every shelf can hold the puzzle except 3 — answer 3. Every arrangement is tried here.
 import { KIND, SLOT, shuffle, tr } from '../js/core.js';
-// [Bulgarian in a list, Bulgarian as the subject, Ukrainian accusative, Ukrainian nominative, Ukrainian genitive, the ending of «поставен»]
+// [Bulgarian in a list, Bulgarian as the subject, Ukrainian accusative, Ukrainian nominative, Ukrainian instrumental, the ending of «поставен»]
 /** @type {[string, string, string, string, string, string][]} */
-const GF = [['книгата', 'книгата', 'книжку', 'книжка', 'книжки', 'а'], ['топката', 'топката', 'м’яч', 'м’яч', 'м’яча', 'а'], ['конструктора', 'конструкторът', 'конструктор', 'конструктор', 'конструктора', ''],
-  ['пъзела', 'пъзелът', 'пазл', 'пазл', 'пазла', ''], ['калкулатора', 'калкулаторът', 'калькулятор', 'калькулятор', 'калькулятора', ''], ['часовника', 'часовникът', 'годинник', 'годинник', 'годинника', ''], ['робота', 'роботът', 'робот', 'робот', 'робота', '']];
+const GF = [['книгата', 'книгата', 'книжку', 'книжка', 'книжкою', 'а'], ['топката', 'топката', 'м’яч', 'м’яч', 'м’ячем', 'а'], ['конструктора', 'конструкторът', 'конструктор', 'конструктор', 'конструктором', ''],
+  ['пъзела', 'пъзелът', 'пазл', 'пазл', 'пазлом', ''], ['калкулатора', 'калкулаторът', 'калькулятор', 'калькулятор', 'калькулятором', ''], ['часовника', 'часовникът', 'годинник', 'годинник', 'годинником', ''], ['робота', 'роботът', 'робот', 'робот', 'роботом', '']];
 /** every way to put the five things on shelves 1–5 (index = shelf − 1, bottom first) that keeps the clues */
 export function giftFits(q){
   const out = [], [A, B, C, D, E] = q.roles;
@@ -41,9 +41,9 @@ function drawGifts(q){
   const bgList = list.map(i => GF[i][0]).join(', ').replace(/, ([^,]*)$/, ' и $1'), ukList = list.map(i => GF[i][2]).join(', ').replace(/, ([^,]*)$/, ' і $1');
   const cap = s => s[0].toUpperCase() + s.slice(1);
   const bgChain = q.down ? cap(GF[B][1]) + ' е по-ниско от ' + GF[A][0] + ' и по-високо от ' + GF[C][0] : cap(GF[B][1]) + ' е по-високо от ' + GF[A][0] + ' и по-ниско от ' + GF[C][0];
-  const ukChain = q.down ? cap(GF[B][3]) + ' нижче за ' + GF[A][4] + ' і вище за ' + GF[C][4] : cap(GF[B][3]) + ' вище за ' + GF[A][4] + ' і нижче за ' + GF[C][4];
+  const ukChain = q.down ? cap(GF[B][3]) + ' нижче за ' + GF[A][2] + ' і вище за ' + GF[C][2] : cap(GF[B][3]) + ' вище за ' + GF[A][2] + ' і нижче за ' + GF[C][2];
   const bg = 'Стоян подредил ' + bgList + ', които получил от Дядо Коледа, по един подарък на всяко от петте рафтчета на шкафа вдясно. Рафтчетата са номерирани отдолу нагоре. ' + bgChain + ', а ' + GF[D][1] + ' е непосредствено ' + (q.above ? 'над ' : 'под ') + GF[B][0] + '. ';
-  const uk = 'Стоян розклав ' + ukList + ', які отримав від Діда Мороза, по одному подарунку на кожну з п’яти поличок шафи праворуч. Полички пронумеровані знизу вгору. ' + ukChain + ', а ' + GF[D][3] + ' лежить безпосередньо ' + (q.above ? 'над ' : 'під ') + GF[B][2] + '. ';
+  const uk = 'Стоян розклав ' + ukList + ', які отримав від Діда Мороза, по одному подарунку на кожну з п’яти поличок шафи праворуч. Полички пронумеровані знизу вгору. ' + ukChain + ', а ' + GF[D][3] + ' лежить безпосередньо ' + (q.above ? 'над ' : 'під ') + GF[B][4] + '. ';
   return '<div class="ask">' + shelfSvg() + tr(bg + '<b>Кой е номерът на рафтчето, за което можем да бъдем сигурни, че на него не е поставен' + GF[E][5] + ' ' + GF[E][1] + '?</b>',
     uk + '<b>Який номер має полиця, про яку можна напевно сказати, що на ній не лежить ' + GF[E][3] + '?</b>') + '</div><div class="line xl">' + SLOT + '</div>';
 }

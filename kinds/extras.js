@@ -6,9 +6,9 @@
 // every bullseye gives 2 more, 20 thrown in all — 20 − 10 = 10 came from bullseyes, 2 at a time: 2, 4, 6, 8, 10, five.
 // 2022, задача 26 (shape 'farm'): cows and hens have 16 legs; 2 animals sold, heads and legs left 12 — a cow is 1 + 4 = 5, a hen
 // 1 + 2 = 3; 12 is only 3 + 3 + 3 + 3, four hens were left, the two sold were cows (16 − 8 = 8 legs), so four hens before.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, rnd, tr, trN, ukPl } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
-const darts = n => ukN(n, 'дротик', 'дротики', 'дротиків').replace(/^\d+/, num(n));
+const darts = n => ukPl(n, 'дротик', 'дротики', 'дротиків');
 // who plays darts: Bulgarian name, began, got, hit, threw; Ukrainian name, began, got, hit, threw
 /** @type {string[][]} */
 const DARTERS = [['Андрей', 'започнал', 'получавал', 'улучил', 'хвърлил', 'Андрій', 'розпочав', 'отримував', 'влучив', 'кинув'],
@@ -75,7 +75,7 @@ function whyExtras(q, full){
   }
   if(!full) return tr('Пресметни колко са главата и краката на една крава заедно, и колко на една кокошка. От такива числа се събира остатъкът.', 'Порахуй, скільки разом голова й ноги однієї корови, і скільки однієї курки. З таких чисел складається решта.');
   const f = farmLeft(q), sold = q.L - 4*f.cr - 2*f.hr, soldLegs = [].concat(Array(q.x).fill(4), Array(2 - q.x).fill(2)).join(' + ');
-  return tr('крава 1 + 4 = 5, кокошка 1 + 2 = 3. Останали: ', 'корова 1 + 4 = 5, курка 1 + 2 = 3. Лишилися: ') + f.sum + ' = ' + q.R + ' &nbsp;→&nbsp; ' + f.cr + tr(' крави и ', ' корів і ') + f.hr + tr(' кокошки. Продадените са с ', ' курей. Продані мають ') +
+  return tr('крава 1 + 4 = 5, кокошка 1 + 2 = 3. Останали: ', 'корова 1 + 4 = 5, курка 1 + 2 = 3. Лишилися: ') + f.sum + ' = ' + q.R + ' &nbsp;→&nbsp; ' + trN(f.cr, 'крава', 'крави', 'корова', 'корови', 'корів') + tr(' и ', ' і ') + trN(f.hr, 'кокошка', 'кокошки', 'курка', 'курки', 'курей') + tr('. Продадените са с ', '. Продані мають ') +
     sold + tr(' крака: ', ' ніг: ') + soldLegs + ' &nbsp;→&nbsp; ' + tr('кокошки преди: ', 'курей до продажу: ') + f.hr + ' + ' + (2 - q.x) + ' = ' + q.ans;
 }
 KIND.extras = { draw:drawExtras, eq:eqExtras, why:whyExtras };

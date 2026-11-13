@@ -7,7 +7,7 @@
 // 2019, задача 8 (shape 'halves'): two apples cost 60 цента together, two pears 80 — a pear and an apple? Each pair
 // splits in two equal halves: 30 and 40, and one of each is 30 + 40 = 70. 2019, задача 2 (shape 'rest'): both together
 // 60 kg, one of them 52 — the other is 60 − 52 = 8.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, rnd, shuffle, tr, ukPl } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
 // shape 'one': [Bulgarian, Ukrainian], the question's words are built around the totals
 /** @type {((a: number, b: number) => [string, string])[]} */
@@ -19,17 +19,20 @@ const ONE = [
   (A, B) => ['Двете торби с ябълки тежат еднакво. Кошницата и една торба тежат общо ' + num(A) + ' кг, а кошницата и двете торби — ' + num(B) + ' кг. <b>Колко кг тежи кошницата?</b>',
     'Обидві торби з яблуками важать однаково. Кошик і одна торба важать разом ' + num(A) + ' кг, а кошик і обидві торби — ' + num(B) + ' кг. <b>Скільки кг важить кошик?</b>'],
 ];
+// shape 'one', the same scenarios in the hints: [Bulgarian «едно малко», Bulgarian «голямото», Ukrainian «одне маленьке», Ukrainian «велике»]
+/** @type {[string, string, string, string][]} */
+const ONE_W = [['едно малко', 'голямото', 'одне маленьке', 'велике'], ['едно кученце', 'кучето', 'одне цуценя', 'пес'], ['една торба', 'кошницата', 'одна торба', 'кошик']];
 // shape 'halves': two of a fruit, Bulgarian two / one, Ukrainian two / one
 /** @type {[string, string, string, string][]} */
 const FRUIT = [['две ябълки', 'една ябълка', 'два яблука', 'одне яблуко'], ['две круши', 'една круша', 'дві груші', 'одна груша'],
                ['две сливи', 'една слива', 'дві сливи', 'одна слива'], ['две праскови', 'една праскова', 'два персики', 'один персик']];
 // shape 'mix': what is bought — the first one's name with 2 and 3 of it, the second's with 2, 3 and 4 (Bulgarian, Ukrainian),
 // and how it is said once alone
-/** @type {{ one: [string, string], two: [string, string], first: Record<number, [string, string]>, second: Record<number, [string, string]> }[]} */
+/** @type {{ one: [string, string], two: [string, string], d1: [string, string], d2: [string, string], first: Record<number, [string, string]>, second: Record<number, [string, string]> }[]} */
 const BUY = [
-  { one: ['пица', 'піца'], two: ['сок', 'сік'],
+  { one: ['пица', 'піца'], two: ['сок', 'сік'], d1: ['пицата', 'піци'], d2: ['един сок', 'одного соку'],
     first: { 2: ['две пици', 'дві піци'], 3: ['три пици', 'три піци'] }, second: { 2: ['два сока', 'два соки'], 3: ['три сока', 'три соки'], 4: ['четири сока', 'чотири соки'] } },
-  { one: ['сладолед', 'морозиво'], two: ['вафла', 'вафля'],
+  { one: ['сладолед', 'морозиво'], two: ['вафла', 'вафля'], d1: ['сладоледа', 'морозива'], d2: ['една вафла', 'однієї вафлі'],
     first: { 2: ['два сладоледа', 'два морозива'], 3: ['три сладоледа', 'три морозива'] }, second: { 2: ['две вафли', 'дві вафлі'], 3: ['три вафли', 'три вафлі'], 4: ['четири вафли', 'чотири вафлі'] } },
 ];
 // shape 'rest': who is together — [together, the one given, the other asked, Ukrainian the same]
@@ -51,9 +54,10 @@ export function genTwoTot(){
   }
   if(shape === 'mix'){
     const sc = rnd(BUY.length), j = 1 + rnd(5), p = 4 + rnd(12), m = 2 + rnd(2), n = 2 + rnd(3);
-    return {kind:'twotot', shape, sc, p, j, m, n, A: p + j, B: p + 2*j, traps:[p + j + j + j, p + j + p + j + j], ans: m === 2 ? 2*p + n*j : 3*p + n*j};
+    const ans = m === 2 ? 2*p + n*j : 3*p + n*j;
+    return {kind:'twotot', shape, sc, p, j, m, n, A: p + j, B: p + 2*j, traps:[p + j + j + j, p + j + p + j + j].filter(v => v !== ans), ans};
   }
-  const sc = rnd(REST.length), T = 20 + rnd(81), a = 3 + rnd(Math.min(40, T - 10));
+  const sc = rnd(REST.length), T = 20 + rnd(81), a = 3 + rnd(Math.min(40, T - 10, sc < 2 ? ((T - 1) >> 1) - 2 : 99));   // mother and dog are the heavier one: the one asked is under half
   return {kind:'twotot', shape:'rest', sc, T, a: T - a, ans: a, traps:[T + (T - a)]};
 }
 function drawTwoTot(q){
@@ -62,7 +66,7 @@ function drawTwoTot(q){
   else if(q.shape === 'halves'){
     const [x, y] = q.it.map(i => FRUIT[i]);
     ask = tr(x[0][0].toUpperCase() + x[0].slice(1) + ' заедно струват ' + num(q.A) + ' цента, а ' + y[0] + ' заедно — ' + num(q.B) + ' цента. <b>Колко цента струват заедно ' + y[1] + ' и ' + x[1] + '?</b>',
-      x[2][0].toUpperCase() + x[2].slice(1) + ' разом коштують ' + num(q.A) + ' центів, а ' + y[2] + ' разом — ' + num(q.B) + ' центів. <b>Скільки центів коштують разом ' + y[3] + ' і ' + x[3] + '?</b>');
+      x[2][0].toUpperCase() + x[2].slice(1) + ' разом коштують ' + ukPl(q.A, 'цент', 'центи', 'центів') + ', а ' + y[2] + ' разом — ' + ukPl(q.B, 'цент', 'центи', 'центів') + '. <b>Скільки центів коштують разом ' + y[3] + ' і ' + x[3] + '?</b>');
   } else if(q.shape === 'mix'){
     const b = BUY[q.sc];
     ask = tr(b.one[0][0].toUpperCase() + b.one[0].slice(1) + ' и ' + b.two[0] + ' струват ' + num(q.A) + ' евро, а ' + b.one[0] + ' и ' + b.second[2][0] + ' — ' + num(q.B) + ' евро. <b>Колко евро струват ' + b.first[q.m][0] + ' и ' + b.second[q.n][0] + '?</b>',
@@ -82,15 +86,17 @@ function eqTwoTot(q){
 }
 function whyTwoTot(q, full){
   if(q.shape === 'one'){
-    if(!full) return tr('Сравни двата сбора: с какво са различни? Точно толкова тежи едно малко.', 'Порівняй дві суми: чим вони різні? Рівно стільки важить одне маленьке.');
-    return q.B + ' − ' + q.A + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('толкова тежи едно малко, значи голямото е ', 'стільки важить одне маленьке, отже велике — ') + q.A + ' − ' + q.s + ' = ' + q.ans;
+    const w = ONE_W[q.sc];
+    if(!full) return tr('Сравни двата сбора: с какво са различни? Точно толкова тежи ' + w[0] + '.', 'Порівняй дві суми: чим вони різні? Рівно стільки важить ' + w[2] + '.');
+    return q.B + ' − ' + q.A + ' = <b>' + q.s + '</b> &nbsp;→&nbsp; ' + tr('толкова тежи ' + w[0] + ', значи ' + w[1] + ' е ', 'стільки важить ' + w[2] + ', отже ' + w[3] + ' — ') + q.A + ' − ' + q.s + ' = ' + q.ans;
   }
   if(q.shape === 'halves'){
     if(!full) return tr('Две еднакви струват заедно колкото две половини. Колко струва една?', 'Дві однакові коштують разом стільки, скільки дві половини. Скільки коштує одна?');
     return q.A + ' = ' + q.a + ' + ' + q.a + ', ' + q.B + ' = ' + q.b + ' + ' + q.b + ' &nbsp;→&nbsp; ' + q.a + ' + ' + q.b + ' = ' + q.ans;
   }
   if(q.shape === 'mix'){
-    if(!full) return tr('Сравни първите две цени: с какво се различават? Това е цената на един сок. После върви към пицата.', 'Порівняй перші дві ціни: чим вони різні? Це ціна однієї речі. Далі йди до іншої.');
+    const b = BUY[q.sc];
+    if(!full) return tr('Сравни първите две цени: с какво се различават? Това е цената на ' + b.d2[0] + '. После върви към цената на ' + b.d1[0] + '.', 'Порівняй перші дві ціни: чим вони різні? Це ціна ' + b.d2[1] + '. Далі йди до ціни ' + b.d1[1] + '.');
     return q.B + ' − ' + q.A + ' = <b>' + q.j + '</b> &nbsp;→&nbsp; ' + q.A + ' − ' + q.j + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; ' + sumList(q.m, q.p) + ' + ' + sumList(q.n, q.j) + ' = ' + q.ans;
   }
   if(!full) return tr('Заедно са толкова, а едното е известно. Какво остава за другото?', 'Разом стільки, а одне відоме. Що лишається для іншого?');

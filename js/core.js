@@ -23,6 +23,9 @@ export const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
 export const UK_PLURAL = new Intl.PluralRules('uk');   // one for all: building one per word was most of the checks' time
 export const ukWord = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);   // the word alone, without the number
 export const ukN = (n, one, few, many) => n + ' ' + ukWord(n, one, few, many);
+// the same with the number in the page's number style (a .num span), and a count in both languages: 1 ябълка, 2 ябълки, 0 банана
+export const ukPl = (n, one, few, many) => numSpan(n) + ' ' + ukWord(n, one, few, many);
+export const trN = (n, bgOne, bgMany, ukOne, ukFew, ukMany) => tr(n + ' ' + (n === 1 ? bgOne : bgMany), ukN(n, ukOne, ukFew, ukMany));
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 export const SLOT = '<span class="slot" id="slot0"></span>';

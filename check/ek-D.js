@@ -24,6 +24,10 @@
   // the question's own answer and wording and not a seed replay of these exact ten numbers: the generator is held to the key by the brute force below
   {
     const q = {kind:'eqrows', shape:'swap', top:[5, 7, 11, 15, 17], bot:[1, 6, 8, 14, 16], gap:10, half:5, pair:[11, 6], ans:11};
+    // the generator's own solver, run on the printed rows, must find the paper's swap (11 up, 6 down) and nothing else
+    const solved = Q.eqSwapOf(q.top, q.bot);
+    if(!solved || ['top', 'bot', 'gap', 'half', 'pair', 'ans'].some(f => JSON.stringify(solved[f]) !== JSON.stringify(q[f]))) throw new Error('Кенгуру 2026 task 23: the level 341 solver gives ' + JSON.stringify(solved) + ' for the printed rows, not ' + JSON.stringify(q));
+    if(String(Q.answers(solved)) !== '11') throw new Error('Кенгуру 2026 task 23: the solver answers ' + Q.answers(solved) + ', the paper says 11');
     if(String(Q.answers(q)) !== '11' || !Q.accepts(q, ['11']) || Q.accepts(q, ['6'])) throw new Error('Кенгуру 2026 task 23: the key 11 is not the answer');
     if(strip(Q.drawQ(q)).indexOf('Койжетонотгорнияредтрябвадапремести') < 0) throw new Error('Кенгуру 2026 task 23 is not drawn as printed');
     if(!Q.LEVELS.find(l => l.id === 341).papers.includes('ek-2026-2')) throw new Error('level 341 is not tagged ek-2026-2');

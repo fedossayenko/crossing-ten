@@ -36,13 +36,18 @@ export function swapPairs(top, bot){
   for(const t of top) for(const b of bot) if(t - b === gap / 2) out.push([t, b]);
   return out;
 }
+// the question for two rows, or null when there is not exactly one swap that makes them equal
+export function eqSwapOf(top, bot){
+  const p = swapPairs(top, bot);
+  if(p.length !== 1) return null;
+  const gap = sum(top) - sum(bot);
+  return {kind:'eqrows', shape:'swap', top, bot, gap, half: gap / 2, pair: p[0], traps:[gap / 2, p[0][1]], ans: p[0][0]};
+}
 export function genEqSwap(){
   for(;;){
     const all = shuffle([...Array(20).keys()].map(v => v + 1)).slice(0, 10), top = all.slice(0, 5).sort((a, b) => a - b), bot = all.slice(5).sort((a, b) => a - b);
-    const p = swapPairs(top, bot);
-    if(p.length !== 1) continue;
-    const gap = sum(top) - sum(bot);
-    return {kind:'eqrows', shape:'swap', top, bot, gap, half: gap / 2, pair: p[0], traps:[gap / 2, p[0][1]], ans: p[0][0]};
+    const q = eqSwapOf(top, bot);
+    if(q) return q;
   }
 }
 const chips = a => a.map(v => '<span class="circle">' + v + '</span>').join(' ');

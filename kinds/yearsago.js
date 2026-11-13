@@ -3,11 +3,12 @@
 
 // Кенгуру 2025, задача 20: three years ago Ани and Боби together were 6; Ани is 7 now. Now together 6 + 3 + 3 = 12,
 // and 12 − 7 = 5. Taking only one lot of 3 years (6 + 3 − 7 = 2) is the trap.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, rnd, tr, ukPl } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
-const yaPairs = [['Ани', 'Боби', 'Ані', 'Бобі'], ['Мая', 'Ники', 'Мая', 'Ніки'], ['Ема', 'Васко', 'Ема', 'Васко']];
+// Bulgarian first, second; Ukrainian first, second (nominative); then the genitive of both and the dative of the second (the asked one)
+const yaPairs = [['Ани', 'Боби', 'Ані', 'Бобі', 'Ані', 'Бобі', 'Бобі'], ['Мая', 'Ники', 'Мая', 'Ніка', 'Маї', 'Ніки', 'Ніці'], ['Ема', 'Васко', 'Ема', 'Васько', 'Еми', 'Васька', 'Васькові']];
 const yaYears = n => n === 1 ? 'година' : 'години';
-const yaUk = n => ukN(n, 'рік', 'роки', 'років').replace(/^(\d+)/, num('$1'));
+const yaUk = n => ukPl(n, 'рік', 'роки', 'років');
 export function genYearsAgo(){
   for(;;){
     const ago = Math.random() < 0.7, y = 2 + rnd(4), nm = rnd(yaPairs.length), a = 4 + rnd(8), b = 3 + rnd(9);
@@ -18,11 +19,11 @@ export function genYearsAgo(){
   }
 }
 function drawYearsAgo(q){
-  const [x, z, ux, uz] = yaPairs[q.nm];
+  const [x, z, ux, , gx, gz, dz] = yaPairs[q.nm];
   return '<div class="ask">' + tr((q.ago ? 'Преди ' + num(q.y) + ' ' + yaYears(q.y) + ' сборът от годините на ' + x + ' и ' + z + ' е бил ' + num(q.T) : 'След ' + num(q.y) + ' ' + yaYears(q.y) + ' сборът от годините на ' + x + ' и ' + z + ' ще бъде ' + num(q.T)) +
       '. Сега ' + x + ' е на ' + num(q.a) + ' ' + yaYears(q.a) + '. <b>На колко години е ' + z + ' сега?</b>',
-    (q.ago ? yaUk(q.y) + ' тому сума років ' + ux + ' і ' + uz + ' дорівнювала ' + num(q.T) : 'Через ' + yaUk(q.y) + ' сума років ' + ux + ' і ' + uz + ' дорівнюватиме ' + num(q.T)) +
-      '. Зараз ' + ux + ' ' + yaUk(q.a) + '. <b>Скільки років ' + uz + ' зараз?</b>') + '</div>' +
+    (q.ago ? yaUk(q.y) + ' тому сума років ' + gx + ' і ' + gz + ' дорівнювала ' + num(q.T) : 'Через ' + yaUk(q.y) + ' сума років ' + gx + ' і ' + gz + ' дорівнюватиме ' + num(q.T)) +
+      '. Зараз ' + ux + ' ' + yaUk(q.a) + '. <b>Скільки років зараз ' + dz + '?</b>') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqYearsAgo(q){

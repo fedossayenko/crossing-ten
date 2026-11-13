@@ -17,7 +17,8 @@ const SIBS_ANIMALS = [
   ['кучка', 'кученца', 'мъжките кученца', 'женските кученца', 'собака', 'цуценят', 'цуценят-хлопчиків', 'цуценят-дівчаток'],
   ['зайка', 'зайчета', 'мъжките зайчета', 'женските зайчета', 'зайчиха', 'зайченят', 'зайченят-хлопчиків', 'зайченят-дівчаток'],
 ];
-const SIBS_PAIRS = [['Алберт', 'Стела', 'Альберт', 'Стела'], ['Макс', 'Мила', 'Макс', 'Міла'], ['Тео', 'Нина', 'Тео', 'Ніна']];
+// Bulgarian boy, girl; Ukrainian boy, girl; and the same two in the Ukrainian genitive (the hints: «брати Міли», «у Міли»)
+const SIBS_PAIRS = [['Алберт', 'Стела', 'Альберт', 'Стела', 'Альберта', 'Стели'], ['Макс', 'Мила', 'Макс', 'Міла', 'Макса', 'Міли'], ['Тео', 'Нина', 'Тео', 'Ніна', 'Тео', 'Ніни']];
 // shape 'brothers': the girl has twice as many brothers as the boy (always 2 boys, the rest are girls);
 // shape 'sisters': the boy has twice as many sisters as the girl has brothers (the young are a multiple of 3)
 export function genSibs(){
@@ -42,7 +43,7 @@ function eqSibs(q){
   return tr('момчета ', 'хлопчиків ') + q.b + ', ' + tr('момичета ', 'дівчат ') + q.n + ' − ' + q.b + ' = ' + q.g + ', ' + q.g + ' − 1 = ' + q.ans;
 }
 function whySibs(q, full){
-  const [ab, sb, uab, usb] = SIBS_PAIRS[q.nm];
+  const [ab, sb, , , uab, usb] = SIBS_PAIRS[q.nm];   // the Ukrainian names here are all genitive
   if(!full) return q.shape === 'brothers'
     ? tr('Братя на ' + sb + ' са всички момчета, а братя на ' + ab + ' са момчетата без него самия. Колко момчета са, за да са първите два пъти повече от вторите?',
          'Брати ' + usb + ' — усі хлопчики, а брати ' + uab + ' — хлопчики без нього самого. Скільки хлопчиків, щоб перших було вдвічі більше за других?')
