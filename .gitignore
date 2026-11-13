@@ -1,2 +1,5 @@
-smoke-live.js
+.wrangler/
+.dev.vars
+pdfs/
 .deploy/
+node_modules/
