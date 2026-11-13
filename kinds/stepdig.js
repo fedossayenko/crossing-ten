@@ -2,7 +2,7 @@
 
 // МБГ Зима 2024, задача 8: 0, 3, 6, 9, …, x written with 24 digits. The one-digit numbers
 // take one digit each, every two-digit one takes two — count the first lot, halve the rest.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, rnd, tr, ukN, ukWord } from '../js/core.js';
 export function genStepDig(){
   for(;;){
     const one = Math.random() < 0.2, k = one ? 1 : 2 + rnd(4), start = one ? 1 + rnd(3) : rnd(2) ? 0 : k;
@@ -23,19 +23,19 @@ export function genStepDig(){
 }
 function drawStepDig(q){
   return '<div class="ask">' + tr('Кое е числото, означено с буквата <b>x</b>, ако числата <span class="num">' + q.first.join(', ') + ', …, x</span> са записани с <b>' + q.digits + ' цифри</b>?',
-    'Яке число позначене буквою <b>x</b>, якщо числа <span class="num">' + q.first.join(', ') + ', …, x</span> записані за допомогою <b>' + q.digits + ' цифр</b>?') + '</div>' +
+    'Яке число позначене буквою <b>x</b>, якщо числа <span class="num">' + q.first.join(', ') + ', …, x</span> записані за допомогою <b>' + q.digits + ' ' + ukWord(q.digits, 'цифри', 'цифр', 'цифр') + '</b>?') + '</div>' +
     '<div class="line xl">x = ' + SLOT + '</div>';
 }
 function eqStepDig(q){
-  return q.first.join(', ') + tr(', … с ', ', … з ') + q.digits + tr(' цифри → ', ' цифр → ') + q.ans;
+  return q.first.join(', ') + tr(', … с ', ', … з ') + q.digits + tr(' цифри → ', ' ' + ukWord(q.digits, 'цифри', 'цифр', 'цифр') + ' → ') + q.ans;
 }
 function whyStepDig(q, full){
   if(!full) return tr('Колко цифри отиват за едноцифрените числа? А за всяко двуцифрено?',
                       'Скільки цифр ідуть на одноцифрові числа? А на кожне двоцифрове?');
   const m = q.twos.length, t = q.twos;
   return tr('едноцифрени: ', 'одноцифрові: ') + q.ones + tr(q.ones === 1 ? ' число — 1 цифра' : ' числа — ' + q.ones + ' цифри', ' — ' + ukN(q.ones, 'цифра', 'цифри', 'цифр')) +
-    (q.three ? '' : ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число: ', ' цифр, по дві на число: ') + 2*m + ' = ' + m + ' + ' + m) +
-    (q.three ? ' &nbsp;→&nbsp; ' + tr('всички двуцифрени ', 'усі двоцифрові ') + t[0] + ', …, ' + t[m - 1] + ': ' + m + ' + ' + m + ' = ' + 2*m + tr(' цифри, остават ', ' цифр, лишається ') +
+    (q.three ? '' : ' &nbsp;→&nbsp; ' + q.digits + ' − ' + q.ones + ' = ' + 2*m + tr(' цифри, по две за число: ', ' ' + ukWord(2*m, 'цифра', 'цифри', 'цифр') + ', по дві на число: ') + 2*m + ' = ' + m + ' + ' + m) +
+    (q.three ? ' &nbsp;→&nbsp; ' + tr('всички двуцифрени ', 'усі двоцифрові ') + t[0] + ', …, ' + t[m - 1] + ': ' + m + ' + ' + m + ' = ' + 2*m + tr(' цифри, остават ', ' ' + ukWord(2*m, 'цифра', 'цифри', 'цифр') + ', лишається ') +
       (q.digits - q.ones - 2*m) + tr(' — едно трицифрено: <b>', ' — одне трицифрове: <b>') + q.ans + '</b> &nbsp;→&nbsp; x = ' + q.ans
     : ' &nbsp;→&nbsp; ' + tr(m + ' двуцифрени: ', ukN(m, 'двоцифрове', 'двоцифрові', 'двоцифрових') + ': ') + t[0] + ', ' + t[1] + ', …, <b>' + q.ans + '</b>' + ' &nbsp;→&nbsp; x = ' + q.ans);
 }

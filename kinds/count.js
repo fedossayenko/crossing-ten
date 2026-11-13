@@ -4,7 +4,7 @@
 // «между», where the two ends are NOT counted — so the condition has to be read.
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
-import { KIND, SLOT, answerLine, bgList, popAt, rnd, shuffle, svgFrame, svgText, textW, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, bgList, popAt, rnd, shuffle, svgFrame, svgText, textW, tr, ukN } from '../js/core.js';
 export function genCount(){
   if(Math.random() < 0.14){
     // Задача 3: a list with repeats. What is asked is about the set behind it, not the
@@ -199,7 +199,7 @@ function countLine(q, full){
     g += svgText(120, 64, each === q.ans ? String(q.ans) : tr('всяка двойка: ', 'кожна пара: ') + each + ' → ' + q.ans, 14, 'var(--ink)', popAt(n + 3 + Math.floor(n / 2)));
     return svg(98, g, label);
   }
-  g += svgText(120, 44, n + tr(' числа', ' чисел'), 15, 'var(--ink)', popAt(n + 2));
+  g += svgText(120, 44, tr(n + ' числа', ukN(n, 'число', 'числа', 'чисел')), 15, 'var(--ink)', popAt(n + 2));
   return svg(76, g, label);
 }
 // The list with repeats: each number that has turned up before fades as it is met, the different ones stay.

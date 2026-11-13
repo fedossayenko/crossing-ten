@@ -5,7 +5,7 @@
 // and every 6 letters the word starts again: 15 = 6 + 6 + 3, the 3rd letter, Л. A letter
 // cannot be typed, so this kind brings its own А/Б/В/Г, and ans is the right one's id.
 // Each pair is the word in Bulgarian and in Ukrainian, the same length, no letter twice.
-import { KIND, addUp, answerLine, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, addUp, answerLine, popAt, rnd, roomFor, shuffle, svgText, tr, ukN, ukWord, ordBg, ordBgThe, ordUk } from '../js/core.js';
 export const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
 // Есен 2019, задача 11: ○ ○ ○ ○ △ □ over and over; how many circles among the first 31. Six to a
 // round, so 31 = 5 · 6 + 1: five rounds of 4 circles, and the 31st starts a sixth — 21.
@@ -57,7 +57,7 @@ function drawWordPos(q){
   }
   if(q.shape === 'count'){
     const what = q.sym === '○' ? tr('кръгчета', 'кружечків') : tr('триъгълничета', 'трикутничків');
-    return '<div class="ask">' + tr('Според модела, показан по-долу, броейки отляво надясно, колко ' + what + ' има от 1-вия до <span class="num">' + q.n + '-ия</span> символ включително?',
+    return '<div class="ask">' + tr('Според модела, показан по-долу, броейки отляво надясно, колко ' + what + ' има от 1-вия до <span class="num">' + ordBgThe(q.n, true) + '</span> символ включително?',
       'За зразком нижче, рахуючи зліва направо, скільки ' + what + ' від 1-го до <span class="num">' + q.n + '-го</span> символу включно?') + '</div>' +
       '<div class="seq">' + q.pat.concat(q.pat, q.pat).join(' ') + ' …</div>' +
       answerLine('xl');
@@ -65,14 +65,14 @@ function drawWordPos(q){
   const W = wordPosWord(q);
   return '<div class="ask">' + tr('Петя написала <span class="num">' + q.n + '</span> пъти ' + W + ' слято и получила една дълга дума, започваща с ',
     'Петя написала <span class="num">' + ukN(q.n, 'раз', 'рази', 'разів').replace(' ', '</span> ') + ' ' + W + ' разом і отримала одне довге слово, що починається з ') +
-    '<b>' + W + W + W + '…</b> ' + tr('Коя буква е написана на <span class="num">' + q.p + '-то</span> място <b>' + (q.right ? 'отдясно наляво' : 'отляво надясно') + '</b>?',
+    '<b>' + W + W + W + '…</b> ' + tr('Коя буква е написана на <span class="num">' + ordBg(q.p, 'n') + '</span> място <b>' + (q.right ? 'отдясно наляво' : 'отляво надясно') + '</b>?',
     'Яка буква стоїть на <span class="num">' + q.p + '-му</span> місці, якщо рахувати <b>' + (q.right ? 'справа наліво' : 'зліва направо') + '</b>?') + '</div>';
 }
 function eqWordPos(q){
   if(q.shape === 'digits') return q.pat.join(', ') + ' → ' + digitParts(q).map(p => p.filter(v => v === q.dig).length).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'count'){ const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length;
     return q.n + ' = ' + Array(Math.floor(q.n / L)).fill(L).join(' + ') + (q.n % L ? ' + ' + q.n % L : '') + ' → ' + q.ans; }
-  return (q.right ? q.n*q.L + ' − ' + q.p + ' + 1 = ' + q.fromLeft + ', ' : '') + q.fromLeft + tr('-ма → ', '-га → ') + wordPosWord(q)[q.at];
+  return (q.right ? q.n*q.L + ' − ' + q.p + ' + 1 = ' + q.fromLeft + ', ' : '') + tr(ordBg(q.fromLeft, 'f'), ordUk(q.fromLeft, 'f')) + ' → ' + wordPosWord(q)[q.at];
 }
 // The pattern's picture: one round of the pattern a row, the asked symbol filled in, so every row holds as
 // many; on the left where each row ends (31 = 5 rounds of 6 and 1 more), on the right how many it holds.
@@ -131,12 +131,12 @@ function whyWordPos(q, full){
   if(q.shape === 'count'){
     if(!full) return tr('Колко символа има в едно повторение на модела — и колко от тях са търсените?', 'Скільки символів в одному повторенні зразка — і скільки з них ті, що треба?') + patCountSvg(q, false);
     const L = q.pat.length, k = q.pat.filter(x => x === q.sym).length, w = Math.floor(q.n / L), r = q.n % L, extra = q.pat.slice(0, r).filter(x => x === q.sym).length;
-    return tr('в едно повторение: ' + L + ' символа, от тях ' + k + ' ', 'в одному повторенні: ' + L + ' символів, з них ' + k + ' ') + q.sym + ' &nbsp;→&nbsp; ' + q.n + ' = ' + Array(w).fill(L).join(' + ') + (r ? ' + ' + r : '') +
+    return tr('в едно повторение: ' + L + ' символа, от тях ' + k + ' ', 'в одному повторенні: ' + ukN(L, 'символ', 'символи', 'символів') + ', з них ' + k + ' ') + q.sym + ' &nbsp;→&nbsp; ' + q.n + ' = ' + Array(w).fill(L).join(' + ') + (r ? ' + ' + r : '') +
       ' &nbsp;→&nbsp; ' + Array(w).fill(k).join(' + ') + (r ? ' + ' + extra : '') + ' = ' + q.ans + patCountSvg(q, true);
   }
   if(!full) return tr('Думата се повтаря — на всеки толкова букви, колкото има в нея, започва отначало.', 'Слово повторюється — через стільки букв, скільки в ньому є, воно починається знову.');
   const W = wordPosWord(q), whole = Math.floor((q.fromLeft - 1) / q.L);
   return (q.right ? tr('всички букви: ', 'усього букв: ') + addUp(q.n, q.L) + tr(', отляво това е ', ', зліва це ') + q.n*q.L + ' − ' + q.p + ' + 1 = <b>' + q.fromLeft + '</b> &nbsp;→&nbsp; ' : '') +
-    (whole ? tr('по ' + q.L + ' букви: ', 'по ' + q.L + ' букв: ') + addUp(whole, q.L) + tr(' и още ', ' і ще ') + (q.at + 1) + ' &nbsp;→&nbsp; ' : '') + tr('буква номер ', 'буква номер ') + (q.at + 1) + tr(' в ', ' у ') + W + ': <b>' + W[q.at] + '</b>' + wordPosSvg(q);
+    (whole ? tr('по ' + q.L + ' букви: ', 'по ' + q.L + ' ' + ukWord(q.L, 'букві', 'букви', 'букв') + ': ') + addUp(whole, q.L) + tr(' и още ', ' і ще ') + (q.at + 1) + ' &nbsp;→&nbsp; ' : '') + tr('буква номер ', 'буква номер ') + (q.at + 1) + tr(' в ', ' у ') + W + ': <b>' + W[q.at] + '</b>' + wordPosSvg(q);
 }
 KIND.wordpos = { draw:drawWordPos, eq:eqWordPos, why:whyWordPos };

@@ -4,7 +4,7 @@
 // cubes weigh 63 g, so one is 9 and two are 18; задача 16, Никола 16 pencils, Пиер 2 times fewer (8),
 // Клод 2 more than Пиер (10), so Никола has 6 more than Клод; задача 18, 6 kg and 3 times more (18),
 // 24 kg into 8 crates, 3 kg each.
-import { KIND, answerLine, bgWith, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgWith, numSpan, rnd, tr, ukN, ukWord } from '../js/core.js';
 export function genTimesW(){
   const shape = rnd(4);
   for(;;){
@@ -36,7 +36,7 @@ function drawTimesW(q){
          'На спортивному майданчику грають ' + numSpan(q.a) + ' ' + ukN(q.a, 'дівчинка', 'дівчинки', 'дівчаток').split(' ')[1] + ' і в ' + numSpan(q.k) + ' рази ' + (q.fewer ? 'менше' : 'більше') + ' хлопчиків. Скільки всього дітей грає на майданчику?')
     : q.shape === 1
     ? tr(numSpan(q.n) + ' еднакви кубчета тежат ' + numSpan(q.W) + ' грама. Колко грама тежат ' + numSpan(q.m) + ' от тези кубчета?',
-         numSpan(q.n) + ' однакових кубиків важать ' + numSpan(q.W) + ' ' + ukN(q.W, 'грам', 'грами', 'грамів').split(' ')[1] + '. Скільки грамів важать ' + numSpan(q.m) + ' ' + ukN(q.m, 'такий кубик', 'такі кубики', 'таких кубиків').replace(/^\d+ /, '') + '?')
+         numSpan(q.n) + ' ' + ukWord(q.n, 'однаковий кубик', 'однакові кубики', 'однакових кубиків') + ' важать ' + numSpan(q.W) + ' ' + ukN(q.W, 'грам', 'грами', 'грамів').split(' ')[1] + '. Скільки грамів важать ' + numSpan(q.m) + ' ' + ukN(q.m, 'такий кубик', 'такі кубики', 'таких кубиків').replace(/^\d+ /, '') + '?')
     : q.shape === 2
     ? tr('Никола има ' + numSpan(q.x) + ' молива. Пиер има ' + timesWord(q.k) + ' пъти по-малко моливи, отколкото има Никола, а Клод има ' + bgWith(q.d) + ' ' + numSpan(q.d) + ' ' + (q.d === 1 ? 'молив' : 'молива') + ' повече, отколкото Пиер. С колко броят на моливите на Никола е повече от броя на моливите на Клод?',
          'У Миколи ' + numSpan(q.x) + ' ' + ukN(q.x, 'олівець', 'олівці', 'олівців').split(' ')[1] + '. У П’єра ' + timesWord(q.k) + ' рази менше олівців, ніж у Миколи, а в Клода на ' + numSpan(q.d) + ' ' + ukN(q.d, 'олівець', 'олівці', 'олівців').split(' ')[1] + ' більше, ніж у П’єра. На скільки в Миколи більше олівців, ніж у Клода?')

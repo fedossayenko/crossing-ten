@@ -28,6 +28,8 @@ export const ukPl = (n, one, few, many) => numSpan(n) + ' ' + ukWord(n, one, few
 export const trN = (n, bgOne, bgMany, ukOne, ukFew, ukMany) => tr(n + ' ' + (n === 1 ? bgOne : bgMany), ukN(n, ukOne, ukFew, ukMany));
 // a digit ordinal with the ending its number needs, g = 'm' | 'f' | 'n': Bulgarian 1-ви, 2-ра, 3-ти, 7-ма, 12-та, 8-мо; Ukrainian 3-й, 3-я, 3-є, 5-а
 export const ordBg = (n, g) => n + '-' + ({1: 'в', 2: 'р', 7: 'м', 8: 'м'}[n % 100 >= 11 && n % 100 <= 19 ? 0 : n % 10] || 'т') + ({m: 'и', f: 'а', n: 'о'}[g]);
+// the masculine with the article: 1-вият, 2-рият, 7-мият, 8-мият, but 3-ият, 16-ият (the -ти drops); short = «до 8-мия»
+export const ordBgThe = (n, short) => (/-ти$/.test(ordBg(n, 'm')) ? n + '-и' : ordBg(n, 'm')) + (short ? 'я' : 'ят');
 export const ordUk = (n, g) => n + '-' + (g === 'm' ? 'й' : n % 10 === 3 && n % 100 !== 13 ? (g === 'f' ? 'я' : 'є') : (g === 'f' ? 'а' : 'е'));
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';

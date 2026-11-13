@@ -3,7 +3,7 @@
 // МБГ Пролет 2025, задача 2: 3 + 3 + 3 + 3 − 3 · 4 + 5 + 5 + 5 + 5 + 5 − 5 · 4. Four threes are 3 · 4,
 // so the first part is 0; five fives less four fives leaves one five: 5.
 // Задача 17: eight 2s = 1 + how many 3s? 16 = 1 + 15, and 15 is five 3s.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
 export function genRepAdd(){
   if(Math.random() < 0.4){
     for(;;){
@@ -20,7 +20,7 @@ const repRun = (v, n) => Array(n).fill(v).join(' + ');
 const repAddExpr = q => repRun(q.x, q.k) + ' − ' + q.x + ' · ' + q.k + ' + ' + repRun(q.y, q.m) + ' − ' + q.y + ' · ' + q.m2;
 function drawRepAdd(q){
   if(q.shape === 1){
-    const run = (v, n) => '<span style="white-space:nowrap"><span class="num">' + v + ' + ' + v + ' + … + ' + v + '</span> <small>(' + n + tr(' събираеми ', ' доданків ') + v + ')</small></span>';
+    const run = (v, n) => '<span style="white-space:nowrap"><span class="num">' + v + ' + ' + v + ' + … + ' + v + '</span> <small>(' + tr(n + ' събираеми ', n === '*' ? '* доданків ' : ukN(n, 'доданок', 'доданки', 'доданків') + ' ') + v + ')</small></span>';
     return '<div class="ask">' + tr('Кое число трябва да поставим вместо <span class="circle">*</span>, за да е вярно', 'Яке число треба поставити замість <span class="circle">*</span>, щоб було правильно') + '</div>' +
       '<div class="given">' + run(q.a, q.n) + '<br>= ' + (q.r ? q.r + ' + ' : '') + run(q.b, '*') + '</div>' +
       '<div class="line lg"><span class="circle">*</span> = ' + SLOT + '</div>';

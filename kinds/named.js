@@ -1,7 +1,7 @@
 // Question kind 'named': level 13 Най-малкото — Smallest two-digit, largest one-digit, then compare.
 
 // Задача 6: the vocabulary of place value, on its own or feeding a comparison.
-import { BGNUM, KIND, SLOT, UK_PLURAL, answerLine, rnd, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UK_PLURAL, answerLine, rnd, tr, ukWord } from '../js/core.js';
 const NAMED = [
   { nm:'най-голямото едноцифрено число', v:9 },
   { nm:'най-малкото двуцифрено число',   v:10 },
@@ -249,7 +249,7 @@ function eqNamed(q){
   if(q.shape === 5) return q.wit[0] + (q.v < 2 ? ' − ' : ' + ') + q.wit[1] + ' = ' + q.ans;
   if(q.shape === 4 && q.may) return q.tops.map(t => t.join('+')).join(tr(' или ', ' або ')) + ' → ' + q.ans + tr(' или ', ' або ') + q.alt[0];
   if(q.shape === 4) return tr(q.k + ' различни, сбор ' + q.S + ' → най-голямо ' + q.ans,
-    q.k + ' різних, сума ' + q.S + ' → найбільше ' + q.ans);
+    q.k + ' ' + ukWord(q.k, 'різне', 'різні', 'різних') + ', сума ' + q.S + ' → найбільше ' + q.ans);
   if(q.shape === 3) return tr('сбор ' + q.S +
     (q.loose ? '' : ' от ' + q.k + ' цифри') + ' → най-голяма разлика ' + q.ans,
     'сума ' + q.S + (q.loose ? '' : ' з ' + q.k + ' цифр') + ' → найбільша різниця ' + q.ans);

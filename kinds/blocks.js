@@ -26,7 +26,7 @@ function drawBlocks(q){
     answerLine('xl');
 }
 function eqBlocks(q){
-  return q.n + tr(' числа, съседни ', ' чисел, сусідні ') + q.pairs.map(p => p.join('–')).join(', ') + ' → ' + q.ans;
+  return tr(q.n + ' числа, съседни ', ukN(q.n, 'число', 'числа', 'чисел') + ', сусідні ') + q.pairs.map(p => p.join('–')).join(', ') + ' → ' + q.ans;
 }
 // The picture: the glued neighbours as one piece each (a chain 1–2–3 is one piece), every order of the
 // pieces drawn small, then each glued piece and the same piece turned round — and the product.

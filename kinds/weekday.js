@@ -1,5 +1,5 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
-import { KIND, SLOT, answerLine, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
+import { KIND, SLOT, answerLine, ordBgThe, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
 
 export const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
   { nm:'понеделник', cnt:'понеделника' }, { nm:'вторник', cnt:'вторника' },
@@ -123,7 +123,7 @@ function drawWeekday(q){
   }
   if(q.shape === 'which'){
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
-      '</b>. Кой ден от седмицата ще бъде <b>' + q.n + '-ият</b> ден на същия месец?',
+      '</b>. Кой ден от седмицата ще бъде <b>' + ordBgThe(q.n) + '</b> ден на същия месец?',
       'Перший день <b>' + weekdayMonUk[q.mon[0]][1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm +
       '</b>. Яким днем тижня буде <b>' + q.n + '-й</b> день цього місяця?') + '</div>' +
       '<div class="note">' + DAYS.map((d, i) => (i + 1) + ' ' + tr(d.nm, weekdayUk[d.nm].nm)).join(' · ') + '</div>' +
@@ -256,7 +256,7 @@ function whyWeekdayText(q, full){
   if(q.shape === 'which'){
     if(!full) return tr('Само остатъкът след цели седмици мести деня.', 'День зсуває лише остача після цілих тижнів.');
     const gap = q.n - 1, weeks = Math.floor(gap / 7), left = gap % 7;
-    return tr('от първия до ' + q.n + '-ия ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + (weeks === 1 ? '1 цяла седмица' : weeks + ' цели седмици') + ' и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
+    return tr('от първия до ' + ordBgThe(q.n, true) + ' ден има <b>' + gap + '</b> дни &nbsp;→&nbsp; ' + (weeks === 1 ? '1 цяла седмица' : weeks + ' цели седмици') + ' и още ' + left + ' &nbsp;→&nbsp; ' + q.d1.nm + ' + ' + left + ' = <b>' +
       DAYS[q.ans - 1].nm + '</b>, тоест номер ' + q.ans,
       'від першого до ' + q.n + '-го дня минає <b>' + gap + '</b> ' + ukWord(gap, 'день', 'дні', 'днів') +
       ' &nbsp;→&nbsp; ' + weeks + ' ' + ukWord(weeks, 'цілий тиждень', 'цілі тижні', 'цілих тижнів') +

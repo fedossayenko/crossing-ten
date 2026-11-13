@@ -4,7 +4,7 @@
 // and a beetle with 6, as the pictures say: 9 · 6 + 6 · 8 = 54 + 48 = 102.
 // МБГ Есен 2023, 3 клас, задача 20 (shape 'humps'): 6 one-humped camels and twice as many two-humped ones — how many
 // humps? 6 · 2 = 12 two-humped camels, 6 · 1 + 12 · 2 = 30. Sometimes it is the one-humped that are so many times more.
-import { KIND, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgText, tr, ukN, ukWord } from '../js/core.js';
 export function genLegs(){
   if(Math.random() < 0.5){
     // a beetles, b spiders; spiders: the spiders are named first
@@ -41,7 +41,7 @@ function drawLegs(q){
     const [given, other] = q.two ? [tr('двугърби', 'двогорбих'), tr('едногърби', 'одногорбих')] : [tr('едногърби', 'одногорбих'), tr('двугърби', 'двогорбих')];
     return '<div class="ask">' + tr('В едно стадо има <span class="num">' + q.a + '</span> ' + given + ' камили и ' + LEGS_TIMES_BG[q.t] + ' пъти повече ' + other +
         ' камили. <b>Колко общо са гърбиците на камилите от това стадо?</b>',
-      'У стаді <span class="num">' + q.a + '</span> ' + given + ' ' + ukN(q.a, 'верблюд', 'верблюди', 'верблюдів').replace(/^\d+ /, '') + ' і ' + LEGS_TIMES_UK[q.t] + ' більше ' + other +
+      'У стаді <span class="num">' + q.a + '</span> ' + (q.two ? ukWord(q.a, 'двогорбий', 'двогорбі', 'двогорбих') : ukWord(q.a, 'одногорбий', 'одногорбі', 'одногорбих')) + ' ' + ukN(q.a, 'верблюд', 'верблюди', 'верблюдів').replace(/^\d+ /, '') + ' і ' + LEGS_TIMES_UK[q.t] + ' більше ' + other +
         ' верблюдів. <b>Скільки всього горбів у верблюдів цього стада?</b>') + '</div>' +
       answerLine('xl');
   }

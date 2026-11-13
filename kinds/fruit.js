@@ -32,7 +32,7 @@ const fruitPear = n => fruitUk(n, ['груша', 'груші', 'груш']), fru
 function drawFruit(q){
   if(q.shape === 'rest'){
     return '<div class="ask">' + tr('Петьо имал <span class="num">' + q.T + '</span> ябълки, от които <span class="num">' + q.r + '</span> червени, а останалите — жълти. Изял <span class="num">' + q.e + '</span> ' + (q.e === 1 ? 'жълта ябълка' : 'жълти ябълки') + '. Колко <b>жълти</b> ябълки са му останали?',
-      'У Петра було <span class="num">' + fruitApple(q.T).replace(/^/, q.T + '</span> ') + ', з них <span class="num">' + q.r + '</span> червоних, а решта — жовті. Він з’їв <span class="num">' + q.e + '</span> ' + fruitUk(q.e, ['жовте яблуко', 'жовті яблука', 'жовтих яблук']) + '. Скільки <b>жовтих</b> яблук у нього залишилося?') + '</div>' +
+      'У Петра було <span class="num">' + fruitApple(q.T).replace(/^/, q.T + '</span> ') + ', з них <span class="num">' + q.r + '</span> ' + fruitUk(q.r, ['червоне', 'червоні', 'червоних']) + ', а решта — жовті. Він з’їв <span class="num">' + q.e + '</span> ' + fruitUk(q.e, ['жовте яблуко', 'жовті яблука', 'жовтих яблук']) + '. Скільки <b>жовтих</b> яблук у нього залишилося?') + '</div>' +
       answerLine('xl');
   }
   return tr('<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
@@ -43,7 +43,7 @@ function drawFruit(q){
 }
 function eqFruit(q){
   if(q.shape === 'rest') return q.T + ' − ' + q.r + ' = ' + q.y + ', ' + q.y + ' − ' + q.e + ' = ' + q.ans;
-  return tr(q.pears + ' круши, ' + q.apples + ' ябълки, с ' + q.k + ' повече → ',
+  return tr(q.pears + ' круши, ' + q.apples + (q.apples === 1 ? ' ябълка' : ' ябълки') + ', с ' + q.k + ' повече → ',
     q.pears + ' ' + fruitPear(q.pears) + ', ' + q.apples + ' ' + fruitApple(q.apples) + ', на ' + q.k + ' більше → ') + q.ans;
 }
 function whyFruit(q, full){

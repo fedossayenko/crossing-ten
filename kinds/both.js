@@ -24,6 +24,9 @@ export function genBoth(){
 }
 
 const bothUkLang = {'английски':'англійську', 'френски':'французьку', 'немски':'німецьку', 'испански':'іспанську'};
+// the language as a bracket label, the name first and the count after it: the count does not govern the language
+const bothUkLabel = {'английски':'англійська', 'френски':'французька', 'немски':'німецька', 'испански':'іспанська'};
+const bothLabel = (n, bg) => tr(n + ' ' + bg, bothUkLabel[bg] + ': ' + n);
 const bothUkPupils = n => ukN(n, 'учень', 'учні', 'учнів');
 const bothUkStudy = n => ukWord(n, 'вивчає', 'вивчають', 'вивчають');
 function vennSvg(tl, tr_, a, m, b){
@@ -67,7 +70,7 @@ function bothSvg(q){
   const brace = (a, b, y, t, col, step) => { const x1 = (6 + a * s).toFixed(1), x2 = (6 + b * s).toFixed(1), d = y < 0 ? 5 : -5;
     return '<g' + popAt(step) + '><path d="M' + x1 + ',' + (y + d) + ' V' + y + ' H' + x2 + ' V' + (y + d) + '" stroke="' + col + '" stroke-width="2" fill="none"/>' +
       svgText(Math.min(Math.max((+x1 + +x2) / 2, textW(t, 12) / 2 + 2), 240 - textW(t, 12) / 2).toFixed(1), y < 0 ? y - 5 : y + 15, t, 12, col) + '</g>'; };   // a short bracket's label slides in from the edge
-  g += brace(0, q.A, -12, q.A + ' ' + tr(q.lang[0], bothUkLang[q.lang[0]]), 'var(--accent)', 2) + brace(lo, q.T, 12, q.B + ' ' + tr(q.lang[1], bothUkLang[q.lang[1]]), 'var(--good)', 3);
+  g += brace(0, q.A, -12, bothLabel(q.A, q.lang[0]), 'var(--accent)', 2) + brace(lo, q.T, 12, bothLabel(q.B, q.lang[1]), 'var(--good)', 3);
   const foot = q.A + ' + ' + q.B + ' − ' + q.T + ' = ' + q.both + (q.asksBoth ? '' : ', ' + q.B + ' − ' + q.both + ' = ' + q.ans);
   g += svgText(121, 52, foot, 15, 'var(--ink)', popAt(4.5));
   return svgFrame('0 -36 242 96', 300, tr('учениците и езиците им', 'учні та їхні мови')) + g + '</svg>';

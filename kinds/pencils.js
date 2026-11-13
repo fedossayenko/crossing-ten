@@ -30,6 +30,7 @@ export function genPencils(){
 const pencilsUkCol = {'жълти':['жовтий','жовті','жовтих'], 'зелени':['зелений','зелені','зелених'],
                       'сини':['синій','сині','синіх'], 'червени':['червоний','червоні','червоних']};
 const pencilsUkForm = n => { const i = ['one', 'few'].indexOf(UK_PLURAL.select(n)); return i < 0 ? 2 : i; };
+const pencilsBgCol = (c, n) => n === 1 ? c[1] : c[0];   // 1 жълт, 3 жълти
 const pencilsUkPencils = n => ['олівець', 'олівці', 'олівців'][pencilsUkForm(n)];
 const pencilsUkName = bg => NAMES.find(r => r[0] === bg)[2];
 const pencilsUkGen = {'Хари':'Харі', 'Мая':'Маї', 'Ния':'Нії', 'Борис':'Бориса', 'Ива':'Іви', 'Асен':'Асена'};
@@ -40,10 +41,10 @@ function drawPencils(q){
     const c0 = pencilsUkCol[q.col[0][0]], c1 = pencilsUkCol[q.col[1][0]];
     return '<div class="ask">' + tr(q.who + ' ' + had + ' <span class="num">' + q.T + '</span> молива, от които <span class="num">' +
       q.a + '</span> ' + q.col[0][0] + ', а останалите — ' + q.col[1][0] + '. ' + Gave +
-      ' на майка си <span class="num">' + q.g1 + '</span> ' + q.col[1][0] + ' молива, а на приятеля си ' +
-      gave + ' <span class="num">' + q.g2 + '</span> ' + q.col[1][0] +
-      (q.other ? ' и <span class="num">' + q.other + '</span> ' + q.col[0][0] : '') +
-      ' молива. Колко <b>' + q.col[1][0] + '</b> молива са останали при ' + q.who + '?',
+      ' на майка си <span class="num">' + q.g1 + '</span> ' + pencilsBgCol(q.col[1], q.g1) + ' молива, а на приятеля си ' +
+      gave + ' <span class="num">' + q.g2 + '</span> ' + pencilsBgCol(q.col[1], q.g2) +
+      (q.other ? ' и <span class="num">' + q.other + '</span> ' + pencilsBgCol(q.col[0], q.other) : '') +
+      ((q.other || q.g2) === 1 ? ' молив' : ' молива') + '. Колко <b>' + q.col[1][0] + '</b> молива са останали при ' + q.who + '?',
       pencilsUkName(q.who) + ' ' + (q.f ? 'мала' : 'мав') + ' <span class="num">' + q.T + '</span> ' + pencilsUkPencils(q.T) +
       ', з яких <span class="num">' + q.a + '</span> ' + c0[pencilsUkForm(q.a)] + ', а решта — ' + c1[1] + '. ' +
       'Своїй мамі ' + (q.f ? 'вона подарувала' : 'він подарував') + ' <span class="num">' + q.g1 + '</span> ' +
@@ -106,7 +107,7 @@ function whyPencils(q, full){
     if(!full) return tr('Първо колко са останалите на цвят, чак после кой колко е подарил.',
       'Спочатку — скільки олівців іншого кольору, а вже потім — хто скільки подарував.');
     const c0 = pencilsUkCol[q.col[0][0]];
-    const aside = tr(q.other ? ' (' + q.other + ' ' + q.col[0][0] + ' не се броят)' : '',
+    const aside = tr(q.other ? ' (' + q.other + ' ' + pencilsBgCol(q.col[0], q.other) + (q.other === 1 ? ' не се брои)' : ' не се броят)') : '',
       q.other ? ' (' + q.other + ' ' + c0[pencilsUkForm(q.other)] + (q.other === 1 ? ' не рахується)' : ' не рахуються)') : '');
     return tr(q.col[1][0] + ' са ', pencilsUkCol[q.col[1][0]][2] + ' — ') + q.T + ' − ' + q.a + ' = <b>' + q.rest +
       tr('</b> &nbsp;→&nbsp; подарени са ', '</b> &nbsp;→&nbsp; подаровано ') +

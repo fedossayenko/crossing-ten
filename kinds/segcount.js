@@ -5,7 +5,7 @@
 // next 2 new ones, then 1: 3 + 2 + 1.
 // Есен 2019, задача 14: a 30 см segment, its two ends yellow; red points cut it into 10 pieces of
 // 3 см, so 9 red; then a blue point inside each piece, 10 blue. 2 + 9 + 10 = 21.
-import { KIND, SVG_FONT, answerLine, bgList, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, bgList, popAt, rnd, svgFrame, svgText, tr, ukN, ukWord } from '../js/core.js';
 // МБГ Полуфинал 2022 and 2023, 1 клас, задача 14: points A, B, C on a line, «Тук са 3 отсечки: AB, AC и BC» (2023
 // only «Тук са 3 отсечки.»); then A, B, C, D — how many segments? From A 3, from B 2 more, from C 1: 6. The
 // example has a point fewer; the slips: a segment per gap (n − 1), or the example's number again.
@@ -46,7 +46,7 @@ function drawSegCount(q){
     return '<div class="ask">' + tr('Краищата на отсечка с дължина <span class="num">' + q.L + '</span> см са оцветени в жълто. С оцветени в червено точки тази отсечка е разделена на <span class="num">' + q.n +
       '</span> отсечки, всяка с дължина <span class="num">' + q.d + '</span> см. След това между всеки две оцветени точки, които са на разстояние <span class="num">' + q.d + '</span> см, е отбелязана синя точка. ',
       'Кінці відрізка завдовжки <span class="num">' + q.L + '</span> см зафарбовано жовтим. Червоними точками цей відрізок поділено на <span class="num">' + q.n +
-      '</span> відрізків, кожен завдовжки <span class="num">' + q.d + '</span> см. Потім між кожними двома зафарбованими точками, що стоять на відстані <span class="num">' + q.d + '</span> см, позначили синю точку. ') + ask + '</div>' +
+      '</span> ' + ukWord(q.n, 'відрізок', 'відрізки', 'відрізків') + ', кожен завдовжки <span class="num">' + q.d + '</span> см. Потім між кожними двома зафарбованими точками, що стоять на відстані <span class="num">' + q.d + '</span> см, позначили синю точку. ') + ask + '</div>' +
       answerLine('xl');
   }
   if(q.rev) return '<div class="ask">' + tr('Колко точки трябва да отбележим на една права, за да се получат <b>точно <span class="num">' + q.S + '</span> отсечки</b>?',

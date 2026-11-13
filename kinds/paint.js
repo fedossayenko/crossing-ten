@@ -28,7 +28,7 @@ function drawPaint(q){
     answerLine('md');
 }
 function eqPaint(q){
-  return tr(q.R + ' на ' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans,
+  return tr(q.R + ' на ' + q.C + ', оцветени ' + q.r + (q.r === 1 ? ' ред' : ' реда') + ' и ' + q.c + (q.c === 1 ? ' стълб' : ' стълба') + ' → ' + q.ans,
     q.R + ' на ' + q.C + ', зафарбовано ' + q.r + ' ' + ukWord(q.r, 'рядок', 'рядки', 'рядків') + ' і ' + q.c + ' ' +
     ukWord(q.c, 'стовпець', 'стовпці', 'стовпців') + ' → ' + q.ans);
 }
