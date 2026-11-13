@@ -1,7 +1,7 @@
 // Question kind 'term': level 30 Умаляемо — Naming the parts of a sum and a difference; level 278 С думи — the operation said in words.
 
 // Задача 10: the parts of a sum and a difference have names, and the name is the task.
-import { KIND, SLOT, bgWith, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, bgWith, numSpan, rnd, shuffle, tr } from '../js/core.js';
 export const TERMS = [
   { sub:'умаляемото',        obj:'умаляемото',        of:'разликата', at:0, op:'−' },
   { sub:'умалителят',        obj:'умалителя',         of:'разликата', at:1, op:'−' },
@@ -89,18 +89,17 @@ export function genTermWords(){
 }
 const TW_SHAPES = { name:1, more:1, then:1, diff:1 };
 function drawTermWords(q){
-  const n = v => '<span class="num">' + v + '</span>';
-  if(q.shape === 'name') return '<div class="ask">' + tr('Пресметни <b>' + TW_OPS[q.op][0] + '</b> на числата ' + n(q.a) + ' и ' + n(q.b) + '.',
-      'Обчисли <b>' + TW_OPS[q.op][1] + '</b> чисел ' + n(q.a) + ' і ' + n(q.b) + '.') + '</div><div class="line xl">' + SLOT + '</div>';
-  if(q.shape === 'more') return '<div class="ask">' + tr('Кое число е ' + bgWith(q.d) + ' ' + n(q.d) + ' <b>' + (q.more ? 'по-голямо' : 'по-малко') + '</b> от ' + n(q.b) + '?',
-      'Яке число на ' + n(q.d) + ' <b>' + (q.more ? 'більше</b> за ' : 'менше</b> від ') + n(q.b) + '?') + '</div><div class="line xl">' + SLOT + '</div>';
+  if(q.shape === 'name') return '<div class="ask">' + tr('Пресметни <b>' + TW_OPS[q.op][0] + '</b> на числата ' + numSpan(q.a) + ' и ' + numSpan(q.b) + '.',
+      'Обчисли <b>' + TW_OPS[q.op][1] + '</b> чисел ' + numSpan(q.a) + ' і ' + numSpan(q.b) + '.') + '</div><div class="line xl">' + SLOT + '</div>';
+  if(q.shape === 'more') return '<div class="ask">' + tr('Кое число е ' + bgWith(q.d) + ' ' + numSpan(q.d) + ' <b>' + (q.more ? 'по-голямо' : 'по-малко') + '</b> от ' + numSpan(q.b) + '?',
+      'Яке число на ' + numSpan(q.d) + ' <b>' + (q.more ? 'більше</b> за ' : 'менше</b> від ') + numSpan(q.b) + '?') + '</div><div class="line xl">' + SLOT + '</div>';
   if(q.shape === 'then') return '<div class="ask">' + tr('Пресметни.', 'Обчисли.') + '</div><div class="ask">' +
-      tr((q.sum ? 'Сборът' : 'Разликата') + ' на числата ' + n(q.a) + ' и ' + n(q.b) + ' <b>' + (q.up ? 'увеличи' : 'умали') + '</b> ' + bgWith(q.c) + ' ' + n(q.c) + '.',
-         (q.sum ? 'Суму' : 'Різницю') + ' чисел ' + n(q.a) + ' і ' + n(q.b) + ' <b>' + (q.up ? 'збільш' : 'зменш') + '</b> на ' + n(q.c) + '.') + '</div><div class="line xl">' + SLOT + '</div>';
+      tr((q.sum ? 'Сборът' : 'Разликата') + ' на числата ' + numSpan(q.a) + ' и ' + numSpan(q.b) + ' <b>' + (q.up ? 'увеличи' : 'умали') + '</b> ' + bgWith(q.c) + ' ' + numSpan(q.c) + '.',
+         (q.sum ? 'Суму' : 'Різницю') + ' чисел ' + numSpan(q.a) + ' і ' + numSpan(q.b) + ' <b>' + (q.up ? 'збільш' : 'зменш') + '</b> на ' + numSpan(q.c) + '.') + '</div><div class="line xl">' + SLOT + '</div>';
   const A = TW_TOYS[q.k], B = TW_TOYS[q.j], more = q.x > q.y, cell = 'style="border:1.5px solid var(--line); padding:4px 14px"';
   return '<div class="ask">' + tr('В детската градина има играчки.', 'У дитячому садку є іграшки.') + '</div>' +
     '<table style="border-collapse:collapse; margin:6px auto; font-size:clamp(17px,4.6vw,22px)"><tr><th ' + cell + '>' + tr('Играчки', 'Іграшки') + '</th><th ' + cell + '>' + tr('Брой', 'Кількість') + '</th></tr>' +
-    '<tr><td ' + cell + '>' + tr(A[0], A[2]) + '</td><td ' + cell + '>' + n(q.x) + '</td></tr><tr><td ' + cell + '>' + tr(B[0], B[2]) + '</td><td ' + cell + '>' + n(q.y) + '</td></tr></table>' +
+    '<tr><td ' + cell + '>' + tr(A[0], A[2]) + '</td><td ' + cell + '>' + numSpan(q.x) + '</td></tr><tr><td ' + cell + '>' + tr(B[0], B[2]) + '</td><td ' + cell + '>' + numSpan(q.y) + '</td></tr></table>' +
     '<div class="ask">' + tr('С колко ' + A[1] + ' са <b>' + (more ? 'повече' : 'по-малко') + '</b> от ' + B[1] + '?',
       'На скільки ' + A[3] + ' <b>' + (more ? 'більше' : 'менше') + '</b>, ніж ' + B[3] + '?') + '</div><div class="line xl">' + SLOT + '</div>';
 }
@@ -141,10 +140,9 @@ function drawTerm(q){
       '<div class="line xl">' + SLOT + '</div>';
   }
   if(q.shape === 2){
-    const n = v => '<span class="num">' + v + '</span>';
     const ask = q.same ? tr('<b>Умаляемото</b> е равно на <b>разликата</b>. Колко е <b>умалителят</b>?', '<b>Зменшуване</b> дорівнює <b>різниці</b>. Чому дорівнює <b>від’ємник</b>?')
-      : q.t.at === 1 ? tr('Умаляемото е ' + n(q.M) + ', а разликата е ' + n(q.D) + '. Кой е <b>умалителят</b>?', 'Зменшуване дорівнює ' + n(q.M) + ', а різниця — ' + n(q.D) + '. Чому дорівнює <b>від’ємник</b>?')
-      : tr('Умалителят е ' + n(q.S) + ', а разликата е ' + n(q.D) + '. Кое е <b>умаляемото</b>?', 'Від’ємник дорівнює ' + n(q.S) + ', а різниця — ' + n(q.D) + '. Чому дорівнює <b>зменшуване</b>?');
+      : q.t.at === 1 ? tr('Умаляемото е ' + numSpan(q.M) + ', а разликата е ' + numSpan(q.D) + '. Кой е <b>умалителят</b>?', 'Зменшуване дорівнює ' + numSpan(q.M) + ', а різниця — ' + numSpan(q.D) + '. Чому дорівнює <b>від’ємник</b>?')
+      : tr('Умалителят е ' + numSpan(q.S) + ', а разликата е ' + numSpan(q.D) + '. Кое е <b>умаляемото</b>?', 'Від’ємник дорівнює ' + numSpan(q.S) + ', а різниця — ' + numSpan(q.D) + '. Чому дорівнює <b>зменшуване</b>?');
     return '<div class="ask">' + ask + '</div><div class="line xl">' + SLOT + '</div>';
   }
   const expr = '<span class="num">' + q.x + ' ' + q.t.op + ' ' + q.y + '</span>';

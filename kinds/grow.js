@@ -3,7 +3,7 @@
 // Задача 7: every addend moves by the same amount, so the sum moves that many times.
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
 // down 10 and the subtrahend up 10, so both changes take away: 30 − 20 = 10.
-import { BGNUM, KIND, SLOT, UKNUM, popAt, rnd, svgText, textW, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UKNUM, numSpan, popAt, rnd, svgText, textW, tr } from '../js/core.js';
 // One 'diff' task: the minuend and the subtrahend each change by a, b (the same random draws for both levels).
 // Level 14 and level 230 differ in the ranges and the limit, and 230 also names the slip a child makes.
 function growDiff(mBase, mSpan, sBase, sSpan, aSpan, cap, slips){
@@ -52,9 +52,8 @@ function drawGrow(q){
       '<div class="line xl">' + SLOT + '</div>';
   }
   if(q.shape === 'diff'){
-    const n = v => '<span class="num">' + v + '</span>';
-    return '<div class="ask">' + tr('В разликата ' + n(q.M + ' − ' + q.S) + ' умаляемото е ' + (q.mUp ? 'увеличено' : 'намалено') + ' с ' + n(q.a) + ', а умалителят е ' + (q.sUp ? 'увеличен' : 'намален') + ' с ' + n(q.b) + '. Колко е <b>новата разлика</b>?',
-      'У різниці ' + n(q.M + ' − ' + q.S) + ' зменшуване ' + (q.mUp ? 'збільшили' : 'зменшили') + ' на ' + n(q.a) + ', а від’ємник ' + (q.sUp ? 'збільшили' : 'зменшили') + ' на ' + n(q.b) + '. Якою стала <b>нова різниця</b>?') + '</div>' +
+    return '<div class="ask">' + tr('В разликата ' + numSpan(q.M + ' − ' + q.S) + ' умаляемото е ' + (q.mUp ? 'увеличено' : 'намалено') + ' с ' + numSpan(q.a) + ', а умалителят е ' + (q.sUp ? 'увеличен' : 'намален') + ' с ' + numSpan(q.b) + '. Колко е <b>новата разлика</b>?',
+      'У різниці ' + numSpan(q.M + ' − ' + q.S) + ' зменшуване ' + (q.mUp ? 'збільшили' : 'зменшили') + ' на ' + numSpan(q.a) + ', а від’ємник ' + (q.sUp ? 'збільшили' : 'зменшили') + ' на ' + numSpan(q.b) + '. Якою стала <b>нова різниця</b>?') + '</div>' +
       '<div class="line xl">' + SLOT + '</div>';
   }
   return '<div class="ask">' + tr('Сборът на ' + BGNUM[q.k] + ' числа е <span class="num">' + q.base +

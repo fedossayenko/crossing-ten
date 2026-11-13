@@ -6,7 +6,7 @@
 // with one. The 3 children are counted as well as the ones with a single balloon: 3 + 12 = 15.
 // Level 262, МБГ Есен 2024, 3 клас, задача 15: 50 balloons, 10 children with three each and every other child with
 // two (e). The rest of the balloons, 50 − 30 = 20, are shared out two by two: 10 children, and with the first 10, 20.
-import { KIND, SLOT, UKNUM_F, UK_PLURAL, addUp, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, UKNUM_F, UK_PLURAL, addUp, numSpan, rnd, tr, ukN } from '../js/core.js';
 export function genBalloons(){
   const k = 2 + rnd(4), m = 2 + rnd(4), rest = 2 + rnd(Math.random() < 0.3 ? 30 : 14);   // Зима 2023: 3 by 3 and 31 more
   return {kind:'balloons', k, m, rest, T: k*m + rest, ans: k + rest};
@@ -47,11 +47,10 @@ const ONE_BG = {1:'един', 2:'два', 3:'три', 4:'четири', 5:'пе�
 const EUR_BG = n => ({1:'едно', 2:'две'}[n] || ONE_BG[n]) + ' евро';   // евро is neuter: едно, две
 const ONE_UK = {1:'один', 2:'два', 3:'три', 4:'чотири', 5:'п’ять', 6:'шість', 7:'сім', 8:'вісім', 9:'дев’ять'};
 const oneUk = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
-const oneNum = x => '<span class="num">' + x + '</span>';
 function drawBalloonsOne(q){
-  if(q.shape === 'shoes') return '<div class="ask">' + tr('Снежанка имала ' + oneNum(q.a) + ' чифта обувки, а седемте джуджета само по ' + oneNum(q.b) + (q.b === 1 ? ' чифт' : ' чифта') +
+  if(q.shape === 'shoes') return '<div class="ask">' + tr('Снежанка имала ' + numSpan(q.a) + ' чифта обувки, а седемте джуджета само по ' + numSpan(q.b) + (q.b === 1 ? ' чифт' : ' чифта') +
       '. Колко чифта обувки имат Снежанка и джуджетата общо?',
-    'Білосніжка мала ' + oneNum(q.a) + ' ' + oneUk(q.a, 'пару', 'пари', 'пар') + ' взуття, а семеро гномів — лише по ' + oneNum(q.b) + (q.b === 1 ? ' парі' : ' пари') +
+    'Білосніжка мала ' + numSpan(q.a) + ' ' + oneUk(q.a, 'пару', 'пари', 'пар') + ' взуття, а семеро гномів — лише по ' + numSpan(q.b) + (q.b === 1 ? ' парі' : ' пари') +
       '. Скільки пар взуття мають Білосніжка і гноми разом?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
   if(q.shape === 'week') return '<div class="ask">' + tr('Ани спестявала пари за коледни играчки. В понеделник спестила ' + EUR_BG(q.a) + ', а през останалите шест дни от седмицата — по ' +
@@ -59,9 +58,9 @@ function drawBalloonsOne(q){
     'Ані відкладала гроші на ялинкові іграшки. У понеділок вона відклала ' + ONE_UK[q.a] + ' євро, а протягом решти шести днів тижня — по ' +
       (q.b === 1 ? 'одному' : ONE_UK[q.b]) + ' євро на день. Скільки грошей відклала Ані за тиждень?') + '</div>' +
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('евро', 'євро') + '</span></div>';
-  return '<div class="ask">' + tr('За състезанието „Аз и числата“ няколко деца носят общо ' + oneNum(q.T) + ' молива, като ' + oneNum(q.k) + ' носят по ' + ONE_BG[q.m] +
+  return '<div class="ask">' + tr('За състезанието „Аз и числата“ няколко деца носят общо ' + numSpan(q.T) + ' молива, като ' + numSpan(q.k) + ' носят по ' + ONE_BG[q.m] +
       ' молива, а останалите — по един. Колко деца носят по един молив?',
-    'На змагання «Я і числа» кілька дітей несуть разом ' + oneNum(q.T) + ' ' + oneUk(q.T, 'олівець', 'олівці', 'олівців') + ', причому ' + oneNum(q.k) + ' несуть по ' + ONE_UK[q.m] +
+    'На змагання «Я і числа» кілька дітей несуть разом ' + numSpan(q.T) + ' ' + oneUk(q.T, 'олівець', 'олівці', 'олівців') + ', причому ' + numSpan(q.k) + ' несуть по ' + ONE_UK[q.m] +
       ' олівці, а решта — по одному. Скільки дітей несуть по одному олівцю?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }

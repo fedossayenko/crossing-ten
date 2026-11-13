@@ -2,7 +2,7 @@
 
 // МБГ Есен, 3 клас, задача 13: A to B is 32 km, M is halfway, N lies between A and M with MN = 4 km;
 // N to B is 16 + 4 = 20 km. Sometimes it asks for A to N instead: 16 − 4.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, numSpan, rnd, tr } from '../js/core.js';
 export function genMidPt(){
   const half = 8 + rnd(23), m = 1 + rnd(half - 2), toB = Math.random() < 0.65;
   return {kind:'midpt', AB: 2*half, half, m, toB, ans: toB ? half + m : half - m,
@@ -42,10 +42,10 @@ function whyMidPt(q, full){
     ' = ' + q.ans + ' км';
 }
 function drawMidSeg(q){
-  const ask = q.toB ? 'NB' : 'AN', num = n => '<span class="num">' + n + '</span>';
-  return '<div class="ask">' + tr('Отсечката AB е дълга ' + num(q.AB) + ' см. Точката M е точно в средата на AB. Точката N е между A и M, на ' + num(q.m) + ' см от M. ' +
+  const ask = q.toB ? 'NB' : 'AN';
+  return '<div class="ask">' + tr('Отсечката AB е дълга ' + numSpan(q.AB) + ' см. Точката M е точно в средата на AB. Точката N е между A и M, на ' + numSpan(q.m) + ' см от M. ' +
       'Колко сантиметра е дълга отсечката ' + ask + '?',
-    'Відрізок AB має довжину ' + num(q.AB) + ' см. Точка M — точно посередині AB. Точка N лежить між A і M, на відстані ' + num(q.m) + ' см від M. ' +
+    'Відрізок AB має довжину ' + numSpan(q.AB) + ' см. Точка M — точно посередині AB. Точка N лежить між A і M, на відстані ' + numSpan(q.m) + ' см від M. ' +
       'Скільки сантиметрів має відрізок ' + ask + '?') +
     '</div>' + midSvg(q) + '<div class="line md">' + SLOT + ' <span class="unit">см</span></div>';
 }

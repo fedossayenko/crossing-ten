@@ -4,7 +4,7 @@
 // there was. Asked the other way round: so many pieces, how many cuts. Аз и числата 2024, задача 10: four pines,
 // a rose bush between each two of them: 3 bushes, one fewer than the pines (the paper's picture shows two pines and
 // a bush; the text counts). The slip is the number given, or one too many.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
 // who: [Bulgarian, feminine, Ukrainian]
 const CUT_WHO = [['Капитан Защо', false, 'Капітан Чому'], ['Пинки', true, 'Пінкі'], ['Мая', true, 'Мая'], ['Иво', false, 'Іво']];
 // what is cut: [Bulgarian, which (by gender), with the article, Ukrainian (accusative), Ukrainian short]
@@ -29,7 +29,6 @@ export function genCuts(){
   const k = 2 + rnd(8);
   return {kind:'cuts', shape:'cut', who, th, k, traps:[k, k + 2], ans: k + 1};
 }
-const num = x => '<span class="num">' + x + '</span>';
 function drawCuts(q){
   if(q.shape === 'between'){
     const T = CUT_TREES[q.t];
@@ -38,11 +37,11 @@ function drawCuts(q){
       '<div class="line xl">' + SLOT + '</div>';
   }
   const [bgWho, f, ukWho] = CUT_WHO[q.who], T = CUT_THING[q.th], a = f ? 'а' : '';
-  if(q.shape === 'pieces') return '<div class="ask">' + tr(bgWho + ' разрязал' + a + ' ' + T[0] + ' на ' + num(q.n) + ' парчета. На колко места е срязал' + a + ' ' + T[2] + '?',
-      ukWho + (f ? ' розрізала ' : ' розрізав ') + T[3] + ' на ' + num(q.n) + ' ' + cutUk(q.n, 'шматки', 'шматків') + '. У скількох місцях ' + (f ? 'вона різала' : 'він різав') + ' ' + T[4] + '?') + '</div>' +
+  if(q.shape === 'pieces') return '<div class="ask">' + tr(bgWho + ' разрязал' + a + ' ' + T[0] + ' на ' + numSpan(q.n) + ' парчета. На колко места е срязал' + a + ' ' + T[2] + '?',
+      ukWho + (f ? ' розрізала ' : ' розрізав ') + T[3] + ' на ' + numSpan(q.n) + ' ' + cutUk(q.n, 'шматки', 'шматків') + '. У скількох місцях ' + (f ? 'вона різала' : 'він різав') + ' ' + T[4] + '?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
-  return '<div class="ask">' + tr(bgWho + ' купил' + a + ' ' + T[0] + ', ' + T[1] + ' срязал' + a + ' на ' + num(q.k) + ' места. Колко парчета са се получили?',
-    ukWho + (f ? ' купила ' : ' купив ') + T[3] + ', яку ' + (f ? 'розрізала' : 'розрізав') + ' у ' + num(q.k) + ' місцях. Скільки шматків вийшло?') + '</div>' +
+  return '<div class="ask">' + tr(bgWho + ' купил' + a + ' ' + T[0] + ', ' + T[1] + ' срязал' + a + ' на ' + numSpan(q.k) + ' места. Колко парчета са се получили?',
+    ukWho + (f ? ' купила ' : ' купив ') + T[3] + ', яку ' + (f ? 'розрізала' : 'розрізав') + ' у ' + numSpan(q.k) + ' місцях. Скільки шматків вийшло?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqCuts(q){

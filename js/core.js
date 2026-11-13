@@ -70,6 +70,7 @@ export function diffBars(rows, extra, foot, label){
 }
 export const UNIT_MM = { мм:1, см:10, дм:100, м:1000 };   // millimetres in each length unit
 export const UNIT_W2 = { мм:['милиметра','міліметрів'], см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };   // «колко …» plural, Bulgarian and Ukrainian
+export const numSpan = v => '<span class="num">' + v + '</span>';   // a number as the worksheet prints it
 export const CM = ' <span class="unit">см</span>';
 
 export const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');

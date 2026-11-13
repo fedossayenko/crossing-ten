@@ -3,7 +3,7 @@
 // Аз и числата 2023, 2 клас, задача 4: Антон has 5 shirts and 2 pairs of trousers, each a different colour. Each pair
 // of trousers goes with all 5 shirts: 5 + 5 = 10 outfits. The slip adds the two numbers, 5 + 2 = 7. The tops stay
 // few enough to add up, as a 2nd-grader does in January, before the times table.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
 // who wears it: [Bulgarian, Ukrainian, feminine]; what: [tops, bottoms] — Bulgarian count forms, Ukrainian 2–4 and 5+
 const OUT_WHO = [['Антон', 'Антон', false], ['Ива', 'Іва', true], ['Петър', 'Петро', false], ['Мая', 'Мая', true]];
 const OUT_SETS = [
@@ -16,11 +16,10 @@ export function genOutfits(){
   const who = rnd(OUT_WHO.length), set = rnd(OUT_SETS.length), a = 2 + rnd(5), b = 2 + rnd(2);
   return {kind:'outfits', who, set, a, b, traps:[a + b, a*b + 1].filter(t => t !== a*b), ans: a*b};   // 2 + 2 is 2 · 2: no slip there
 }
-const num = x => '<span class="num">' + x + '</span>';
 function drawOutfits(q){
   const [bgWho, ukWho] = OUT_WHO[q.who], S = OUT_SETS[q.set];
-  return '<div class="ask">' + tr(bgWho + ' има ' + num(q.a) + ' различни по цвят ' + S.bg[0] + ' и ' + num(q.b) + ' различни по цвят ' + S.bg[1] + '. Колко различни тоалета може да облече ' + bgWho + '?',
-    ukWho + ' має ' + num(q.a) + ' ' + outUk(q.a, S.uk[0][0], S.uk[0][1]) + ' різного кольору і ' + num(q.b) + ' ' + outUk(q.b, S.uk[1][0], S.uk[1][1]) +
+  return '<div class="ask">' + tr(bgWho + ' има ' + numSpan(q.a) + ' различни по цвят ' + S.bg[0] + ' и ' + numSpan(q.b) + ' различни по цвят ' + S.bg[1] + '. Колко различни тоалета може да облече ' + bgWho + '?',
+    ukWho + ' має ' + numSpan(q.a) + ' ' + outUk(q.a, S.uk[0][0], S.uk[0][1]) + ' різного кольору і ' + numSpan(q.b) + ' ' + outUk(q.b, S.uk[1][0], S.uk[1][1]) +
       ' різного кольору. Скільки різних комплектів одягу може вдягнути ' + ukWho + '?') + '</div>' +
     '<div class="line xl">' + SLOT + '</div>';
 }

@@ -3,7 +3,7 @@
 // Аз и числата 2026, 2 клас, задача 10: an egg boils in 6 minutes — 5 eggs boiled at the same time are done in 6
 // minutes too, not 5 · 6 = 30 (the paper's other options are 30 and 15). Shirts drying on a line are the same story.
 // So that the word is read and not guessed, some eggs go into the pot one after another: then the minutes add up.
-import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, UK_PLURAL, numSpan, rnd, tr } from '../js/core.js';
 const togUk = (n, one, few, many) => n + ' ' + ({one, few}[UK_PLURAL.select(n)] || many);
 export function genTogether(){
   if(Math.random() < 0.3){
@@ -13,15 +13,14 @@ export function genTogether(){
   const shirts = Math.random() < 0.35, n = 2 + rnd(8), t = shirts ? 2 + rnd(5) : 3 + rnd(8);
   return {kind:'together', shape: shirts ? 'shirts' : 'eggs', n, t, traps:[n*t, n + t], ans: t};
 }
-const num = x => '<span class="num">' + x + '</span>';
 function drawTogether(q){
-  if(q.shape === 'shirts') return '<div class="ask">' + tr('Една риза изсъхва на простора за ' + num(q.t) + ' часа. За колко часа ще изсъхнат ' + num(q.n) + ' ризи, ако съхнат едновременно?',
-      'Одна сорочка висихає на мотузці за ' + num(q.t) + ' ' + togUk(q.t, 'годину', 'години', 'годин').replace(/^\d+ /, '') + '. За скільки годин висохнуть ' + num(q.n) + ' ' +
+  if(q.shape === 'shirts') return '<div class="ask">' + tr('Една риза изсъхва на простора за ' + numSpan(q.t) + ' часа. За колко часа ще изсъхнат ' + numSpan(q.n) + ' ризи, ако съхнат едновременно?',
+      'Одна сорочка висихає на мотузці за ' + numSpan(q.t) + ' ' + togUk(q.t, 'годину', 'години', 'годин').replace(/^\d+ /, '') + '. За скільки годин висохнуть ' + numSpan(q.n) + ' ' +
       togUk(q.n, 'сорочка', 'сорочки', 'сорочок').replace(/^\d+ /, '') + ', якщо вони сохнуть одночасно?') + '</div>' +
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('часа', 'год') + '</span></div>';
   const how = q.shape === 'one' ? tr('едно след друго — щом едното се свари, слагат следващото', 'одне за одним — щойно одне звариться, кладуть наступне') : tr('едновременно', 'одночасно');
-  return '<div class="ask">' + tr('Едно яйце се сварява за ' + num(q.t) + ' минути. За колко минути ще се сварят ' + num(q.n) + ' яйца, ако се варят ' + how + '?',
-    'Одне яйце варится ' + num(q.t) + ' ' + togUk(q.t, 'хвилину', 'хвилини', 'хвилин').replace(/^\d+ /, '') + '. За скільки хвилин зваряться ' + num(q.n) + ' ' +
+  return '<div class="ask">' + tr('Едно яйце се сварява за ' + numSpan(q.t) + ' минути. За колко минути ще се сварят ' + numSpan(q.n) + ' яйца, ако се варят ' + how + '?',
+    'Одне яйце варится ' + numSpan(q.t) + ' ' + togUk(q.t, 'хвилину', 'хвилини', 'хвилин').replace(/^\d+ /, '') + '. За скільки хвилин зваряться ' + numSpan(q.n) + ' ' +
     togUk(q.n, 'яйце', 'яйця', 'яєць').replace(/^\d+ /, '') + ', якщо їх варити ' + how + '?') + '</div>' +
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('мин', 'хв') + '</span></div>';
 }
