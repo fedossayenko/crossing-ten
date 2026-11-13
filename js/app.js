@@ -7,7 +7,7 @@ import { dailyPlan, mistakePick, trapShown } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
-import { compDims, ekPts, paperPts, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, compDims, ekPts, paperPts, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -1207,7 +1207,7 @@ function buildToday(now){
     next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, daily: dailyPlan(LOCAL.rounds, LEVELS, now),
     week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
-    compN: compDims()[0], compMin: compDims()[1], forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
+    compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
 }
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }

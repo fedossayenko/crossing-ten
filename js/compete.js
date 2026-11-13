@@ -52,8 +52,10 @@ const ekDraw = (l, k) => {
   }
   return null;
 };
-function ekTasks(f){
-  const ek = LEVELS.filter(l => l.papers.some(p => p.startsWith('ek-')) && f.has(l)), pool = ek.length ? ek : poolOf(f);
+// the paper from the Кенгуру-tagged levels of the focus; from the grade's olympiad levels when those cannot make one
+const ekTasks = f => ekFrom(LEVELS.filter(l => l.papers.some(p => p.startsWith('ek-')) && f.has(l))) || ekFrom(poolOf(f));
+// null when the pool has no level that gives a fitting task for some slot
+function ekFrom(pool){
   const chosen = [], used = new Set(), dead = new Set();
   let lastGrp = null;
   // the next level from cands that gives a fitting task for slot k (a level that never fits is dropped for good)
@@ -66,7 +68,9 @@ function ekTasks(f){
     return null;
   };
   // 25–26: the hardest levels that can be typed (one whole number)
-  const typed = pool.filter(l => ekDraw(l, EK_CHOICE)), top = Math.max(...typed.map(l => l.d)), hard = typed.filter(l => l.d >= top - 1);
+  const typed = pool.filter(l => ekDraw(l, EK_CHOICE));
+  if(!typed.length) return null;
+  const top = Math.max(...typed.map(l => l.d)), hard = typed.filter(l => l.d >= top - 1);
   for(let k = EK_CHOICE; k < EK_N; k++){
     const free = (hard.length > 1 ? hard : typed).filter(l => !used.has(l.id));
     chosen.push(take(free.length ? free : typed, k));
@@ -88,9 +92,11 @@ function ekTasks(f){
     }
     // a level that cannot fit: the nearest in difficulty that can
     const t = take(c, k) || take(pool.slice().sort((a, b) => Math.abs(a.d - (plan[k] || c[0] || pool[0]).d) - Math.abs(b.d - (plan[k] || c[0] || pool[0]).d)), k);
+    if(!t) return null;
     low.push(t);
   }
   low.sort((a, b) => a.d - b.d);
+  if(chosen.includes(null)) return null;
   return low.concat(chosen).map((x, k) => ekBuild(x.lvl, x.seed, k));
 }
 export function compTasks(paper, f = compFocus()){
