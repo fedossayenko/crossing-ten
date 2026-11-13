@@ -263,6 +263,40 @@ const server = http.createServer((req, res) => {
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
   expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today && r5.dailyCard && r5.dailyPlay && r5.dailyLog && r5.dailyDone && r5.dailyPill, 'the next competition or today\'s practice went wrong: ' + JSON.stringify(r5));
+  // «Намери грешката» (js/daily.js): a task of today's practice shows a typical wrong answer first. A key does nothing until she
+  // says Вярно/Грешно; Грешно is right and she types the answer as usual; Вярно is a miss, the answer and why come at once;
+  // logged by task as [the answer shown, 1 found it / 0 took it for right]; never in a paper; a daily plays at most one
+  const mist = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level, keep = LOCAL.rounds.slice();
+    const pickJ = j => document.querySelector('#hint .askpick[data-j="' + j + '"]').click();
+    const qOf = lv => { for(let s = 1; s < 60; s++){ const q = seeded(s, () => raw(lv)); if(trapShown(q).length) return Object.assign(q, { lvl: lv }); } };
+    const lvs = LEVELS.filter(l => l.grade === 2 && qOf(l.id)).map(l => l.id).slice(0, 4), r = { levels: lvs.length };
+    LOCAL.choice = false; LOCAL.rounds = [];
+    const qs = lvs.map(qOf), sh = qs.map(q => trapShown(q)[0]);
+    newRound(qs); S.daily = true; S.mist[1] = sh[1]; S.mist[2] = sh[2];
+    r.plain1 = !S.ask; [...String(answer(qs[0]))].forEach(K); K('go'); await tick();
+    next(); await tick();
+    r.asks = !!S.ask && !!S.ask.mist && document.querySelectorAll('#hint .askpick').length === 2 && $('hint').textContent.includes(String(sh[1]));
+    K('7'); r.blocked = S.parts[0] === '' && $('hint').textContent.includes(t('mistFirst'));
+    pickJ(1); await tick(); r.found = !S.ask && S.judged[1] === 1 && $('hint').textContent.includes(t('mistOk', sh[1]));
+    [...String(answer(qs[1]))].forEach(K); K('go'); await tick(); r.right = S.results[1] === true && S.after[1] !== 2; next(); await tick();
+    pickJ(0); await tick(); r.missed = S.judged[2] === 0 && S.settled && S.results[2] === false && S.after[2] === 0 && S.typed[2] === String(sh[2]) &&
+      $('hint').textContent.includes(String(answer(qs[2]))) && $('hint').textContent.includes(t('mistNo'));
+    next(); await tick(); r.kept = JSON.stringify(JSON.parse(localStorage.getItem(RS)).s.judged.slice(0, 3)) === '[null,1,0]';
+    [...String(answer(qs[3]))].forEach(K); K('go'); await tick(); next(); await tick();
+    const last = LOCAL.rounds[LOCAL.rounds.length - 1];
+    r.logged = JSON.stringify(last.judged.slice(0, 3)) === JSON.stringify([null, [sh[1], 1], [sh[2], 0]]) && last.t[2][3] === String(sh[2]) && last.t[2][4] === 0 && last.t[1][4] === 1 && JSON.stringify(last).length < 4096;
+    // a round picked up again before it was judged asks again; a paper, a level round and a plain round ask nothing
+    newRound(lvs.map(qOf)); S.mist[1] = sh[1]; S.judged = []; next(); await tick(); r.again = !!S.ask && S.ask.mist;
+    newRound(); await tick(); r.none = !S.ask && !S.mist.some(v => v != null);
+    // today's practice itself: at most one task shows a wrong answer, never the first, and it is one of the task's traps
+    LOCAL.rounds = [2, 5, 8, 9, 10, 11, 12, 13].map((lv, k) => ({ id: 'dm-' + lv, ts: Date.now() - (3 + k) * 864e5, day: '', level: lv, n: 10, firstTry: 9 }));
+    startDaily(); await tick();
+    const ms = S.mist.map((v, k) => v != null ? k : -1).filter(k => k >= 0);
+    r.daily = S.daily === true && ms.length <= 1 && !ms.includes(0) && ms.every(k => trapShown(S.qs[k]).includes(S.mist[k]) && !answers(S.qs[k]).includes(S.mist[k]));
+    LOCAL.rounds = keep; saveLocal(); LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
+    return JSON.stringify(r); })()`) || '{}');
+  expect(mist.levels >= 3 && mist.plain1 && mist.asks && mist.blocked && mist.found && mist.right && mist.missed && mist.kept && mist.logged && mist.again && mist.none && mist.daily, 'the mistake task went wrong: ' + JSON.stringify(mist));
   // two right in a row earn a treat: her mascot eats it beside the praise; the third gets star eyes, not another treat
   const treat = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
     const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 5;
