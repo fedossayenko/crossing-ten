@@ -213,7 +213,7 @@ as her focus, a 1st-grader climbs grade by grade, and competitions are drawn fro
 
 Every file is a native ES module (no bundler, no build): it imports what it uses and exports what others
 need, and the rest stays private to it. `index.html` lists every module with `<script type="module">`
-(the service worker caches what it lists). To add a level:
+(the service worker caches those and every module they import, so a new module needs no list). To add a level:
 write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row
 to `js/levels.js`, and add a check to `check/kinds.js` (a paper's printed tasks are pinned in `check/papers.js`).
 
@@ -268,7 +268,9 @@ so an easy paper is never the record for a hard one. Today also offers a 2nd-gra
 МБГ Есен 2026: a task from each `FORECAST` level in `js/compete.js`, in the forecast's order,
 with new numbers every time. The tasks come from the levels' own generators,
 never from the competitions' papers, which are copyrighted. A paper is saved as one round
-with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round.
+with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round. While it runs it is
+saved at every task under `<roundsKey>.paper`, so a reload resumes it (and ends it at once if its hour has passed).
+The next paper's date is `PLAYER.next`, so it travels with the player record.
 Two badges go with it: **Състезател** (finish a competition) and **Изследовател** (tasks
 from all nine groups), sixteen in all.
 
@@ -414,10 +416,11 @@ running.
 
 ## Offline
 
-The Pages copy plays with no network at all — on a plane, say. `sw.js` fetches the page and every
-file it names when it installs, so a single visit online is enough, the Google fonts included. After
+The Pages copy plays with no network at all — on a plane, say. `sw.js` fetches the page, every
+file it names and every module those import when it installs (a missing file fails the install; `check/app.js`
+runs the install against the disk), so a single visit online is enough. After
 that it stays network-first (the newest build whenever there is a connection) and falls back to its
-copy when the network fails or a wifi login page answers through a redirect. Rounds are kept on the
+copy when the network fails, takes over 3.5 s, or a wifi login page answers through a redirect. Rounds are kept on the
 device and sync with the family when the connection is back. On an iPad it should be opened from the
 home-screen icon: Safari can clear a website's storage after a week unused, a home-screen app it keeps.
 `node smoke.js` ends by stopping its server and playing a round from the copy.
@@ -469,7 +472,9 @@ The server is a Cloudflare Worker with one D1 database (`worker/`), free tier. P
 are PBKDF2-SHA-256 (30 000 rounds, the most the free plan's ~10 ms of CPU allows; the count
 is stored per account) and five wrong ones in a row lock the account for 15 minutes. A login
 hands the device a random session token, kept on the server only as its SHA-256; **Log out**
-ends that one session. Google sign-in uses the OAuth web client in the Google Cloud project `crossing-ten-95850`
+ends that one session; a session unused for 180 days ends too, and a password change ends the family's other
+sessions. `/signup`, `/login` and `/google` take 10 requests a minute per address. A `/sync` reply lists what it
+could not store (`refused`), and a family holds at most 30 players. Google sign-in uses the OAuth web client in the Google Cloud project `crossing-ten-95850`
 (`GOOGLE_ID` in `js/sync.js`, `GOOGLE_CLIENT_ID` in `worker/wrangler.toml`; it is in Testing
 mode, so only its listed test users can use it). The
 Worker checks Google's signature and keeps only the account's stable id, never its email.

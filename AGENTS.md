@@ -19,6 +19,8 @@ design rules (difficulty rubric, training path) are in `README.md`.
   Always `-c wrangler.toml` in `worker/`: wrangler otherwise picks the app's `wrangler.jsonc` one folder up.
   A schema change is a numbered file in `worker/migrations/` (additive), applied `--local` first, `--remote` after a
   `wrangler d1 export … --remote` backup; `schema.sql` is the whole schema for a new database.
+  The worker limits `/signup`, `/login` and `/google` to 10 a minute per IP (`LIMIT` binding); `test.js` sends a fake
+  `cf-connecting-ip` per call locally, and a run against a deployed worker waits out the limit.
 - `./verify.sh` runs tsc, check.js and smoke.js at once (about 45 s, set by smoke.js); run it before finishing. None may be weakened to make a change pass.
 - Deploy: `git push` (GitHub Pages serves the `main` branch as pushed; there is no CI and no `.github/`) and
   `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).

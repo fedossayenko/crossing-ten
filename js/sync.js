@@ -5,7 +5,7 @@
    not had from the server: rounds are a set union by id, players are last-edit-wins on
    `updated`, a player's resetAt drops her older rounds, and a deleted player travels as a
    tombstone in PLAYERS.gone. */
-import { $ } from './core.js';
+import { $, esc } from './core.js';
 import { setW } from './questions.js';
 import { PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds } from './archive.js';
@@ -183,7 +183,6 @@ function deviceLabel(){
   const app = /Edg\//.test(ua) ? 'Edge' : /Firefox|FxiOS/.test(ua) ? 'Firefox' : /Chrome|CriOS/.test(ua) ? 'Chrome' : /Safari/.test(ua) ? 'Safari' : '';
   return [kind, app].filter(Boolean).join(' · ');
 }
-const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
 // "2 minutes ago", in her language, by the browser's own wording
 const ago = ms => { const m = Math.round((ms - Date.now()) / 60000), rtf = new Intl.RelativeTimeFormat(LANG_TAG[LANG], { numeric:'auto' });
   return Math.abs(m) < 60 ? rtf.format(m, 'minute') : Math.abs(m) < 1440 ? rtf.format(Math.round(m / 60), 'hour') : rtf.format(Math.round(m / 1440), 'day'); };
