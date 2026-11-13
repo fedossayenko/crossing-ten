@@ -816,9 +816,9 @@ const server = http.createServer((req, res) => {
   // (Sofia, 25 Oct 2026) is 25 hours long, and the days either side of it are still in a row
   await cmd('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Sofia' });
   const dst = await page(`(() => { const rs = d => ({ id: d, ts: 0, day: d, level: 2, n: 10, firstTry: 8 });
-    return { best: statsFrom(['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-03-28', '2026-03-29', '2026-03-30'].map(rs)).streakBest }; })()`);
+    return { tz: Intl.DateTimeFormat().resolvedOptions().timeZone, best: statsFrom(['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-03-28', '2026-03-29', '2026-03-30'].map(rs)).streakBest }; })()`);
   await cmd('Emulation.setTimezoneOverride', { timezoneId: '' });
-  expect(dst.best === 4, 'a run of days across the clocks going back was cut short (Sofia, 24 to 26 Oct): ' + JSON.stringify(dst));
+  expect(dst.tz === 'Europe/Sofia' && dst.best === 4, 'a run of days across the clocks going back was cut short (Sofia, 24 to 26 Oct): ' + JSON.stringify(dst));
   // a paper in progress survives a reload (the iPad drops a home-screen app it is not showing): the same tasks, her answers, the
   // task she was on and the same end of the hour; an hour that ran out meanwhile ends it with what she had answered
   const paperDo = `(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)), K = k => document.querySelector('.key[data-k="' + k + '"]').click();
@@ -826,7 +826,7 @@ const server = http.createServer((req, res) => {
     for(let n = 0; n < 3; n++){ const q = S.qs[S.i];
       if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); $('nextBtn').click(); }
       else { const want = answers(q).slice(0, q.slots || 1).map(String);   // each box; a task she counts herself opens them with +
-        want.forEach((v, k) => { [...v].forEach(K); if($('more')){ if(k < want.length - 1) K('more'); } else K('go'); }); if($('more')) K('go'); }
+        want.forEach((v, k) => { [...v].forEach(K); if($('more')){ if(k < want.length - 1) $('more').click(); } else K('go'); }); if($('more')) K('go'); }
       await tick(300); }
     return JSON.stringify({ i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length }); })()`;
   const pa = JSON.parse(await run(paperDo) || '{}');
@@ -839,6 +839,24 @@ const server = http.createServer((req, res) => {
   const pc = await page(`({ comp: !COMP, sheet: !$('sheet').hidden, kept: localStorage.getItem(LS + '.paper'), last: LOCAL.rounds[LOCAL.rounds.length - 1].level, pts: LOCAL.rounds[LOCAL.rounds.length - 1].n })`);
   expect(pc.comp && pc.sheet && pc.kept === null && pc.last === 'comp' && pc.pts === 20, 'a paper whose hour ran out while away was not ended: ' + JSON.stringify(pc));
   await run("$('sheet').hidden = true; newRound(); ''");
+  // a reload on the paper's check screen keeps the last answer, the check and the times, and so does a second reload
+  const chk = `(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)), K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    startComp(); await tick();
+    for(let n = 0; n < 20; n++){ const q = S.qs[S.i];
+      if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); $('nextBtn').click(); }
+      else { const want = answers(q).slice(0, q.slots || 1).map(String);
+        want.forEach((v, k) => { [...v].forEach(K); if($('more')){ if(k < want.length - 1) $('more').click(); } else K('go'); }); if($('more')) K('go'); }
+      await tick(250); }
+    return 'x'; })()`;
+  const seeCheck = `COMP ? { check: !!COMP.check && !!document.querySelector('#stage .check'), n: Object.keys(COMP.ans).length, ans: JSON.stringify(COMP.ans), i: S.i, ms: JSON.stringify(S.ms), qs: S.qs.map(drawQ).join('|').length } : null`;
+  await run(chk);
+  const ck0 = await page(seeCheck);
+  await cmd('Page.reload'); await settle();
+  const ck1 = await page(seeCheck);
+  await cmd('Page.reload'); await settle();
+  const ck2 = await page(seeCheck);
+  expect(ck0 && ck0.check && ck0.n === 20 && ck1 && JSON.stringify(ck1) === JSON.stringify(ck0) && JSON.stringify(ck2) === JSON.stringify(ck0), 'a reload on the paper\'s check screen lost something: ' + JSON.stringify({ ck0, ck1, ck2 }));
+  await run("confirm = () => true; $('quitBtn').click(); $('sheet').hidden = true; newRound(); ''");
   await cmd('Page.reload'); await settle();   // a fresh page: this one has played sounds already
   // the audio context is made on the first touch or key, not on the first key of a task (about 75 ms she would feel)
   const au = await page(`(() => { const Real = window.AudioContext; let made = 0; window.AudioContext = class extends Real { constructor(){ super(); made++; } };
@@ -862,11 +880,14 @@ const server = http.createServer((req, res) => {
     LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(out); })()`) || '[]');
   expect(ky.join() === ',,,4', 'a held key or a ⌘/Ctrl digit typed into the answer: ' + JSON.stringify(ky));
   // storage too full for 100 rounds: the copy already there stays, a grown-up is told
-  const sf = JSON.parse(await run(`(() => { const set = Storage.prototype.setItem, was = localStorage.getItem(LS), line = $('synced').textContent;
+  // (it stays on the Parents line through the round count that finish() writes there, until a save works again)
+  const sf = JSON.parse(await run(`(() => { const set = Storage.prototype.setItem, was = localStorage.getItem(LS), line = $('synced').textContent, keep = LOCAL.rounds.slice(), lv = S.level;
     Storage.prototype.setItem = function(k, v){ if(k === LS && v.length > 3000) throw new Error('quota'); return set.call(this, k, v); };
-    saveLocal(); Storage.prototype.setItem = set; const out = { kept: localStorage.getItem(LS) === was && was.length > 3000, note: $('synced').textContent === t('storageFull') };
-    $('synced').textContent = line; return JSON.stringify(out); })()`) || '{}');
-  expect(sf.kept && sf.note, 'a full storage wiped the rounds kept there, or said nothing: ' + JSON.stringify(sf));
+    saveLocal(); const out = { kept: localStorage.getItem(LS) === was && was.length > 3000, note: $('synced').textContent.includes(t('storageFull')) };
+    LOCAL.choice = false; S.level = 5; newRound([{ a:27, b:15, op:'+' }]); finish(); out.afterFinish = $('synced').textContent.includes(t('storageFull'));
+    Storage.prototype.setItem = set; saveLocal(); $('synced').textContent = heldHere() + builtOn(); out.cleared = !$('synced').textContent.includes(t('storageFull'));
+    $('sheet').hidden = true; LOCAL.rounds = keep; S.level = lv; saveLocal(); $('synced').textContent = line; newRound(); return JSON.stringify(out); })()`) || '{}');
+  expect(sf.kept && sf.note && sf.afterFinish && sf.cleared, 'a full storage wiped the rounds kept there, or its warning did not stay: ' + JSON.stringify(sf));
   // putting a kind right whose misses are all gone (put right in another round) starts a round of new tasks; it did not fail
   const fk = JSON.parse(await run(`(async () => { const keep = LOCAL.rounds, now = Date.now(); let err = '';
     LOCAL.rounds = [{ id: 'fk', ts: now - 1000, day: '', level: 2, n: 5, firstTry: 5, redo: { fix: 'forgotBorrow' }, t: [[2, null, 1, null, 1, 5]] }];
@@ -902,11 +923,11 @@ const server = http.createServer((req, res) => {
     LOCAL.rounds = keep; return JSON.stringify({ bad, n }); })()`) || '{}');
   expect(ix.n === 480 && ix.bad === 0, 'the log index answers differently from scanning the log: ' + JSON.stringify(ix));
   // a paper date kept on this device by an older build (in the settings) moves into the player's record, where sync carries it
-  await run(`(() => { const v = JSON.parse(localStorage.getItem(LS)); v.next = { at: 'mbg-autumn', date: '2098-01-01' }; localStorage.setItem(LS, JSON.stringify(v));
-    const p = JSON.parse(localStorage.getItem('crossingten.players')); delete p.list.find(x => x.id === PLAYER.id).next; localStorage.setItem('crossingten.players', JSON.stringify(p)); return ''; })()`);
+  const upd0 = await run(`(() => { const v = JSON.parse(localStorage.getItem(LS)); v.next = { at: 'mbg-autumn', date: '2098-01-01' }; localStorage.setItem(LS, JSON.stringify(v));
+    const p = JSON.parse(localStorage.getItem('crossingten.players')); delete p.list.find(x => x.id === PLAYER.id).next; localStorage.setItem('crossingten.players', JSON.stringify(p)); return String(p.list.find(x => x.id === PLAYER.id).updated); })()`);
   await cmd('Page.reload'); await settle();
-  const mn = await page('{ player: PLAYER.next && PLAYER.next.date, local: LOCAL.next === undefined, stored: !JSON.parse(localStorage.getItem(LS)).next }');
-  expect(mn.player === '2098-01-01' && mn.local, 'a paper date in the old settings did not move into the player: ' + JSON.stringify(mn));
+  const mn = await page('{ player: PLAYER.next && PLAYER.next.date, local: LOCAL.next === undefined, stored: !JSON.parse(localStorage.getItem(LS)).next, updated: String(PLAYER.updated) }');   // moving it must not stamp the record newer than other devices' edits (sync keeps the newer one)
+  expect(mn.player === '2098-01-01' && mn.local && mn.stored && mn.updated === upd0, 'a paper date in the old settings did not move into the player: ' + JSON.stringify(mn));
   await run("PLAYER.next = null; localStorage.setItem('crossingten.players', JSON.stringify(PLAYERS)); ''");
   // a screen reader: marks drawn from spans have a role to carry their label (a bare span's aria-label is ignored), the feedback is announced,
   // and focus goes back to the button that opened a sheet once it closes

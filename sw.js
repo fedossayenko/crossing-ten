@@ -4,7 +4,6 @@
 // The cache's name carries a version: a new one is filled on install and the old ones are deleted on activate,
 // so a file the app no longer has does not linger. Bump it when the cached set itself changes shape.
 const CACHE = 'crossing-ten-v3';
-const NET_WAIT = 3500;   // a slow network (hotel wifi that connects and then stalls) gives way to the cache after this
 
 // On install, fetch the page and every file it needs, so one visit is enough to play offline (the first visit's
 // own requests happen before the worker runs, and would not be kept). Needs = what index.html names by src/href,
@@ -39,14 +38,12 @@ self.addEventListener('fetch', e => {
   if(req.method !== 'GET') return;
   if(url.origin !== location.origin) return;
   const fromCache = () => caches.match(req.url, { ignoreSearch: true }).then(hit => hit || (req.mode === 'navigate' ? caches.match('./') : undefined));
-  const net = fetch(req.url, { cache: 'no-cache' }).then(res => {
+  e.respondWith(fetch(req.url, { cache: 'no-cache' }).then(res => {
     // a plane's or hotel's wifi answers with its own login page, through a redirect: not our file
     if(!res.ok || res.redirected) return fromCache().then(hit => hit || res);
     const copy = res.clone(); caches.open(CACHE).then(c => c.put(req.url.split('?')[0], copy));
     return res;
-  }).catch(fromCache);
-  // the cache answers when the network is slow and there is a copy; with none, the page waits for the network
-  const slow = new Promise(r => setTimeout(r, NET_WAIT)).then(fromCache).then(hit => hit || net);
-  e.waitUntil(net);
-  e.respondWith(Promise.race([net, slow]));
+  }).catch(fromCache));
+  // no timer: a request answered from the cache while the network is only slow would give one page load an old index.html beside new modules
+  // (or the reverse), and a missing export is a SyntaxError. The cache answers when the network fails, which is all of a load or none of it.
 });

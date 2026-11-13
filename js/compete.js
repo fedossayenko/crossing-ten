@@ -12,7 +12,7 @@ import { accepts, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipO
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, saveRound, setComp, sfx, show } from './app.js';
 import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
@@ -69,7 +69,7 @@ export function resumeComp(s){
   const qs = s.tasks.map(([lvl, seed]) => Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
   run({ paper: s.paper, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
   qs.forEach((q, k) => { const a = s.ans[k]; if(a){ S.results[k] = accepts(q, a); if(!S.results[k]){ S.typed[k] = a.join(' · '); S.slip[k] = slipOf(q, a); } } });
-  S.ms = s.ms || []; S.i = s.i;
+  S.ms = s.ms || []; S.i = s.i; S.on = 0;   // the time between the first draw and here is not hers
   if(Date.now() >= s.end) compEnd(); else if(s.check) compCheck(); else show();
 }
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
@@ -128,6 +128,7 @@ export function compAnswer(){
   S.typed[S.i] = ok ? undefined : S.parts.join(' · ');
   S.slip[S.i] = ok ? undefined : slipOf(q, S.parts);
   sfx.tap();
+  saveRound();   // her answer is kept before she moves on (a reload on a choice she has not yet gone on from)
   clearTimeout(COMP.go);
   if(q.options){ $('nextBtn').disabled = false; return; }   // a choice waits for Next: she may still change it
   COMP.go = setTimeout(compNext, 150);
@@ -159,6 +160,7 @@ function compCheck(){
   $('verdict').textContent = ''; $('hint').innerHTML = '';
   $('stage').querySelectorAll('.chk').forEach(b => b.onclick = () => { COMP.check = false; S.i = +b.dataset.k; (COMP.looked = COMP.looked || new Set()).add(S.i); show(); });
   $('handIn').onclick = e => { e.stopPropagation(); compEnd(); };
+  saveRound();   // the check is part of the paper in progress (a reload on it opens it again)
 }
 export function compEnd(){
   if(!COMP) return;

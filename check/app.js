@@ -404,6 +404,15 @@
   if(lacking.length) throw new Error('the service worker does not precache ' + lacking.map(u => u.slice(base.length)).join(', '));
   let failed = false; await install(base + 'js/weekly.js').catch(() => failed = true);
   if(!failed) throw new Error('the service worker installs although a module is missing: a half-filled cache would take over from a whole one');
+  // every request waits for the network (or its failure): a request raced against a timer could be answered from the cache while the
+  // rest of the page's files came fresh, and an old module beside a new one is a SyntaxError and a blank page
+  { const timers = [], listeners = {};
+    const ctx = { self: { addEventListener: (n, f) => listeners[n] = f }, location: { href: base + 'sw.js', origin: 'https://x.test' }, URL, Response, Promise, console,
+      setTimeout: (f, ms) => timers.push(ms), caches: { match: async () => new Response('cached'), open: async () => ({ put(){} }) }, fetch: () => new Promise(() => {}) };
+    vm.runInNewContext(read('sw.js'), ctx, { filename: 'sw.js' });
+    listeners.fetch({ request: { method: 'GET', url: base + 'js/app.js', mode: 'cors' }, respondWith(){}, waitUntil(){} });
+    if(timers.length) throw new Error('sw.js answers a request from the cache while the network is only slow (timer ' + timers + ' ms): one load could mix old and new files');
+  }
   console.log('service worker: installs with all ' + need.size + ' files of the page and its import graph, and fails when one is missing');
 })().catch(e => { console.error(e); process.exit(1); });
 
