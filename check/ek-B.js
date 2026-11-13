@@ -16,7 +16,9 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + tag);
     const sig = g => fields.map(f => JSON.stringify(g[f])).join('|'), want = sig(q);
-    if(!pinSeed(name, () => Q.raw(id), g => g.kind === q.kind && g.shape === q.shape && sig(g) === want ? 2 : 0)) throw new Error(name + ': level ' + id + ' never asks it');
+    // the generator's own answer on the printed question must be the paper's: a hand-written q.ans alone proves nothing
+    const same = g => { if(fields.length && String(Q.answers(g)) !== String(key)) throw new Error(name + ': level ' + id + ' draws it but answers ' + Q.answers(g) + ', the paper says ' + key); return 2; };
+    if(!pinSeed(name, () => Q.raw(id), g => g.kind === q.kind && g.shape === q.shape && sig(g) === want ? same(g) : 0)) throw new Error(name + ': level ' + id + ' never asks it');
     met.push(year + '#' + task);
   };
   // 2025, задача 12: big + small 53, big + two small 56 — А) 40 Б) 43 В) 45 Г) 50 Д) 51

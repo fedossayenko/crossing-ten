@@ -31,7 +31,7 @@ function eqYearsAgo(q){
   return now + ' = ' + (q.a + q.ans) + ', ' + (q.a + q.ans) + ' − ' + q.a + ' = ' + q.ans;
 }
 function whyYearsAgo(q, full){
-  const [x, z, ux, uz] = yaPairs[q.nm];
+  const [x, z, , , , , uz, ux] = yaPairs[q.nm];   // Ukrainian ages take the dative: «Маї 7, отже Нікі …»
   if(!full) return q.ago ? tr('Колко години по-малки са били и двамата тогава? Колко е сборът сега?', 'На скільки років молодшими були обоє тоді? Яка сума зараз?')
     : tr('Колко години по-големи ще са и двамата тогава? Колко е сборът сега?', 'На скільки років старшими будуть обоє тоді? Яка сума зараз?');
   const sum = q.a + q.ans;

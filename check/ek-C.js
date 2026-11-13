@@ -16,7 +16,9 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     const lvl = Q.LEVELS.find(l => l.id === id);
     if(!lvl.papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + tag);
-    const hit = pinSeed(name, () => Q.raw(id), g => g.kind !== q.kind || g.shape !== q.shape ? 0 : sig(g) === want ? 2 : 0);
+    // the generator's own answer on the printed question must be the paper's: a hand-written q.ans alone proves nothing
+    const same = g => { if(fields.length && String(Q.answers(g)) !== String(key)) throw new Error(name + ': level ' + id + ' draws it but answers ' + Q.answers(g) + ', the paper says ' + key); return 2; };
+    const hit = pinSeed(name, () => Q.raw(id), g => g.kind !== q.kind || g.shape !== q.shape ? 0 : sig(g) === want ? same(g) : 0);
     if(!hit) throw new Error(name + ': level ' + id + ' never asks it');
     met.push(year + '#' + task);
   };

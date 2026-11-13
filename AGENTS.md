@@ -63,7 +63,7 @@ design rules (difficulty rubric, training path) are in `README.md`.
   interface text is `t('key')` from `js/i18n.js`, in bg, uk and en. check.js fails on a missing
   key, on Bulgarian left in Ukrainian task text, and on a render that draws a random number.
   `check/grammar.js` reads every level's text in both languages: a counted word has to change with its number
-  (`ukN`/`ukPl`/`trN` in `js/core.js`, `ordBg`/`ordUk` for digit ordinals); old levels that still break it are listed in its `ALLOW`.
+  (`ukN`/`ukPl`/`trN` in `js/core.js`, `ordBg`/`ordUk` for digit ordinals); it has no exceptions.
 - Never change the Bulgarian output of an existing kind by accident, nor the order of `rnd()`
   calls in a generator: both languages must ask the same question from the same seed.
 - Every file is an ES module, strict, in its own scope; an exported name must be unique across the app

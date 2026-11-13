@@ -15,7 +15,9 @@
     if(strip(Q.drawQ(q)).indexOf(shows.replace(/\s+/g, '')) < 0) throw new Error(name + ' is not drawn as printed: ' + strip(Q.drawQ(q)));
     if(!Q.LEVELS.find(l => l.id === id).papers.includes(tag)) throw new Error('level ' + id + ' is not tagged ' + tag);
     const sig = g => fields.map(f => JSON.stringify(g[f])).join('|'), want = sig(q);
-    if(!pinSeed(name, () => Q.raw(id), g => g.kind !== q.kind ? 0 : sig(g) === want ? 2 : 0)) throw new Error(name + ': level ' + id + ' never asks it');
+    // the generator's own answer on the printed question must be the paper's: a hand-written q.ans alone proves nothing
+    const same = g => { if(fields.length && String(Q.answers(g)) !== String(key)) throw new Error(name + ': level ' + id + ' draws it but answers ' + Q.answers(g) + ', the paper says ' + key); return 2; };
+    if(!pinSeed(name, () => Q.raw(id), g => g.kind !== q.kind ? 0 : sig(g) === want ? same(g) : 0)) throw new Error(name + ': level ' + id + ' never asks it');
     met.push(year + ' #' + task + ' (' + id + ')');
   };
   // 2021 #19: 2 3 4 5 6 into two boxes with the same sum; with the 4 there is only the 6
