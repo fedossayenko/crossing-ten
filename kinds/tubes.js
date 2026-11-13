@@ -23,7 +23,7 @@ export function genTubes(){
   }
   for(;;){
     const letter = 'ГПНТ'[rnd(4)], h = 4 + rnd(3), w = letter === 'Т' ? 3 + 2*rnd(2) : 3 + rnd(3);
-    const pieces = letterPieces(letter, h, w), u = 2 + rnd(3), t = pieces.length / u;
+    const pieces = letterPieces(letter, h, w), u = 2, t = pieces.length / u;
     if(pieces.length % u || t < 3 || t > 7 || pieces.length - u === t - 1) continue;
     return mk('letter', letter, pieces, u, w, h);
   }
