@@ -1,5 +1,5 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-import { CM, KIND, SLOT, SVG_FONT, UKNUM, addUp, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, UKNUM, addUp, diffBars, rnd, sqWalkSvg, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -254,27 +254,6 @@ function eqSqcut(q){
   return q.shape === 3
     ? tr('лист с обиколка ', 'аркуш із периметром ') + q.P + ', квадрат ' + q.a + ' → ' + q.ans
     : tr('страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ', 'сторона ' + q.side + ', на ' + sqcutQuads(q.parts*q.parts) + ' → ') + q.ans;
-}
-// The picture walks round the figure: drawn in grey with its cuts, the piece that matters tinted,
-// then one side at a time lights up orange with its length beside it, and the total comes last.
-// Sizes are in units of the figure; sides is [x1, y1, x2, y2, label], each pushed out from the middle.
-export function sqWalkSvg(W, H, cuts, tint, sides, foot){
-  const u = Math.min(150 / W, 100 / H), f = v => (v * u).toFixed(1);
-  // labels go outwards from the middle of the sides being walked, not of the whole figure
-  const cx = sides.reduce((t, r) => t + r[0] + r[2], 0) / (2 * sides.length), cy = sides.reduce((t, r) => t + r[1] + r[3], 0) / (2 * sides.length);
-  let g = '<g stroke="var(--line)" stroke-width="2" fill="none"><rect x="0" y="0" width="' + f(W) + '" height="' + f(H) + '"/>' +
-    cuts.map(([a, b, c, d]) => '<line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '"/>').join('') + '</g>';
-  if(tint) g += '<rect x="' + f(tint[0]) + '" y="' + f(tint[1]) + '" width="' + f(tint[2]) + '" height="' + f(tint[3]) + '" fill="var(--warm)" opacity=".16"/>';
-  sides.forEach(([a, b, c, d, t], i) => {
-    const mx = (a + c) / 2, my = (b + d) / 2, out = a === c ? [mx < cx ? -1 : 1, 0] : [0, my < cy ? -1 : 1];
-    const lx = mx * u + out[0] * (out[0] ? 8 + 4 * String(t).length : 0), ly = my * u + (out[1] ? out[1] * 9 + 4 : 4);
-    g += '<g' + popAt(1 + i * 1.5) + '><line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '" stroke="var(--warm)" stroke-width="4" stroke-linecap="round"/>' +
-      svgText(lx.toFixed(1), ly.toFixed(1), t, 12, 'var(--warm)') + '</g>';
-  });
-  g += svgText(f(W / 2), (H * u + 38).toFixed(1), foot, 15, 'var(--ink)', popAt(2 + sides.length * 1.5));
-  const [l, r] = roomFor(-34, W * u + 34, W * u / 2, foot, 15);
-  return '<svg viewBox="' + l.toFixed(0) + ' -22 ' + (r - l).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(r - l) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
-    tr('страните една по една', 'сторони одна за одною') + '">' + g + '</svg>';
 }
 // the four sides of a box, clockwise from the top, with their labels
 const sqSides = (x, y, w, h, top, right) => [[x, y, x + w, y, top], [x + w, y, x + w, y + h, right], [x + w, y + h, x, y + h, top], [x, y + h, x, y, right]];
