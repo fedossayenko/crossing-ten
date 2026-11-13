@@ -15,42 +15,63 @@ const server = http.createServer((req, res) => {
   const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
     '--user-data-dir=' + dir, '--window-size=390,844', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   const done = code => { chrome.on('exit', () => { fs.rmSync(dir, { recursive: true, force: true }); process.exit(code); }); chrome.kill(); server.close(); };
-  setTimeout(() => { console.error('smoke: timed out'); done(1); }, 120000);
+  // One watchdog per phase, not one for the whole run: phase(name, ms) restarts it, so a hang names where it is.
+  // SMOKE_TIME=1 prints how long each phase took.
+  let dog, cur = 'start', t0 = Date.now();
+  const phase = (name, ms) => { if(process.env.SMOKE_TIME) console.log('smoke: ' + cur + ' ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s'); cur = name; t0 = Date.now(); clearTimeout(dog); dog = setTimeout(() => { console.error('smoke: timed out in "' + name + '" after ' + ms / 1000 + ' s'); done(1); }, ms); };
+  phase('start', 30000);
   let buf = '';
   const wsUrl = await new Promise(ok => chrome.stderr.on('data', d => {
     buf += d; const m = buf.match(/ws:\/\/[^\s]+/); if(m) ok(m[0]);
   }));
-  const targets = await (await fetch(wsUrl.replace('ws://', 'http://').replace(/\/devtools.*/, '/json/list'))).json();
-  const ws = new WebSocket(targets.find(t => t.type === 'page').webSocketDebuggerUrl);
-  await new Promise(ok => ws.onopen = ok);
-  let id = 0; const wait = {}, errors = [];
-  ws.onmessage = e => {
-    const m = JSON.parse(e.data);
-    if(m.id && wait[m.id]){ wait[m.id](m); delete wait[m.id]; }
-    if(m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
-    if(m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') errors.push(m.params.args.map(a => a.value ?? a.description).join(' '));
+  const browserUrl = wsUrl.replace('ws://', 'http://').replace(/\/devtools.*/, '');
+  const errors = [];
+  // one DevTools connection to a page; every connection reports its script errors into `errors`
+  const connect = async pageWs => {
+    const ws = new WebSocket(pageWs);
+    await new Promise(ok => ws.onopen = ok);
+    let id = 0; const wait = {};
+    ws.onmessage = e => {
+      const m = JSON.parse(e.data);
+      if(m.id && wait[m.id]){ wait[m.id](m); delete wait[m.id]; }
+      if(m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);
+      if(m.method === 'Runtime.consoleAPICalled' && m.params.type === 'error') errors.push(m.params.args.map(a => a.value ?? a.description).join(' '));
+    };
+    const cmd = (method, params = {}) => new Promise(ok => { wait[++id] = ok; ws.send(JSON.stringify({ id, method, params })); });
+    await cmd('Runtime.enable'); await cmd('Page.enable');
+    const run = async expr => {
+      const r = await cmd('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
+      if(r.result.exceptionDetails) errors.push(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
+      const v = r.result.result && r.result.result.value;
+      return typeof v === 'string' ? v : undefined;
+    };
+    return { cmd, run, ws };
   };
-  const cmd = (method, params = {}) => new Promise(ok => { wait[++id] = ok; ws.send(JSON.stringify({ id, method, params })); });
-  await cmd('Runtime.enable'); await cmd('Page.enable');
+  const targets = await (await fetch(browserUrl + '/json/list')).json();
+  const { cmd, run } = await connect(targets.find(t => t.type === 'page').webSocketDebuggerUrl);
   await cmd('Page.navigate', { url });
+  const TABS = +process.env.SMOKE_TABS || 3;
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   // After a load, wait until the app has started, not a fixed time: on a busy machine (right after
   // a rebuild) the service worker's install can hold the page up for several seconds.
   // settle() follows a load: each page that settled is marked, so it waits for a new page, not the one going.
   // settle(ms) is a plain pause for something with no page load to watch (a sync), never under 1.5 s.
-  const settle = async ms => {
+  const settleOn = async (cmd, ms) => {
     if(ms) return sleep(Math.max(ms, 1500));
+    let last;
     for(let i = 0; i < 300; i++){
       const r = await cmd('Runtime.evaluate', { expression: "!window.__settled && document.readyState === 'complete' && typeof S === 'object' && !!document.getElementById('stage')?.innerHTML", returnByValue: true });
       if(r.result?.result?.value === true){ await cmd('Runtime.evaluate', { expression: 'window.__settled = 1' }); return; }
+      last = r.result?.result?.value ?? r.result?.exceptionDetails?.text;
       await sleep(50);
     }
+    throw new Error('smoke: the page did not start within 15 s (waited for readyState complete, S defined and #stage drawn; last answer: ' + last + ')');
   };
-  const run = async expr => {
-    const r = await cmd('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true });
-    if(r.result.exceptionDetails) errors.push(r.result.exceptionDetails.exception?.description || r.result.exceptionDetails.text);
-    const v = r.result.result && r.result.result.value;
-    return typeof v === 'string' ? v : undefined;
+  const settle = ms => settleOn(cmd, ms);
+  // wait for a condition on the page (an expression), not a fixed time; fails naming what it waited for
+  const until = async (expr, what, ms = 5000) => {
+    for(let t = Date.now(); Date.now() - t < ms; await sleep(20)) if(await run('String(!!(' + expr + '))') === 'true') return;
+    throw new Error('smoke: waited ' + ms / 1000 + ' s for ' + what + ' (' + expr + ')');
   };
   // Load it a second time so the page runs through its service worker, as a returning device does
   // (once the worker has finished installing: it fetches every file and the fonts first).
@@ -59,7 +80,7 @@ const server = http.createServer((req, res) => {
 
   // Inside the page: for every level, pick it, miss the first question twice (hint, then
   // the reveal), answer the rest correctly, and land on the end-of-round sheet.
-  const play = `(async () => {
+  const playJs = (from, to, first) => `(async () => {
     // a turn of the event loop: a MessageChannel message, which browsers do not stretch to 4 ms as they do a
     // nested setTimeout(0) (22 of those a level were most of this run)
     const tick = () => new Promise(r => { const c = new MessageChannel(); c.port1.onmessage = () => r(); c.port2.postMessage(0); });
@@ -68,8 +89,8 @@ const server = http.createServer((req, res) => {
     // her answers: ✓ after each box of the task's own; a task whose answers she counts herself opens a box with + for each
     const enter = vs => { vs.forEach((v, j) => { if(j && $('more')) $('more').click(); type(v); if(!$('more')) key('go'); }); if($('more')) key('go'); };
     const out = [];
-    if(!navigator.serviceWorker.controller) out.push('the service worker is not serving the page');
-    for(const l of LEVELS){
+    if(${first} && !navigator.serviceWorker.controller) out.push('the service worker is not serving the page');
+    for(const l of LEVELS.slice(${from}, ${to})){
       $('levelPill').click();
       if(!document.querySelector('#picker .pick[data-lvl="' + l.id + '"]')) document.querySelector('#pickGrades [data-v="0"]').click();   // it opens on her grade
       document.querySelector('#picker .pick[data-lvl="' + l.id + '"]').click();
@@ -91,9 +112,7 @@ const server = http.createServer((req, res) => {
       }
       if($('sheet').hidden) out.push('level ' + l.id + ': round did not finish');
     }
-    $('tabBadges').click(); await tick();
-    if($('stats').hidden) out.push('progress did not open');
-    return JSON.stringify({ out, rounds: LOCAL.rounds.length });
+    return JSON.stringify({ out, rounds: LOCAL.rounds });
   })()`;
   // a launch opens on the recommended level, not on a fixed one
   const launch = JSON.parse(await run('JSON.stringify({ start: S.level, suggested: nextUp(mastery(LOCAL.rounds), null).id })') || '{}');
@@ -101,7 +120,36 @@ const server = http.createServer((req, res) => {
   const td = JSON.parse(await run(`JSON.stringify((() => { const card = document.querySelector('#today .nextcard[data-lvl]');
     const r = { today: !$('today').hidden && location.hash, tabs: !$('tabs').hidden, card: card && +card.dataset.lvl };
     card.click(); r.after = location.hash; r.level = S.level; r.tabsAfter = !$('tabs').hidden; return r; })())`) || '{}');
-  const res = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
+  // The levels are played in TABS tabs at once, each its own slice. A tab beyond the first is a fresh browser
+  // context (its own storage and service worker), so no tab's rounds touch another's; the rounds they log are
+  // added to this tab's afterwards, so everything after this sees all of them, as if one tab had played them.
+  // `setup` runs first in each extra tab (the main tab is set up already), to make it the same player.
+  const nLevels = +(await run('String(LEVELS.length)'));
+  const browser = await connect(wsUrl);
+  const playAll = async (setup = '') => {
+    const slices = Array.from({ length: TABS }, (_, k) => [Math.floor(nLevels * k / TABS), Math.floor(nLevels * (k + 1) / TABS)]);
+    const playSlice = async (k, [from, to]) => {
+      let run_ = run;
+      if(k){
+        const { result: { browserContextId } } = await browser.cmd('Target.createBrowserContext');
+        const { result: { targetId } } = await browser.cmd('Target.createTarget', { url, browserContextId });
+        const list = await (await fetch(browserUrl + '/json/list')).json();
+        const tab = await connect(list.find(t => t.id === targetId).webSocketDebuggerUrl);
+        await settleOn(tab.cmd);
+        if(setup){ await tab.run(setup); await settleOn(tab.cmd); }
+        run_ = tab.run;
+      }
+      return JSON.parse(await run_(playJs(from, to, k === 0)) || '{"out":["driver returned nothing"],"rounds":[]}');
+    };
+    const parts = await Promise.all(slices.map((sl, k) => playSlice(k, sl)));
+    await run(`(() => { for(const r of ${JSON.stringify(parts.slice(1).flatMap(p => p.rounds))}){ LOCAL.rounds.push(r); ARCHIVE.put(PLAYER.id, [r]); } saveLocal(); return ''; })()`);
+    return { out: parts.flatMap(p => p.out), rounds: +(await run('String(LOCAL.rounds.length)')) };
+  };
+  phase('play', 90000);
+  const res = await playAll();
+  await run("$('tabBadges').click(); ''");
+  if(await run("String($('stats').hidden)") === 'true') res.out.push('progress did not open');
+  phase('checks', 120000);
   if(launch.start !== launch.suggested) res.out.push('the launch did not open the recommended level: ' + JSON.stringify(launch));
   const bad = res.out.slice();
   const expect = (cond, what) => { if(!cond) bad.push(what); };
@@ -410,7 +458,10 @@ const server = http.createServer((req, res) => {
     await settle();
     const p2 = await page('{ id: PLAYER.id, lang: document.documentElement.lang, again: $("again").textContent, rounds: LOCAL.rounds.length, open: !$("players").hidden }');
     expect(p2.id === 'p2' && p2.lang === 'uk' && p2.again === 'Новий раунд' && p2.rounds === 0 && !p2.open, 'switching player went wrong: ' + JSON.stringify(p2));
-    const res2 = JSON.parse(await run(play) || '{"out":["driver returned nothing"]}');
+    phase('play, second player', 90000);
+    const res2 = await playAll(`localStorage.setItem('crossingten.players', JSON.stringify({ cur:'p2', list:[
+      { id:'p1', name:'Ани', mascot:'fox', lang:'en' }, { id:'p2', name:'Иво', mascot:'owl', lang:'uk' }] })); location.reload(); 1`);
+    phase('checks, second player on', 120000);
     bad.push(...res2.out.map(x => 'second player, in Ukrainian: ' + x));
     // Adding a player through the form: name, mascot, language, save.
     await run(`$('who').click(); $('pAdd').click(); $('pName').value = 'Мая';
@@ -692,11 +743,11 @@ const server = http.createServer((req, res) => {
   {
     const nav = await page(`(() => { $('who').click(); const a = !$('players').hidden && location.hash; $('parentBtn').click(); const b = !$('parent').hidden && location.hash;
       return { a, b }; })()`);
-    await run(`$('closeParent').click(); 1`); await new Promise(r => setTimeout(r, 150));
+    await run(`$('closeParent').click(); 1`); await until(`location.hash !== '#/parents'`, 'the grown-ups screen to close (back)');
     const nav2 = await page(`({ stats: !$('players').hidden, parent: !$('parent').hidden, hash: location.hash })`);
     await cmd('Page.reload'); await settle();
     const nav3 = await page(`({ stats: !$('players').hidden, hash: location.hash })`);
-    await run(`$('closePlayers').click(); 1`); await new Promise(r => setTimeout(r, 150));
+    await run(`$('closePlayers').click(); 1`); await until(`location.hash === '#/play'`, 'the players screen to close (back to the round)');
     const nav4 = await page(`({ stats: !$('players').hidden, hash: location.hash, stage: !!$('stage').innerHTML })`);
     expect(nav.a === '#/players' && nav.b === '#/parents' && nav2.stats && !nav2.parent && nav2.hash === '#/players' && nav3.stats && nav3.hash === '#/players' &&
       !nav4.stats && nav4.hash === '#/play' && nav4.stage, 'screen addresses went wrong: ' + JSON.stringify({ nav, nav2, nav3, nav4 }));    // a tab's screen shows ‹ only when opened from outside the tabs (the round's level pill), not from a tab or Today
@@ -705,7 +756,7 @@ const server = http.createServer((req, res) => {
       $('tabBadges').click(); const tab = shown('closeStats'), d = history.state.depth - d0;
       $('tabToday').click(); $('tabBadges').click(); const fromToday = shown('closeStats'), d2 = history.state.depth - d0;
       $('closeStats').click(); return { fromRound, tab, fromToday, d, d2 }; })()`);
-    await new Promise(r => setTimeout(r, 150));
+    await until(`location.hash === '#/play'`, 'the tab screen to close (back to the round)');
     arrows.after = await page(`location.hash`);
     expect(arrows.fromRound && !arrows.tab && !arrows.fromToday && arrows.d === 1 && arrows.d2 === 1 && arrows.after === '#/play', 'the back arrow on a tab screen went wrong: ' + JSON.stringify(arrows));
   }
@@ -840,5 +891,6 @@ const server = http.createServer((req, res) => {
   if(bad.length){ console.error('smoke: FAILED\n  ' + bad.join('\n  ')); return done(1); }
   console.log('smoke: played every level in Chrome for two players, ' + res.rounds +
     ' rounds logged, no script errors; asking, switching and adding players, А/Б/В/Г and a 20-task competition all work');
+  phase('end', 1); clearTimeout(dog);
   done(0);
 });

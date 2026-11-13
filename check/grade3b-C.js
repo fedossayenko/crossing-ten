@@ -5,7 +5,6 @@
 // official key, drawn as printed and asked exactly by its level, then every new generator worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const tag = name => 'mbg-autumn-' + name.match(/20\d\d/)[0] + '-3';
   // the printed task: the key, the drawing (its pieces, in order), the paper's tag, and the level asking exactly it

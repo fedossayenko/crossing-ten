@@ -4,7 +4,6 @@
 // level, then the new shapes worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), ex = s => s.split(' ').reduce((a, w, i, ws) => i % 2 ? a : a.concat(T(i ? ws[i - 1] : '', +w)), []);
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // sig: what has to match for the level to have asked the printed task (the whole question, unless the pictures

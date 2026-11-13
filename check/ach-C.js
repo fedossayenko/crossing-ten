@@ -7,7 +7,6 @@
 // worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const met = {};   // year → [task, 'exact' | 'like']
   // fields: what makes it the printed question; like: what makes it the same question with other numbers

@@ -4,7 +4,6 @@
 // shapes worked out again by brute force.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // sig: what has to match for the generator to have asked the printed task (the whole question, unless a
   // shuffled order makes that too rare to wait for)

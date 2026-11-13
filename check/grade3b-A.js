@@ -4,7 +4,6 @@
 // then the new shapes and kinds worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const text = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
   const calc = e => Function('return ' + e.replace(/·/g, '*').replace(/−/g, '-').replace(/:/g, '/'))();
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };

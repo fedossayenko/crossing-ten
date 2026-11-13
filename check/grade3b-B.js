@@ -4,7 +4,6 @@
 // its level; then each answer worked out again another way, on the printed task and on every level's own questions.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const tag = name => 'mbg-autumn-' + name.match(/20\d\d/)[0] + '-3';
   // the text of the first element of a class, as shown (tags out, entities read)

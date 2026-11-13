@@ -5,7 +5,6 @@
 // drawn as printed and asked exactly by its level; then each new generator is worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // sig: the fields that make the question (the rest — options, traps — follow from them)
   const pin = (paper, task, id, q, key, shows, sig, tries = 300000) => {

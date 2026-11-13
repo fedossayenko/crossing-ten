@@ -1,7 +1,7 @@
 # Crossing Ten – agent guide
 
 Maths practice for a grade-2 pupil (Bulgarian olympiad worksheets). Plain HTML, CSS and
-native ES modules (no bundler); no build step, no dependencies. Layout and the
+native ES modules (no bundler); no build step, no npm dependencies (Preact is vendored in `js/vendor/`). Layout and the
 design rules (difficulty rubric, training path) are in `README.md`.
 
 ## Commands
@@ -12,15 +12,23 @@ design rules (difficulty rubric, training path) are in `README.md`.
 - `check/golden.json` records what every level shows (30 seeds, both languages, hints, solutions, options). A change a child would see fails until recorded with `node check.js --golden`; record only a change you meant, and say which levels moved.
 - Every level gets every per-level rule in `check/levels.js`; a rule that cannot fit a level is lifted in its `NOT` table for that level alone, with the reason.
 - check.js runs the per-level check in worker threads (4 by default, `CHECK_THREADS=n`; `CHECK_SERIAL=1` for one,
-  e.g. to profile; `CHECK_TIME=1` times each file): about 9 s on this machine; smoke.js about 25 s. The two can run at once. Bun runs both but is no faster (measured 2026-10-06): the time is the work and headless Chrome, not the runtime.
+  e.g. to profile; `CHECK_TIME=1` times each file, the level threads too): about 15 s on this machine; smoke.js about 35–45 s (it plays the levels in 3 tabs, `SMOKE_TABS=n`; `SMOKE_TIME=1` times its phases; each phase has its own timeout). The two can run at once. Bun runs both but is no faster (measured 2026-10-06): the time is the work and headless Chrome, not the runtime.
 - `node sample.js 12,38 20`: what those levels ask, to tell whether a new paper's task is already covered.
 - Sync (`js/sync.js`, `worker/`): `cd worker && npx wrangler dev --local -c wrangler.toml`, then `node worker/test.js`
   and `SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js` (first time: `npx wrangler d1 execute crossing-ten --local -c wrangler.toml --file schema.sql`).
   Always `-c wrangler.toml` in `worker/`: wrangler otherwise picks the app's `wrangler.jsonc` one folder up.
   A schema change is a numbered file in `worker/migrations/` (additive), applied `--local` first, `--remote` after a
   `wrangler d1 export … --remote` backup; `schema.sql` is the whole schema for a new database.
-- `./verify.sh` runs tsc, then check.js and smoke.js at once (about 30 s); run it before finishing. None may be weakened to make a change pass.
-- Deploy: `git push` (GitHub Pages, via Actions; this machine's `.git/hooks/pre-push` runs `./verify.sh` first) and `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
+- `./verify.sh` runs tsc, check.js and smoke.js at once (about 45 s, set by smoke.js); run it before finishing. None may be weakened to make a change pass.
+- Deploy: `git push` (GitHub Pages serves the `main` branch as pushed; there is no CI and no `.github/`) and
+  `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
+- Hooks are tracked in `.githooks/` and switched on once per clone with git's `core.hooksPath` setting pointed at
+  `.githooks` (a clone without it has no hooks). The commit hook runs gitleaks on the staged changes (`--redact`,
+  if installed) and refuses `.wrangler/`, `.dev.vars`, `*.pem`, `pdfs/`, `.deploy/` (the repo is public). The push
+  hook runs `./verify.sh`, then `tools/ai_review.sh` on exactly the pushed range: Claude Opus reads the diff with
+  `tools/review-rules.md` and blocks only on `VERDICT: BLOCK`; a diff that passed is not reviewed twice (cache in
+  `.git/ai-review`), and an oversized diff, a missing `claude` or a failed call is a message, not a block.
+  Skips: `AI_REVIEW=0` or `VERIFY=0` in front of `git push`. By hand: `tools/ai_review.sh --staged`, or `tools/ai_review.sh FROM TO`.
 
 ## Adding or changing a level
 - One question kind per file in `kinds/`, registering `KIND.<kind> = { draw, eq, why }`. It imports what it

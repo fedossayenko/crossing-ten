@@ -4,7 +4,6 @@
 // new shapes worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const tag = name => name.includes('2022') ? 'mbg-semifinal-2022-1' : 'mbg-semifinal-2023-1';
   // the printed task: the key, the drawing (its pieces, in order), the paper's tag, and the level asking exactly it —
