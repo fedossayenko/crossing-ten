@@ -1,0 +1,20 @@
+#!/bin/sh
+# Tracked hook: enable once per clone with `git config core.hooksPath .githooks`.
+# Runs ./verify.sh, then the Opus review (tools/ai_review.sh) on exactly what is being pushed.
+# Skip: VERIFY=0 skips verify.sh, AI_REVIEW=0 skips the review (e.g. `AI_REVIEW=0 git push`).
+# stdin: one line per ref, "<local ref> <local sha> <remote ref> <remote sha>".
+cd "$(git rev-parse --show-toplevel)" || exit 1
+zero=0000000000000000000000000000000000000000
+if [ "${VERIFY:-1}" != 0 ]; then ./verify.sh || exit 1; fi
+[ "${AI_REVIEW:-1}" = 0 ] && exit 0
+while read -r _ local_sha _ remote_sha; do
+  [ "$local_sha" = "$zero" ] && continue   # deleting a ref
+  if [ "$remote_sha" = "$zero" ]; then
+    # new branch on the remote: what is not yet on origin/main
+    from=$(git merge-base "$local_sha" origin/main 2>/dev/null) || from=$(git hash-object -t tree /dev/null)
+  else
+    from=$remote_sha
+  fi
+  tools/ai_review.sh "$from" "$local_sha" || exit 1
+done
+exit 0

@@ -1,0 +1,15 @@
+#!/bin/sh
+# Tracked hook: enable once per clone with `git config core.hooksPath .githooks`.
+# Blocks a staged secret (gitleaks, if installed) and files that must never be tracked: the repo is public.
+cd "$(git rev-parse --show-toplevel)" || exit 1
+bad=$(git diff --cached --name-only --diff-filter=AM | grep -E '(^|/)(\.wrangler|\.deploy|pdfs)/|(^|/)\.dev\.vars|\.pem$')
+if [ -n "$bad" ]; then
+  echo "pre-commit: these files must not be committed (account data, secrets, papers, build output):"
+  echo "$bad"
+  exit 1
+fi
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --staged --redact --no-banner || { echo "pre-commit: gitleaks found a secret in the staged changes"; exit 1; }
+else
+  echo "pre-commit: gitleaks not installed, secret scan skipped"
+fi
