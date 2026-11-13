@@ -1,13 +1,13 @@
 # Crossing Ten
 
 Arithmetic practice for a Bulgarian grade-2 pupil, built around the olympiad
-worksheets she is working through. Plain HTML, CSS and scripts; no build step, no
-dependencies. `node check.js` verifies every generator, `node smoke.js` plays every
+worksheets she is working through. Plain HTML, CSS and native ES modules; no build step and no npm dependencies (a small Preact is vendored
+in `js/vendor/`). 297 levels in 197 question kinds. `node check.js` verifies every generator, `node smoke.js` plays every
 level in Chrome.
 
 The plain sums (Take away, Add: 6 levels) are **Основи**, basics under everything. Every other
-level is modelled on a task from **Математика без граници (МБГ), autumn round**: 51
-from the 2nd-grade paper and 20 from the 3rd-grade one (Есен 2025), the whole paper, tasks 1–20 (multiplication first,
+level is modelled on a task from a **Математика без граници (МБГ)** paper; the first levels came from the
+autumn round, 2nd and 3rd grade (Есен 2025), the whole paper, tasks 1–20 (multiplication first,
 digits of the smallest three-digit number, products with a 0, two expressions that differ only
 at the end, which two signs make an equality true, erasing digits from a product, how many
 sums two two-digit numbers make, the digits a product can end in, a number by its digits'
@@ -178,7 +178,7 @@ first. A paper's full name and its short tag are `papers` and `paperTag` in `js/
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
 as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels, or from the focus.
 
-- Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages, on every push — through GitHub Actions)
+- Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages, served from the `main` branch as it is pushed: no build, no GitHub Actions — there is no `.github/`)
 - Also: https://crossing-ten.sayenkofedor.workers.dev/ (Cloudflare, `./deploy-cf.sh` from a clean tree — no CI, free).
   The two are different addresses, so each keeps its own copy on a device; the family profile brings the rounds
   across. Google sign-in works on an address only once it is an authorised JavaScript origin of the OAuth client.
@@ -199,6 +199,12 @@ as her focus, a 1st-grader climbs grade by grade, and competitions are drawn fro
 | `js/i18n.js` | every word of the interface in Bulgarian, Ukrainian and English |
 | `js/mascots.js` | the cat, fox, owl and bunny: one shared face, each animal only its fur |
 | `js/choice.js` | a question asked as А/Б/В/Г: the options, made from her likely slips |
+| `js/archive.js` | every round ever played, in IndexedDB (localStorage keeps only the last 400) |
+| `js/daily.js` | «Тренировка за деня»: six mixed tasks a day, from levels she has met and tasks like her mistakes |
+| `js/weekly.js` | the weekly card: her week as a picture to share |
+| `js/ui/` | the screens drawn with Preact (`today.js`, `badges.js`, `notebook.js`) |
+| `js/vendor/` | Preact, hooks and htm, vendored (no npm, no build) |
+| `check/` | the checks `node check.js` runs, and `seeds.json` / `golden.json` they replay and compare |
 | `js/app.js` | the page: rounds, keypad, mascot, progress, picker, players, storage |
 | `js/compete.js` | competition mode: an МБГ-style paper of 20 tasks in an hour, for points |
 | `js/sync.js` | sync between devices through the Worker, by family account |
@@ -424,7 +430,7 @@ home-screen icon: Safari can clear a website's storage after a week unused, a ho
 
 `node smoke.js` opens the page in headless Chrome (twice, so the second load goes
 through the service worker), plays one round of every level through the real picker
-and keypad, missing the first question twice to reach the hint and the reveal, and
+and keypad (the levels split over three tabs at once, `SMOKE_TABS=n`, `SMOKE_TIME=1` times the phases), missing the first question twice to reach the hint and the reveal, and
 fails on any script error.
 
 `node check.js` runs every check in `check/` (inside the app's scope: `levels.js`, `kinds.js`; beside it:
@@ -433,7 +439,7 @@ the worked line, the summary line and the layout agree (a rule that cannot fit a
 `NOT`, with the reason), plus targeted checks that compare a closed form against a brute-force search wherever one
 is used, and pin the original worksheet instance of each task — replayed from its seed in `check/seeds.json`
 (`--repin` records new seeds). `check/golden.json` holds a hash of everything each level shows for 30 seeds;
-`--golden` re-records it after a change meant to be seen. It takes about 8 s: the per-level check runs in worker threads beside the rest (`CHECK_SERIAL=1`: one thread, ~30 s).
+`--golden` re-records it after a change meant to be seen. It takes about 15 s: the per-level check runs in worker threads beside the rest (`CHECK_SERIAL=1`: one thread, ~30 s).
 
 ## Progress storage
 
