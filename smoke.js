@@ -835,6 +835,20 @@ const server = http.createServer((req, res) => {
     const me = JSON.parse(localStorage.getItem('crossingten.players')).list.find(p => p.id === PLAYER.id); return JSON.stringify({ resetAt: me.resetAt, dropped: me.dropped }); })()`) || '{}');
   expect(pe.resetAt === 777 && pe.dropped && pe.dropped[0] === 'zz', 'saving the profile wrote stale sync fields back: ' + JSON.stringify(pe));
   await settle();   // saving the current player reloads the page
+  // Today's data is worked out once for the two paints of one opening (it replays the notebook's seeds and walks every round), and
+  // again as soon as a round is logged or the next paper's date is set
+  const tdm = JSON.parse(await run(`(() => { const a = todayData(), b = todayData(), out = { same: a === b };
+    const keep = LOCAL.rounds, was = LOCAL.next; LOCAL.rounds = keep.concat([Object.assign({}, keep[keep.length - 1], { id: 'tdm', ts: Date.now() })]); out.round = todayData() !== a;
+    const c = todayData(); LOCAL.next = { at: 'mbg-autumn', date: '2099-01-01' }; out.next = todayData() !== c && !!todayData().paper; LOCAL.next = was; LOCAL.rounds = keep; return JSON.stringify(out); })()`) || '{}');
+  expect(tdm.same && tdm.round && tdm.next, 'todayData is not kept between its two paints, or is kept past a change: ' + JSON.stringify(tdm));
+  // the grown-ups' lists find a round's earlier misses and a level's later tasks through an index of the log: the same answers as scanning it
+  const ix = JSON.parse(await run(`(() => { const keep = LOCAL.rounds, lv = [2, 5, 8, 10, 11], sh = [null, 'a', 'b']; let s = 7; const rnd = n => (s = (s * 1103515245 + 12345) % 2147483648) % n;
+    LOCAL.rounds = Array.from({ length: 80 }, (_, k) => ({ id: 'ix' + k, ts: 1e12 + k * 1e6 + rnd(5) * 1e5, day: '', level: 2, n: 6, firstTry: 3, t: Array.from({ length: 6 }, () => [lv[rnd(5)], sh[rnd(3)], 1, null, [1, 0, -1][rnd(3)], 5]) }));
+    const oldMissedIn = (r, [l, shape]) => LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === l && (e[1] ?? null) === (shape ?? null) && e[4] !== 1)).pop();
+    const oldSince = (l, ts) => LOCAL.rounds.reduce((a, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === l && e[4] !== -1){ a.n++; if(e[4] === 1) a.ok++; } }); return a; }, { n: 0, ok: 0 });
+    let bad = 0, n = 0; LOCAL.rounds.forEach(r => r.t.forEach(e => { n++; if(missedIn(r, e) !== oldMissedIn(r, e) || JSON.stringify(since(e[0], r.ts)) !== JSON.stringify(oldSince(e[0], r.ts))) bad++; }));
+    LOCAL.rounds = keep; return JSON.stringify({ bad, n }); })()`) || '{}');
+  expect(ix.n === 480 && ix.bad === 0, 'the log index answers differently from scanning the log: ' + JSON.stringify(ix));
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){

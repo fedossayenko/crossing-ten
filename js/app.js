@@ -898,12 +898,25 @@ export function renderParent(){
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.daily ? t('dailyName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
+const toPractiseNote = r => { const n = toPractise(r); return n ? t('toPractise', n) : ''; };
 const roundMeta = r => [dayAgo(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' ? toPractiseNote(r) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
 // A round of her mistakes: each task's earlier round that missed one like it (its level and shape; the latest such), or none
 // for a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from.
 // Like it, not the same: a mistake is practised with other numbers (twin)
-const missedIn = (r, [lv, shape]) => LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === lv && (e[1] ?? null) === (shape ?? null) && e[4] !== 1)).pop();
+// Both are asked once per task of every row of a list, so they read an index of the rounds (kept until a round is added or the log is replaced), not the log
+let LOG = null;
+const logIndex = () => {
+  const rs = LOCAL.rounds, last = rs[rs.length - 1];
+  if(LOG && LOG.rs === rs && LOG.n === rs.length && LOG.last === last) return LOG;
+  const missed = new Map(), tasks = new Map();   // 'level|shape' → the rounds that missed one like it, in order; level → [ts, right first time] of each of its tasks
+  rs.forEach(x => { if(!Array.isArray(x.t)) return;
+    const keys = new Set();
+    x.t.forEach(e => { if(e[4] !== 1) keys.add(e[0] + '|' + (e[1] ?? '')); if(e[4] !== -1){ if(!tasks.has(e[0])) tasks.set(e[0], []); tasks.get(e[0]).push([x.ts, e[4] === 1]); } });
+    keys.forEach(k => { if(!missed.has(k)) missed.set(k, []); missed.get(k).push(x); }); });
+  return LOG = { rs, n: rs.length, last, missed, tasks };
+};
+const missedIn = (r, [lv, shape]) => { const l = logIndex().missed.get(lv + '|' + (shape ?? '')) || []; for(let k = l.length - 1; k >= 0; k--) if(l[k].ts < r.ts) return l[k]; };
 const fixSum = r => {
   if(r.level !== 'mix') return '';
   const old = r.t.map(e => [e, missedIn(r, e)]).filter(x => x[1]), from = [...new Set(old.map(x => x[1]))];
@@ -913,7 +926,7 @@ const fixSum = r => {
 // what «Провери» did on a paper: the tasks she opened in it, the answers she changed, the ones that became right
 const checkSum = r => { const a = r.t.filter(e => e[7] >= 4); return a.length ? t('checkSum', a.length, a.filter(e => e[7] > 4).length, a.filter(e => e[7] === 5).length) : ''; };
 // A level after a round: its tasks in her later rounds, and how many of them right first time
-const since = (lv, ts) => LOCAL.rounds.reduce((s, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === lv && e[4] !== -1){ s.n++; if(e[4] === 1) s.ok++; } }); return s; }, { n: 0, ok: 0 });
+const since = (lv, ts) => (logIndex().tasks.get(lv) || []).reduce((s, [at, ok]) => { if(at > ts){ s.n++; if(ok) s.ok++; } return s; }, { n: 0, ok: 0 });
 // the levels a round missed (or never reached) that she has not played since
 const toPractise = r => new Set(r.t.filter(e => e[4] !== 1 && !since(e[0], r.ts).n).map(e => e[0])).size;
 const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><span class="eq">' + esc(roundName(r)) + '</span><span class="smeta">' + roundMeta(r) + '</span></button>';
@@ -1137,8 +1150,20 @@ function nextBadge(st){
 }
 // Monday 00:00 of this week, local time
 const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
+// Opening Today draws it and the sidebar's week from this, twice, and it replays the notebook's seeds and walks every round
+// (about 30 ms on 500 rounds): kept while the rounds, the day (to the minute: what is due moves with the clock), the player
+// and the round under way are as they were.
+let TODAY = null;
 export function todayData(){
-  const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
+  const now = Date.now(), key = [LOCAL.rounds.length, (LOCAL.rounds[LOCAL.rounds.length - 1] || {}).id, Math.floor(now / 60000), LANG, PLAYER.id, PLAYER.name, PLAYER.mascot, PLAYER.grade,
+    JSON.stringify(LOCAL.next), [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER].join(), S.level, S.i, S.qs.length, !!COMP, midRound()].join('|');
+  if(TODAY && TODAY.rounds === LOCAL.rounds && TODAY.key === key) return TODAY.data;
+  const data = buildToday(now);
+  TODAY = { rounds: LOCAL.rounds, key, data };
+  return data;
+}
+function buildToday(now){
+  const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), day = dayKey(now);
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
   const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), desc: levelDesc(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
@@ -1808,5 +1833,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, startComp: () => startComp, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));
