@@ -14,3 +14,11 @@ GOOGLE_CLIENT_ID = "760532949353-54t42jkfsrt9h7s5kne97u0r4p5qcvsf.apps.googleuse
 # Workers Logs: each request and its console.log land in the Cloudflare dashboard for a few days.
 [observability]
 enabled = true
+
+# Per-IP limit on /signup, /login and /google (10 a minute); index.js skips it where the binding is missing.
+[[ratelimits]]
+name = "LIMIT"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 10
+  period = 60

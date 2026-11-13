@@ -5,12 +5,22 @@ const crypto = require('crypto'), { execFileSync } = require('child_process');
 const BASE = process.argv[2] || 'http://127.0.0.1:8787', LOCAL = /127\.0\.0\.1|localhost/.test(BASE);
 const ALPHA = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 const code = () => Array.from({ length: 16 }, () => ALPHA[crypto.randomInt(32)]).join('');
+let IP = null;      // the address the next calls claim; null: a new one for every call, so the per-IP limit never meets the test
 const call = async (path, body, token, raw) => {
   const headers = { 'content-type': 'application/json' };
   if(token) headers.authorization = 'Bearer ' + token;
-  const r = await fetch(BASE + path, { method: 'POST', headers, body: raw !== undefined ? raw : JSON.stringify(body || {}) });
-  return { status: r.status, body: await r.json().catch(() => null) };
+  if(LOCAL) headers['cf-connecting-ip'] = IP || '10.' + [1, 2, 3].map(() => crypto.randomInt(256)).join('.');   // Cloudflare sets it itself
+  for(let tries = 0; ; tries++){
+    const r = await fetch(BASE + path, { method: 'POST', headers, body: raw !== undefined ? raw : JSON.stringify(body || {}) });
+    const out = { status: r.status, body: await r.json().catch(() => null) };
+    if(out.status === 429 && out.body && out.body.error === 'slow' && !IP && tries < 3){ await new Promise(r => setTimeout(r, 61000)); continue; }   // a deployed Worker limits this machine's address
+    return out;
+  }
 };
+// the local database, for what a request cannot set up or show
+const wrangler = (args, stdio) => execFileSync('/opt/homebrew/bin/node', ['/opt/homebrew/lib/node_modules/npm/bin/npx-cli.js', 'wrangler@4', 'd1', 'execute', 'crossing-ten', '-c', 'wrangler.toml', ...args], { cwd: __dirname, stdio });
+const d1 = sql => JSON.parse(wrangler(['--local', '--json', '--command', sql], ['ignore', 'pipe', 'ignore']).toString())[0].results;
+const sha = t => crypto.createHash('sha256').update(t).digest('hex');
 const round = (id, ts, player = 'p1') => ({ player, round: { id, ts, day: '2026-09-23', level: 2, n: 10, firstTry: 8, seen: [], missed: [] } });
 const ok = (cond, what) => { if(!cond) throw new Error(what); };
 // Everything a device would learn by syncing from the start.
@@ -27,12 +37,13 @@ async function pull(token){
 // A stand-in for Google: worker/.dev.vars gives `wrangler dev` this key's public half.
 const GOOGLE_KEY = crypto.createPrivateKey({ format: 'der', type: 'pkcs8', key: Buffer.from('MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCMxRsGCjE00Tljquk8EncYGUqnWPVRRBOsykcCCd6zLgSmcwHyxrjFq+XHI5sZWWH1WLzQw4zMecfjze7YRU2nOlp/4Re4Xpw3sugZ6Ser/niixbaKOCN1SfDeuaf75IMeT1nPQEjvZ9CrFHbBFJcCiBchjlp/P2q3eSChbFxopr1PqnW2ucGKnm0SbJx4EV6mBC3wQgCFEAG70hiVGchpdvvK/T29pczaDVEfsbhGG0se6hUI09omAhmvPSTGfVHvNoylnXWBKpA/uhXRWXDxs1eUXZNve21S00vjqbZmgoaDvOo2oNRJBXqDkENWf0Ls5IzjJxZRcZW9Xs10s+bNAgMBAAECggEAFXjRROwUEl7hlprQxbl5UgM1mG4gyTsNlzspdp2jywf3bJ45S1tVfs1YGLaNJ2IzZ3WYI23Yka33t/9G8dUsYZgsirn+YMCJqpNPBPjD9N+1bfqje9TRT8guBgMipPD3sQ1ggRToqx/WO+o8rPnjiN7STGuG0UcOk5rVx9mcBNhEMIpy+bpYYsOnPMkcUNeh9D+B/RPZCVlKD7zsCP+3sMsc/wey3esTIfNX9hRS1DHMmlD9rG1+HJ0V2tuRv0i3MQLT4X/A1OQOYATkX/pRVVfGCaTS6vdp+C82rj82xI3Hz2Ja4ZcfgLf8v2wUPd/zMPqaHRPaiSXOXb6zyqV+oQKBgQDEi9lXmFIFW/6zzbaKkv7+uhfDgLwro9zlVpGl70hpQTH3BXJ6ARHe3rIQ6g5THJjw3OJgZO6q79DxkexnvAopgsg/2kzkO5Kq0wWQg2cis4AhX+9sQsvpOzd3nL8Zg+XA6zT4EmswDQlQ6rXcGVWGRmPnMWgX6YA0gKagrs5U3QKBgQC3WgxdEulQQ129/qyxxdSFfjPvf2RH6P0+qNweI+JiTpKlETlu5CHkP/NezSjBlZ04uFQL0/jJfXt5huCh7LgCG1OoGDcKJ7+8pzpEKJqMbiMlKgYW5ILUeeq1URlFoOyV7u5zpboM4GhZMZOdrATyrKDcZzzVVEd9V3qiuA+CsQKBgCtbUkmRb16BSbFuSrtM6/VTJdTZvCjAUAVDUIPTQhz95cDBMdyaCdApPgyfJSPOZiqT/1gWS9PnbScs8oJ7p546nGQBiv656YPHYy3a3tB32mcCW7V9ErBTgMvhBwLg5rjk6d1jasPBzHFOJWn1KLmjI3ynmHfV6ZMrYhaGGTv9AoGAbkD+6EUD+ZjY2PQ5ApmUp0Vxk5YGRlurVS+TVah8bGMVOZ926uDSJH/0J9C0rlv6c+4b1BT+KKOFSVm64IQJTnMCRjVxe3DVkmr41Z2Y+dMM3T889C0rIvvBEJEY4k7XlX1c9Dv2+eFDvkbanlifjRITlRWbdii86HlfLFQEN7ECgYAVox5DdzpwyLTO0jiPYkxQ1LXXEQAUytImJZ5XqYYTclqvakYpebU4ZAvFy8/jRrKzefp+Tu/Jlb4bhWA4blr9+b7vKnNPRmJ2s1gNB1xus2qzTAgiWi+s1VEoJl4sTZPH/qPFw5PXUykYppIwx1opGTRQXynRaOY0SAMASvjYMg==', 'base64') });
 const googleToken = (sub, over = {}) => {
+  madeSubs.push(sub);
   const b = o => Buffer.from(JSON.stringify(o)).toString('base64url');
   const head = b({ alg: 'RS256', kid: 'test', typ: 'JWT' });
   const body = b(Object.assign({ iss: 'https://accounts.google.com', aud: 'test-client', sub, exp: Math.floor(Date.now() / 1000) + 600 }, over));
   return head + '.' + body + '.' + crypto.sign('sha256', Buffer.from(head + '.' + body), GOOGLE_KEY).toString('base64url');
 };
-const made = [];      // family names to clear from a deployed database afterwards
+const made = [], madeSubs = [];      // family names and Google ids to clear from a deployed database afterwards
 const tag = 'test-' + crypto.randomBytes(4).toString('hex');
 const signup = async (name, extra, token) => { made.push(name); return call('/signup', Object.assign({ name, password: 'correct horse' }, extra), token); };
 
@@ -135,8 +146,7 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   // an old family code becomes an account and keeps its data; a code is claimed once
   const old = code();
   if(LOCAL){      // plant a family from before accounts, the way the old code-only sync stored it
-    execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--local', '-c', 'wrangler.toml', '--command',
-      `INSERT INTO rounds (family, player, id, ts, body) VALUES ('${old}', 'p1', 'old1', 1, '{"id":"old1","ts":1}')`], { cwd: __dirname, stdio: 'ignore' });
+    d1(`INSERT INTO rounds (family, player, id, ts, body) VALUES ('${old}', 'p1', 'old1', 1, '{"id":"old1","ts":1}')`);
   }
   const M = (await signup('migrated ' + tag, { code: old })).body.token;
   ok(M && (!LOCAL || (await pull(M)).rounds.some(r => r.round.id === 'old1')), 'a migrated family should keep its rounds');
@@ -147,6 +157,69 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   for(let i = 0; i < 4; i++) await call('/login', { name: fam, password: 'wrong horse' });
   const locked = await call('/login', { name: fam, password: 'correct horse' });
   ok(locked.status === 429 && locked.body.retry > 0, 'five wrong passwords should lock the account: ' + locked.status);
+
+
+  // what the server cannot store is reported, so a device does not count it as sent
+  const R = (await signup('refuse ' + tag)).body.token;
+  const big = { player: 'p1', round: { id: 'big', ts: 4000, pad: 'x'.repeat(5000) } };
+  const f1 = (await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 1 }, { id: 'pbig', name: 'x'.repeat(9000), updated: 1 }], rounds: [round('fine', 1), big] }, R)).body;
+  ok(JSON.stringify(f1.refused) === JSON.stringify({ players: ['pbig'], rounds: [{ player: 'p1', id: 'big' }] }), 'a too-big round and player should be reported: ' + JSON.stringify(f1.refused));
+  ok(f1.rounds.length === 1 && f1.players.length === 1, 'the rest of the request should be stored');
+  // a record that has grown (a long `dropped` list) still fits
+  const ids = Array.from({ length: 150 }, (_, i) => 'r' + (1790000000000 + i) + '_abcde');
+  ok((await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 2, dropped: ids }] }, R)).body.refused.players.length === 0, 'a record with 150 struck-out rounds should fit');
+  // a family has at most 30 players
+  const thirty = Array.from({ length: 29 }, (_, i) => ({ id: 'q' + i, name: 'x', updated: 5 }));
+  await call('/sync', { players: thirty }, R);
+  const over = (await call('/sync', { players: thirty.concat([{ id: 'q29', name: 'x', updated: 5 }]) }, R)).body;
+  ok(over.players.length === 30 && over.refused.players.join() === 'q29' && !over.players.some(p => p.id === 'q29'), 'a 31st player should be refused: ' + over.players.length);
+  // resetAt is a time, dropped a list of ids: anything else is refused and deletes nothing
+  const W = (await signup('reset ' + tag)).body.token;
+  await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 1 }], rounds: [round('w1', 1000), round('w2', 2000)] }, W);
+  const sr = (await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 2, resetAt: 'never' }] }, W)).body;
+  ok(sr.refused.players.join() === 'p1' && sr.rounds.length === 2, 'a string resetAt must be refused and delete nothing: ' + JSON.stringify(sr.refused));
+  ok((await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 3, dropped: 'w1' }] }, W)).body.refused.players.join() === 'p1', 'dropped must be a list');
+  // a round from before the reset is not stored again, and a sync that moves neither reset nor list scans nothing
+  await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 4, resetAt: 1500 }] }, W);
+  ok((await pull(W)).rounds.map(r => r.round.id).join() === 'w2', 'the reset should drop the earlier round');
+  await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 4, resetAt: 1500 }], rounds: [round('w0', 100)] }, W);
+  ok(!(await pull(W)).rounds.some(r => r.round.id === 'w0'), 'a round from before the reset must not come back');
+  if(LOCAL){
+    const fw = d1(`SELECT family FROM sessions WHERE hash = '${sha(W)}'`)[0].family;
+    d1(`INSERT INTO rounds (family, player, id, ts, body) VALUES ('${fw}', 'p1', 'planted', 1, '{"id":"planted","ts":1}')`);
+    await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 4, resetAt: 1500 }] }, W);
+    ok(d1(`SELECT 1 FROM rounds WHERE id = 'planted'`).length === 1, 'a sync that changes no reset should not scan the family\'s rounds');
+    await call('/sync', { players: [{ id: 'p1', name: 'x', updated: 5, resetAt: 1600 }] }, W);
+    ok(d1(`SELECT 1 FROM rounds WHERE id = 'planted'`).length === 0, 'a new reset should clear the rounds before it');
+
+    // sessions end after 180 idle days; other devices end when the password changes
+    const idle = (await call('/login', { name: 'reset ' + tag, password: 'correct horse' })).body.token;
+    d1(`UPDATE sessions SET created = 1, last_seen = ${Date.now() - 181 * 864e5} WHERE hash = '${sha(idle)}'`);
+    ok((await call('/sync', {}, idle)).status === 401 && d1(`SELECT 1 FROM sessions WHERE hash = '${sha(idle)}'`).length === 0, 'a session idle for 181 days should be gone');
+    const young = (await call('/login', { name: 'reset ' + tag, password: 'correct horse' })).body.token;
+    d1(`UPDATE sessions SET created = 1, last_seen = ${Date.now() - 179 * 864e5} WHERE hash = '${sha(young)}'`);
+    ok((await call('/sync', {}, young)).status === 200, 'a session idle for 179 days should still work');
+    d1(`INSERT INTO sessions (hash, family, created) VALUES ('stale-${tag}', '${fw}', 1)`);
+    await call('/login', { name: 'reset ' + tag, password: 'correct horse' });
+    ok(d1(`SELECT 1 FROM sessions WHERE hash = 'stale-${tag}'`).length === 0, 'a login should prune expired sessions');
+  }
+  const P2 = (await call('/login', { name: 'pw ' + tag, password: 'new horse 2026' })).body.token;
+  ok((await call('/password', { old: 'new horse 2026', password: 'newer horse 2026' }, P)).status === 200 &&
+     (await call('/sync', {}, P2)).status === 401 && (await call('/sync', {}, P)).status === 200, 'a password change should end the other devices, not this one');
+
+  // wrong passwords are counted in the database: five at once lock the account
+  const L = 'lock ' + tag;
+  await signup(L);
+  await Promise.all([1, 2, 3, 4, 5].map(() => call('/login', { name: L, password: 'wrong horse' })));
+  ok((await call('/login', { name: L, password: 'correct horse' })).status === 429, 'five parallel wrong passwords should lock the account');
+  // and one address only so often: the 11th try in a minute is refused, another address is not
+  if(LOCAL){
+    IP = '203.0.113.' + crypto.randomInt(250);
+    const codes = []; for(let i = 0; i < 12; i++) codes.push((await call('/login', { name: 'nobody ' + tag, password: 'correct horse' })).status);
+    ok(codes.slice(0, 10).every(c => c === 401) && codes[11] === 429, 'the 11th login a minute from one address should be limited: ' + codes);
+    ok((await call('/sync', {}, A)).status === 200, 'the limit is on login, signup and Google only');
+    IP = null;
+  }
 
   // Google: a forged or foreign token is refused everywhere
   ok((await call('/google', { credential: 'a.b.c' })).status === 401, 'a junk Google token should be refused');
@@ -159,6 +232,11 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
     ok((await call('/google', { credential: googleToken(sub) }, A)).body.linked, 'a logged-in device should link Google');
     const G = await call('/google', { credential: googleToken(sub) });
     ok(G.status === 200 && G.body.name === fam && (await pull(G.body.token)).rounds.length === 1201, 'Google should open the linked family');
+    // a Google account that opens one family cannot be moved to another by linking it there
+    const other = (await signup('other google ' + tag)).body.token;
+    ok((await call('/google', { credential: googleToken(sub) }, other)).status === 409, 'a Google account linked elsewhere must not be moved');
+    ok((await call('/google', { credential: googleToken(sub) })).body.name === fam, 'it should still open its own family');
+    ok((await call('/google', { credential: googleToken(sub) }, A)).body.linked, 'linking it again to its own family is fine');
     // a Google account never seen before starts a new family, which can take a password later
     const N = await call('/google', { credential: googleToken('new-' + tag) });
     ok((await call('/sync', {}, N.body.token)).body.account === null, 'a Google-only family should have no family name yet');
@@ -173,9 +251,9 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
 })().catch(e => { console.error('sync: FAILED - ' + e.message); process.exitCode = 1; }).finally(() => {
   if(LOCAL) return;
   // a deployed database keeps nothing of the test: its accounts, their families' rows and sessions
-  const names = made.map(n => "'" + n.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase().replace(/'/g, "''") + "'").join(',');
-  const fams = `(SELECT family FROM accounts WHERE name IN (${names}))`;
-  execFileSync('/opt/homebrew/bin/npx', ['wrangler@4', 'd1', 'execute', 'crossing-ten', '--remote', '-c', 'wrangler.toml', '--command',
-    ['rounds', 'players', 'sessions', 'google'].map(t => `DELETE FROM ${t} WHERE family IN ${fams};`).join(' ') +
-    ` DELETE FROM accounts WHERE name IN (${names});`], { cwd: __dirname, stdio: 'inherit' });
+  const names = made.map(n => "'" + n.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase().replace(/'/g, "''") + "'").join(',') || "''";
+  const subs = madeSubs.map(n => "'" + n.replace(/'/g, "''") + "'").join(',') || "''";
+  const fams = `(SELECT family FROM accounts WHERE name IN (${names}) UNION SELECT family FROM google WHERE sub IN (${subs}))`;
+  wrangler(['--remote', '--command', ['rounds', 'players', 'sessions'].map(t => `DELETE FROM ${t} WHERE family IN ${fams};`).join(' ') +
+    ` DELETE FROM accounts WHERE name IN (${names}); DELETE FROM google WHERE sub IN (${subs});`], 'inherit');
 });

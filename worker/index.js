@@ -14,11 +14,15 @@
 // has not seen. Rounds carry ids and never change, so merging is a set union (INSERT OR
 // IGNORE). Players are last-write-wins on `updated`; a player's resetAt drops her older
 // rounds, and a deleted player is kept as a tombstone in `gone` so the other devices delete her.
-// ponytail: no rate limit on signup or per IP; add Cloudflare's rate-limit binding if it is ever abused.
+// /signup, /login and /google are rate-limited per IP by the LIMIT binding (wrangler.toml); the per-account lockout stays.
 
 const CODE = /^[0-9A-HJKMNP-TV-Z]{16}$/;       // a family's id: Crockford base32, no I L O U
 const ID = /^[A-Za-z0-9_-]{1,40}$/;
-const MAX_BODY = 512 * 1024, MAX_ROUND = 4096, MAX_PLAYER = 1024, PAGE = 500;
+const MAX_BODY = 512 * 1024, MAX_ROUND = 4096, MAX_PLAYER = 8192, PAGE = 500;
+// a family's players, and the most rounds one request may carry (the app sends 1500 at a time)
+const MAX_PLAYERS = 30, MAX_ROUNDS = 2000;
+// a session nobody has synced from for this long is gone (its device logs in again)
+const SESSION_TTL = 180 * 24 * 3600e3;
 // PBKDF2 costs ~0.3 ms per 1000 rounds and the free plan allows ~10 ms of CPU a request.
 // ponytail: modest on purpose; `iter` is stored per account, so raise it (rehash on login) on a paid plan.
 const ITER = 30000, FAILS = 5, LOCK_MS = 15 * 60 * 1000;
@@ -40,18 +44,28 @@ async function pbkdf2(password, salt, iter){
 }
 const same = (a, b) => a.length === b.length && crypto.subtle.timingSafeEqual(enc.encode(a), enc.encode(b));
 // "Сайенко", " сайенко " and "САЙЕНКО" are one family name.
+// One wrong password, counted in the database so parallel guesses cannot all read the same count:
+// true when it was the FAILS-th in a row, which locks the account and starts over from 0.
+async function wrongPass(db, name, now){
+  const row = await db.prepare(`UPDATE accounts SET fails = CASE WHEN fails + 1 >= ?2 THEN 0 ELSE fails + 1 END,
+    locked = CASE WHEN fails + 1 >= ?2 THEN ?3 ELSE 0 END WHERE name = ?1 RETURNING locked`).bind(name, FAILS, now + LOCK_MS).first();
+  return !!row && row.locked > 0;
+}
 const keyOf = name => String(name || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
 
 async function session(db, family){
+  const now = Date.now();
+  await db.prepare('DELETE FROM sessions WHERE max(created, last_seen) < ?1').bind(now - SESSION_TTL).run();
   const token = b64url(crypto.getRandomValues(new Uint8Array(32)));
-  await db.prepare('INSERT INTO sessions (hash, family, created) VALUES (?1, ?2, ?3)').bind(await sha256(token), family, Date.now()).run();
+  await db.prepare('INSERT INTO sessions (hash, family, created) VALUES (?1, ?2, ?3)').bind(await sha256(token), family, now).run();
   return token;
 }
 // The calling device's session: its family, and the hash that names the session
 async function sessionOf(db, req){
   const m = (req.headers.get('authorization') || '').match(/^Bearer ([A-Za-z0-9_-]{20,100})$/);
   if(!m) return null;
-  const hash = await sha256(m[1]), row = await db.prepare('SELECT family FROM sessions WHERE hash = ?1').bind(hash).first();
+  const hash = await sha256(m[1]), row = await db.prepare('SELECT family, max(created, last_seen) AS used FROM sessions WHERE hash = ?1').bind(hash).first();
+  if(row && Date.now() - row.used > SESSION_TTL){ await db.prepare('DELETE FROM sessions WHERE hash = ?1').bind(hash).run(); return null; }
   return row && { family: row.family, hash };
 }
 const familyOf = async (db, req) => ((await sessionOf(db, req)) || {}).family || null;
@@ -85,6 +99,9 @@ export default {
     // Who calls, for Workers Logs (observability in wrangler.toml): the device and where, never the IP.
     console.log(JSON.stringify({ route, ua: req.headers.get('user-agent'), country: req.cf?.country, city: req.cf?.city }));
     if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync', '/password'].includes(route)) return reply(404, { error: 'not found' });
+    // a guess at a password, or a new account, only so often from one address (not in tests: no binding)
+    if(env.LIMIT && ['/signup', '/login', '/google'].includes(route) &&
+       !(await env.LIMIT.limit({ key: req.headers.get('cf-connecting-ip') || 'unknown' })).success) return reply(429, { error: 'slow', retry: 60 });
     const text = await req.text();
     if(text.length > MAX_BODY) return reply(413, { error: 'too much at once' });
     let body;
@@ -114,8 +131,7 @@ export default {
       if(!a) return reply(401, { error: 'wrong' });
       if(a.locked > now) return reply(429, { error: 'locked', retry: Math.ceil((a.locked - now) / 1000) });
       if(!same(await pbkdf2(String(body.password || ''), a.salt, a.iter), a.hash)){
-        const fails = a.fails + 1, lock = fails >= FAILS;
-        await db.prepare('UPDATE accounts SET fails = ?2, locked = ?3 WHERE name = ?1').bind(a.name, lock ? 0 : fails, lock ? now + LOCK_MS : 0).run();
+        const lock = await wrongPass(db, a.name, now);
         return lock ? reply(429, { error: 'locked', retry: LOCK_MS / 1000 }) : reply(401, { error: 'wrong' });
       }
       if(a.fails) await db.prepare('UPDATE accounts SET fails = 0 WHERE name = ?1').bind(a.name).run();
@@ -126,7 +142,9 @@ export default {
       if(!sub) return reply(401, { error: 'google' });
       const mine = await familyOf(db, req);
       if(mine){       // logged in already: this Google account now opens this family
-        await db.prepare('INSERT OR REPLACE INTO google (sub, family) VALUES (?1, ?2)').bind(sub, mine).run();
+        const other = await db.prepare('SELECT family FROM google WHERE sub = ?1').bind(sub).first();
+        if(other && other.family !== mine) return reply(409, { error: 'linked' });     // it already opens another family
+        await db.prepare('INSERT OR IGNORE INTO google (sub, family) VALUES (?1, ?2)').bind(sub, mine).run();
         return reply(200, { linked: true, name: await nameOf(db, mine) });
       }
       const row = await db.prepare('SELECT family FROM google WHERE sub = ?1').bind(sub).first();
@@ -145,14 +163,14 @@ export default {
       if(password.length < 8 || password.length > 200) return reply(400, { error: 'password' });
       if(a.locked > now) return reply(429, { error: 'locked', retry: Math.ceil((a.locked - now) / 1000) });
       if(!same(await pbkdf2(String(body.old || ''), a.salt, a.iter), a.hash)){
-        const fails = a.fails + 1, lock = fails >= FAILS;
-        await db.prepare('UPDATE accounts SET fails = ?2, locked = ?3 WHERE name = ?1').bind(a.name, lock ? 0 : fails, lock ? now + LOCK_MS : 0).run();
+        const lock = await wrongPass(db, a.name, now);
         return lock ? reply(429, { error: 'locked', retry: LOCK_MS / 1000 }) : reply(401, { error: 'wrong' });
       }
       const salt = b64url(crypto.getRandomValues(new Uint8Array(16)));
       await db.prepare('UPDATE accounts SET salt = ?2, hash = ?3, iter = ?4, fails = 0, locked = 0 WHERE name = ?1')
         .bind(a.name, salt, await pbkdf2(password, salt, ITER), ITER).run();
-      return reply(200, {});      // ponytail: the family's other devices stay logged in; end them here if a password ever leaks
+      await db.prepare('DELETE FROM sessions WHERE family = ?1 AND hash != ?2').bind(family, me.hash).run();   // the other devices log in again
+      return reply(200, {});
     }
     if(route === '/logout'){
       await db.prepare('DELETE FROM sessions WHERE hash = ?1').bind(await sha256(req.headers.get('authorization').slice(7))).run();
@@ -160,16 +178,33 @@ export default {
     }
 
     const since = Number.isInteger(body.since) && body.since >= 0 ? body.since : 0;
-    const writes = [];
+    const writes = [], refused = { players: [], rounds: [] };
+    // what the family already holds of each player (a family has at most MAX_PLAYERS)
+    const held = {};
+    for(const h of (await db.prepare('SELECT id, body, updated, gone FROM players WHERE family = ?1').bind(family).all()).results)
+      held[h.id] = { updated: h.updated, gone: h.gone, p: h.gone ? {} : JSON.parse(h.body) };
+    // The state each player ends in, to filter this request's rounds against: a round from before her reset, or one
+    // a grown-up struck out, is not stored again. `changed` are the players whose reset or struck-out list moved now.
+    const eff = {}, changed = new Set();
+    Object.keys(held).forEach(id => { eff[id] = held[id].gone ? {} : held[id].p; });
     // players and tombstones: keep whichever copy changed last
-    const players = Array.isArray(body.players) ? body.players.slice(0, 20) : [];
+    const players = Array.isArray(body.players) ? body.players.slice(0, MAX_PLAYERS) : [];
     const gone = Array.isArray(body.gone) ? body.gone.slice(0, 50) : [];
     for(const p of players){
       const json = JSON.stringify(p);
-      if(!p || !ID.test(p.id) || json.length > MAX_PLAYER || !Number.isFinite(p.updated)) continue;
+      if(!p || !ID.test(p.id)) continue;
+      // a reset is a time and `dropped` a list of ids; anything else would make the cleanup below delete everything
+      const bad = json.length > MAX_PLAYER || !Number.isFinite(p.updated) || (p.resetAt !== undefined && !Number.isFinite(p.resetAt)) ||
+        (p.dropped !== undefined && !(Array.isArray(p.dropped) && p.dropped.every(id => typeof id === 'string')));
+      if(bad || ((!held[p.id] || held[p.id].gone) && Object.values(held).filter(h => !h.gone).length >= MAX_PLAYERS)){ refused.players.push(p.id); continue; }
       writes.push(db.prepare(`INSERT INTO players (family, id, body, updated, gone) VALUES (?1, ?2, ?3, ?4, 0)
         ON CONFLICT(family, id) DO UPDATE SET body = ?3, updated = ?4, gone = 0 WHERE ?4 > players.updated`)
         .bind(family, p.id, json, p.updated));
+      if(!held[p.id] || p.updated > held[p.id].updated){
+        const was = eff[p.id] || {};
+        if(p.resetAt !== was.resetAt || JSON.stringify(p.dropped) !== JSON.stringify(was.dropped)) changed.add(p.id);
+        eff[p.id] = p; held[p.id] = { updated: p.updated, gone: 0, p };
+      }
     }
     for(const g of gone){
       if(!g || !ID.test(g.id) || !Number.isFinite(g.updated)) continue;
@@ -179,22 +214,25 @@ export default {
       writes.push(db.prepare('DELETE FROM rounds WHERE family = ?1 AND player = ?2').bind(family, g.id));
     }
     // rounds: a set union, so a round sent twice is stored once
-    const rounds = Array.isArray(body.rounds) ? body.rounds.slice(0, 2000) : [];
-    for(const x of rounds){
+    const rounds = Array.isArray(body.rounds) ? body.rounds : [];
+    for(const [k, x] of rounds.entries()){
       const r = x && x.round, json = JSON.stringify(r);
-      if(!x || !ID.test(x.player) || !r || !ID.test(r.id) || !Number.isFinite(r.ts) || json.length > MAX_ROUND) continue;
+      if(!x || !ID.test(x.player) || !r || !ID.test(r.id)) continue;
+      if(k >= MAX_ROUNDS || !Number.isFinite(r.ts) || json.length > MAX_ROUND){ refused.rounds.push({ player: x.player, id: r.id }); continue; }
+      const e = eff[x.player];
+      if(e && (r.ts < e.resetAt || (e.dropped || []).includes(r.id))) continue;
       writes.push(db.prepare('INSERT OR IGNORE INTO rounds (family, player, id, ts, body) VALUES (?1, ?2, ?3, ?4, ?5)')
         .bind(family, x.player, r.id, r.ts, json));
     }
+    // a reset player keeps no rounds from before her reset, and none a grown-up struck out: only when her record moved
+    for(const id of changed){
+      if(eff[id].resetAt !== undefined) writes.push(db.prepare('DELETE FROM rounds WHERE family = ?1 AND player = ?2 AND ts < ?3').bind(family, id, eff[id].resetAt));
+      if((eff[id].dropped || []).length) writes.push(db.prepare('DELETE FROM rounds WHERE family = ?1 AND player = ?2 AND id IN (SELECT value FROM json_each(?3))')
+        .bind(family, id, JSON.stringify(eff[id].dropped)));
+    }
     // this device: when it last synced, and what it calls itself
     writes.push(db.prepare('UPDATE sessions SET last_seen = ?2, device = ?3 WHERE hash = ?1').bind(me.hash, now, deviceOf(body.device)));
-    await db.batch(writes);
-    // a reset player keeps no rounds from before her reset
-    await db.prepare(`DELETE FROM rounds WHERE family = ?1 AND ts < (SELECT json_extract(body, '$.resetAt') FROM players
-      WHERE players.family = rounds.family AND players.id = rounds.player AND gone = 0)`).bind(family).run();
-    // and none a grown-up struck out: the ids on her record's `dropped` list
-    await db.prepare(`DELETE FROM rounds WHERE family = ?1 AND id IN (SELECT value FROM players, json_each(players.body, '$.dropped')
-      WHERE players.family = rounds.family AND players.id = rounds.player AND gone = 0)`).bind(family).run();
+    try { await db.batch(writes); } catch(e){ console.log('sync batch failed: ' + e.message); return reply(503, { error: 'busy' }); }
 
     const got = await db.prepare('SELECT seq, player, body FROM rounds WHERE family = ?1 AND seq > ?2 ORDER BY seq LIMIT ?3')
       .bind(family, since, PAGE + 1).all();
@@ -210,6 +248,7 @@ export default {
       // the family's devices that have synced, latest first; `me` is this one (the session's hash never leaves)
       devices: (await db.prepare('SELECT device, last_seen, hash = ?2 AS me FROM sessions WHERE family = ?1 AND last_seen > 0 ORDER BY last_seen DESC LIMIT 20')
         .bind(family, me.hash).all()).results.map(d => ({ device: d.device, last: d.last_seen, me: !!d.me })),
+      refused,       // what this request could not store: { players: [ids], rounds: [{player, id}] }
       now
     });
   }
