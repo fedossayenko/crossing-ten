@@ -47,7 +47,7 @@ const WF_FRUIT = [['ябълка', 'ябълки', 'яблуко', 'яблуко
 // kids: [girl, vowel boy, consonant boy] (indexes into their lists), in the order named: the girl first; fruits: the three
 // bought, in the order named; has[k]: the fruit (0–2) of child k (0 girl, 1 vowel boy, 2 consonant boy); vowel: the clue
 // names the boy whose name starts with a vowel (else a consonant); the girl does not like the other boy's fruit
-export const wfFits = q => [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].filter(p => {
+const wfFits = q => [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]].filter(p => {
   const named = q.vowel ? 1 : 2, other = 3 - named;
   return p[0] !== q.has[other] && p[named] === q.has[named];
 });

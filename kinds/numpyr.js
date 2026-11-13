@@ -12,7 +12,7 @@ import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 export const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
 /** @type {[number, number, string][]} */
-export const PYR_LET = [[1, 1, 'A'], [2, 0, 'B'], [2, 2, 'C'], [3, 1, 'D'], [3, 2, 'E'], [3, 3, 'F'], [4, 0, 'G'], [4, 1, 'H'], [4, 2, 'K'], [4, 4, 'M']];
+const PYR_LET = [[1, 1, 'A'], [2, 0, 'B'], [2, 2, 'C'], [3, 1, 'D'], [3, 2, 'E'], [3, 3, 'F'], [4, 0, 'G'], [4, 1, 'H'], [4, 2, 'K'], [4, 4, 'M']];
 function pyrRows(base){ const rows = [base]; while(rows[0].length > 1) rows.unshift(rows[0].slice(1).map((v, i) => rows[0][i] + v)); return rows; }
 function genPyrOne(){
   for(;;){
