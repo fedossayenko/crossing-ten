@@ -2,7 +2,7 @@
 
 // МБГ Зима 2023, задача 19: three squares in a row, white, green or red, no two neighbours
 // alike. The first has 3 choices, each next one 2 (anything but its neighbour's): 3 · 2 · 2 = 12.
-import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, tr } from '../js/core.js';
 const PAINT_COL = [['бяло','біле'], ['зелено','зелене'], ['червено','червоне'], ['синьо','синє']];
 // МБГ Пролет 2025, задача 14: three rectangles in a figure where each touches both others, white, green
 // or red, neighbours different. The first has 3 choices, the second 2, the third only 1: 3 · 2 · 1 = 6.
@@ -57,7 +57,7 @@ function drawPaintRow(q){
     const cols = PAINT_COL.slice(0, q.c), list = i => cols.slice(0, -1).map(x => x[i]).join(', ') + (i ? ' і ' : ' и ') + cols[q.c - 1][i];
     return '<div class="ask">' + tr('Фигурата на чертежа е съставена от 3 правоъгълника. Трябва да ги оцветим в ' + list(0) + ', като <b>два съседни</b> правоъгълника не са оцветени в един и същ цвят. По колко начина можем да направим оцветяването?',
       'Фігура на рисунку складається з 3 прямокутників. Їх треба зафарбувати в ' + list(1) + ' кольори так, щоб <b>два сусідні</b> прямокутники не були одного кольору. Скількома способами це можна зробити?') + '</div>' +
-      paintFigSvg() + '<div class="line xl">' + SLOT + '</div>';
+      paintFigSvg() + answerLine('xl');
   }
   const cols = q.cols ? q.cols.map(c => PAINT_COL[c]) : PAINT_COL.slice(0, q.c), list = (_, i) => cols.slice(0, -1).map(x => x[i]).join(', ') + (i ? ' або ' : ' или ') + cols[q.c - 1][i];
   const end = q.shape === 'end';   // the first square painted already, in the first colour (green)
@@ -65,15 +65,15 @@ function drawPaintRow(q){
     ', като <b>две съседни</b> квадратчета не могат да бъдат оцветени в един и същ цвят.' + (end ? ' Първото квадратче вече е оцветено в зелено.' : '') + ' По колко начина може да стане оцветяването?',
     'Кожен із ' + ({2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’яти'})[q.n] + ' квадратиків треба зафарбувати в один із кольорів: ' + list(cols, 1) +
     ', причому <b>два сусідні</b> квадратики не можуть бути одного кольору.' + (end ? ' Перший квадратик уже зафарбовано в зелений колір.' : '') + ' Скількома способами можна їх зафарбувати?') + '</div>' +
-    paintRowSvg(q.n, end ? PAINT_FILL[q.cols[0]] : '') + '<div class="line xl">' + SLOT + '</div>';
+    paintRowSvg(q.n, end ? PAINT_FILL[q.cols[0]] : '') + answerLine('xl');
 }
 // the ways so far, each taken again for every colour the next one may have: 3 → 3 + 3 = 6 → 6 + 6 = 12 (not 3 · 2 · 2, before the times table)
 const paintChain = ks => { let t = ks[0]; const parts = [String(t)];
   ks.slice(1).forEach(k => { if(k > 1){ parts.push(Array(k).fill(t).join(' + ') + ' = ' + t*k); t *= k; } }); return parts.join(' → '); };
 function eqPaintRow(q){
   if(q.shape === 'end') return tr('всеки път по 1 начин → ', 'щоразу 1 спосіб → ') + q.ans;
-  if(q.kind === 'paintrow' && q.fig) return paintChain([q.c, q.c - 1, q.c - 2]);
-  if(q.kind === 'paintrow') return paintChain([q.c].concat(Array(q.n - 1).fill(q.c - 1)));
+  if(q.fig) return paintChain([q.c, q.c - 1, q.c - 2]);
+  return paintChain([q.c].concat(Array(q.n - 1).fill(q.c - 1)));
 }
 function whyPaintRow(q, full){
   if(q.fig){

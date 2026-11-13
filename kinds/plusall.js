@@ -3,7 +3,7 @@
 // МБГ Есен 2024, 3 клас, задача 10: several numbers add to 20; each made 3 bigger, they add to 32. Every number
 // brings its own 3 to the sum, so the sum grew by 3 once for each number: 32 − 20 = 12, 12 : 3 = 4 numbers.
 // Sometimes each is made smaller instead, and the sum shrinks by the same amount once for each.
-import { KIND, SLOT, bgWith, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, bgWith, rnd, tr } from '../js/core.js';
 export function genPlusAll(){
   const n = 3 + rnd(6), k = 2 + rnd(5), more = Math.random() < 0.7;
   // made smaller, every number must be at least k, so the sum at least n · k
@@ -15,7 +15,7 @@ function drawPlusAll(q){
       ' <span class="num">' + q.k + '</span>, сборът ще стане <span class="num">' + q.S2 + '</span>. <b>Колко на брой са числата?</b>',
     'Сума кількох чисел дорівнює <span class="num">' + q.S + '</span>. Якщо кожне з чисел ' + (q.more ? 'збільшити' : 'зменшити') + ' на <span class="num">' + q.k +
       '</span>, сума стане <span class="num">' + q.S2 + '</span>. <b>Скільки всього чисел?</b>') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const plusAllGap = q => q.more ? q.S2 + ' − ' + q.S : q.S + ' − ' + q.S2;
 function eqPlusAll(q){

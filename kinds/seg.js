@@ -3,7 +3,7 @@
 // Задача 11: four points in a row, measured in overlapping pieces.
 // МБГ Пролет 2025, задача 11: AB = 41 мм, BC = 2 см, CD = 39 мм, and AD asked in дециметри. All in
 // millimetres first: 41 + 20 + 39 = 100 мм, which is 1 дм.
-import { CM, KIND, SLOT, lineSvg, rnd, shuffle, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, lineSvg, rnd, shuffle, tr } from '../js/core.js';
 function genSegUnits(){
   for(;;){
     const cm = 1 + rnd(5), ab = 11 + rnd(60), cd = 100*(1 + rnd(2)) - ab - 10*cm;
@@ -68,16 +68,16 @@ function rulerSvg(q){
   let nums = '';
   for(let v = 0; v <= n; v += 1) if(v % 2 === 0)
     nums += '<text x="' + x(v).toFixed(1) + '" y="' + (top + 30) + '" text-anchor="middle" font-size="9" ' +
-            'fill="var(--muted)" font-family="Nunito, sans-serif">' + v + '</text>';
+            'fill="var(--muted)" ' + SVG_FONT + '>' + v + '</text>';
   const bracket = (from, to, y, l1, l2) =>
     '<g stroke="var(--accent)" stroke-width="2" fill="none">' +
     '<path d="M' + x(from).toFixed(1) + ' ' + y + 'H' + x(to).toFixed(1) + '"/>' +
     '<path d="M' + x(from).toFixed(1) + ' ' + y + 'V' + top + 'M' + x(to).toFixed(1) + ' ' + y + 'V' + top +
     '" stroke-dasharray="3 3" stroke-width="1.4"/></g>' +
     '<text x="' + (x(from) - 8).toFixed(1) + '" y="' + (y + 4) + '" text-anchor="middle" font-size="13" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l1 + '</text>' +
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + l1 + '</text>' +
     '<text x="' + (x(to) + 8).toFixed(1) + '" y="' + (y + 4) + '" text-anchor="middle" font-size="13" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + l2 + '</text>';
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + l2 + '</text>';
   return '<div class="fig"><svg viewBox="-20 0 ' + (W + 40) + ' ' + H + '" role="img" aria-label="' + tr('две отсечки върху линийка', 'два відрізки на лінійці') + '">' +
     '<rect x="8" y="' + top + '" width="' + (W - 16) + '" height="26" rx="2" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
     '<g stroke="var(--ink)" stroke-width="1.1">' + ticks + '</g>' + nums +
@@ -89,7 +89,7 @@ function segUnitsSvg(q){
   const pts = [[at(0), 'A'], [at(q.ab), 'B'], [at(q.ab + 10*q.cm), 'C'], [at(tot), 'D']];
   return '<div class="fig wide"><svg viewBox="0 -12 ' + W + ' 44" role="img" aria-label="' + tr('четири точки върху отсечка', 'чотири точки на відрізку') + '">' +
     '<line x1="' + at(0) + '" y1="0" x2="' + at(tot) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
-    pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + pt[1] + '</text>').join('') + '</svg></div>';
+    pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + pt[1] + '</text>').join('') + '</svg></div>';
 }
 function segSvg(q){
   const W = 236, tot = q.p + q.q + q.r;
@@ -100,7 +100,7 @@ function segSvg(q){
     '<line x1="4" y1="0" x2="' + (W - 4) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
     pts.map(pt => '<circle cx="' + pt[0].toFixed(1) + '" cy="0" r="3.4" fill="var(--ink)"/>' +
       '<text x="' + pt[0].toFixed(1) + '" y="24" text-anchor="middle" font-size="15" font-weight="700" ' +
-      'fill="var(--ink)" font-family="Nunito, sans-serif">' + pt[1] + '</text>').join('') +
+      'fill="var(--ink)" ' + SVG_FONT + '>' + pt[1] + '</text>').join('') +
     '</svg></div>';
 }
 
@@ -109,7 +109,7 @@ function segMidSvg(q){
   const W = 236, at = v => (14 + v / q.AD * (W - 28)).toFixed(1), xs = [0, q.cm[0], q.cm[0] + q.cm[1], q.AD];
   return '<div class="fig wide"><svg viewBox="0 -24 ' + W + ' 34" role="img" aria-label="' + tr('четири точки върху отсечка', 'чотири точки на відрізку') + '">' +
     '<line x1="' + at(0) + '" y1="0" x2="' + at(q.AD) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
-    xs.map((v, i) => '<circle cx="' + at(v) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + at(v) + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">' + 'ABCD'[i] + '</text>').join('') + '</svg></div>';
+    xs.map((v, i) => '<circle cx="' + at(v) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + at(v) + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + 'ABCD'[i] + '</text>').join('') + '</svg></div>';
 }
 function drawSeg(q){
   if(q.shape === 'mid'){

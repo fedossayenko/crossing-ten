@@ -2,7 +2,7 @@
 
 // МБГ Зима 2021, задача 14: △ and □ take turns, 15 figures in all; at most how many □? Start
 // with □ and end with □: 8 of them and 7 △. With an even count it is half either way.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genAlternate(){
   const n = 7 + rnd(16), most = Math.random() < 0.65;
   return {kind:'alternate', n, most, ans: most ? Math.ceil(n/2) : Math.floor(n/2)};
@@ -11,7 +11,7 @@ function drawAlternate(q){
   return '<div class="ask">' + tr('Фигурите △ и □ се <b>редуват</b> в редица — общо <span class="num">' + q.n + '</span> фигури. Колко <b>най-' + (q.most ? 'много' : 'малко') + '</b> може да са квадратчетата □?',
     'Фігури △ і □ <b>чергуються</b> в ряду — усього <span class="num">' + ukN(q.n, 'фігура', 'фігури', 'фігур').replace(' ', '</span> ') + '. Скільки <b>' + (q.most ? 'найбільше' : 'найменше') + '</b> може бути квадратиків □?') + '</div>' +
     '<div class="seq">△ □ △ □ △ …</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqAlternate(q){
   return q.n + ' → ' + Math.ceil(q.n/2) + ' + ' + Math.floor(q.n/2) + ' → ' + q.ans;

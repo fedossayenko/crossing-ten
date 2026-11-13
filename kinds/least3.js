@@ -3,7 +3,7 @@
 // МБГ Зима 2020, задача 20: from 6003067586 cross out 7 digits to leave the smallest three-digit number.
 // It cannot start with 0, so the first digit is the smallest non-zero one early enough (3); then
 // the smallest after it (0), then after that (5): 305. Found here by trying every three.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 function least3Of(s){
   let best = null;
   for(let i = 0; i < s.length; i++) for(let j = i + 1; j < s.length; j++) for(let k = j + 1; k < s.length; k++){
@@ -23,7 +23,7 @@ export function genLeast3(){
 function drawLeast3(q){
   return '<div class="ask">' + tr('Записани са цифрите <span class="num">' + q.s + '</span>. Зачеркнете <span class="num">' + q.cross + '</span> от тях, така че да получите <b>най-малкото</b> възможно трицифрено число. Кое е то?',
     'Записано цифри <span class="num">' + q.s + '</span>. Закресліть <span class="num">' + q.cross + '</span> з них так, щоб отримати <b>найменше</b> можливе трицифрове число. Яке воно?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqLeast3(q){
   return q.s + ' → ' + q.ans;

@@ -3,7 +3,7 @@
 // Задача 20: the numbers stand in a row and every sign but the first may be a minus.
 // Turning a term round costs twice its value, so the terms turned round have to add to
 // exactly half the drop — and the most of them means taking the smallest ones.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genSigns(){
   for(;;){
     const a = 1 + rnd(4), len = 4 + rnd(3);
@@ -43,7 +43,7 @@ function drawSigns(q){
     'щоб отримати число <span class="num">' + q.T + '</span>. Скільки <b>найбільше</b> може бути мінусів?</div>') +
     '<div class="seq">' + q.nums.join(' &nbsp;') + '</div>' +
     '<div class="note">' + tr('Например', 'Наприклад') + ': ' + signsExample(q) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqSigns(q){
   return q.a + '…' + q.b + ' = ' + q.T + tr(' → минуси: ', ' → мінуси: ') + q.ans;

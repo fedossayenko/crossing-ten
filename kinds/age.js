@@ -3,7 +3,7 @@
 // МБГ Зима 2024, задача 17: in 10 years Claire will be 3 times as old as now. The 10 years
 // are the two "nows" added on top of the first, so she is 5 now — and the question asks
 // about 5 years on, which is 10.
-import { KIND, SLOT, UK_PLURAL, rnd, tr, ukN } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, rnd, tr, ukN } from '../js/core.js';
 const AGE_KIDS = [['Клеър', 'Клер', 1], ['Мая', 'Мая', 1], ['Ния', 'Нія', 1], ['Асен', 'Асен', 0], ['Борис', 'Борис', 0]];
 export function genAge(){
   const [bg, uk, she] = AGE_KIDS[rnd(AGE_KIDS.length)];
@@ -21,7 +21,7 @@ function drawAge(q){
     (q.she ? 'по-голяма' : 'по-голям') + ', отколкото е сега. ',
     'Через <span class="num">' + q.a + '</span> ' + ageYearsUk(q.a) + ' ' + q.uk + ' буде у <span class="num">' + q.m + '</span> рази ' +
     (q.she ? 'старшою' : 'старшим') + ', ніж зараз. ') + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqAge(q){
   return tr('сега ', 'зараз ') + (q.m === 2 ? q.a : q.a + ' = ' + Array(q.m - 1).fill(q.now).join(' + ') + ' → ' + q.now) + (q.shape ? ', ' + q.now + ' + ' + q.b + ' = ' + q.ans : '');

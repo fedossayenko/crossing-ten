@@ -7,8 +7,7 @@
 // numbers to 100 (level 267); мм and numbers to 1000 are the 3rd grade's, though МБГ Зима asks мм in the 2nd
 // (level 268, after 267). Never м to мм: a thousand is past even that. No answer is 1, 10 or 100, the numbers
 // the first-miss nudge names.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
-const UNIT_MM = { мм:1, см:10, дм:100, м:1000 };
+import { KIND, SLOT, UNIT_MM, rnd, tr } from '../js/core.js';
 // one, counted (after a number or колко), plural; Ukrainian one, counted
 const UNIT_W = { мм:['милиметър', 'милиметра', 'милиметри', 'міліметр', 'міліметрів'], см:['сантиметър', 'сантиметра', 'сантиметри', 'сантиметр', 'сантиметрів'],
   дм:['дециметър', 'дециметра', 'дециметри', 'дециметр', 'дециметрів'], м:['метър', 'метра', 'метри', 'метр', 'метрів'] };

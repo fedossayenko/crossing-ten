@@ -9,7 +9,7 @@
 // are the middle one three times, one taken from the first and given to the last: 18 : 3 = 6, so 5, 6, 7. Drawn
 // after the old question, so a seed recorded before it still asks what it asked, unless the draw after it
 // turns it into this one.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, rnd, tr } from '../js/core.js';
 export function genConsec(){
   const q = consecOld();
   if(Math.random() < 0.2){
@@ -40,7 +40,7 @@ function drawConsec(q){
     return '<div class="ask">' + tr('Колко от числата от <span class="num">' + q.a + '</span> до <span class="num">' + q.b + '</span> можем да представим като сбор на две <b>последователни</b> числа?',
       'Скільки чисел від <span class="num">' + q.a + '</span> до <span class="num">' + q.b + '</span> можна подати як суму двох <b>послідовних</b> чисел?') + '</div>' +
       '<div class="note">' + tr('Пример: 15 = 7 + 8; 7 = 3 + 4.', 'Приклад: 15 = 7 + 8; 7 = 3 + 4.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const which = q.t === q.s ? tr('най-голямото и най-малкото двуцифрени числа с цифра на десетиците <span class="num">' + q.t + '</span>',
                                 'найбільшого й найменшого двоцифрових чисел із цифрою десятків <span class="num">' + q.t + '</span>')
@@ -48,7 +48,7 @@ function drawConsec(q){
          'найбільшого двоцифрового числа з цифрою десятків <span class="num">' + q.t + '</span> і найменшого двоцифрового числа з цифрою десятків <span class="num">' + q.s + '</span>');
   return '<div class="ask">' + tr('Сборът на две <b>последователни</b> числа е равен на разликата на ' + which + '. Кое е <b>' + (q.small ? 'по-малкото' : 'по-голямото') + '</b> от последователните числа?',
     'Сума двох <b>послідовних</b> чисел дорівнює різниці ' + which + '. Яке з послідовних чисел <b>' + (q.small ? 'менше' : 'більше') + '</b>?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqConsec(q){
   if(q.shape === 'three') return (q.m - 1) + ' + ' + q.m + ' + ' + (q.m + 1) + ' = ' + q.S + ' → ' + (q.m - 1) + ', ' + q.m + ', ' + (q.m + 1);

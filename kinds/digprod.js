@@ -2,7 +2,7 @@
 
 // МБГ Есен, 3 клас, задача 2: the product of the digits of the smallest three-digit number
 // written with different digits. That number is 102, and its 0 makes the product 0.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 const digMul = n => [...String(n)].reduce((a, b) => a * +b, 1);
 /** @type {[string, string, (n: number) => boolean][]} */
 export const DIG_COND = [
@@ -43,7 +43,7 @@ function drawDigProd(q){
     (q.big ? 'най-голямото' : 'най-малкото') + '</b> трицифрено число, ' + DIG_COND[q.c][0] + '.',
     'Обчисліть <b>' + (q.prod ? 'добуток' : 'суму') + '</b> цифр <b>' + (q.big ? 'найбільшого' : 'найменшого') +
     '</b> тризначного числа, ' + DIG_COND[q.c][1] + '.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqDigProd(q){
   return q.n + ' → ' + q.ds.join(q.prod ? ' · ' : ' + ') + ' = ' + q.ans;

@@ -6,7 +6,7 @@
 // the products with a 0 go, then : and · left to right. Есен 2023, задача 4 (shape 'sub'):
 // 16 − (20 − 2 · 3) : (2 + 0 · 2 · 3) = 16 − 14 : 2 = 9. Both are drawn after the old question, so a seed
 // that asked the old one still does, unless the draw after it turns it into a new shape.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genZeros(){
   for(;;){
     const p = 2 + rnd(4), q = 2 + rnd(8), r = 2 + rnd(8);
@@ -51,7 +51,7 @@ const zerosLine = q => !q.shape ? zerosExpr(q) : zerosExpr(q).split(' : (').map(
 function drawZeros(q){
   return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
     '<div class="given">' + zerosLine(q) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqZeros(q){
   if(q.shape) return zerosExpr(q) + ' = ' + q.ans;

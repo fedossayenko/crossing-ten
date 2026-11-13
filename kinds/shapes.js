@@ -4,7 +4,7 @@
 // circle, a black square to match it, and a black circle), while raising the white
 // squares costs two — so when the black circles already outnumber the whites, the
 // squares are the cheaper way to catch up.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, shuffle, tr } from '../js/core.js';
 const SHAPE_GLYPH = { wo:'○', ws:'□', bs:'■', bc:'●' };
 export function genShapes(){
   for(;;){
@@ -23,7 +23,7 @@ function drawShapes(q){
   return '<div class="ask">' + tr('Колко <b>най-малко</b> фигури общо трябва да добавим, така че черните квадрати ■ да са толкова, колкото белите кръгове ○, а черните кръгове ● да са толкова, колкото са <b>всичките бели</b> фигури?',
     'Скільки <b>найменше</b> фігур загалом треба додати, щоб чорних квадратів ■ було стільки, скільки білих кругів ○, а чорних кругів ● — стільки, скільки <b>всіх білих</b> фігур?') + '</div>' +
     '<div class="seq" style="letter-spacing:.2em">' + q.row.map(t => SHAPE_GLYPH[t]).join(' ') + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqShapes(q){
   return '○' + q.wo + ' □' + q.ws + ' ■' + q.bs + ' ●' + q.bc + ' → ' + q.ans;

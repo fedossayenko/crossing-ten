@@ -2,7 +2,7 @@
 
 // МБГ Зима 2024, задача 9: (1·2 + 2·3 + 3·4 + 5·6) · (1 + 2 + 3 − 6). The long bracket is a
 // decoy: the short one is 0, and anything times 0 is 0. Sometimes a number is added after.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, shuffle, tr } from '../js/core.js';
 export function genZeroFac(){
   const prods = [];
   for(let a = 1 + rnd(3), i = 0; i < 3 + rnd(2); i++, a += 1 + rnd(2)) prods.push([a, a + 1]);
@@ -17,7 +17,7 @@ const zeroFacExpr = q => { const br = x => '<span style="white-space:nowrap">(' 
 function drawZeroFac(q){
   return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
     '<div class="line" style="font-size:clamp(18px,5vw,30px)"><span class="num">' + zeroFacExpr(q) + '</span></div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqZeroFac(q){
   return q.zero + ' = 0 → (…) · 0' + (q.add ? ' + ' + q.add : '') + ' = ' + q.ans;

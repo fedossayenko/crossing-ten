@@ -6,7 +6,7 @@
 // from A or from B? Two on either side of A and two of B: 4. When B is twice as far, 2 см, the point between
 // them is 1 см from both and is one point, not two: 3 — the trap. B is always farther than the distance asked:
 // just as far, and the point found would be A itself, already marked.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genDistPts(){
   for(;;){
     const d = 1 + rnd(5), r = 1 + rnd(2);
@@ -32,7 +32,7 @@ function distSvg(q){
 function drawDistPts(q){
   return '<div class="ask">' + tr('Мария начертала права линия и отбелязала върху нея точката A. След това върху същата права на разстояние <span class="num">' + q.d + '</span> см от A отбелязала точката B. Колко са точките, които можем да отбележим върху тази права, всяка на разстояние <span class="num">' + q.r + '</span> см от една от точките A и B?',
     'Марія накреслила пряму лінію й позначила на ній точку A. Потім на тій самій прямій на відстані <span class="num">' + q.d + '</span> см від A вона позначила точку B. Скільки точок можна позначити на цій прямій, кожну на відстані <span class="num">' + q.r + '</span> см від однієї з точок A і B?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqDistPts(q){
   const p = (n, s) => n + ' ' + s + ' ' + q.r;

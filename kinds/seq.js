@@ -2,7 +2,7 @@
 
 // Задача 20: near-sorted, so a few numbers sit with everything smaller to their left
 // and everything bigger to their right. Counted directly, never inferred.
-import { KIND, SLOT, bgList, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genSeq(){
   for(;;){
     const n = 8 + rnd(3);
@@ -22,7 +22,7 @@ function drawSeq(q){
   return tr('<div class="ask">Колко са числата от редицата, вляво от които числата са по-малки, а вдясно — по-големи?</div>',
     '<div class="ask">Скільки чисел у ряду мають ліворуч лише менші числа, а праворуч — лише більші?</div>') +
     '<div class="seq">' + q.a.join(', ') + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqSeq(q){
   return q.a.join(', ') + ' → ' + bgList(q.hits) + ' → ' + q.ans;

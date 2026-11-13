@@ -1,11 +1,11 @@
 // Question kind 'cats': level 42 Котките — Two cats and one box of food between them.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 
 const CATS = [['Ан','Ед'], ['Мими','Рижко'], ['Сивка','Мурко'], ['Пух','Луна']];
 const catsUk = {'Мими':'Мімі', 'Рижко':'Рижик'};
 const catsNm = n => tr(n, catsUk[n] || n);
 // 1 день, 2 дні, 5 днів — forms in the order one, few, many
-const catsPl = (n, f) => n + ' ' + f[['one','few','many'].indexOf(UK_PLURAL.select(n))];
+const catsPl = (n, f) => ukN(n, f[0], f[1], f[2]);
 const CATS_DAY = ['день','дні','днів'], CATS_BOX = ['коробка','коробки','коробок'];
 
 // Задача 17: in p times q days the first cat gets through q boxes and the second p,
@@ -64,7 +64,7 @@ function catsSvg(q){
 function catsHintSvg(q){
   const u = 40, row = (y, len, n, stroke, fill, name) => svgText(22, y + 13, catsNm(name), 11, stroke) +
     Array.from({length: n}, (_, i) => '<rect x="' + (47 + i * len * u) + '" y="' + y + '" width="' + (len * u - 2) + '" height="18" rx="4" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.6"/>').join('');
-  return '<svg viewBox="0 -10 312 58" style="display:block; width:312px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('ден, в който и двете свършват кутия', 'день, коли обидві доїдають коробку') + '">' +
+  return svgFrame('0 -10 312 58', 312, tr('ден, в който и двете свършват кутия', 'день, коли обидві доїдають коробку')) +
     row(0, 2, 3, 'var(--warm)', 'var(--warmbg)', q.nm[0]) + row(26, 3, 2, 'var(--accent)', 'rgba(47,111,143,.14)', q.nm[1]) +
     '<line x1="286" y1="-6" x2="286" y2="48" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 3"/>' + svgText(301, 27, '?', 16, 'var(--ink)') + '</svg>';
 }

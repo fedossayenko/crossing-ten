@@ -4,7 +4,7 @@
 // round number away, count the tens, or say how much bigger it is than 11 + 22 + 33.
 // МБГ Зима 2021, 2023: a longer chain whose pairs make different round numbers (1 + 9, 2 + 18,
 // 13 + 87) and one more number; then how many tens the sum has, or how far it is short of 100.
-import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, answerLine, rnd, shuffle, tr, ukN } from '../js/core.js';
 function genFiftyLong(){
   for(;;){
     const k = 3 + rnd(2), smalls = shuffle([1,2,3,4,5,6,7,8,9,11,12,13]).slice(0, k), pairs = [];
@@ -55,20 +55,20 @@ function drawFifty(q){
   if(q.shape === 4){
     const E = '<span class="num">' + fiftyTensExpr(q) + '</span>';
     return '<div class="ask">' + tr('Пресметнете ' + E + '. Колко са <b>десетиците</b> в полученото число?', 'Обчисліть ' + E + '. Скільки <b>десятків</b> в отриманому числі?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 3){
     const E = '<span class="num">' + q.nums.join(' + ') + '</span>';
     return '<div class="ask">' + (q.less ? tr('С колко сборът ' + E + ' е <b>по-малък</b> от <span class="num">100</span>?', 'На скільки сума ' + E + ' <b>менша</b> за <span class="num">100</span>?')
       : tr('Пресметнете ' + E + '. Колко са <b>десетиците</b> в полученото число?', 'Обчисліть ' + E + '. Скільки <b>десятків</b> в отриманому числі?')) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const ask = q.shape === 0 ? tr('Пресметнете', 'Обчисліть')
     : q.shape === 1 ? tr('Колко са <b>десетиците</b> в пресметнатия сбор?', 'Скільки <b>десятків</b> в обчисленій сумі?')
     : tr('С колко сборът <span class="num">' + q.nums.join(' + ') + '</span> е <b>по-голям</b> от сбора <span class="num">' + q.other.join(' + ') + '</span>?',
          'На скільки сума <span class="num">' + q.nums.join(' + ') + '</span> <b>більша</b> за суму <span class="num">' + q.other.join(' + ') + '</span>?');
   return '<div class="ask">' + ask + '</div>' +
-    (q.shape === 2 ? '<div class="line xl">' + SLOT + '</div>'
+    (q.shape === 2 ? answerLine('xl')
       : '<div class="line" style="font-size:clamp(26px,7.5vw,44px)"><span class="num">' + fiftyExpr(q) + '</span>' +
         (q.shape === 0 ? ' = ' + SLOT : '</div><div class="line xl">' + SLOT) + '</div>');
 }

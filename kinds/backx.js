@@ -3,7 +3,7 @@
 // МБГ Есен 2023, 3 клас, задача 19 (shape 'num'): ((x : 2) · 4) · 8 = 64 — back from the end, 64 : 8 = 8, 8 : 4 = 2,
 // and x = 2 · 2 = 4. Есен 2024, задача 9 (shape 'sum'): ((x : 2) · 3) · 4 = 5 · 9 − (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9) —
 // the right side first: 45 − 45 = 0, so x = 0. t is x : a, the number inside the first bracket; R the right side.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, numSpan, rnd, tr } from '../js/core.js';
 const okTraps = (ans, vs) => vs.filter((v, i) => Number.isInteger(v) && v >= 0 && v < 1000 && v !== ans && vs.indexOf(v) === i);
 export function genBackX(){
   if(Math.random() < 0.5){
@@ -91,12 +91,12 @@ function drawBackPm(q){
   if(q.shape === 'arrow') return '<div class="ask">' + tr('Кое число трябва да е на мястото на „?“?', 'Яке число має бути на місці «?»?') + '</div>' +
     '<div class="given">? ' + q.steps.map(s => nw((s < 0 ? '−' : '+') + Math.abs(s) + ' →')).join(' ') + ' ' + q.r + '</div>' +
     '<div class="line xl">? = ' + SLOT + '</div>';
-  const num = n => '<span class="num">' + n + '</span>', [a, b, c] = q.steps.map(s => num(Math.abs(s))), minus = q.steps.map(s => s < 0);
+  const [a, b, c] = q.steps.map(s => numSpan(Math.abs(s))), minus = q.steps.map(s => s < 0);
   return '<div class="ask">' + tr('Намислих си число. ' + (minus[0] ? 'От него извадих ' : 'Към него прибавих ') + a + ', после ' + (minus[1] ? 'извадих ' : 'прибавих ') + b +
-      ' и накрая ' + (minus[2] ? 'извадих ' : 'прибавих ') + c + '. Получих ' + num(q.r) + '. Кое число съм намислил?',
+      ' и накрая ' + (minus[2] ? 'извадих ' : 'прибавих ') + c + '. Получих ' + numSpan(q.r) + '. Кое число съм намислил?',
     'Я задумав число. ' + (minus[0] ? 'Від нього відняв ' : 'До нього додав ') + a + ', потім ' + (minus[1] ? 'відняв ' : 'додав ') + b +
-      ' і нарешті ' + (minus[2] ? 'відняв ' : 'додав ') + c + '. Отримав ' + num(q.r) + '. Яке число я задумав?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+      ' і нарешті ' + (minus[2] ? 'відняв ' : 'додав ') + c + '. Отримав ' + numSpan(q.r) + '. Яке число я задумав?') + '</div>' +
+    answerLine('xl');
 }
 // the summary line is plain text: the result, then the steps backwards with their signs turned round
 const backPmLine = q => q.r + ' ' + q.steps.slice().reverse().map(s => pmStep(-s)).join(' ') + ' = ' + q.x;
@@ -107,10 +107,10 @@ function whyBackPm(q, full){
 }
 const ADD_SHAPES = { think:1, x:1, brx:1 };
 function drawBackAdd(q){
-  const X = '<i>x</i>', num = n => '<span class="num">' + n + '</span>';
-  if(q.shape === 'think') return '<div class="ask">' + tr('Намислих число. ' + (q.minus ? 'От него извадих ' : 'Към него прибавих ') + num(q.a) + ' и получих ' + num(q.c) + '. Кое число съм намислил?',
-      'Я задумав число. ' + (q.minus ? 'Від нього відняв ' : 'До нього додав ') + num(q.a) + ' і отримав ' + num(q.c) + '. Яке число я задумав?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+  const X = '<i>x</i>';
+  if(q.shape === 'think') return '<div class="ask">' + tr('Намислих число. ' + (q.minus ? 'От него извадих ' : 'Към него прибавих ') + numSpan(q.a) + ' и получих ' + numSpan(q.c) + '. Кое число съм намислил?',
+      'Я задумав число. ' + (q.minus ? 'Від нього відняв ' : 'До нього додав ') + numSpan(q.a) + ' і отримав ' + numSpan(q.c) + '. Яке число я задумав?') + '</div>' +
+    answerLine('xl');
   return '<div class="ask">' + tr('Намери неизвестното число.', 'Знайди невідоме число.') + '</div>' +
     '<div class="given">' + nw((q.shape === 'brx' ? '(' + q.a + ' + ' + q.b + ')' : q.a) + ' + ' + X + ' = ' + q.c) + '</div>' +
     '<div class="line xl">' + X + ' = ' + SLOT + '</div>';

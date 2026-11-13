@@ -5,7 +5,7 @@
 // Аз и числата 2024, задача 9 (shape 'eqs'): 12 − 5 = □, □ + 73 = □, □ − 23 = □ — each answer starts the next line:
 // 7, 80, 57. The paper fills every box; here one box is asked (the «?»), and the empty ones may have to be found first.
 // nums: the numbers in order, steps: what each arrow adds (− takes away); hideN, hideS: the hidden ones, at: the one asked.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, rnd, tr } from '../js/core.js';
 const ovAbs = Math.abs;
 // what can be found from what is shown, in the order a child finds it: [type, index, the sum written out, value, what it used]
 function ovSolve(q){
@@ -61,7 +61,7 @@ export function genOvals(){
 }
 const OV_Q = '<tspan fill="var(--accent)">?</tspan>';
 function ovStripSvg(q){
-  const n = q.nums.length, W = 78 + (n - 1)*80, cx = i => 39 + i*80, t = (x, y, s) => '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + s + '</text>';
+  const n = q.nums.length, W = 78 + (n - 1)*80, cx = i => 39 + i*80, t = (x, y, s) => '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" ' + SVG_FONT + '>' + s + '</text>';
   const asked = (k, i) => q.at[0] === k && q.at[1] === i;
   let s = '';
   q.steps.forEach((st, i) => {

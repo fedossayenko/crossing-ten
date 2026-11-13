@@ -1,6 +1,5 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
-import { KIND, NAMES, SLOT, UK_PLURAL, addUp, popAt, rnd, svgText, tr } from '../js/core.js';
-import { LANG } from '../js/i18n.js';
+import { KIND, NAMES, SLOT, addUp, numSpan, popAt, rnd, svgText, tr, ukN, ukWord } from '../js/core.js';
 
 export function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
@@ -19,26 +18,25 @@ export function genTrees(){
           ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
 }
 
-const treesPl = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
-const treesN = n => n + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
-const treesM = n => treesPl(n, 'метр', 'метри', 'метрів');
-const treesGaps = n => treesPl(n, 'проміжок', 'проміжки', 'проміжків');
+const treesN = n => ukN(n, 'деревце', 'деревця', 'деревець');
+const treesM = n => ukWord(n, 'метр', 'метри', 'метрів');
+const treesGaps = n => ukWord(n, 'проміжок', 'проміжки', 'проміжків');
 function treesUkAsk(q){
-  const nm = NAMES.find(x => x[0] === q.who), who = nm[2], did = nm[3], num = x => '<span class="num">' + x + '</span>';
-  const trees = n => num(n) + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
-  if(q.shape === 3) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + num(q.dm) +
+  const nm = NAMES.find(x => x[0] === q.who), who = nm[2], did = nm[3];
+  const trees = n => numSpan(n) + ' ' + ukWord(n, 'деревце', 'деревця', 'деревець');
+  if(q.shape === 3) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + numSpan(q.dm) +
     ' дм одне від одного. Скільки <b>метрів</b> завдовжки цей ряд?';
-  if(q.shape === 0) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + num(q.d) + ' ' +
+  if(q.shape === 0) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + numSpan(q.d) + ' ' +
     treesM(q.d) + ' одне від одного. Скільки метрів завдовжки цей ряд?';
-  if(q.shape === 1) return who + ' ' + did + ' деревця в один ряд завдовжки ' + num(q.len) + ' ' + treesM(q.len) +
-    ' на відстані ' + num(q.d) + ' ' + treesM(q.d) + ' одне від одного. Скільки деревець ' +
+  if(q.shape === 1) return who + ' ' + did + ' деревця в один ряд завдовжки ' + numSpan(q.len) + ' ' + treesM(q.len) +
+    ' на відстані ' + numSpan(q.d) + ' ' + treesM(q.d) + ' одне від одного. Скільки деревець ' +
     (/в$/.test(did) ? 'він' : 'вона') + ' ' + did + '?';
-  return who + ' ' + did + ' ' + trees(q.n) + ' в ряд завдовжки ' + num(q.len) + ' ' + treesM(q.len) +
+  return who + ' ' + did + ' ' + trees(q.n) + ' в ряд завдовжки ' + numSpan(q.len) + ' ' + treesM(q.len) +
     ' на однаковій відстані. Скільки метрів між двома сусідніми деревцями?';
 }
 
 function drawTrees(q){
-  const ask = LANG === 'uk' ? treesUkAsk(q) : q.shape === 3
+  const bgAsk = q.shape === 3
     ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
       q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
     : q.shape === 0
@@ -49,6 +47,7 @@ function drawTrees(q){
       '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
     : q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в редица, дълга <span class="num">' + q.len +
       '</span> метра, на равни разстояния. Колко метра е разстоянието между две съседни дръвчета?';
+  const ask = tr(bgAsk, treesUkAsk(q));
   return '<div class="ask">' + ask + '</div>' +
     '<div class="line lg">' + SLOT +
     (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';

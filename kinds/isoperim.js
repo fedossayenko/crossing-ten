@@ -12,7 +12,7 @@
 // equilateral triangle with side 2 см — three equal sides, 2 + 2 + 2 = 6. Аз и числата 2026, задача 8 (shape 'back'):
 // the perimeter 21 см, two sides 5 и 9 — the third is 21 − 5 − 9 = 7; 2023, задача 9, the same about a triangular tree,
 // 68 м with sides 16 и 26: 26. The slips: one side taken away, not both; a side for the perimeter; four sides for three.
-import { CM, KIND, SLOT, addUp, rnd, shuffle, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, addUp, rnd, shuffle, tr } from '../js/core.js';
 import { triSideSvg } from './tritype.js';
 // the triangle's sides as [base, left, right]: the longest across, so it stands
 const triPerimSides = s => { const x = s.slice().sort((p, q) => q - p); return [x[0], x[1], x[2]]; };
@@ -93,7 +93,7 @@ function genIsoOdd(){
 function isoRouteSvg(q){
   const u = 16, hA = q.a*u*0.87, base = q.a*u, mx = base + 30, mb = q.base*u, kh = Math.sqrt(Math.max(1, q.leg*q.leg - q.base*q.base/4))*u;
   const H = Math.max(hA, kh) + 30, y0 = H - 6;
-  const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + t + '</text>';
+  const lab = (x, y, t) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + t + '</text>';
   const pt = (x, y, t, dx) => lab(x + (dx || 0), y, t);
   return '<div class="fig"><svg viewBox="-14 0 ' + (mx + mb + 28).toFixed(1) + ' ' + (H + 14).toFixed(1) + '" role="img" aria-label="' + tr('два триъгълника', 'два трикутники') + '">' +
     '<g stroke="var(--ink)" stroke-width="2" fill="none" stroke-linejoin="round"><path d="M0 ' + y0 + 'L' + base + ' ' + y0 + 'L' + base/2 + ' ' + (y0 - hA).toFixed(1) + 'Z"/>' +

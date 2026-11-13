@@ -2,7 +2,7 @@
 
 // Задача 15: both numbers are at least ten and different, which for these sums
 // leaves exactly one pair — at the bottom of the range or at the top.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, rnd, tr } from '../js/core.js';
 export function genTwoDig(){
   const three = Math.random() < 0.25;
   const M = three ? 100 : 10, X = three ? 999 : 99;
@@ -39,7 +39,7 @@ function drawTwodig(q){
   return '<div class="ask">' + tr('Сборът на две <b>различни</b> ' + (q.three ? 'трицифрени' : 'двуцифрени') +
     ' числа е <span class="num">', 'Сума двох <b>різних</b> ' + (q.three ? 'трицифрових' : 'двоцифрових') +
     ' чисел дорівнює <span class="num">') + q.S + '</span>. ' + what + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqTwodig(q){
   if(q.shape === 'under') return q.pairs.map(p => p.join(' + ')).join(', ') + ' → ' + twoDigUnderVals(q).join(', ');

@@ -3,7 +3,7 @@
 // МБГ Есен 2024, 3 клас, задача 16: a block of 9 floors, 3 times as many floors above ours as below it. Our own floor
 // is neither above nor below, so the other 8 are one part below and 3 parts above, 4 parts: 8 : 4 = 2 floors below
 // us, and we live on the 3rd. Sometimes it is below that has so many times more.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 export function genFloors(){
   for(;;){
     const k = 2 + rnd(4), x = 1 + rnd(6), N = x*(k + 1) + 1, below = Math.random() < 0.3;
@@ -20,7 +20,7 @@ function drawFloors(q){
       '</span> пъти повече етажи, отколкото ' + down + ' нашия етаж. <b>На кой етаж живея аз?</b>',
     'Я живу в будинку на <span class="num">' + floorsUk(q.N).replace(' ', '</span> ') + '. ' + up + ' нашим поверхом у <span class="num">' + ukN(q.k, 'раз', 'рази', 'разів').replace(' ', '</span> ') +
       ' більше поверхів, ніж ' + down + ' нашим поверхом. <b>На якому поверсі я живу?</b>') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqFloors(q){
   return q.N + ' − 1 = ' + (q.N - 1) + ', ' + (q.N - 1) + ' : ' + (q.k + 1) + ' = ' + q.x + ', ' + (q.below ? q.x + ' · ' + q.k + ' = ' + q.k*q.x + ', ' + q.k*q.x : q.x) + ' + 1 = ' + q.ans;

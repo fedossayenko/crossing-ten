@@ -3,7 +3,7 @@
 // Коледно състезание 2025, задача 4: the difference of two numbers is 4 — the smallest possible
 // minuend? 4, since 4 − 0 = 4: the 0 is allowed and is the whole trick. When the numbers
 // have to be two-digit it is 10 more, and when neither may be 0 it is one more.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genMinuend(){
   const d = 2 + rnd(15), kind = [0, 0, 1, 2][rnd(4)], asks = rnd(2);        // asks: the minuend, or the sum of the two
   const sub = kind === 0 ? 0 : kind === 1 ? 10 : 1;
@@ -14,7 +14,7 @@ function drawMinuend(q){
   const ask = q.asks === 0 ? tr('Колко е <b>най-малкото</b> възможно умаляемо?', 'Яке <b>найменше</b> можливе зменшуване?')
                            : tr('Колко е <b>най-малкият</b> възможен сбор на двете числа?', 'Яка <b>найменша</b> можлива сума цих двох чисел?');
   return '<div class="ask">' + tr('Разликата на две ', 'Різниця двох ') + minuendWhat(q) + tr(' е <span class="num">', ' дорівнює <span class="num">') + q.d + '</span>. ' + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqMinuend(q){
   return (q.sub + q.d) + ' − ' + q.sub + ' = ' + q.d + (q.asks ? ' → ' + (q.sub + q.d) + ' + ' + q.sub : '') + ' → ' + q.ans;

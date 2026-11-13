@@ -1,5 +1,5 @@
 // Question kind 'multiple': level 49 Равни събираеми — The smallest count that splits into equal parts both ways.
-import { BGNUM, KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 
 const GARDEN = [['рози','розите','градината'], ['ябълки','ябълките','кошницата'],
                 ['картички','картичките','кутията'], ['мидички','мидичките','торбичката']];
@@ -31,7 +31,7 @@ function drawMultiple(q){
   if(q.shape === 'count'){
     return '<div class="ask">' + tr('Колко от числата от <span class="num">1</span> до <span class="num">' + q.N + '</span> можем да запишем и като сбор на <b>' + BGNUM[q.p] + ' равни</b> събираеми, и като сбор на <b>' + BGNUM[q.r] + ' равни</b> събираеми?',
       'Скільки чисел від <span class="num">1</span> до <span class="num">' + q.N + '</span> можна записати і як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків, і як суму <b>' + multipleUkGen[q.r] + ' однакових</b> доданків?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const uk = multipleUk[q.g[0]];
   return '<div class="ask">' + tr('В ' + q.g[2] + ' има <b>повече от</b> <span class="num">' + q.N + '</span> ' + q.g[0] +
@@ -40,7 +40,7 @@ function drawMultiple(q){
     uk[0] + ' <b>більше ніж</b> <span class="num">' + ukN(q.N, uk[2], uk[3], uk[1]).replace(' ', '</span> ') +
     '. Їхню кількість можна записати як суму <b>' + multipleUkGen[q.p] + ' однакових</b> доданків і як суму <b>' +
     multipleUkGen[q.r] + ' однакових</b> доданків. Яка <b>найменша</b> кількість ' + uk[1] + ' може бути?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqMultiple(q){
   if(q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;

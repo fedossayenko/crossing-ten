@@ -4,8 +4,7 @@
 // some of the time, so the wording has to be read rather than guessed.
 // Задача 3: the two sums line up term by term, so pairing them off beats adding both —
 // one pair carries a ten, the rest nudge by one or two.
-import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
-import { LANG } from '../js/i18n.js';
+import { KIND, answerLine, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const BOYS = ['Алекс', 'Борис', 'Виктор', 'Георги', 'Даниел', 'Емил'];
 // Задача 18: who beat whom. One boy is said to be above everybody, and another to be
 // above only a named few — which pins how many are above him, whatever the rest did.
@@ -28,21 +27,20 @@ function drawRank(q){
       '. Колко момчета са <b>' + (q.asksAbove ? 'по-високи' : 'по-ниски') + '</b> от <b>' + q.who[q.k] + '</b>?',
       '<b>' + rankNm(q.who[0]) + '</b> вищий ' + q.who.slice(1).map(x => 'і за <b>' + rankAcc[x] + '</b>').join(', ') + ', а <b>' + rankNm(q.who[q.k]) + '</b> вищий <b>лише</b> за ' + bgList(q.who.slice(q.k + 1).map(x => '<b>' + rankAcc[x] + '</b>')) +
       '. Скільки хлопців <b>' + (q.asksAbove ? 'вищі' : 'нижчі') + '</b> за <b>' + rankAcc[q.who[q.k]] + '</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
-  if(LANG === 'uk') return '<div class="ask">На змаганні з математики <b>' + rankNm(q.who[0]) + '</b> набрав більше балів, ніж ' +
+  const beaten = q.who.slice(1).map(x => 'от <b>' + x + '</b>');
+  const only = q.who.slice(q.k + 1).map(x => '<b>' + x + '</b>');
+  return '<div class="ask">' + tr('В едно състезание по математика <b>' + q.who[0] + '</b> е с повече точки ' +
+    bgList(beaten) + ', а <b>' + q.who[q.k] + '</b> е с повече точки <b>само</b> от ' + bgList(only) +
+    '. Колко момчета са с <b>' + (q.asksAbove ? 'повече' : 'по-малко') + '</b> точки от <b>' +
+    q.who[q.k] + '</b>?',
+    'На змаганні з математики <b>' + rankNm(q.who[0]) + '</b> набрав більше балів, ніж ' +
     bgList(q.who.slice(1).map(x => '<b>' + rankNm(x) + '</b>')) + ', а <b>' + rankNm(q.who[q.k]) +
     '</b> випередив <b>лише</b> ' + bgList(q.who.slice(q.k + 1).map(x => '<b>' + rankAcc[x] + '</b>')) +
     '. Скільки хлопців мають <b>' + (q.asksAbove ? 'більше' : 'менше') + '</b> балів, ніж <b>' +
-    rankNm(q.who[q.k]) + '</b>?</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
-  const beaten = q.who.slice(1).map(x => 'от <b>' + x + '</b>');
-  const only = q.who.slice(q.k + 1).map(x => '<b>' + x + '</b>');
-  return '<div class="ask">В едно състезание по математика <b>' + q.who[0] + '</b> е с повече точки ' +
-    bgList(beaten) + ', а <b>' + q.who[q.k] + '</b> е с повече точки <b>само</b> от ' + bgList(only) +
-    '. Колко момчета са с <b>' + (q.asksAbove ? 'повече' : 'по-малко') + '</b> точки от <b>' +
-    q.who[q.k] + '</b>?</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    rankNm(q.who[q.k]) + '</b>?') + '</div>' +
+    answerLine('xl');
 }
 function eqRank(q){
   return q.who.map(rankNm).join(' > ') + tr(', пита се за ' + q.who[q.k], ', питання про ' + rankAcc[q.who[q.k]]) + ' → ' + q.ans;

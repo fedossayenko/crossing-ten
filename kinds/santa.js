@@ -7,7 +7,7 @@
 // В) the 19 лв change from 100, in exactly 6 notes and coins: 3 ways (1 2 2 2 2 10, 1 1 2 5 5 5,
 //    1 1 1 1 5 10). The paper wants them listed; here it asks how many there are.
 // The лева are asked as euro, as Bulgaria pays since 2026: the same coins (1, 2) and notes (5, 10, 20, 50).
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 const SANTA_MONEY = [1, 2, 5, 10, 20, 50];
 export function santaWays(R, k){
   const out = [];
@@ -41,7 +41,7 @@ export function genSanta(){
 }
 function santaMap(q){
   const X = x => 40 + x*22, Y = y => 14 + y*22, pt = (x, y) => X(x).toFixed(1) + ',' + Y(y).toFixed(1);
-  const lab = (x, y, t, anchor) => '<text x="' + X(x).toFixed(1) + '" y="' + Y(y).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" font-size="11" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + t + '</text>';
+  const lab = (x, y, t, anchor) => '<text x="' + X(x).toFixed(1) + '" y="' + Y(y).toFixed(1) + '" text-anchor="' + (anchor || 'middle') + '" font-size="11" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + t + '</text>';
   // a house and its name: beside it on the left edge, above or below it elsewhere, clear of the roads
   const house = (x, y, n, anchor, dy) => '<circle cx="' + X(x).toFixed(1) + '" cy="' + Y(y).toFixed(1) + '" r="4" fill="var(--accent)"/>' +
     lab(x + (anchor === 'end' ? -0.4 : 0), y + (dy || 0.2), tr('къща ', 'будинок ') + n, anchor);
@@ -68,7 +68,7 @@ function drawSanta(q){
     'За квитки на <span class="num">' + q.T + '</span> євро вони дали <span class="num">100</span> євро. Решту отримали рівно <span class="num">' + q.k +
     '</span> купюрами й монетами (без центів). <b>Скількома способами</b> могла бути видана решта?') + '</div>' +
     '<div class="note">' + tr('Монети: 1 и 2 евро. Банкноти: 5, 10, 20 и 50 евро.', 'Монети: 1 і 2 євро. Купюри: 5, 10, 20 і 50 євро.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqSanta(q){
   if(q.shape === 0) return tr('път: ', 'шлях: ') + q.a + ' + ' + q.b + ' + ' + Math.min(q.back, q.on) + ' + ' + q.e + ' = ' + q.ans;

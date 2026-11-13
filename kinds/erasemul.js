@@ -4,7 +4,7 @@
 // МБГ Есен, 3 клас, задача 6: erase three digits in 12 · 31 · 41 so the result is 24; the sum
 // of the erased digits. With the three 1s gone it is 2 · 3 · 4 = 24, so 3. Each number keeps a
 // digit, every way of erasing is tried, and all the ways that reach the target erase the same sum.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 // drop: a number may lose all its digits too, and then it is left out of vals (the product of the rest)
 export function eraseWays(nums, k, drop){
   const per = nums.map(n => {
@@ -63,12 +63,12 @@ function drawEraseMul(q){
     '<div class="given">' + q.nums.join(' · ') + '</div>' +
     '<div class="ask">' + tr('така че резултатът да бъде възможно най-близък до <span class="num">' + q.T + '</span>. Колко е сборът от изтритите цифри?',
       'так, щоб результат був якомога ближчим до <span class="num">' + q.T + '</span>. Чому дорівнює сума зітертих цифр?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
   return '<div class="ask">' + tr('Изтрийте <b>три</b> цифри в израза', 'Зітріть <b>три</b> цифри у виразі') + '</div>' +
     '<div class="given">' + q.nums.join(' · ') + '</div>' +
     '<div class="ask">' + tr('така че резултатът да бъде <span class="num">' + q.T + '</span>. Колко е сборът от изтритите цифри?',
       'так, щоб результат дорівнював <span class="num">' + q.T + '</span>. Чому дорівнює сума зітертих цифр?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqEraseMul(q){
   if(q.shape === 'near') return q.kept.join(' · ') + ' = ' + q.best + tr(', най-близо до ', ', найближче до ') + q.T + ' → ' + q.gone.join(' + ') + ' = ' + q.ans;

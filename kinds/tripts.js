@@ -3,7 +3,7 @@
 // МБГ Зима 2020, задача 17: five points in a plus. Any three make a triangle unless they lie on one
 // line — and the plus has two such lines of three: 10 threes − 2 = 8. Counted over every three.
 /** @type {[number, number][][]} */
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 /** @type {any[]} */
 const TRIPTS = [
   [[1,0],[0,1],[1,1],[2,1],[1,2]],             // the paper's plus
@@ -26,7 +26,7 @@ function triPtsSvg(pts){
 }
 function drawTriPts(q){
   return '<div class="ask">' + tr('Колко са триъгълниците с върхове <b>3 от точките</b> на чертежа?', 'Скільки трикутників із вершинами в <b>3 з точок</b> на рисунку?') + '</div>' +
-    triPtsSvg(q.dots) + '<div class="line xl">' + SLOT + '</div>';
+    triPtsSvg(q.dots) + answerLine('xl');
 }
 function eqTriPts(q){
   return q.all + ' − ' + q.flat + ' = ' + q.ans;

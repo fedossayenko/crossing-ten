@@ -1,5 +1,5 @@
 // Question kind 'tens': level 51 Десетици — A number said in tens, ones and hundreds.
-import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 
 const PLACE = {1:['единица','единици'], 10:['десетица','десетици'], 100:['стотица','стотици']};
 export const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
@@ -61,14 +61,14 @@ const tensSaidUk = n => 'має ' + tensUkPlaces(n.t, 10) + ' і ' + (n.rel === 
 // Ukrainian forms by Intl plural category: one (1 десяток), few (2 десятки), many (5 десятків)
 const tensUk = {1:{one:'одиниця', few:'одиниці', many:'одиниць'}, 10:{one:'десяток', few:'десятки', many:'десятків'},
                 100:{one:'сотня', few:'сотні', many:'сотень'}};
-const tensUkPlaces = (n, u) => n + ' ' + tensUk[u][UK_PLURAL.select(n)];
+const tensUkPlaces = (n, u) => ukN(n, tensUk[u].one, tensUk[u].few, tensUk[u].many);
 const tensPlaces = (n, u) => tr(places(n, u), tensUkPlaces(n, u));
 function drawTens(q){
   if(q.shape === 'said'){
     return '<div class="ask">' + (q.sum
       ? tr('Първото събираемо ' + tensSaidBg(q.A) + '. Второто събираемо ' + tensSaidBg(q.B) + '. <b>Сборът</b> е:', 'Перший доданок ' + tensSaidUk(q.A) + '. Другий доданок ' + tensSaidUk(q.B) + '. <b>Сума</b> дорівнює:')
       : tr('Умаляемото ' + tensSaidBg(q.A) + '. Умалителят ' + tensSaidBg(q.B) + '. <b>Разликата</b> е:', 'Зменшуване ' + tensSaidUk(q.A) + '. Від’ємник ' + tensSaidUk(q.B) + '. <b>Різниця</b> дорівнює:')) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const B = '<span class="circle">□</span>';
   // the box holds a single digit in the first two, a whole number in the others
@@ -84,7 +84,7 @@ function drawTens(q){
            : tensPlaces(q.a, 100) + ' + ' + tensPlaces(q.b, 10) + ' + ' + tensPlaces(q.c, 1) + ' = ' + B;
   return '<div class="ask">' + ask + '</div>' +
     '<div class="given">' + eq + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqTens(q){
   if(q.shape === 'said') return q.a + (q.sum ? ' + ' : ' − ') + q.b + ' = ' + q.ans;

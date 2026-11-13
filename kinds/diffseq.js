@@ -3,7 +3,7 @@
 // Коледно състезание 2025, задача 7: 25, 24, 21, 16, 9, ? — then the sum of all six. The steps
 // are 1, 3, 5, 7, so the next is 9 and the sixth number is 0; the six add to 95. The steps
 // themselves make a run, which is the thing to see.
-import { KIND, SLOT, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genDiffSeq(){
   for(;;){
     const down = Math.random() < 0.6, d0 = 1 + rnd(3), g = 1 + rnd(3), a0 = down ? 20 + rnd(40) : 1 + rnd(10);
@@ -43,7 +43,7 @@ function drawDiffSeq(q){
   return '<div class="ask">' + (q.asksSum ? tr('Като откриете следващото число в редицата, пресметнете <b>сбора на всичките шест</b> числа.', 'Знайшовши наступне число в послідовності, обчисліть <b>суму всіх шести</b> чисел.')
                                           : tr('Кое е <b>следващото</b> число в редицата?', 'Яке <b>наступне</b> число в послідовності?')) + '</div>' +
     '<div class="seq">' + q.seq.slice(0, -1).join(', ') + ', ?</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqDiffSeq(q){
   if(q.shape === 'const') return q.seq.join(', ');

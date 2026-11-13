@@ -2,7 +2,7 @@
 // three different numbers with a given product.
 
 // МБГ Пролет 2025, задача 6: the product of all odd numbers less than 6: 1 · 3 · 5 = 15.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genProdOf(){
   const odd = Math.random() < 0.6, n = odd ? 4 + rnd(5) : 3 + rnd(4);
   const list = []; for(let v = 1; v < n; v++) if(!odd || v % 2) list.push(v);
@@ -20,11 +20,11 @@ function drawProdOf(q){
   if(q.shape === 1){
     return '<div class="ask">' + tr('Произведението на <b>3 различни</b> естествени числа е <span class="num">' + q.N + '</span>. ' + (q.sum ? 'Колко най-малко може да бъде <b>сборът</b> на тези числа?' : 'Колко най-малко може да бъде <b>най-голямото</b> сред тези числа?'),
       'Добуток <b>3 різних</b> натуральних чисел дорівнює <span class="num">' + q.N + '</span>. ' + (q.sum ? 'Якою найменшою може бути <b>сума</b> цих чисел?' : 'Яким найменшим може бути <b>найбільше</b> з цих чисел?')) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return '<div class="ask">' + (q.odd ? tr('Пресметнете произведението на всички <b>нечетни</b> числа, по-малки от <span class="num">' + q.n + '</span>.', 'Обчисліть добуток усіх <b>непарних</b> чисел, менших від <span class="num">' + q.n + '</span>.')
     : tr('Пресметнете произведението на всички естествени числа, по-малки от <span class="num">' + q.n + '</span>.', 'Обчисліть добуток усіх натуральних чисел, менших від <span class="num">' + q.n + '</span>.')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqProdOf(q){
   if(q.shape === 1) return prod3Ways(q.N).map(t => t.join(' · ')).join(', ') + ' → ' + q.ans;

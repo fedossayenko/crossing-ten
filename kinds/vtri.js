@@ -4,7 +4,7 @@
 // cross. A triangle with a corner at A has its other two corners on two different lines through
 // A, and those two corners joined by a third line: 3 on the top side, 3 on the bottom, 1 on each
 // end — 8. Each figure is its points and its lines, a line listing every point on it in order.
-import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, popAt, rnd, tr } from '../js/core.js';
 export const VTRI = [
   { pts:{a:[0,0], b:[2,0], c:[4,0], d:[0,2], e:[2,2], f:[4,2], o:[2,1]},                         // the paper's
     lines:['abc', 'def', 'ad', 'cf', 'boe', 'aof', 'doc'] },
@@ -49,7 +49,7 @@ function treeSvg(q, full){
     T.map(t => '<path d="' + tri(t) + '" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>').join('') + '</svg>';
 }
 function drawTree(q){
-  return '<div class="ask">' + tr('Колко са <b>триъгълниците</b> в елхичката?', 'Скільки <b>трикутників</b> у ялинці?') + '</div><div class="fig">' + treeSvg(q, false) + '</div><div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + tr('Колко са <b>триъгълниците</b> в елхичката?', 'Скільки <b>трикутників</b> у ялинці?') + '</div><div class="fig">' + treeSvg(q, false) + '</div>' + answerLine('xl');
 }
 function whyTree(q, full){
   if(!full) return tr('Не само големите: виж къде върхът на всеки триъгълник влиза в този над него.', 'Не лише великі: подивись, де верхівка кожного трикутника заходить у той, що над ним.');
@@ -63,7 +63,7 @@ function vtriSvg(q){
   return '<div class="fig"><svg viewBox="-16 -16 ' + (w + 32) + ' ' + (h + 32) + '" style="max-width:' + (w + 32)*1.3 + 'px" role="img" aria-label="' + tr('чертеж с отсечки', 'рисунок з відрізками') + '">' +
     F.lines.map(l => { const [x1, y1] = P(l[0]), [x2, y2] = P(l[l.length - 1]); return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--ink)" stroke-width="1.6"/>'; }).join('') +
     Object.keys(F.pts).map(n => { const [x, y] = P(n); return '<circle cx="' + x + '" cy="' + y + '" r="' + (n === q.V ? 5 : 3) + '" fill="' + (n === q.V ? 'var(--accent)' : 'var(--ink)') + '"/>'; }).join('') +
-    '<text x="' + (vx + (vx >= w ? -14 : 8)) + '" y="' + (vy + (vy >= h ? -8 : vy > 0 && vy < h ? 5 : 16)) + '" font-size="15" font-weight="800" fill="var(--accent)" font-family="Nunito, sans-serif">A</text></svg></div>';
+    '<text x="' + (vx + (vx >= w ? -14 : 8)) + '" y="' + (vy + (vy >= h ? -8 : vy > 0 && vy < h ? 5 : 16)) + '" font-size="15" font-weight="800" fill="var(--accent)" ' + SVG_FONT + '>A</text></svg></div>';
 }
 // Коледно 2023, задача 1: a square, its two midlines and the rhombus through their ends — 12 triangles and
 // 6 squares (the rhombus is one), so 6 more triangles. Коледно 2022, задача 6: a 3 × 3 grid with one inner line
@@ -118,10 +118,10 @@ function drawVTri(q){
   if(q.shape === 'count'){
     const ask = [tr('Колко са <b>триъгълниците</b> на чертежа?', 'Скільки <b>трикутників</b> на рисунку?'), tr('Колко са <b>квадратите</b> на чертежа?', 'Скільки <b>квадратів</b> на рисунку?'),
       tr('С колко броят на триъгълниците е по-голям от броя на квадратите?', 'На скільки трикутників більше, ніж квадратів?')][q.asks];
-    return '<div class="ask">' + ask + '</div>' + figSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    return '<div class="ask">' + ask + '</div>' + figSvg(q) + answerLine('xl');
   }
   return '<div class="ask">' + tr('На колко триъгълника е <b>връх</b> точка A?', 'Скільки трикутників мають <b>вершину</b> в точці A?') + '</div>' +
-    vtriSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    vtriSvg(q) + answerLine('xl');
 }
 function eqVTri(q){
   if(q.shape === 'tree') return tr('големи ', 'великих ') + q.n + tr(', малки ', ', малих ') + (q.n - 1) + ' → ' + q.ans;

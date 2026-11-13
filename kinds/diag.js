@@ -3,7 +3,7 @@
 // МБГ Пролет 2025, задача 15: a 9 by 6 rectangle of 1 см squares and its diagonals AC and BD. How many
 // squares are cut into two parts? Each diagonal crosses 12 squares; the two in the middle are crossed by
 // both, so they are in more than two parts: 12 + 12 − 2 − 2 = 20. Each square is tested here one by one.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
 function diagCuts(w, h, i, j, flip){
   // does the diagonal (0,0)–(w,h), or (w,0)–(0,h), pass through the inside of square [i, i+1] × [j, j+1]?
   const y = x => flip ? h - h*x/w : h*x/w, y0 = y(i), y1 = y(i + 1), lo = Math.min(y0, y1), hi = Math.max(y0, y1);
@@ -26,7 +26,7 @@ function diagSvg(q){
   let g = '';
   for(let i = 1; i < q.w; i++) g += '<line x1="' + i*u + '" y1="0" x2="' + i*u + '" y2="' + H + '"/>';
   for(let j = 1; j < q.h; j++) g += '<line x1="0" y1="' + j*u + '" x2="' + W + '" y2="' + j*u + '"/>';
-  const lab = (x, y, t) => '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
+  const lab = (x, y, t) => '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)" ' + SVG_FONT + '>' + t + '</text>';
   return '<div class="fig"><svg viewBox="-14 -14 ' + (W + 28) + ' ' + (H + 28) + '" role="img" aria-label="' + tr('правоъгълник на квадратчета с диагонали', 'прямокутник у клітинку з діагоналями') + '">' +
     '<g stroke="var(--muted)" stroke-width="0.7">' + g + '</g><rect x="0" y="0" width="' + W + '" height="' + H + '" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
     '<g stroke="var(--accent)" stroke-width="1.6"><line x1="0" y1="' + H + '" x2="' + W + '" y2="0"/>' + (q.one ? '' : '<line x1="' + W + '" y1="' + H + '" x2="0" y2="0"/>') + '</g>' +
@@ -37,7 +37,7 @@ function drawDiag(q){
     (q.one ? 'През колко от тези квадрати минава отсечката <b>AC</b>?' : 'Колко от тези квадрати са разделени от отсечките AC и BD <b>на две части</b>?'),
     'Прямокутник ABCD має сторони <span class="num">' + q.w + '</span> см і <span class="num">' + q.h + '</span> см і поділений на квадрати зі стороною 1 см. ' +
     (q.one ? 'Через скільки з цих квадратів проходить відрізок <b>AC</b>?' : 'Скільки з цих квадратів відрізки AC і BD ділять <b>на дві частини</b>?')) + '</div>' +
-    diagSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    diagSvg(q) + answerLine('xl');
 }
 function eqDiag(q){
   return q.one ? 'AC → ' + q.ans : q.ac + ' + ' + q.ac + ' − ' + q.both + ' − ' + q.both + ' = ' + q.ans;

@@ -3,7 +3,7 @@
 // Коледно 2024, задача 8: Ани is 4 years older than her brother and 20 years younger than her
 // mother; her father is 31 and 3 years older than the mother. Only the father's age is given, so
 // the chain is read from him: mother 28, Ани 8, brother 4.
-import { KIND, SLOT, bgWith, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgWith, rnd, tr, ukN } from '../js/core.js';
 export function genAges(){
   for(;;){
     const F = 26 + rnd(20), m = 2 + rnd(6), older = Math.random() < 0.75, M = older ? F - m : F + m;
@@ -18,7 +18,7 @@ function drawAges(q){
     '</span> години и е ' + bgWith(q.m) + ' <span class="num">' + q.m + '</span> години ' + (q.older ? 'по-стар' : 'по-млад') + ' от майка ѝ. ' + (q.asksAni ? 'На колко години е <b>Ани</b>?' : 'На колко години е <b>брат ѝ</b>?'),
     'Аня на <span class="num">' + agesUk(q.b).replace(' ', '</span> ') + ' старша за брата і на <span class="num">' + agesUk(q.g).replace(' ', '</span> ') + ' молодша за маму. Татові Ані <span class="num">' + agesUk(q.F).replace(' ', '</span> ') +
     ', і він на <span class="num">' + agesUk(q.m).replace(' ', '</span> ') + ' ' + (q.older ? 'старший' : 'молодший') + ' за її маму. ' + (q.asksAni ? 'Скільки років <b>Ані</b>?' : 'Скільки років <b>її братові</b>?')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqAges(q){
   return q.F + (q.older ? ' − ' : ' + ') + q.m + ' = ' + q.M + ', ' + q.M + ' − ' + q.g + ' = ' + q.A + (q.asksAni ? '' : ', ' + q.A + ' − ' + q.b + ' = ' + q.B);

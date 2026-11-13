@@ -6,7 +6,7 @@
 // 67 + 25. The paper joins them all with lines; here one is asked at a time, and the options are the sums themselves.
 // Two of the answers are often close (71 and 72): a sum worked out roughly picks the wrong one. There are always four
 // options, as in every А/Б/В/Г question: the gifts get a fourth, spare one that nobody holds.
-import { KIND, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, numSpan, rnd, shuffle, tr } from '../js/core.js';
 // the paper's three, and pairs of children, as [Bulgarian, Ukrainian]
 const MATCH_WHO = [[['Капитан Защо', 'Капітан Чому'], ['Пинки', 'Пінкі'], ['Мъглата', 'Туман']],
   [['Ани', 'Ані'], ['Иво', 'Іво'], ['Мая', 'Мая']], [['Ники', 'Нікі'], ['Лили', 'Лілі'], ['Асен', 'Асен']]];
@@ -39,14 +39,13 @@ const mVal = e => e[1] === '+' ? e[0] + e[2] : e[0] - e[2];
 // the k-th one shown is the k-th name of the set and holds vals[order[k]]
 const mName = (q, k) => { const w = MATCH_WHO[q.who][k]; return tr(w[0], w[1]); }, mAsked = q => q.order.indexOf(q.at);
 function drawMatch(q){
-  const n = v => '<span class="num">' + v + '</span>';
   if(q.shape === 'hat') return '<div class="ask">' + tr('Кой калпак при кой снежен човек ще отиде? На всеки снежен човек е написана сметка, а на калпака — отговорът ѝ.',
       'Яка шапка до якого сніговика піде? На кожному сніговику написано приклад, а на шапці — його відповідь.') + '</div>' +
-    '<div class="given">' + tr('Калпаци: ', 'Шапки: ') + q.order.map(i => n(q.vals[i])).join(', ') + '</div>' +
-    '<div class="ask">' + tr('При кой снежен човек ще отиде калпакът с числото ' + n(q.vals[q.at]) + '?', 'До якого сніговика піде шапка з числом ' + n(q.vals[q.at]) + '?') + '</div>';
+    '<div class="given">' + tr('Калпаци: ', 'Шапки: ') + q.order.map(i => numSpan(q.vals[i])).join(', ') + '</div>' +
+    '<div class="ask">' + tr('При кой снежен човек ще отиде калпакът с числото ' + numSpan(q.vals[q.at]) + '?', 'До якого сніговика піде шапка з числом ' + numSpan(q.vals[q.at]) + '?') + '</div>';
   return '<div class="ask">' + tr('Кой какъв подарък ще получи? Всеки получава подаръка, чиято сметка дава неговото число. Един подарък е в повече.',
       'Хто який подарунок отримає? Кожен отримує подарунок, приклад на якому дає його число. Один подарунок — зайвий.') + '</div>' +
-    '<div class="given">' + q.order.map((i, k) => '<span style="white-space:nowrap">' + mName(q, k) + ' ' + n(q.vals[i]) + '</span>').join(' · ') + '</div>' +
+    '<div class="given">' + q.order.map((i, k) => '<span style="white-space:nowrap">' + mName(q, k) + ' ' + numSpan(q.vals[i]) + '</span>').join(' · ') + '</div>' +
     '<div class="ask">' + tr('Кой подарък ще получи ' + mName(q, mAsked(q)) + '?', 'Який подарунок отримає ' + mName(q, mAsked(q)) + '?') + '</div>';
 }
 // the summary line is plain text

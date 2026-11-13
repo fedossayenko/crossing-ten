@@ -2,7 +2,7 @@
 
 // МБГ Есен, 3 клас, задача 13: A to B is 32 km, M is halfway, N lies between A and M with MN = 4 km;
 // N to B is 16 + 4 = 20 km. Sometimes it asks for A to N instead: 16 − 4.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, numSpan, rnd, tr } from '../js/core.js';
 export function genMidPt(){
   const half = 8 + rnd(23), m = 1 + rnd(half - 2), toB = Math.random() < 0.65;
   return {kind:'midpt', AB: 2*half, half, m, toB, ans: toB ? half + m : half - m,
@@ -22,7 +22,7 @@ function midSvg(q){
   return '<div class="fig wide"><svg viewBox="0 -14 ' + W + ' 46" role="img" aria-label="' + (q.shape === 'cm' ? tr('отсечката AB', 'відрізок AB') : tr('селищата върху пътя', 'села на дорозі')) + '">' +
     '<line x1="4" y1="10" x2="' + (W - 4) + '" y2="10" stroke="var(--ink)" stroke-width="2"/>' +
     pts.map(([v, n]) => '<circle cx="' + at(v).toFixed(1) + '" cy="10" r="3.6" fill="var(--ink)"/><text x="' + (at(v) + (tight ? (n === 'N' ? -3 : n === 'M' ? 3 : 0) : 0)).toFixed(1) +
-      '" y="-2" text-anchor="' + (tight && n === 'N' ? 'end' : tight && n === 'M' ? 'start' : 'middle') + '" font-size="15" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + n + '</text>').join('') +
+      '" y="-2" text-anchor="' + (tight && n === 'N' ? 'end' : tight && n === 'M' ? 'start' : 'middle') + '" font-size="15" font-weight="800" fill="var(--ink)" ' + SVG_FONT + '>' + n + '</text>').join('') +
     '</svg></div>';
 }
 function drawMidPt(q){
@@ -42,10 +42,10 @@ function whyMidPt(q, full){
     ' = ' + q.ans + ' км';
 }
 function drawMidSeg(q){
-  const ask = q.toB ? 'NB' : 'AN', num = n => '<span class="num">' + n + '</span>';
-  return '<div class="ask">' + tr('Отсечката AB е дълга ' + num(q.AB) + ' см. Точката M е точно в средата на AB. Точката N е между A и M, на ' + num(q.m) + ' см от M. ' +
+  const ask = q.toB ? 'NB' : 'AN';
+  return '<div class="ask">' + tr('Отсечката AB е дълга ' + numSpan(q.AB) + ' см. Точката M е точно в средата на AB. Точката N е между A и M, на ' + numSpan(q.m) + ' см от M. ' +
       'Колко сантиметра е дълга отсечката ' + ask + '?',
-    'Відрізок AB має довжину ' + num(q.AB) + ' см. Точка M — точно посередині AB. Точка N лежить між A і M, на відстані ' + num(q.m) + ' см від M. ' +
+    'Відрізок AB має довжину ' + numSpan(q.AB) + ' см. Точка M — точно посередині AB. Точка N лежить між A і M, на відстані ' + numSpan(q.m) + ' см від M. ' +
       'Скільки сантиметрів має відрізок ' + ask + '?') +
     '</div>' + midSvg(q) + '<div class="line md">' + SLOT + ' <span class="unit">см</span></div>';
 }

@@ -3,7 +3,7 @@
 // МБГ Пролет 2022, 1 клас, задача 13: an apple and two pears weigh as much as eight lemons, and two pears
 // as much as three apples. Put three apples in place of the two pears: four apples weigh eight lemons,
 // 2 + 2 + 2 + 2 = 8, so one apple weighs two lemons.
-import { KIND, SLOT, fruitBody, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, fruitBody, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 export function genScales(){
   for(;;){
     const p = 2 + rnd(2), m = 2 + rnd(3), a = 1 + rnd(3), L = (1 + m)*a;   // p pears = m apples, an apple = a lemons
@@ -30,7 +30,7 @@ function drawScales(q){
     'Одне яблуко і <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' разом важать стільки, скільки <span class="num">' + ukN(q.L, 'лимон', 'лимони', 'лимонів').replace(' ', '</span> ') +
     '. <span class="num">' + ukN(q.p, 'груша', 'груші', 'груш').replace(' ', '</span> ') + ' важать стільки, скільки <span class="num">' + ukN(q.m, 'яблуко', 'яблука', 'яблук').replace(' ', '</span> ') +
     '. Скільки лимонів важить <b>1 яблуко</b>?') + '</div>' + scalesFig(q) +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqScales(q){
   return tr(q.p + ' круши = ' + q.m + ' ябълки → ' + (1 + q.m) + ' ябълки = ' + q.L + ' лимона → ', ukN(q.p, 'груша', 'груші', 'груш') + ' = ' + ukN(q.m, 'яблуко', 'яблука', 'яблук') + ' → ' +
@@ -47,7 +47,7 @@ function scalesSolSvg(q){
       '<path d="M' + (cx - w / 2 + 4).toFixed(1) + ',58 H' + (cx + w / 2 - 4).toFixed(1) + '" stroke="var(--warm)" stroke-width="2"/></g>';
   }
   g += svgText(120, 82, Array(n).fill(q.a).join(' + ') + ' = ' + q.L, 15, 'var(--ink)', popAt(n + 2));
-  return '<svg viewBox="0 -6 240 96" style="display:block; width:260px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('всяка ябълка с нейните лимони', 'кожне яблуко з його лимонами') + '">' + g + '</svg>';
+  return svgFrame('0 -6 240 96', 260, tr('всяка ябълка с нейните лимони', 'кожне яблуко з його лимонами')) + g + '</svg>';
 }
 function whyScales(q, full){
   if(!full) return tr('Смени крушите на първата везна с ябълки — втората везна казва с колко ябълки.', 'Заміни груші на перших терезах яблуками — другі терези кажуть, скількома яблуками.');

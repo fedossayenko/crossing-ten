@@ -3,7 +3,7 @@
 // Задача 10: one vessel of a known size and a bucket that is one of two sizes. Pour and
 // watch: the answer is the fill at which the bigger bucket has overflowed the vessel and
 // the smaller one has not, because that is the first moment the two stories differ.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genBucket(){
   for(;;){
     const p = 2 + rnd(4), q = p + 1 + rnd(4);
@@ -26,7 +26,7 @@ function drawBucket(q){
     ', <b>або</b> <span class="num">' + q.q + '</span> ' + bucketLitre(q.q) +
     '. Яку <b>найменшу</b> кількість разів треба наповнити відро й вилити його в посудину, ' +
     'щоб дізнатися, скільки літрів воно вміщує?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBucket(q){
   return q.V + tr(' л, кофа ' + q.p + ' или ', ' л, відро ' + q.p + ' або ') + q.q + ' → ' + q.ans;

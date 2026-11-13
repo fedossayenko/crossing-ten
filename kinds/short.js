@@ -1,5 +1,5 @@
 // Question kind 'short': level 39 Не достигат — Short by so many — so how many are there now?.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, popAt, rnd, svgText, tr } from '../js/core.js';
 
 const SWEETS = ['бонбона', 'стикера', 'ябълки', 'монети'];
 
@@ -29,7 +29,7 @@ function drawShort(q){
     ', за да имам <span class="num">' + q.T1 + '</span> ' + q.item + '. ',
     'Мені не вистачає <span class="num">' + q.d1 + '</span> ' + shortGen(q.d1, f) +
     ', щоб мати <span class="num">' + q.T1 + '</span> ' + shortAcc(q.T1, f) + '. ') + tail + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqShort(q){
   return tr('не достигат ', 'не вистачає ') + q.d1 + ' до ' + q.T1 + ' → ' + q.ans;

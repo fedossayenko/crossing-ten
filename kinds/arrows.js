@@ -4,7 +4,7 @@
 // with the smaller number: F → E, A → D, E → D, D → C, B → A, B → F. Nothing points at B, so B is
 // 6; C points at nothing, so C is 1; D is above only C, so 2. A, E and F share 3, 4 and 5 in some
 // order — which order is not known, but their sum is: A + F + E = 3 + 4 + 5 = 12.
-import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, rnd, shuffle, svgFrame, svgText, tr } from '../js/core.js';
 const ARROW_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 // where each letter stands, as on the paper: E top left, A top, F right, D left low, C right low, B at the bottom
 const ARROW_AT = {A:[132, 8], B:[118, 112], C:[178, 86], D:[18, 88], E:[60, 22], F:[178, 42]};
@@ -75,7 +75,7 @@ function arrowsSvg(q){
     g += '<line x1="' + sx.toFixed(1) + '" y1="' + sy.toFixed(1) + '" x2="' + (ex - ux*6).toFixed(1) + '" y2="' + (ey - uy*6).toFixed(1) + '" stroke="var(--ink)" stroke-width="1.5"/>' +
       '<path d="M' + ex.toFixed(1) + ' ' + ey.toFixed(1) + 'L' + (ex - ux*8 - uy*3.5).toFixed(1) + ' ' + (ey - uy*8 + ux*3.5).toFixed(1) + 'L' + (ex - ux*8 + uy*3.5).toFixed(1) + ' ' + (ey - uy*8 - ux*3.5).toFixed(1) + 'Z" fill="var(--ink)"/>';
   });
-  return '<svg viewBox="0 -6 198 132" style="display:block; width:290px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('букви, свързани със стрелки', 'букви, з’єднані стрілками') + '">' +
+  return svgFrame('0 -6 198 132', 290, tr('букви, свързани със стрелки', 'букви, з’єднані стрілками')) +
     g + ARROW_LETTERS.map(box).join('') + '</svg>';
 }
 const arrowAsk = q => bgList(q.ask.map(arrowName));
@@ -88,7 +88,7 @@ function drawArrows(q){
     '<div class="fig">' + arrowsSvg(q) + '</div>' +
     '<div class="ask">' + tr('Колко е сборът на числата, на мястото на които са поставени буквите ' + arrowAsk(q) + '?',
       'Чому дорівнює сума чисел, замість яких поставлено букви ' + arrowAsk(q) + '?') + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 // what each letter can be, over every order the arrows allow
 function arrowsCan(q){
@@ -111,7 +111,7 @@ function arrowsLineSvg(q, can){
   can.forEach((c, i) => { if(c.length === 1) g += svgText(x(c[0]), 74, arrowName(i), 15, 'var(--accent)', popAt(1 + c[0]*0.4)); });
   g += '<g' + popAt(4) + '><path d="M' + (x(vs[0]) - 12) + ' 24v-6H' + (x(vs[vs.length - 1]) + 12) + 'v6" fill="none" stroke="var(--warm)" stroke-width="1.6"/>' +
     svgText((x(vs[0]) + x(vs[vs.length - 1]))/2, 12, q.ask.map(arrowName).join(', '), 14, 'var(--warm)') + '</g>';
-  return '<svg viewBox="-4 -4 210 86" style="display:block; width:252px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('буквите върху числата от 1 до 6', 'букви над числами від 1 до 6') + '">' + g + '</svg>';
+  return svgFrame('-4 -4 210 86', 252, tr('буквите върху числата от 1 до 6', 'букви над числами від 1 до 6')) + g + '</svg>';
 }
 function whyArrows(q, full){
   if(!full) return tr('Намери буквата, към която не сочи нито една стрелка, и буквата, от която не излиза нито една.',

@@ -6,7 +6,7 @@
 // sh: [column 1, row 1, row 2, column 2]; ask: which of them is the "?".
 // 2nd grade, level 273 (shape 'sum'): the same cross with sums. Both rows together and both columns together add up
 // the same four numbers, so column 2 = row 1 + row 2 − column 1, without filling a square.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genSumGrid(){
   for(;;){
     const c = [0, 0, 0, 0].map(() => 1 + rnd(20));
@@ -37,7 +37,7 @@ function prodGridSvg(q){
 function drawProdGrid(q){
   return '<div class="ask">' + tr('Попълнете празните квадратчета с числа така, че произведението на числата в реда или колоната да е равно на числото в оцветеното квадратче от същия ред или колона. Кое е числото, което трябва да поставим вместо „?“?',
     'Заповніть порожні клітинки числами так, щоб добуток чисел у рядку чи стовпці дорівнював числу в зафарбованій клітинці того самого рядка чи стовпця. Яке число треба поставити замість «?»?') +
-    '</div>' + prodGridSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    '</div>' + prodGridSvg(q) + answerLine('xl');
 }
 function eqProdGrid(q){
   return q.sh[q.pair[0]] + ' · ' + q.sh[q.pair[1]] + ' : ' + q.sh[q.same] + ' = ' + q.ans;
@@ -51,7 +51,7 @@ function whyProdGrid(q, full){
 function drawSumGrid(q){
   return '<div class="ask">' + tr('Попълнете празните квадратчета с числа така, че сборът на числата в реда или колоната да е равен на числото в оцветеното квадратче от същия ред или колона. Кое е числото, което трябва да поставим вместо „?“?',
     'Заповніть порожні клітинки числами так, щоб сума чисел у рядку чи стовпці дорівнювала числу в зафарбованій клітинці того самого рядка чи стовпця. Яке число треба поставити замість «?»?') +
-    '</div>' + prodGridSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    '</div>' + prodGridSvg(q) + answerLine('xl');
 }
 const sumGridLine = q => q.sh[q.pair[0]] + ' + ' + q.sh[q.pair[1]] + ' − ' + q.sh[q.same] + ' = ' + q.ans;
 function whySumGrid(q, full){

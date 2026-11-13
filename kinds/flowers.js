@@ -2,7 +2,7 @@
 
 // Задача 13: flowers of three kinds. Generated so that every way of reaching the
 // total with at least one of each kind gives the SAME number of flowers.
-import { KIND, SLOT, UK_PLURAL, bgList, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, bgList, rnd, tr, ukWord } from '../js/core.js';
 export function genFlowers(){
   for(;;){
     const p0 = 3 + rnd(4);
@@ -20,15 +20,14 @@ export function genFlowers(){
   }
 }
 
-const flowersPl = (n, f) => f[['one','few','many'].indexOf(UK_PLURAL.select(n))];
 function drawFlowers(q){
   return '<div class="ask">' + tr('Имаме цветя с по <span class="num">' + bgList(q.p) +
     '</span> листенца — и от трите вида. Листенцата на всички цветя са общо <span class="num">' +
     q.T + '</span>. Колко са цветята?',
     'Маємо квіти з <span class="num">' + bgList(q.p) +
     '</span> пелюстками — усіх трьох видів. На всіх квітах разом <span class="num">' +
-    q.T + '</span> ' + flowersPl(q.T, ['пелюстка', 'пелюстки', 'пелюсток']) + '. Скільки всього квіток?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    q.T + '</span> ' + ukWord(q.T, 'пелюстка', 'пелюстки', 'пелюсток') + '. Скільки всього квіток?') + '</div>' +
+    answerLine('xl');
 }
 function eqFlowers(q){
   return tr('по ' + q.p.join(', ') + ' листенца, общо ', 'пелюсток ' + q.p.join(', ') + ', разом ') +
@@ -49,6 +48,6 @@ function whyFlowers(q, full){
   return tr('по едно от всеки вид: ', 'по одній кожного виду: ') + q.p.join(' + ') + ' = ' + base + tr(', остават ', ', лишається ') + (q.T - base) + ' &nbsp;→&nbsp; ' +
     '<b>' + ways.join(tr('</b>, или <b>', '</b>, або <b>')) + '</b> = ' + q.T + ' &nbsp;→&nbsp; ' +
     (ways.length > 1 ? tr('всички начини дават еднакъв брой', 'усі способи дають однакову кількість') : tr('друг начин няма', 'іншого способу немає')) + ' &nbsp;→&nbsp; ' + q.ans + ' ' +
-    tr('цветя', flowersPl(q.ans, ['квітка', 'квітки', 'квіток']));
+    tr('цветя', ukWord(q.ans, 'квітка', 'квітки', 'квіток'));
 }
 KIND.flowers = { draw:drawFlowers, eq:eqFlowers, why:whyFlowers };

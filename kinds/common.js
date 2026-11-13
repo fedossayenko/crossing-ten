@@ -2,7 +2,7 @@
 
 // МБГ Зима 2022, задача 18: Иво 2, 5, 8, …, 29, 32 and Ели 11, 14, 17, …, 38, 41, eleven numbers
 // each. Both go up by 3, and 11 is on Иво's list too, so the shared ones run 11, 14, …, 32: 8.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genCommon(){
   for(;;){
     const k = 2 + rnd(3), n = 8 + rnd(5), a = 1 + rnd(9), shift = 1 + rnd(n - 2);
@@ -18,7 +18,7 @@ function drawCommon(q){
   return '<div class="ask">' + tr('Иво и Ели записали по <span class="num">' + q.n + '</span> числа.', 'Іво та Елі записали по <span class="num">' + ukN(q.n, 'числу', 'числа', 'чисел').replace(' ', '</span> ') + '.') + '</div>' +
     '<div class="seq">' + tr('Иво: ', 'Іво: ') + commonRun(q.A) + '</div><div class="seq">' + tr('Ели: ', 'Елі: ') + commonRun(q.B) + '</div>' +
     '<div class="ask">' + tr('Колко от числата на Иво са записани и от Ели?', 'Скільки з чисел Іво записала також і Елі?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCommon(q){
   return (q.both.length ? q.both[0] + ' … ' + q.both[q.both.length - 1] : tr('нито едно', 'жодного')) + ' → ' + q.ans;

@@ -2,7 +2,7 @@
 
 // Задача 10: each letter sits a given distance from the same number, on either side of
 // it. Sending them opposite ways opens the widest gap — the two distances added.
-import { KIND, SLOT, lineSvg, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, lineSvg, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
 function genGap(){
   const c = 10 + rnd(30);
   const d1 = 1 + rnd(8);
@@ -67,17 +67,17 @@ function drawSumdiff(q){
   if(q.shape === 'board' && q.plain){
     return '<div class="ask">' + tr('Разликата на две числа е <span class="num">' + q.d + '</span>, а сборът им е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'Різниця двох чисел дорівнює <span class="num">' + q.d + '</span>, а їхня сума — <span class="num">' + q.S + '</span>. Яке з цих чисел <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'board'){
     return '<div class="ask">' + tr('На дъската са написани две числа. Иван ги събрал и получил <span class="num">' + q.S + '</span>. Петър извадил по-малкото от по-голямото и получил <span class="num">' + q.d + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'На дошці записано два числа. Іван їх додав і отримав <span class="num">' + q.S + '</span>. Петро відняв від більшого менше й отримав <span class="num">' + q.d + '</span>. Яке з цих чисел <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'sd'){
     return '<div class="ask">' + tr('Сборът на две числа, едно от които е с <span class="num">' + q.d + '</span> по-голямо от другото, е <span class="num">' + q.S + '</span>. Кое е <b>' + (q.asksBig ? 'по-голямото' : 'по-малкото') + '</b> число?',
       'Сума двох чисел, одне з яких на <span class="num">' + q.d + '</span> більше за інше, дорівнює <span class="num">' + q.S + '</span>. Яке число <b>' + (q.asksBig ? 'більше' : 'менше') + '</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'gap'){
     return '<div class="ask">' + tr('Разликата на числото <b>A</b> и <span class="num">' + q.c +
@@ -88,7 +88,7 @@ function drawSumdiff(q){
       '</span> дорівнює <span class="num">' + q.d1 + '</span>. Різниця числа <b>B</b> і <span class="num">' +
       q.c + '</span> дорівнює <span class="num">' + q.d2 +
       '</span>. Якою може бути <b>найбільша</b> різниця чисел A і B?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return '<div class="ask">' + tr('Пресметнете <b>двата възможни сбора</b> на две числа, едно от които е <span class="num">' +
     q.a + '</span>, ако разликата им е <span class="num">' + q.d + '</span>.',
@@ -141,7 +141,7 @@ function sumdiffSvg(q){
     g += '<g' + popAt(5) + '>' + svgText((40 + half / 2).toFixed(1), 15, q.small, 13, 'var(--accent)') + svgText((40 + half / 2).toFixed(1), 45, q.small, 13, 'var(--accent)') + '</g>';
     const foot = q.asksBig || q.shape === 'two' ? q.small + ' + ' + q.d + ' = ' + q.big : q.shape === 'board' ? q.big + ' − ' + q.d + ' = ' + q.small : (q.S - q.d) + ' = ' + q.small + ' + ' + q.small;
     g += svgText(130, 78, foot, 15, 'var(--ink)', popAt(6));
-    return '<svg viewBox="0 -8 272 96" style="display:block; width:326px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете числа като ленти', 'два числа як смужки') + '">' + g + '</svg>';
+    return svgFrame('0 -8 272 96', 326, tr('двете числа като ленти', 'два числа як смужки')) + g + '</svg>';
   }
   if(q.shape === 'gap') return gapSvg(q);
   const lo = q.a - q.d, hi = q.a + q.d;

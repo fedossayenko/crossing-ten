@@ -1,7 +1,7 @@
 // Question kind 'named': level 13 Най-малкото — Smallest two-digit, largest one-digit, then compare.
 
 // Задача 6: the vocabulary of place value, on its own or feeding a comparison.
-import { BGNUM, KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UK_PLURAL, answerLine, rnd, tr } from '../js/core.js';
 const NAMED = [
   { nm:'най-голямото едноцифрено число', v:9 },
   { nm:'най-малкото двуцифрено число',   v:10 },
@@ -184,13 +184,13 @@ function drawNamed(q){
         'Якщо один доданок дорівнює <span class="num">' + q.a + '</span>, а інший — <b>одноцифрове</b> число' + gt + ', ' + uk + '?')
       : tr('Ако умаляемото е <span class="num">' + q.a + '</span>, а умалителят е <b>едноцифрено</b> число' + gt + ', ' + bg + '?',
         'Якщо зменшуване дорівнює <span class="num">' + q.a + '</span>, а від’ємник — <b>одноцифрове</b> число' + gt + ', ' + uk + '?')) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 7){
     const [A, B] = [NAMED_ONE[0][q.a], NAMED_ONE[1][q.b]], [x, y] = q.sum ? [A, B] : [B, A];
     return '<div class="ask">' + tr('Пресметнете <b>' + (q.sum ? 'сбора' : 'разликата') + '</b> на ' + x[0] + ' и ' + y[0] + '.',
       'Обчисліть <b>' + (q.sum ? 'суму' : 'різницю') + '</b> ' + x[1] + ' і ' + y[1] + '.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 6){
     const plus = 'A + A' + (q.d ? ' + ' + q.d : '');
@@ -202,7 +202,7 @@ function drawNamed(q){
   if(q.shape === 5){
     return '<div class="ask">' + tr('Кое е <b>' + NAMED_FOUR[q.v][0] + '</b> на две двуцифрени числа, записани с <b>4 различни</b> цифри?',
       'Яку <b>' + NAMED_FOUR[q.v][1] + '</b> можуть мати два двоцифрові числа, записані <b>4 різними</b> цифрами?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 4 && q.may){
     return tr('<div class="ask">Сборът на <b>' + BGNUM[q.k] + ' различни</b> числа е <span class="num">' + q.S + '</span>. Колко <b>може да бъде</b> най-голямото сред тях?</div>',
@@ -217,7 +217,7 @@ function drawNamed(q){
       '<div class="ask">Сума <b>' + namedGen[q.k] + ' різних</b> чисел дорівнює <span class="num">' +
       q.S + '</span>. Яким <b>найбільшим</b> може бути <b>найбільше</b> з них?</div>' +
       '<div class="note">Числа: 0, 1, 2, 3, …</div>') +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const ask = q.shape === 3
     ? tr('Сборът на <b>' + (q.loose ? 'няколко' : BGNUM[q.k]) +
@@ -238,7 +238,7 @@ function drawNamed(q){
       'Додайте найменше двоцифрове і найбільше одноцифрове числа. На скільки отримана сума ' +
       (q.R > 19 ? 'менша' : 'більша') + ' від <span class="num">' + q.R + '</span>?');
   return '<div class="ask">' + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const namedSumText = q => { const A = NAMED_ONE[0][q.a][2], B = NAMED_ONE[1][q.b][2]; return q.sum ? A + ' + ' + B : B + ' − ' + A; };
 function eqNamed(q){

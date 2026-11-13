@@ -1,5 +1,5 @@
 // Question kind 'sqcut': level 21 Обиколка — Squares, sheets and triangles — sides and perimeters.
-import { CM, KIND, SLOT, UKNUM, addUp, diffBars, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, UKNUM, addUp, diffBars, rnd, sqWalkSvg, tr } from '../js/core.js';
 
 const BGNUM_M = {2:'два', 3:'три', 4:'четири'};   // masculine nouns take два, not две
 
@@ -15,9 +15,9 @@ function cutRectSvg(a, extra){
     '<rect x="0" y="0" width="' + W + '" height="' + H.toFixed(1) + '"/>' +
     '<line x1="' + (a*u).toFixed(1) + '" y1="0" x2="' + (a*u).toFixed(1) + '" y2="' + H.toFixed(1) + '"/></g>' +
     '<text x="' + (a*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">A</text>' +
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>A</text>' +
     '<text x="' + (a*u + extra*u/2).toFixed(1) + '" y="' + (H/2 + 6).toFixed(1) + '" text-anchor="middle" font-size="17" ' +
-    'font-weight="700" fill="var(--ink)" font-family="Nunito, sans-serif">B</text></svg></div>';
+    'font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>B</text></svg></div>';
 }
 // Задача 13: a rectangle tiled by squares. The figure gives the shape, one line of text
 // gives the scale — everything else is read off the picture.
@@ -81,7 +81,7 @@ function triSqSvg(q){
   const ax = (L*L + r*r - p*p) / (2*L), ay = Math.sqrt(Math.max(1, r*r - ax*ax));
   const S = q.inCm ? q.dm : 10 * q.dm, u = 200 / (L + S + 4), H = Math.max(ay, S) * u;
   const t = (x, y, txt, anchor) => '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
-    '" text-anchor="' + (anchor || 'middle') + '" font-size="13" font-weight="700" fill="var(--muted)" font-family="Nunito, sans-serif">' + txt + '</text>';
+    '" text-anchor="' + (anchor || 'middle') + '" font-size="13" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + txt + '</text>';
   const sx = (L + 4) * u;
   return '<div class="fig"><svg viewBox="-16 -16 ' + (232).toFixed(0) + ' ' + (H + 34).toFixed(1) +
     '" role="img" aria-label="' + tr('триъгълник и квадрат', 'трикутник і квадрат') + '">' +
@@ -144,7 +144,7 @@ function stripSvg(k, side){
     '" role="img" aria-label="' + (k === 1 ? tr('квадрат', 'квадрат') : tr('квадрат, разрязан на еднакви ивици', 'квадрат, розрізаний на однакові смужки')) + '">' +
     '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
     '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
-    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+    'fill="var(--muted)" ' + SVG_FONT + '>' + side + ' см</text></svg></div>';
 }
 function sqSvg(parts, side){
   const S = 118, u = S/parts;
@@ -155,7 +155,7 @@ function sqSvg(parts, side){
   return '<div class="fig"><svg viewBox="-8 -24 ' + (S+16) + ' ' + (S+32) + '" role="img" aria-label="' + tr('квадрат, разрязан на еднакви квадрати', 'квадрат, розрізаний на однакові квадрати') + '">' +
     '<g stroke="var(--ink)" stroke-width="1.9" fill="none">' + g + '</g>' +
     '<text x="' + S/2 + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" ' +
-    'fill="var(--muted)" font-family="Nunito, sans-serif">' + side + ' см</text></svg></div>';
+    'fill="var(--muted)" ' + SVG_FONT + '>' + side + ' см</text></svg></div>';
 }
 
 function drawSqcut(q){
@@ -255,27 +255,6 @@ function eqSqcut(q){
     ? tr('лист с обиколка ', 'аркуш із периметром ') + q.P + ', квадрат ' + q.a + ' → ' + q.ans
     : tr('страна ' + q.side + ', на ' + (q.parts*q.parts) + ' квадрата → ', 'сторона ' + q.side + ', на ' + sqcutQuads(q.parts*q.parts) + ' → ') + q.ans;
 }
-// The picture walks round the figure: drawn in grey with its cuts, the piece that matters tinted,
-// then one side at a time lights up orange with its length beside it, and the total comes last.
-// Sizes are in units of the figure; sides is [x1, y1, x2, y2, label], each pushed out from the middle.
-export function sqWalkSvg(W, H, cuts, tint, sides, foot){
-  const u = Math.min(150 / W, 100 / H), f = v => (v * u).toFixed(1);
-  // labels go outwards from the middle of the sides being walked, not of the whole figure
-  const cx = sides.reduce((t, r) => t + r[0] + r[2], 0) / (2 * sides.length), cy = sides.reduce((t, r) => t + r[1] + r[3], 0) / (2 * sides.length);
-  let g = '<g stroke="var(--line)" stroke-width="2" fill="none"><rect x="0" y="0" width="' + f(W) + '" height="' + f(H) + '"/>' +
-    cuts.map(([a, b, c, d]) => '<line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '"/>').join('') + '</g>';
-  if(tint) g += '<rect x="' + f(tint[0]) + '" y="' + f(tint[1]) + '" width="' + f(tint[2]) + '" height="' + f(tint[3]) + '" fill="var(--warm)" opacity=".16"/>';
-  sides.forEach(([a, b, c, d, t], i) => {
-    const mx = (a + c) / 2, my = (b + d) / 2, out = a === c ? [mx < cx ? -1 : 1, 0] : [0, my < cy ? -1 : 1];
-    const lx = mx * u + out[0] * (out[0] ? 8 + 4 * String(t).length : 0), ly = my * u + (out[1] ? out[1] * 9 + 4 : 4);
-    g += '<g' + popAt(1 + i * 1.5) + '><line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '" stroke="var(--warm)" stroke-width="4" stroke-linecap="round"/>' +
-      svgText(lx.toFixed(1), ly.toFixed(1), t, 12, 'var(--warm)') + '</g>';
-  });
-  g += svgText(f(W / 2), (H * u + 38).toFixed(1), foot, 15, 'var(--ink)', popAt(2 + sides.length * 1.5));
-  const [l, r] = roomFor(-34, W * u + 34, W * u / 2, foot, 15);
-  return '<svg viewBox="' + l.toFixed(0) + ' -22 ' + (r - l).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(r - l) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
-    tr('страните една по една', 'сторони одна за одною') + '">' + g + '</svg>';
-}
 // the four sides of a box, clockwise from the top, with their labels
 const sqSides = (x, y, w, h, top, right) => [[x, y, x + w, y, top], [x + w, y, x + w, y + h, right], [x + w, y + h, x, y + h, top], [x, y + h, x, y, right]];
 const sqGrid = (k, S) => { const c = []; for(let i = 1; i < k; i++) c.push([i * S / k, 0, i * S / k, S], [0, i * S / k, S, i * S / k]); return c; };
@@ -322,11 +301,11 @@ function whySqcut(q, full){
   return full && text ? text + sqcutSvg(q) : text;
 }
 function whySqcutText(q, full){
-  if(q.kind === 'sqcut' && q.shape === 6 && q.both){
+  if(q.shape === 6 && q.both){
     if(!full) return tr('Двете парчета имат всичко от обиколката на квадрата — и още нещо. Какво?', 'Дві частини мають увесь периметр квадрата — і ще дещо. Що?');
     return tr('страната е <b>', 'сторона <b>') + q.side + '</b>: ' + addUp(4, q.side) + ' &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
   }
-  if(q.kind === 'sqcut' && q.shape === 6){
+  if(q.shape === 6){
     if(!full && q.slots) return tr('Четири еднакви части: четири ивици — или четири квадрата, а и квадратът е правоъгълник.',
       'Чотири однакові частини: чотири смужки — або чотири квадрати, адже квадрат теж прямокутник.');
     if(q.half && full) return tr('страната е ', 'сторона ') + q.side + ' см = <b>' + 10*q.side + '</b> мм, ' + tr('половината ѝ е <b>', 'її половина — <b>') + 5*q.side + '</b> мм &nbsp;→&nbsp; ' +
@@ -340,12 +319,12 @@ function whySqcutText(q, full){
       (q.slots ? '; ' + tr('или четири квадрата със страна ', 'або чотири квадрати зі стороною ') + q.side/2 + ' см &nbsp;→&nbsp; ' + addUp(4, q.side/2) + ' <b>см</b>' +
         (q.mm ? ' = ' + q.alt[0] + ' мм' : '') : '');
   }
-  if(q.kind === 'sqcut' && q.shape === 5 && q.rev){
+  if(q.shape === 5 && q.rev){
     if(!full) return tr('Колко от най-малките страни се нареждат по късата страна на правоъгълника?', 'Скільки найменших сторін уміщається вздовж короткої сторони прямокутника?');
     const m = Math.min(q.t.w, q.t.h);
     return tr('по късата страна се нареждат ', 'уздовж короткої сторони вміщається ') + m + tr(' от най-малките страни &nbsp;→&nbsp; ', ' найменших сторін &nbsp;→&nbsp; ') + q.short + ' = ' + Array(m).fill(q.ans).join(' + ') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'sqcut' && q.shape === 5){
+  if(q.shape === 5){
     const same = q.few === q.n;   // all the squares alike: no smallest to measure by
     if(!full) return same ? tr('Колко страни на квадратче се нареждат по дългата страна на правоъгълника и колко по късата?',
       'Скільки сторін квадратика вміщається вздовж довгої сторони прямокутника і скільки вздовж короткої?')
@@ -358,11 +337,11 @@ function whySqcutText(q, full){
       '</b> на <b>' + (q.t.h*q.s) + '</b> &nbsp;→&nbsp; ' + (q.t.w*q.s) + ' + ' + (q.t.h*q.s) + ' = ' +
       ((q.t.w + q.t.h)*q.s) + tr(', два пъти', ', двічі') + ' &nbsp;→&nbsp; ' + q.ans;
   }
-  if(q.kind === 'sqcut' && q.shape === 4 && q.mm){
+  if(q.shape === 4 && q.mm){
     if(!full) return tr('Равностранният има три равни страни. И двете обиколки — в сантиметри.', 'У рівностороннього три рівні сторони. І обидва периметри — у сантиметрах.');
     return addUp(4, q.mm) + ' мм = <b>' + q.P + ' см</b>, ' + addUp(3, q.t) + ' <b>см</b> &nbsp;→&nbsp; ' + Math.max(q.P, q.p) + ' − ' + Math.min(q.P, q.p) + ' = ' + q.ans;
   }
-  if(q.kind === 'sqcut' && q.shape === 4){
+  if(q.shape === 4){
     if(!full) return q.inCm ? tr('Пресметни поотделно двете обиколки.', 'Обчисли окремо обидва периметри.')
                             : tr('Двете обиколки са в различни мерки — изравни ги първо.',
                                  'Периметри дано в різних одиницях — спершу переведи їх в однакові.');
@@ -372,7 +351,7 @@ function whySqcutText(q, full){
       tr('</b>, триъгълникът е ', '</b>, трикутника ') + q.sides.join(' + ') + ' = <b>' + q.p + '</b> &nbsp;→&nbsp; ' +
       q.P + ' − ' + q.p + ' = ' + q.ans;
   }
-  if(q.kind === 'sqcut' && q.shape === 3){
+  if(q.shape === 3){
     if(!full) return tr('Половината обиколка са двете различни страни, взети по веднъж.',
       'Половина периметра — це дві різні сторони, узяті по одному разу.');
     const half = q.P / 2, wide = half - q.a;
@@ -385,15 +364,13 @@ function whySqcutText(q, full){
       (q.asksSide ? tr(', по-малката страна е ', ', менша сторона — ') + q.ans
                   : tr(', обиколката ѝ е ', ', його периметр ') + q.extra + ' + ' + q.a + ' + ' + q.extra + ' + ' + q.a + ' = ' + q.ans);
   }
-  if(q.kind === 'sqcut'){
-    if(!full) return q.shape === 1 ? tr('Обиколката е сборът от четирите страни.', 'Периметр — це сума чотирьох сторін.')
-                                   : tr('Колко прави малката страна?', 'Скільки становить сторона малого квадрата?');
-    const add = (v, n) => Array(n).fill(v).join(' + ');
-    const found = add(q.small, q.parts) + ' = ' + q.side + tr(', значи малката страна е <b>', ', отже, сторона малого квадрата — <b>') + q.small + '</b>';
-    if(q.shape === 0) return found + ' &nbsp;→&nbsp; ' + add(q.small, 4) + ' = ' + q.ans;
-    if(q.shape === 1) return add(q.side, 4) + ' = ' + q.ans;
-    return found + tr(', обиколката ѝ е <b>', ', його периметр <b>') + (4*q.small) + '</b> &nbsp;→&nbsp; ' + add(4*q.small, q.parts*q.parts) + ' = ' + q.ans;
-  }
+  if(!full) return q.shape === 1 ? tr('Обиколката е сборът от четирите страни.', 'Периметр — це сума чотирьох сторін.')
+                                 : tr('Колко прави малката страна?', 'Скільки становить сторона малого квадрата?');
+  const add = (v, n) => Array(n).fill(v).join(' + ');
+  const found = add(q.small, q.parts) + ' = ' + q.side + tr(', значи малката страна е <b>', ', отже, сторона малого квадрата — <b>') + q.small + '</b>';
+  if(q.shape === 0) return found + ' &nbsp;→&nbsp; ' + add(q.small, 4) + ' = ' + q.ans;
+  if(q.shape === 1) return add(q.side, 4) + ' = ' + q.ans;
+  return found + tr(', обиколката ѝ е <b>', ', його периметр <b>') + (4*q.small) + '</b> &nbsp;→&nbsp; ' + add(4*q.small, q.parts*q.parts) + ' = ' + q.ans;
 }
 // Her misreading on shape 5: every square taken as the small one, in one row or two (4 squares of 3: 30 or 24).
 function slipSqcut(q, parts){

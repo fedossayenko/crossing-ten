@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, textW, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, answerLine, popAt, rnd, shuffle, svgFrame, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -24,13 +24,12 @@ export function genBoth(){
 }
 
 const bothUkLang = {'английски':'англійську', 'френски':'французьку', 'немски':'німецьку', 'испански':'іспанську'};
-const bothUkPl = (n, one, few, many) => ({one, few})[UK_PLURAL.select(n)] || many;
-const bothUkPupils = n => n + ' ' + bothUkPl(n, 'учень', 'учні', 'учнів');
-const bothUkStudy = n => bothUkPl(n, 'вивчає', 'вивчають', 'вивчають');
+const bothUkPupils = n => ukN(n, 'учень', 'учні', 'учнів');
+const bothUkStudy = n => ukWord(n, 'вивчає', 'вивчають', 'вивчають');
 function vennSvg(tl, tr_, a, m, b){
   const box = (x, y) => '<rect x="' + (x - 8) + '" y="' + (y - 14) + '" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2"/>';
   const tri = (x, y) => '<polygon points="' + (x - 9) + ',' + (y + 2) + ' ' + (x + 9) + ',' + (y + 2) + ' ' + x + ',' + (y - 14) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
-  const t = (x, y, v, big) => v === '□' ? box(x, y) : v === '△' ? tri(x, y) : '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + (big ? 17 : 15) + '" font-weight="800" fill="' + (big ? 'var(--ink)' : 'var(--muted)') + '" font-family="Nunito, sans-serif">' + v + '</text>';
+  const t = (x, y, v, big) => v === '□' ? box(x, y) : v === '△' ? tri(x, y) : '<text x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + (big ? 17 : 15) + '" font-weight="800" fill="' + (big ? 'var(--ink)' : 'var(--muted)') + '" ' + SVG_FONT + '>' + v + '</text>';
   return '<svg viewBox="0 0 132 92" style="max-width:150px" role="img" aria-label="' + tr('два кръга', 'два кола') + '">' +
     '<circle cx="48" cy="56" r="30" fill="none" stroke="var(--ink)" stroke-width="1.6"/><circle cx="84" cy="56" r="30" fill="none" stroke="var(--ink)" stroke-width="1.6"/>' +
     t(40, 16, tl) + t(92, 16, tr_) + t(32, 62, a, 1) + t(66, 62, m, 1) + t(100, 62, b, 1) + '</svg>';
@@ -46,13 +45,13 @@ function drawBoth(q){
     q.A + '</span> учат <b>' + q.lang[0] + '</b> език, а <span class="num">' + q.B + '</span> — <b>' +
     q.lang[1] + '</b>. Колко ученици от този клас учат ' +
     (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?'),
-    'В одному класі <span class="num">' + q.T + '</span> ' + bothUkPl(q.T, 'учень', 'учні', 'учнів') +
+    'В одному класі <span class="num">' + q.T + '</span> ' + ukWord(q.T, 'учень', 'учні', 'учнів') +
     '. З них <span class="num">' + q.A + '</span> ' + bothUkStudy(q.A) + ' <b>' + bothUkLang[q.lang[0]] +
     '</b> мову, а <span class="num">' + q.B + '</span> — <b>' + bothUkLang[q.lang[1]] +
     '</b>. Скільки учнів цього класу вивчають ' +
     (q.asksBoth ? '<b>обидві</b> мови?' : '<b>лише ' + bothUkLang[q.lang[1]] + '</b> мову?')) + '</div>' +
     '<div class="note">' + tr('Всеки ученик учи поне един от двата езика.', 'Кожен учень вивчає щонайменше одну з двох мов.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBoth(q){
   if(q.shape === 'venn') return '□ = ' + q.L + ' − ' + q.m + ', △ = ' + q.R + ' − ' + q.m + ' → ' + q.ans;
@@ -71,7 +70,7 @@ function bothSvg(q){
   g += brace(0, q.A, -12, q.A + ' ' + tr(q.lang[0], bothUkLang[q.lang[0]]), 'var(--accent)', 2) + brace(lo, q.T, 12, q.B + ' ' + tr(q.lang[1], bothUkLang[q.lang[1]]), 'var(--good)', 3);
   const foot = q.A + ' + ' + q.B + ' − ' + q.T + ' = ' + q.both + (q.asksBoth ? '' : ', ' + q.B + ' − ' + q.both + ' = ' + q.ans);
   g += svgText(121, 52, foot, 15, 'var(--ink)', popAt(4.5));
-  return '<svg viewBox="0 -36 242 96" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('учениците и езиците им', 'учні та їхні мови') + '">' + g + '</svg>';
+  return svgFrame('0 -36 242 96', 300, tr('учениците и езиците им', 'учні та їхні мови')) + g + '</svg>';
 }
 function whyBoth(q, full){
   if(q.shape === 'venn'){

@@ -3,7 +3,7 @@
 // МБГ Зима 2023, задачи 1 и 3. 86 − (51 − 5): the bracket first, 86 − 46 = 40 — taking away
 // 51 − 5 is taking away 51 and giving 5 back. (100 − 71) − (100 − 81) − (100 − 91): each bracket
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, numSpan, rnd, shuffle, tr } from '../js/core.js';
 export function genBrackets(){
   if(Math.random() < 0.12){
     // Коледно 2023, задача 2: (100 − 57) + 0 − (96 − 78). Each bracket first, and the + 0 changes
@@ -121,10 +121,10 @@ const sbTerm = x => (x.s ? x.s + ' ' : '') + (x.br ? '(' + x.br.join(' ') + ')' 
 const sbExpr = q => q.shape === 'three' || q.shape === 'gt' ? q.xs.join(' + ') : q.t.map(sbTerm).join(' ');
 function drawBracketsShort(q){
   if(q.shape === 'gt'){
-    const n = v => '<span class="num">' + v + '</span>', L = q.list.map(n);
-    return '<div class="ask">' + tr('Сборът на числата ' + n(sbExpr(q)) + ' е по-голям от едно от числата ' + L[0] + ', ' + L[1] + ' и ' + L[2] + '. От кое?',
-      'Сума чисел ' + n(sbExpr(q)) + ' більша за одне з чисел ' + L[0] + ', ' + L[1] + ' і ' + L[2] + '. За яке?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+    const L = q.list.map(numSpan);
+    return '<div class="ask">' + tr('Сборът на числата ' + numSpan(sbExpr(q)) + ' е по-голям от едно от числата ' + L[0] + ', ' + L[1] + ' и ' + L[2] + '. От кое?',
+      'Сума чисел ' + numSpan(sbExpr(q)) + ' більша за одне з чисел ' + L[0] + ', ' + L[1] + ' і ' + L[2] + '. За яке?') + '</div>' +
+      answerLine('xl');
   }
   return '<div class="ask">' + (q.shape === 'three' ? tr('Пресметни по лесен начин.', 'Обчисли зручним способом.') : tr('Пресметни.', 'Обчисли.')) + '</div>' +
     '<div class="line" style="font-size:clamp(24px,7vw,42px)"><span class="num">' + sbExpr(q) + '</span> = ' + SLOT + '</div>';

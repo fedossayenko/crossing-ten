@@ -4,7 +4,7 @@
 // column and its right edge at or right of it — so the count is the choices each way.
 // МБГ Зима 2021, 2023: a small grid, its squares against its other rectangles. A square is a
 // rectangle too, so «all rectangles» holds the squares, and «not squares» leaves them out.
-import { BGNUM, CM, KIND, SLOT, UKNUM, addUp, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { BGNUM, CM, KIND, SLOT, UKNUM, addUp, answerLine, gridSvg, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
 function genRectsVsSq(){
   const [W, H] = [[2, 2], [2, 2], [3, 2], [3, 3]][rnd(4)];
   const all = W*(W + 1)/2 * H*(H + 1)/2, sizes = [];
@@ -71,7 +71,7 @@ function drawRects(q){
   if(q.shape === 4){
     return '<div class="ask">' + tr('В колко правоъгълника е мравката? (Квадратът е правоъгълник.)',
       'У скількох прямокутниках є мурашка? (Квадрат — це прямокутник.)') + '</div>' +
-      gridSvg(q.W, q.H, q.c, q.r) + '<div class="line md">' + SLOT + '</div>';
+      gridSvg(q.W, q.H, q.c, q.r) + answerLine('md');
   }
   if(q.shape === 3){
     return '<div class="ask">' + tr('Колко са всички правоъгълници на чертежа, в които има <b>поне една</b> мравка?',
@@ -79,14 +79,14 @@ function drawRects(q){
       gridSvg(q.n, 1, 0, 0, q.ants.map(c => [c, 1])) +
       '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
       'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
-      '<div class="line md">' + SLOT + '</div>';
+      answerLine('md');
   }
   if(q.shape === 2){
     return '<div class="ask">' + (q.asksAll ? tr('С колко <b>правоъгълниците</b> на чертежа са повече от <b>квадратите</b>?', 'На скільки <b>прямокутників</b> на рисунку більше, ніж <b>квадратів</b>?')
       : tr('С колко правоъгълниците на чертежа, които <b>не са квадрати</b>, са ' + (q.fewer ? 'по-малко' : 'повече') + ' от <b>квадратите</b>?',
            'На скільки прямокутників на рисунку, які <b>не є квадратами</b>, ' + (q.fewer ? 'менше' : 'більше') + ', ніж <b>квадратів</b>?')) + '</div>' +
       gridSvg(q.W, q.H, 0, 0) +
-      '<div class="line md">' + SLOT + '</div>';
+      answerLine('md');
   }
   if(q.shape === 1){
     return '<div class="ask">' + tr('Правоъгълникът с размери <span class="num">' + q.s +
@@ -104,7 +104,7 @@ function drawRects(q){
     gridSvg(q.W, q.H, q.c, q.r) +
     '<div class="note">' + tr('Квадратът е правоъгълник, на който всички страни са равни.',
     'Квадрат — це прямокутник, у якого всі сторони рівні.') + '</div>' +
-    '<div class="line md">' + SLOT + '</div>';
+    answerLine('md');
 }
 function eqRects(q){
   if(q.shape === 3) return tr('всички ', 'усіх ') + q.all + tr(', без мравка ', ', без мурашки ') + q.free + ' → ' + q.ans;

@@ -3,7 +3,7 @@
 // МБГ Есен, 3 клас, задача 19: 6, 8, 24, 16. The two-digit ones become themselves divided by 4
 // (6, 8, 6, 4), then every one that divides by 3 becomes itself times 2 (12, 8, 12, 4): 36.
 // The second step works on what the first one left, so the 24 counts in it as 6.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genRewrite(){
   for(;;){
     const d = 2 + rnd(3), m = [3, 2, 5][rnd(3)], p = 2 + rnd(2), nums = [];
@@ -27,7 +27,7 @@ function drawRewrite(q){
     'Я записав такі чотири числа: <span class="num">' + list + '</span>. Спершу я стер двоцифрові числа і замість них записав результат їх ділення на <span class="num">' +
     q.d + '</span>. Потім стер усі числа, які діляться на <span class="num">' + q.m + '</span>, і замість них записав їхній добуток із <span class="num">' + q.p +
     '</span>. Чому дорівнює сума чисел, які вийшли в кінці?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqRewrite(q){
   return q.nums.join(', ') + ' → ' + q.s1.join(', ') + ' → ' + q.s2.join(' + ') + ' = ' + q.ans;

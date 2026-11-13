@@ -4,7 +4,7 @@
 // and a beetle with 6, as the pictures say: 9 · 6 + 6 · 8 = 54 + 48 = 102.
 // МБГ Есен 2023, 3 клас, задача 20 (shape 'humps'): 6 one-humped camels and twice as many two-humped ones — how many
 // humps? 6 · 2 = 12 two-humped camels, 6 · 1 + 12 · 2 = 30. Sometimes it is the one-humped that are so many times more.
-import { KIND, SLOT, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 export function genLegs(){
   if(Math.random() < 0.5){
     // a beetles, b spiders; spiders: the spiders are named first
@@ -43,12 +43,12 @@ function drawLegs(q){
         ' камили. <b>Колко общо са гърбиците на камилите от това стадо?</b>',
       'У стаді <span class="num">' + q.a + '</span> ' + given + ' ' + ukN(q.a, 'верблюд', 'верблюди', 'верблюдів').replace(/^\d+ /, '') + ' і ' + LEGS_TIMES_UK[q.t] + ' більше ' + other +
         ' верблюдів. <b>Скільки всього горбів у верблюдів цього стада?</b>') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const both = q.spiders ? legsSpiders(q.b) + tr(' и ', ' і ') + legsBeetles(q.a) : legsBeetles(q.a) + tr(' и ', ' і ') + legsSpiders(q.b);
   return '<div class="ask">' + tr('Колко крака общо имат ' + both.replace(/(\d+)/g, '<span class="num">$1</span>') + '?',
     'Скільки всього ніг у ' + both.replace(/(\d+)/g, '<span class="num">$1</span>') + '?') + '</div>' + legsSvg() +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 // the camels: the given kind first, then the other, t times as many
 const legsHerd = q => q.two ? {one: q.t*q.a, two: q.a} : {one: q.a, two: q.t*q.a};

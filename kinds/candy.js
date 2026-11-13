@@ -2,7 +2,7 @@
 
 // Задача 16: identical sweets, every child gets at least one. Small enough that the
 // ways can be listed rather than reasoned about abstractly.
-import { KIND, SLOT, UK_PLURAL, rnd, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, rnd, tr } from '../js/core.js';
 export function genCandy(){
   const kids = 2 + rnd(2);
   const n = kids === 2 ? 3 + rnd(6) : 4 + rnd(3);
@@ -24,7 +24,7 @@ function drawCandy(q){
     'Скількома способами можна подарувати <span class="num">' + q.n + '</span> ' +
     (candyFew(q.n) ? 'однакові цукерки' : 'однакових цукерок') + ' <b>' + (q.kids === 2 ? 'двом' : 'трьом') +
     '</b> дітям так, щоб кожна дитина отримала <b>щонайменше одну</b> цукерку?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCandy(q){
   return tr(q.n + ' бонбона на ' + q.kids + ' деца → ' + q.ans,

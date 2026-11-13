@@ -6,7 +6,7 @@
 // and the children 12 + 19 = 31.
 // МБГ Есен 2023, 3 клас, задача 9: four fishermen with four boats; three caught 8 kg each and the fourth as much as the
 // three together. The fourth's catch is the three's again: 3 · 8 = 24, 24 + 24 = 48. The boats are only there to count.
-import { KIND, SLOT, bgWith, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, answerLine, bgWith, numSpan, rnd, tr, ukN } from '../js/core.js';
 export function genAndMore(){
   const a = 5 + rnd(20), d = 2 + rnd(10), fewer = Math.random() < 0.3;
   if(fewer && d >= a) return genAndMore();
@@ -49,25 +49,24 @@ export function genThreeGroups(){
 }
 const TG_TOYS_BG = ['камиончета', 'мечета', 'кукли', 'общо играчки'], TG_TOYS_ART = ['камиончетата', 'мечетата'];
 const TG_TOYS_UK = ['вантажівки', 'ведмедики', 'ляльки', 'усього іграшок'], TG_TOYS_GEN = ['вантажівок', 'ведмедиків'];
-const tgNum = n => '<span class="num">' + n + '</span>';
-const tgBy = (d, more) => tr(bgWith(d) + ' ' + tgNum(d) + ' ' + (more ? 'повече' : 'по-малко'), 'на ' + tgNum(d) + ' ' + (more ? 'більше' : 'менше'));
-const tgWag = n => tr(tgNum(n) + ' вагона', ukN(n, 'вагон', 'вагони', 'вагонів').replace(/^\d+/, tgNum(n)));
+const tgBy = (d, more) => tr(bgWith(d) + ' ' + numSpan(d) + ' ' + (more ? 'повече' : 'по-малко'), 'на ' + numSpan(d) + ' ' + (more ? 'більше' : 'менше'));
+const tgWag = n => tr(numSpan(n) + ' вагона', ukN(n, 'вагон', 'вагони', 'вагонів').replace(/^\d+/, numSpan(n)));
 function drawThree(q){
   const asked = { second:1, third:2, chain:2, total:3 }[q.shape];
   if(q.story === 0){
-    const story = tr('В магазин за играчки получили ' + tgNum(q.a) + ' камиончета. Мечетата били ' + tgBy(q.d1, q.more1) + ' от камиончетата, а куклите — ' + tgBy(q.d2, q.more2) + ' от ' + TG_TOYS_ART[q.ref] + '. ',
-      'У магазин іграшок привезли ' + ukN(q.a, 'вантажівку', 'вантажівки', 'вантажівок').replace(/^\d+/, tgNum(q.a)) + '. Ведмедиків було ' + tgBy(q.d1, q.more1) + ', ніж вантажівок, а ляльок — ' + tgBy(q.d2, q.more2) + ', ніж ' + TG_TOYS_GEN[q.ref] + '. ');
+    const story = tr('В магазин за играчки получили ' + numSpan(q.a) + ' камиончета. Мечетата били ' + tgBy(q.d1, q.more1) + ' от камиончетата, а куклите — ' + tgBy(q.d2, q.more2) + ' от ' + TG_TOYS_ART[q.ref] + '. ',
+      'У магазин іграшок привезли ' + ukN(q.a, 'вантажівку', 'вантажівки', 'вантажівок').replace(/^\d+/, numSpan(q.a)) + '. Ведмедиків було ' + tgBy(q.d1, q.more1) + ', ніж вантажівок, а ляльок — ' + tgBy(q.d2, q.more2) + ', ніж ' + TG_TOYS_GEN[q.ref] + '. ');
     const ask = [tr('Колко мечета са получили?', 'Скільки ведмедиків привезли?'), tr('Колко кукли са получили?', 'Скільки ляльок привезли?'), tr('Колко играчки общо са получили?', 'Скільки всього іграшок привезли?')][asked - 1];
     // the paper's table: the trucks filled in, the row asked marked
     const T = '<table class="tix">' + [0, 1, 2, 3].map(i => '<tr><td>' + tr(TG_TOYS_BG[i], TG_TOYS_UK[i]) + '</td><td>' + (i === 0 ? q.a : i === asked ? '?' : '') + '</td></tr>').join('') + '</table>';
-    return '<div class="ask">' + story + '<b>' + ask + '</b></div>' + T + '<div class="line xl">' + SLOT + '</div>';
+    return '<div class="ask">' + story + '<b>' + ask + '</b></div>' + T + answerLine('xl');
   }
   const story = tr('От товарна гара потеглили три влака. Първият имал ' + tgWag(q.a) + '. Вторият имал ' + bgWith(q.d1) + ' ' + tgWag(q.d1) + ' ' + (q.more1 ? 'повече' : 'по-малко') + ' от първия, а третият — ' +
       bgWith(q.d2) + ' ' + tgWag(q.d2) + ' ' + (q.more2 ? 'повече' : 'по-малко') + ' от вагоните ' + (q.ref ? 'във втория' : 'в първия') + ' влак. ',
     'З вантажної станції вирушили три потяги. У першому було ' + tgWag(q.a) + '. У другому — на ' + tgWag(q.d1) + ' ' + (q.more1 ? 'більше' : 'менше') + ', ніж у першому, а в третьому — на ' +
       tgWag(q.d2) + ' ' + (q.more2 ? 'більше' : 'менше') + ', ніж ' + (q.ref ? 'у другому' : 'у першому') + ' потязі. ');
   const ask = [tr('Колко вагона има във втория влак?', 'Скільки вагонів у другому потязі?'), tr('Колко вагона има в третия влак?', 'Скільки вагонів у третьому потязі?'), tr('Колко вагона има общо в трите влака?', 'Скільки всього вагонів у трьох потягах?')][asked - 1];
-  return '<div class="ask">' + story + '<b>' + ask + '</b></div><div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + story + '<b>' + ask + '</b></div>' + answerLine('xl');
 }
 const tgOp = (x, more, d) => x + (more ? ' + ' : ' − ') + d + ' = ' + (more ? x + d : x - d);
 function eqThree(q){
@@ -96,7 +95,7 @@ function drawAndMore(q){
   if(q.shape === 'fish') return drawFish(q);
   return '<div class="ask">' + tr('На спортната площадка играят <span class="num">' + q.a + '</span> момичета и ' + bgWith(q.d) + ' <span class="num">' + q.d + '</span> ' + (q.fewer ? 'по-малко' : 'повече') + ' момчета. Колко общо са децата, които играят на площадката?',
     'На спортивному майданчику грають <span class="num">' + ukN(q.a, 'дівчинка', 'дівчинки', 'дівчаток').replace(' ', '</span> ') + ' і на <span class="num">' + q.d + '</span> ' + (q.fewer ? 'менше' : 'більше') + ' хлопчиків. Скільки всього дітей грає на майданчику?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqAndMore(q){
   if(q.three) return eqThree(q);

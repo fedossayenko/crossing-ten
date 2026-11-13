@@ -3,7 +3,7 @@
 // МБГ Зима 2020, задача 7: 1, 2, 3, 4 in a row with 1 next to 2 and 3 next to 4. Glue each pair into
 // a block: two blocks go 2 ways, and each block can be turned: 2 · 2 · 2 = 8. Counted here by
 // listing every order.
-import { KIND, SLOT, addUp, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, addUp, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 function blocksCount(n, pairs){
   let c = 0;
   (function walk(cur, left){
@@ -23,7 +23,7 @@ function drawBlocks(q){
   return '<div class="ask">' + tr('По колко начина можем да подредим числата ' + list + ' и ' + q.n + ' едно до друго, така че ' + cond + ' да са <b>винаги съседни</b>?',
     'Скількома способами можна розставити числа ' + list + ' і ' + q.n + ' в ряд так, щоб ' + cond + ' були <b>завжди сусідніми</b>?') + '</div>' +
     '<div class="note">' + tr('В подредбата 5, 6, 7 съседни са 5 и 6; 6 и 7.', 'У ряду 5, 6, 7 сусідні 5 і 6; 6 і 7.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBlocks(q){
   return q.n + tr(' числа, съседни ', ' чисел, сусідні ') + q.pairs.map(p => p.join('–')).join(', ') + ' → ' + q.ans;

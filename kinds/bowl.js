@@ -4,7 +4,7 @@
 // fruit in all — how many fruit? Every lemon is yellow, so the yellow ones that are not apples are the
 // lemons: 11 − 2 = 9, and 6 + 9 = 15. Пролет 2021 asks the same with 8 apples, 5 yellow, 11 yellow: 14.
 // Полуфинал 2022, задача 17: 6 apples, 4 of them yellow, 11 yellow in all — 7 lemons, 13 fruit.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
 export function genBowl(){
   for(;;){
     const A = 3 + rnd(7), k = 1 + rnd(A - 1), Y = k + 1 + rnd(10);
@@ -19,7 +19,7 @@ function bowlSvg(q){
   const apple = (x, y, i) => '<circle cx="' + x + '" cy="' + y + '" r="9" fill="' + (i < q.k ? 'var(--lemon)' : 'var(--apple)') + '"/><path d="M' + x + ',' + (y - 9) + ' v-4" stroke="var(--ant)" stroke-width="1.6"/>';
   const lemon = (x, y) => '<ellipse cx="' + x + '" cy="' + y + '" rx="10" ry="7" fill="var(--lemon)" stroke="var(--warm)" stroke-width="1"/>';
   const rowsA = Math.ceil(q.A / per), yL = 20 + rowsA*26 + 12, rowsL = Math.ceil(L / per), H = yL + rowsL*26 + 24;
-  return '<svg viewBox="0 0 ' + (24 + per*W) + ' ' + H + '" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('ябълките и лимоните', 'яблука й лимони') + '">' +
+  return svgFrame('0 0 ' + (24 + per*W) + ' ' + H, 300, tr('ябълките и лимоните', 'яблука й лимони')) +
     row(q.A, 20, apple, 1) + row(L, yL, lemon, 2 + q.A*0.3) +
     svgText(150, H - 6, q.A + ' + ' + L + ' = ' + q.ans, 14, 'var(--ink)', popAt(3 + (q.A + L)*0.3)) + '</svg>';
 }
@@ -29,7 +29,7 @@ function drawBowl(q){
     'У вазі для фруктів є яблука й лимони. Яблук <span class="num">' + q.A + '</span>, з них <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'жовте' : q.k < 5 ? 'жовті' : 'жовтих') +
     '. Жовтих фруктів усього <span class="num">' + q.Y + '</span>. Скільки <b>всього</b> фруктів у вазі?') + '</div>' +
     '<div class="note">' + tr('Лимоните са жълти.', 'Лимони — жовті.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBowl(q){
   return q.Y + ' − ' + q.k + ' = ' + (q.Y - q.k) + ', ' + q.A + ' + ' + (q.Y - q.k) + ' = ' + q.ans;

@@ -2,7 +2,7 @@
 
 // МБГ Пролет 2025, задача 12: squares of side 4 см cut from a square of side 20 см: 5 along each side,
 // 5 rows of 5, 25. On a rectangle whose sides do not divide exactly, the leftover strip is wasted.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genCutSq(){
   for(;;){
     const s = 2 + rnd(4), sq = Math.random() < 0.5, exact = Math.random() < 0.7;
@@ -33,7 +33,7 @@ function drawCutSq(q){
                     : tr('правоъгълник със страни <span class="num">' + q.W + '</span> см и <span class="num">' + q.H + '</span> см', 'прямокутника зі сторонами <span class="num">' + q.W + '</span> см і <span class="num">' + q.H + '</span> см');
   return '<div class="ask">' + tr('Колко <b>най-много</b> квадратчета със страна <span class="num">' + q.s + '</span> см можем да изрежем от ' + from + '?',
     'Скільки <b>найбільше</b> квадратиків зі стороною <span class="num">' + q.s + '</span> см можна вирізати з ' + from + '?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCutSq(q){
   return Math.floor(q.W / q.s) + ' · ' + Math.floor(q.H / q.s) + ' = ' + q.ans;

@@ -3,7 +3,7 @@
 // Коледно 2023, задача 6: the father is in 2 films; the mother in one of those and 2 more; the brother in one
 // with both parents, 2 alone and one with one parent. Films with at least one of them: 2 + 2 + 2 = 6 — the
 // shared films were counted already. Adding up every part (2 + 3 + 4 = 9) is the trap.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genFilms(){
   const f = 2 + rnd(3), m = 1 + rnd(3), x = 1 + rnd(3);
   return {kind:'films', f, m, x, traps:[f + (1 + m) + (2 + x), f + m + x + 1], ans: f + m + x};
@@ -14,7 +14,7 @@ function drawFilms(q){
     '. Брат ѝ участва в един филм заедно с двамата си родители, в ' + filmBg(q.x) + ' сам и в един филм заедно с един от родителите си. В колко филма има участие на <b>поне един</b> роднина на Яна?',
     'Тато Яни знімався у ' + filmUk(q.f) + '. Мама знімалася в одному з цих фільмів і ще в ' + filmUk(q.m).replace(/^1 фільмі/, 'одному')+
     '. Брат знімався в одному фільмі разом з обома батьками, у ' + filmUk(q.x) + ' сам і в одному фільмі разом з одним із батьків. У скількох фільмах знімався <b>хоча б один</b> родич Яни?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqFilms(q){
   return q.f + ' + ' + q.m + ' + ' + q.x + ' = ' + q.ans;

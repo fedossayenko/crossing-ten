@@ -3,7 +3,7 @@
 // МБГ Есен 2023, 3 клас, задача 17: Иван and Стефан are 10, Петър is 11. In how many years will their ages add up to 43?
 // Now they add up to 10 + 10 + 11 = 31, and every year each of the three is a year older, so the sum grows by 3 a year:
 // 43 − 31 = 12, 12 : 3 = 4 years. Sometimes the question goes back: how many years ago did they add up to less.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, numSpan, rnd, tr, ukN } from '../js/core.js';
 // the children, two groups of the same age: [Bulgarian, Ukrainian dative]
 const AGESUM_KIDS = [[['Иван', 'Іванові'], ['Стефан', 'Стефанові']], [['Петър', 'Петрові'], ['Мартин', 'Мартинові']]];
 export function genAgeSum(){
@@ -17,14 +17,14 @@ export function genAgeSum(){
 }
 const agesumYears = n => ukN(n, 'рік', 'роки', 'років');
 function drawAgeSum(q){
-  const k1 = AGESUM_KIDS[0].slice(0, q.g1), k2 = AGESUM_KIDS[1].slice(0, q.g2), num = n => '<span class="num">' + n + '</span>';
-  const bg = (k, n) => k.map(c => c[0]).join(' и ') + (k.length > 1 ? ' са на ' : ' е на ') + num(n);
-  const uk = (k, n) => k.map(c => c[1]).join(' й ') + (k.length > 1 ? ' по ' : ' ') + agesumYears(n).replace(/^(\d+)/, num('$1'));
+  const k1 = AGESUM_KIDS[0].slice(0, q.g1), k2 = AGESUM_KIDS[1].slice(0, q.g2);
+  const bg = (k, n) => k.map(c => c[0]).join(' и ') + (k.length > 1 ? ' са на ' : ' е на ') + numSpan(n);
+  const uk = (k, n) => k.map(c => c[1]).join(' й ') + (k.length > 1 ? ' по ' : ' ') + agesumYears(n).replace(/^(\d+)/, numSpan('$1'));
   return '<div class="ask">' + tr(bg(k1, q.a) + ' години, а ' + bg(k2, q.b) + '. ' +
-      (q.ago ? '<b>Преди колко години сборът на годините им е бил ' + num(q.T) + '?</b>' : '<b>След колко години сборът на годините им ще е ' + num(q.T) + '?</b>'),
+      (q.ago ? '<b>Преди колко години сборът на годините им е бил ' + numSpan(q.T) + '?</b>' : '<b>След колко години сборът на годините им ще е ' + numSpan(q.T) + '?</b>'),
     uk(k1, q.a) + ', а ' + uk(k2, q.b) + '. ' +
-      (q.ago ? '<b>Скільки років тому сума їхніх років дорівнювала ' + num(q.T) + '?</b>' : '<b>Через скільки років сума їхніх років дорівнюватиме ' + num(q.T) + '?</b>')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+      (q.ago ? '<b>Скільки років тому сума їхніх років дорівнювала ' + numSpan(q.T) + '?</b>' : '<b>Через скільки років сума їхніх років дорівнюватиме ' + numSpan(q.T) + '?</b>')) + '</div>' +
+    answerLine('xl');
 }
 const agesumNow = q => Array(q.g1).fill(q.a).concat(Array(q.g2).fill(q.b)).join(' + ') + ' = ' + q.S;
 const agesumGap = q => q.ago ? q.S + ' − ' + q.T : q.T + ' − ' + q.S;

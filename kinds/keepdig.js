@@ -4,7 +4,7 @@
 // the boys' numbers and 4 different digits were left. Which of Алекс's digits is left? Four numbers and four digits:
 // each number keeps exactly one (none is erased whole — the key's reading, said in the text), all different.
 // Мими's 1 stays, so Васил's 13 keeps 3, Алекс's 123 keeps 2 (not 1, not 3) and Борис's 342 keeps 4.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, shuffle, tr } from '../js/core.js';
 // [Bulgarian, Ukrainian, Ukrainian genitive]
 /** @type {[string, string, string][]} */
 const KD_BOYS = [['Алекс', 'Алекс', 'Алекса'], ['Борис', 'Борис', 'Бориса'], ['Васил', 'Василь', 'Василя']];
@@ -38,7 +38,7 @@ function drawKeepDig(q){
       'След това Мими изтрила няколко цифри от числата на момчетата, но не изтрила изцяло нито едно число. На дъската останали ' + (m + 1) + ' различни цифри. Коя от цифрите на ' + B[q.ask][0] + ' е останала на дъската?',
     q.nums.map((v, i) => B[i][1] + ' записав' + (i ? '' : ' на дошці') + ' <span class="num">' + v + '</span>').join(', ') + ', а Мімі — <span class="num">' + q.g + '</span>. ' +
       'Потім Мімі стерла кілька цифр із чисел хлопчиків, але жодного числа не стерла повністю. На дошці залишилися ' + (m + 1) + ' різні цифри. Яка з цифр ' + B[q.ask][2] + ' залишилася на дошці?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqKeepDig(q){
   return tr('Мими ', 'Мімі ') + q.g + ', ' + keepDigSteps(q.nums, q.g).map(([i, d]) => tr(KD_BOYS[i][0], KD_BOYS[i][1]) + ' ' + d).join(', ') + ' → ' + q.ans;

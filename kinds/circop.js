@@ -2,7 +2,7 @@
 
 // МБГ Есен, 3 клас, задача 16: a ◎ b is the sum divided by the bigger minus the smaller;
 // 8 ◎ 4 = 12 : 4 = 3, so 12 ◎ 4 = 16 : 8 = 2. Sometimes the smaller number comes first.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function circPairs(){
   const out = [];
   for(let a = 2; a <= 40; a++) for(let b = 1; b < a; b++) if((a + b) % (a - b) === 0 && (a + b) / (a - b) > 1) out.push([a, b]);
@@ -38,7 +38,7 @@ function drawCircOp(q){
     'Якщо між двома різними числами поставити знак ◎, це означає, що суму двох чисел треба поділити на різницю більшого й меншого числа.') + '</div>' +
     '<div class="note">' + tr('Пример', 'Приклад') + ': ' + a + ' ◎ ' + b + ' = ' + circBig(a, b) + ' = ' + (a + b) / (a - b) + '</div>' +
     '<div class="given">' + q.x + ' ◎ ' + q.y + ' = ?</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCircOp(q){
   return q.x + ' ◎ ' + q.y + ' = ' + circBig(q.x, q.y) + ' = ' + q.ans;
@@ -55,7 +55,7 @@ function drawCircPm(q){
     'Якщо між двома різними числами поставити знак ◎, це означає, що ' + (add ? 'до суми двох чисел треба додати' : 'від суми двох чисел треба відняти') + ' різницю більшого й меншого числа.') + '</div>' +
     '<div class="note">' + tr('Пример', 'Приклад') + ': ' + a + ' ◎ ' + b + ' = ' + circPm(q, a, b) + ' = ' + (add ? 2*a : 2*b) + '</div>' +
     '<div class="given">' + q.x + ' ◎ ' + q.y + ' = ?</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const circPmLine = q => q.x + ' ◎ ' + q.y + ' = ' + circPm(q, q.x, q.y) + ' = ' + (q.x + q.y) + (q.shape === 'add' ? ' + ' : ' − ') + Math.abs(q.x - q.y) + ' = ' + q.ans;
 KIND.circop = { draw: q => q.shape ? drawCircPm(q) : drawCircOp(q), eq: q => q.shape ? circPmLine(q) : eqCircOp(q),

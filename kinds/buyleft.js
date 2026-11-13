@@ -4,7 +4,7 @@
 
 // Коледно 2022, задача 2: Рая had 92 ст. and bought two decorations at 14 ст. each: 14 + 14 = 28, 92 − 28 = 64.
 // The traps are 28 (what she spent) and 78 (one decoration only). Two or three things, added up, not multiplied.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, numSpan, rnd, tr, ukN } from '../js/core.js';
 export function genBuyLeft(){
   for(;;){
     const M = 50 + rnd(50), k = 2 + rnd(2), p = 8 + rnd(18), spent = k*p;
@@ -28,12 +28,11 @@ export function genBuyMix(){
       traps:[100 - p1 - p2 - p3, spent], ans: 100 - spent};
   }
 }
-const mixNum = x => '<span class="num">' + x + '</span>';
 function drawBuyMix(q){
   const [bgWho, ukWho] = MIX_WHO[q.who], A = MIX_ONE[q.one[0]], C = MIX_ONE[q.one[1]], B = MIX_MANY[q.many];
-  return '<div class="ask">' + tr(bgWho + ' имала 1 евро. Купила си ' + A[0] + ' за ' + mixNum(q.p1) + ' цента, ' + ['', '', 'две', 'три'][q.k] + ' ' + B[0] + ' по ' + mixNum(q.p2) +
-      ' цента и ' + C[0] + ' за ' + mixNum(q.p3) + ' цента. Колко цента ѝ останали?',
-    ukWho + ' мала 1 євро. Вона купила ' + A[1] + ' за ' + mixNum(q.p1) + ' центів, ' + B[q.k - 1] + ' по ' + mixNum(q.p2) + ' центів і ' + C[1] + ' за ' + mixNum(q.p3) +
+  return '<div class="ask">' + tr(bgWho + ' имала 1 евро. Купила си ' + A[0] + ' за ' + numSpan(q.p1) + ' цента, ' + ['', '', 'две', 'три'][q.k] + ' ' + B[0] + ' по ' + numSpan(q.p2) +
+      ' цента и ' + C[0] + ' за ' + numSpan(q.p3) + ' цента. Колко цента ѝ останали?',
+    ukWho + ' мала 1 євро. Вона купила ' + A[1] + ' за ' + numSpan(q.p1) + ' центів, ' + B[q.k - 1] + ' по ' + numSpan(q.p2) + ' центів і ' + C[1] + ' за ' + numSpan(q.p3) +
       ' центів. Скільки центів у неї залишилося?') + '</div>' +
     '<div class="line xl">' + SLOT + ' <span class="unit">' + tr('цента', 'ц.') + '</span></div>';
 }

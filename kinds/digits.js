@@ -4,7 +4,7 @@
 // back — which is why only the extremes, 1 and 18, happen exactly once.
 // Задача 8: from three digits, every two-digit number with two different ones — and a
 // leading zero does not make a number, which is what has to be spotted.
-import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, answerLine, rnd, shuffle, tr, ukN } from '../js/core.js';
 function genFromDigits(){
   const pool = shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0, 3);
   if(Math.random() < 0.6 && pool.indexOf(0) < 0) pool[rnd(3)] = 0;
@@ -81,12 +81,12 @@ function drawDigits(q){
     return '<div class="ask">' + tr('Колко от числата в таблицата имат <b>' + tensDigitBg(q.t) + '</b>?', 'Скільки чисел у таблиці мають <b>' + ukN(q.t, 'десяток', 'десятки', 'десятків') + '</b>?') + '</div>' +
       '<table style="margin:8px auto; border-collapse:collapse; font-family:Fredoka,sans-serif; font-size:clamp(18px,5.5vw,26px)">' +
       [0, 1, 2].map(r => '<tr>' + q.list.slice(5*r, 5*r + 5).map(td).join('') + '</tr>').join('') + '</table>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'all'){
     return '<div class="ask">' + tr('Колко са <b>двуцифрените</b> числа с цифра на ' + (q.tens ? 'десетиците' : 'единиците') + ' <span class="num">' + q.d + '</span>?',
       'Скільки є <b>двоцифрових</b> чисел із цифрою ' + (q.tens ? 'десятків' : 'одиниць') + ' <span class="num">' + q.d + '</span>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'even'){
     return '<div class="ask">' + tr('Запиши всички двуцифрени числа между <span class="num">' + q.lo + '</span> и <span class="num">' + q.hi + '</span>, които се делят на <span class="num">2</span>.',
@@ -97,7 +97,7 @@ function drawDigits(q){
     const [bgA, bgB] = q.ones ? ['единиците', 'десетиците'] : ['десетиците', 'единиците'], [ukA, ukB] = q.ones ? ['одиниць', 'десятків'] : ['десятків', 'одиниць'];
     return '<div class="ask">' + tr('Колко от числата <span class="num">' + q.list.join(', ') + '</span> имат цифра на ' + bgA + ', <b>поне с ' + q.k + ' по-голяма</b> от цифрата на ' + bgB + '?',
       'Скільки з чисел <span class="num">' + q.list.join(', ') + '</span> мають цифру ' + ukA + ' <b>щонайменше на ' + q.k + ' більшу</b> за цифру ' + ukB + '?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 3){
     const what = q.asks === 0 ? tr('Пресметнете <b>сбора на цифрите</b> на всички', 'Обчисліть <b>суму цифр</b> усіх')
@@ -106,7 +106,7 @@ function drawDigits(q){
     return '<div class="ask">' + what + tr(' двуцифрени числа, записани с <b>различни цифри</b> измежду цифрите <span class="num">',
       ' двоцифрових чисел, записаних <b>різними цифрами</b> з цифр <span class="num">') +
       q.pool.join(', ') + '</span>' + (q.asks === 1 ? '?' : '.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const ask = q.shape === 2
     ? tr('Колко са двуцифрените числа, една от цифрите на които е <span class="num">' + q.d +
@@ -119,7 +119,7 @@ function drawDigits(q){
     : tr('Вместо да запиша всичките 90 двуцифрени числа, записах пресметнатите 90 сбора от цифрите им. Колко е сборът на сборовете, които се срещат само веднъж?',
       'Замість усіх 90 двоцифрових чисел записали 90 сум їхніх цифр. Чому дорівнює сума тих сум, які трапляються лише один раз?');
   return '<div class="ask">' + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const digitGapOk = q => q.list.filter(v => (q.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= q.k);
 function eqDigits(q){

@@ -4,7 +4,7 @@
 // all — how many triangles? Were all 7 triangles there would be 7 · 3 = 21 vertices; a square has one more, so the
 // 23 − 21 = 2 extra are 2 squares, and 7 − 2 = 5 triangles. The slip: the squares given for the triangles.
 // 5 to 12 figures; mostly the triangles asked, as on the paper, sometimes the squares.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genNoCommon(){
   const n = 5 + rnd(8), s = 1 + rnd(n - 1), t = n - s, askT = Math.random() < 0.7, ans = askT ? t : s;
   return {kind:'nocommon', n, t, s, V: 3*t + 4*s, askT, traps: [askT ? s : t].filter(v => v !== ans), ans};
@@ -15,7 +15,7 @@ function drawNoCommon(q){
     'Колко са начертаните <b>' + what[0] + '</b>, ако върховете на начертаните фигури са общо <span class="num">' + q.V + '</span>?',
     'Я накреслив трикутники й квадрати — усього ' + ukN(q.n, 'фігура', 'фігури', 'фігур').replace(/^(\d+)/, '<span class="num">$1</span>') + '. Серед цих фігур немає жодної, яка мала б спільну вершину з іншою накресленою фігурою. ' +
     'Скільки накреслено <b>' + what[1] + '</b>, якщо всього вершин у накреслених фігур <span class="num">' + q.V + '</span>?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqNoCommon(q){
   return q.n + ' · 3 = ' + 3*q.n + ', ' + q.V + ' − ' + 3*q.n + ' = ' + q.s + (q.askT ? ', ' + q.n + ' − ' + q.s + ' = ' + q.t : '');

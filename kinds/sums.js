@@ -3,7 +3,7 @@
 // Задача 18: how many different results are reachable — find the two ends, count between.
 // МБГ Зима 2023: two different numbers picked from a short list, at least one of them two-digit;
 // how many different sums. Listing the pairs is the method, and a repeated sum counts once.
-import { BGNUM, KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { BGNUM, KIND, answerLine, rnd, shuffle, tr } from '../js/core.js';
 function genSumsList(){
   for(;;){
     const nums = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 2).concat(shuffle([10,11,12,13,20,21,22,30,31]).slice(0, 2 + rnd(2))).sort((a, b) => a - b);
@@ -43,11 +43,11 @@ function drawSums(q){
     const list = q.nums.slice(0, -1).join(', ') + tr(' и ', ' і ') + q.nums[q.nums.length - 1];
     return '<div class="ask">' + tr('Съберете две <b>различни</b> числа от числата <span class="num">' + list + '</span>' + (q.two ? ', като <b>поне едното</b> събираемо е двуцифрено' : '') + '. Колко <b>различни</b> сбора ще получите?',
       'Додайте два <b>різні</b> числа з чисел <span class="num">' + list + '</span>' + (q.two ? ', причому <b>хоча б один</b> доданок двоцифровий' : '') + '. Скільки <b>різних</b> сум ви отримаєте?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 3){
     return '<div class="ask">' + tr('Колко различни ' + SUMS_TWO[q.v][0] + '?', 'Скільки різних ' + SUMS_TWO[q.v][1] + '?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const ask = q.shape === 0
     ? tr('Колко различни числа можем да получим при сбор на ' + BGNUM[q.k] + ' едноцифрени числа?',
@@ -59,7 +59,7 @@ function drawSums(q){
          'Скільки різних чисел можна отримати як різницю двох одноцифрових чисел?');
   return '<div class="ask">' + ask + '</div>' +
     '<div class="note">' + tr('Числата са', 'Числа:') + ' 0, 1, 2, 3, …</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqSums(q){
   if(q.shape === 4) return q.pairs.map(([a, b]) => a + b).join(', ') + ' → ' + q.ans;

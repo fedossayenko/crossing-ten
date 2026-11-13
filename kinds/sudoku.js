@@ -3,7 +3,7 @@
 // Задача 5: a four by four sudoku. Every row, every column and every bold two by two box
 // holds 1, 2, 3 and 4 exactly once. Two empty cells are named and their sum is asked.
 // Cells are counted 0..15, reading across.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, SVG_FONT, answerLine, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 export function sudokuFits(g, at, v){
   const r = (at / 4) | 0, c = at % 4, br = r - r % 2, bc = c - c % 2;
   for(let i = 0; i < 4; i++) if(g[r*4 + i] === v || g[i*4 + c] === v) return false;
@@ -61,7 +61,7 @@ function sudokuSvg(q){
     const t = i === q.X ? 'X' : i === q.Y ? 'Y' : q.g[i] ? String(q.g[i]) : '';
     if(t) cells += '<text x="' + (P + c*u + u/2) + '" y="' + (P + r*u + u/2 + 8) +
       '" text-anchor="middle" font-size="22" font-weight="700" fill="var(--ink)" ' +
-      'font-family="Nunito, sans-serif">' + t + '</text>';
+      SVG_FONT + '>' + t + '</text>';
   }
   let lines = '';
   for(let k = 0; k <= 4; k++){
@@ -84,7 +84,7 @@ function drawSudoku(q){
     'і кожному <b>квадраті з товстою рамкою</b> числа від 1 до 4 траплялися рівно по одному разу. ' +
     'Чому дорівнює <b>сума</b> чисел у <b>X</b> і <b>Y</b>?</div>') +
     sudokuSvg(q) +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqSudoku(q){
   return tr('судоку → ', 'розв’язок: ') + 'X = ' + q.sol[q.X] + ', Y = ' + q.sol[q.Y] + ' → ' + q.ans;

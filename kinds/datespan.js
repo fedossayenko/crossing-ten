@@ -6,7 +6,7 @@
 // February has a leap year, and a span across the New Year would need a year to count in.
 // [Bulgarian name, Ukrainian genitive, days, Ukrainian name]
 /** @type {[string, string, number, string][]} */
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 /** @type {any[]} */
 export const SPAN_MONTHS = [['март', 'березня', 31, 'березень'], ['април', 'квітня', 30, 'квітень'], ['май', 'травня', 31, 'травень'],
                      ['юни', 'червня', 30, 'червень'], ['юли', 'липня', 31, 'липень'], ['август', 'серпня', 31, 'серпень'], ['септември', 'вересня', 30, 'вересень'],
@@ -31,7 +31,7 @@ function drawDateSpan(q){
     ' <b>включно</b> він дивився ' + per[1] + '. ' + (q.asksDays ? 'Скільки днів Дончо дивився фільм?' : 'Скільки серій подивився Дончо?')) + '</div>' +
     // the months she has to count through in full: their lengths are given, as a calendar would show them
     '<div class="note">' + SPAN_MONTHS.slice(q.i, q.j).map(M => tr(M[0] + ' има ' + M[2] + ' дни', M[3] + ' — ' + ukN(M[2], 'день', 'дні', 'днів'))).join('; ') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function spanParts(q){
   const parts = [SPAN_MONTHS[q.i][2] - q.d1 + 1];

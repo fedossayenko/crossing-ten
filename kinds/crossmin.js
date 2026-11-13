@@ -4,7 +4,7 @@
 // Every try: 9 + 23 = 32, 1 + 23 = 24, 19 + 3 = 22, 19 + 2 = 21 — the smallest is 21, so the 3.
 // The four digits are all different, so the digit names the try.
 // [the digit crossed, the sum then] for each of the four digits of x + y
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 const crossTries = (x, y) => [[Math.floor(x / 10), x % 10 + y], [x % 10, Math.floor(x / 10) + y], [Math.floor(y / 10), x + y % 10], [y % 10, x + Math.floor(y / 10)]];
 // МБГ Пролет 2022, 1 клас, задача 18: three numbers with zeros, 10 + 20 + 30. Crossing the 3 leaves
 // 10 + 20 + 0 = 30, the smallest; a crossed 0 turns 10 into 1. Only a digit written once can be the answer,
@@ -60,16 +60,16 @@ function drawCrossMin(q){
   if(q.shape === 'one'){
     return '<div class="ask">' + tr('В сбора <span class="num">' + crossSum(q) + '</span> изтрих една цифра. След като го пресметнах вярно, получих <b>едноцифрено</b> число. Коя цифра съм изтрил?',
       'У сумі <span class="num">' + crossSum(q) + '</span> я стер одну цифру. Обчисливши її правильно, я отримав <b>одноцифрове</b> число. Яку цифру я стер?') + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
   }
   if(q.shape === 'three'){
     return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + crossSum(q) + '</span>, така че да се получи <b>' + (q.least ? 'най-малък' : 'най-голям') + '</b> сбор?',
       'Яку цифру треба закреслити в <span class="num">' + crossSum(q) + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
   }
   return '<div class="ask">' + tr('Коя цифра трябва да зачеркнем в <span class="num">' + q.x + ' + ' + q.y + '</span>, така че да се получи <b>' + (q.least ? 'най-малкият' : 'най-големият') + '</b> сбор?',
     'Яку цифру треба закреслити в <span class="num">' + q.x + ' + ' + q.y + '</span>, щоб вийшла <b>' + (q.least ? 'найменша' : 'найбільша') + '</b> сума?') + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqCrossMin(q){
   if(q.shape === 'one') return crossSum(q) + ', ' + tr('едноцифрен сбор ', 'одноцифрова сума ') + q.best + ' → ' + q.ans;

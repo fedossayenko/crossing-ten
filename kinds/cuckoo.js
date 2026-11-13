@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 13: the clock's cuckoo calls 3 times every 4 seconds; in 16 seconds that is
 // four lots of 4 seconds, so 4 · 3 = 12 calls.
-import { KIND, SLOT, addUp, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, addUp, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
 export function genCuckoo(){
   const k = 2 + rnd(4), s = 2 + rnd(5), m = 2 + rnd(4);
   return {kind:'cuckoo', k, s, m, t: s*m, ans: k*m};
@@ -10,7 +10,7 @@ export function genCuckoo(){
 function drawCuckoo(q){
   return '<div class="ask">' + tr('Кукувичката от часовника кука по <span class="num">' + q.k + '</span> пъти за <span class="num">' + q.s + '</span> секунди. Колко пъти ще изкука кукувичката за <span class="num">' + q.t + '</span> секунди?',
     'Зозуля з годинника кукає по <span class="num">' + ukN(q.k, 'разу', 'рази', 'разів').replace(' ', '</span> ') + ' за <span class="num">' + ukN(q.s, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '. Скільки разів вона кукне за <span class="num">' + ukN(q.t, 'секунду', 'секунди', 'секунд').replace(' ', '</span> ') + '?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCuckoo(q){
   return q.t + ' = ' + Array(q.m).fill(q.s).join(' + ') + ' → ' + addUp(q.m, q.k);

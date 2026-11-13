@@ -20,7 +20,8 @@ export const KIND = {};                     // kinds/*.js register { draw, eq, w
 export const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
 // a Ukrainian noun after a number, whatever the page's language: 1 фігура, 2 фігури, 5 фігур, 21 фігура
 export const UK_PLURAL = new Intl.PluralRules('uk');   // one for all: building one per word was most of the checks' time
-export const ukN = (n, one, few, many) => n + ' ' + ({one, few}[UK_PLURAL.select(n)] || many);
+export const ukWord = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);   // the word alone, without the number
+export const ukN = (n, one, few, many) => n + ' ' + ukWord(n, one, few, many);
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 export const SLOT = '<span class="slot" id="slot0"></span>';
@@ -31,7 +32,8 @@ export const addUp = (n, k) => n < 2 ? String(n*k) : n <= 5 ? Array(n).fill(k).j
 // (still, all at once, when motion is reduced). Attributes for an SVG element: '<g' + popAt(3) + '>'.
 export const popAt = n => ' class="pop" style="transform-box:fill-box; transform-origin:center; animation-delay:' + (n*0.12).toFixed(2) + 's"';
 // a label in a solution picture, centred on x
-export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" font-family="Nunito, sans-serif">' + t + '</text>\n';   // the line break keeps labels apart as text
+export const SVG_FONT = 'font-family="Nunito, sans-serif"';   // every drawn <text> uses it
+export const svgText = (x, y, t, size, fill, extra) => '<text' + (extra || '') + ' x="' + x + '" y="' + y + '" text-anchor="middle" font-size="' + size + '" font-weight="800" fill="' + fill + '" ' + SVG_FONT + '>' + t + '</text>\n';   // the line break keeps labels apart as text
 // About how wide a label draws (the widths of the app's bold font, measured in Safari: a space .2 em, a capital .7,
 // · : , .25, → .96, a digit, a sign or a small letter .63; SVG keeps one of several spaces), and a picture's left and
 // right edges pushed out where a label centred on cx would run past them: a picture clips at its viewBox
@@ -68,6 +70,11 @@ export function diffBars(rows, extra, foot, label){
   g += svgText(136, rows.length * 30 + 20, foot, 15, 'var(--ink)', popAt(5));
   return '<svg viewBox="0 -8 262 ' + (rows.length * 30 + 38) + '" style="display:block; width:327px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
 }
+export const UNIT_MM = { мм:1, см:10, дм:100, м:1000 };   // millimetres in each length unit
+export const UNIT_W2 = { мм:['милиметра','міліметрів'], см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };   // «колко …» plural, Bulgarian and Ukrainian
+export const answerLine = size => '<div class="line ' + size + '">' + SLOT + '</div>';   // the box she types the answer in; size xl, lg or md
+export const svgFrame = (viewBox, width, label) => '<svg viewBox="' + viewBox + '" style="display:block; width:' + width + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">';
+export const numSpan = v => '<span class="num">' + v + '</span>';   // a number as the worksheet prints it
 export const CM = ' <span class="unit">см</span>';
 
 export const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
@@ -119,3 +126,25 @@ export function fruitBody(t){
 // [name, Bulgarian "planted", Ukrainian name, Ukrainian "planted"]
 export const NAMES = [['Хари', 'посадил', 'Харі', 'посадив'], ['Мая', 'посадила', 'Мая', 'посадила'], ['Ния', 'посадила', 'Нія', 'посадила'],
                ['Борис', 'посадил', 'Борис', 'посадив'], ['Ива', 'посадила', 'Іва', 'посадила'], ['Асен', 'посадил', 'Асен', 'посадив']];
+
+// The picture walks round the figure: drawn in grey with its cuts, the piece that matters tinted,
+// then one side at a time lights up orange with its length beside it, and the total comes last.
+// Sizes are in units of the figure; sides is [x1, y1, x2, y2, label], each pushed out from the middle.
+export function sqWalkSvg(W, H, cuts, tint, sides, foot){
+  const u = Math.min(150 / W, 100 / H), f = v => (v * u).toFixed(1);
+  // labels go outwards from the middle of the sides being walked, not of the whole figure
+  const cx = sides.reduce((t, r) => t + r[0] + r[2], 0) / (2 * sides.length), cy = sides.reduce((t, r) => t + r[1] + r[3], 0) / (2 * sides.length);
+  let g = '<g stroke="var(--line)" stroke-width="2" fill="none"><rect x="0" y="0" width="' + f(W) + '" height="' + f(H) + '"/>' +
+    cuts.map(([a, b, c, d]) => '<line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '"/>').join('') + '</g>';
+  if(tint) g += '<rect x="' + f(tint[0]) + '" y="' + f(tint[1]) + '" width="' + f(tint[2]) + '" height="' + f(tint[3]) + '" fill="var(--warm)" opacity=".16"/>';
+  sides.forEach(([a, b, c, d, t], i) => {
+    const mx = (a + c) / 2, my = (b + d) / 2, out = a === c ? [mx < cx ? -1 : 1, 0] : [0, my < cy ? -1 : 1];
+    const lx = mx * u + out[0] * (out[0] ? 8 + 4 * String(t).length : 0), ly = my * u + (out[1] ? out[1] * 9 + 4 : 4);
+    g += '<g' + popAt(1 + i * 1.5) + '><line x1="' + f(a) + '" y1="' + f(b) + '" x2="' + f(c) + '" y2="' + f(d) + '" stroke="var(--warm)" stroke-width="4" stroke-linecap="round"/>' +
+      svgText(lx.toFixed(1), ly.toFixed(1), t, 12, 'var(--warm)') + '</g>';
+  });
+  g += svgText(f(W / 2), (H * u + 38).toFixed(1), foot, 15, 'var(--ink)', popAt(2 + sides.length * 1.5));
+  const [l, r] = roomFor(-34, W * u + 34, W * u / 2, foot, 15);
+  return '<svg viewBox="' + l.toFixed(0) + ' -22 ' + (r - l).toFixed(0) + ' ' + (H * u + 70).toFixed(0) + '" style="display:block; width:' + Math.round(r - l) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
+    tr('страните една по една', 'сторони одна за одною') + '">' + g + '</svg>';
+}

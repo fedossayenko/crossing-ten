@@ -4,7 +4,7 @@
 // «между», where the two ends are NOT counted — so the condition has to be read.
 // The same four conditions asked two ways: how many numbers, or what they add up to.
 // Telling "Колко са" from "сборът на" is the point, so both live in one level.
-import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, textW, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, bgList, popAt, rnd, shuffle, svgFrame, svgText, textW, tr } from '../js/core.js';
 export function genCount(){
   if(Math.random() < 0.14){
     // Задача 3: a list with repeats. What is asked is about the set behind it, not the
@@ -93,24 +93,24 @@ function countMissedSvg(q){
     g += svgText(X(v), Y(v), v, 14, left ? 'var(--warm)' : 'var(--good)') + (left ? '<circle' + popAt(step++) + ' cx="' + X(v) + '" cy="' + (Y(v) - 5) + '" r="12" fill="none" stroke="var(--warm)" stroke-width="2"/>' : '');
   }
   g += svgText(120, 22 + rows * 30, q.N + ' − ' + q.list.length + ' = ' + q.ans, 15, 'var(--ink)', popAt(step + 1));
-  return '<svg viewBox="0 0 240 ' + (32 + rows * 30) + '" style="display:block; width:240px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('пропуснатите числа', 'пропущені числа') + '">' + g + '</svg>';
+  return svgFrame('0 0 240 ' + (32 + rows * 30), 240, tr('пропуснатите числа', 'пропущені числа')) + g + '</svg>';
 }
 
 function drawCount(q){
   if(q.shape === 8){
     return '<div class="ask">' + tr('Петър искал да запише на дъската всички числа от 1 до <span class="num">' + q.N + '</span>, но записал само ' + bgList(q.list) + '. Колко числа е пропуснал да запише?',
       'Петро хотів записати на дошці всі числа від 1 до <span class="num">' + q.N + '</span>, але записав лише ' + bgList(q.list) + '. Скільки чисел він пропустив?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.set){
     return '<div class="ask">' + tr('Колко ' + (q.asksSum ? 'е <b>сборът</b> на' : 'са') +
       ' <b>различните</b> цифри?', q.asksSum ? 'Чому дорівнює <b>сума</b> <b>різних</b> цифр?' : 'Скільки <b>різних</b> цифр?') + '</div>' +
       '<div class="seq">' + q.list.join(', ') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 7){
     return '<div class="ask">' + tr('<b>Колко са</b> едноцифрените числа?', '<b>Скільки всього</b> одноцифрових чисел?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const cond = q.shape === 6 ? 'НЕ са по-малки от ' + q.a
              : q.shape === 0 ? 'не са по-големи от ' + q.n
@@ -143,7 +143,7 @@ function drawCount(q){
       : q.two ? tr('Двуцифрените числа са 10, 11, … 99', 'Двоцифрові числа — це 10, 11, … 99')
       : q.one ? tr('Едноцифрените числа са 0, 1, 2, … 9', 'Одноцифрові числа — це 0, 1, 2, … 9')
       : tr('Числата са 0, 1, 2, 3, …', 'Числа — це 0, 1, 2, 3, …')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCount(q){
   if(q.shape === 8) return '1 … ' + q.N + tr(', записани ', ', записано ') + q.list.length + ' → ' + q.N + ' − ' + q.list.length + ' = ' + q.ans;
@@ -161,7 +161,7 @@ function eqCount(q){
 // a sum joins the numbers in pairs from both ends. The hint's line has no numbers: a filled end counts,
 // a hollow one does not.
 function countLine(q, full){
-  const svg = (h, g, label) => '<svg viewBox="0 -24 240 ' + h + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
+  const svg = (h, g, label) => svgFrame('0 -24 240 ' + h, 230, label) + g + '</svg>';
   const label = tr('числата, които се броят', 'числа, які рахуються');
   if(!full){
     const inLo = q.shape <= 2 || q.shape >= 6, inHi = q.shape === 0 || q.shape === 2 || q.shape >= 6;   // whether each end itself counts
@@ -213,7 +213,7 @@ function countSet(q, full){
   });
   const foot = (q.asksSum ? q.pool.join(' + ') + ' = ' : q.pool.join(', ') + ' → ') + q.ans;
   if(full) g += svgText(120, 30, foot, Math.min(14, Math.floor(14 * 228 / textW(foot, 14))), 'var(--ink)', popAt(step + 1));   // a long sum gets smaller, the numbers above keep their size
-  return '<svg viewBox="0 -22 240 ' + (full ? 62 : 32) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('различните цифри', 'різні цифри') + '">' + g + '</svg>';
+  return svgFrame('0 -22 240 ' + (full ? 62 : 32), 230, tr('различните цифри', 'різні цифри')) + g + '</svg>';
 }
 function whyCount(q, full){
   if(q.shape === 8){

@@ -6,7 +6,7 @@
 // and going up or down by 1, 2 or 3. A dividend can change whenever its quotient may move that way (not below 0), so in
 // most questions a divisor or a factor can change too (3 · 2 + 2 = 4 · 2), and in some a quotient is too small to drop by
 // the change: «add the two divided numbers» is seldom the answer.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 // the value of a : b + c · d − e : f, and the three parts
 const swapParts = n => [n[0] / n[1], n[2] * n[3], n[4] / n[5]];
 // what each number would have to become, or 0 when no whole number above 0 does it: the part it stands in must move by
@@ -44,7 +44,7 @@ function drawSwapOne(q){
       '</b>. Колко е сборът на числата в израза, които е възможно да се заменят?',
       'замініть <b>рівно одне</b> з чисел у ньому іншим числом так, щоб початкове значення виразу <b>' + uk +
       '</b>. Яка сума тих чисел у виразі, які можна замінити?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const swapCan = q => q.n.map((v, i) => [v, q.to[i]]).filter(([, x]) => x);
 function eqSwapOne(q){
