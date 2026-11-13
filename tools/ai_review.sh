@@ -33,7 +33,7 @@ case "${1:-}" in
         diff="$(git diff --no-color -U8 "$from" "$to" "${SKIP[@]}")"; range="${from:0:12}..${to:0:12}" ;;
 esac
 
-[ -z "$diff" ] && { echo "ai-review: no changes"; exit 0; }
+[ -z "${diff:-}" ] && { echo "ai-review: no changes, or the range is not in this clone (fetch first): nothing reviewed"; exit 0; }
 n="$(printf '%s\n' "$diff" | wc -l | tr -d ' ')"
 bytes="$(printf '%s' "$diff" | wc -c | tr -d ' ')"
 if [ "$n" -gt "$MAX_LINES" ] || [ "$bytes" -gt "$MAX_BYTES" ]; then
