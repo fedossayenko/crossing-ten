@@ -228,6 +228,7 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .fig{display:flex; justify-content:center; width:100%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
 .fig > svg{min-width:0}   /* two pictures side by side (the scales) shrink to fit a phone, not overflow it */
+.fig.maze svg{height:clamp(110px,38vh,320px)}   /* a maze, a map or a board with small labels: bigger than the 19vh a picture gets, still scaled to fit */
 .ic{height:1.3em; width:auto; vertical-align:-.3em}
 .grid4{display:grid; grid-template-columns:repeat(5, auto); gap:1px 7px;
   justify-content:center; align-items:center; text-align:center;
