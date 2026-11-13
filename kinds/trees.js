@@ -1,6 +1,5 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
 import { KIND, NAMES, SLOT, addUp, numSpan, popAt, rnd, svgText, tr, ukN, ukWord } from '../js/core.js';
-import { LANG } from '../js/i18n.js';
 
 export function genTrees(){
   const nm = NAMES[rnd(5)], who = nm[0], did = nm[1];
@@ -37,7 +36,7 @@ function treesUkAsk(q){
 }
 
 function drawTrees(q){
-  const ask = LANG === 'uk' ? treesUkAsk(q) : q.shape === 3
+  const bgAsk = q.shape === 3
     ? q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в една редица на разстояние <span class="num">' +
       q.dm + '</span> дм едно от друго. Колко <b>метра</b> е дълга редицата?'
     : q.shape === 0
@@ -48,6 +47,7 @@ function drawTrees(q){
       '</span> метра, на разстояние <span class="num">' + q.d + '</span> метра едно от друго. Колко дръвчета е ' + q.did + '?'
     : q.who + ' ' + q.did + ' <span class="num">' + q.n + '</span> дръвчета в редица, дълга <span class="num">' + q.len +
       '</span> метра, на равни разстояния. Колко метра е разстоянието между две съседни дръвчета?';
+  const ask = tr(bgAsk, treesUkAsk(q));
   return '<div class="ask">' + ask + '</div>' +
     '<div class="line lg">' + SLOT +
     (q.shape === 1 ? '' : ' <span class="unit">м</span>') + '</div>';

@@ -1,6 +1,5 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
 import { KIND, SLOT, answerLine, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
-import { LANG } from '../js/i18n.js';
 
 export const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
   { nm:'понеделник', cnt:'понеделника' }, { nm:'вторник', cnt:'вторника' },
@@ -279,7 +278,7 @@ function whyWeekdayText(q, full){
   }
   if(!full) return tr('Колко цели седмици се събират в толкова дни?', 'Скільки цілих тижнів уміщається в стільки днів?');
   const u = weekdayUk[q.day.nm];
-  if(LANG === 'uk') return weekdayDays(q.n) + ' — це <b>' + q.q + ' ' + ukWord(q.q, 'тиждень', 'тижні', 'тижнів') +
+  const ukText = weekdayDays(q.n) + ' — це <b>' + q.q + ' ' + ukWord(q.q, 'тиждень', 'тижні', 'тижнів') +
     '</b> і ще ' + weekdayDays(q.r) + ' &nbsp;→&nbsp; у кожному тижні є ' + u.po + ', отже ' + q.q + '; ' +
     (q.r === 1 ? 'якщо й останній день — ' + u.nm
                : 'якщо й один із ' + q.r + ' днів, що лишилися, — ' + u.nm) + ' → ' + (q.q + 1);
@@ -287,8 +286,9 @@ function whyWeekdayText(q, full){
   const left = q.r === 1 ? 'още 1 ден' : 'още ' + q.r + ' дни';
   const extra = q.r === 1 ? 'ако и последният ден е ' + q.day.nm
                           : 'ако и някой от останалите ' + q.r + ' дни е ' + q.day.nm;
-  return q.n + ' дни са <b>' + weeks + '</b> и ' + left + ' &nbsp;→&nbsp; във всяка седмица има ' +
+  const bgText = q.n + ' дни са <b>' + weeks + '</b> и ' + left + ' &nbsp;→&nbsp; във всяка седмица има ' +
     (q.day.f ? 'по една ' : 'по един ') + q.day.nm + ', значи ' + q.q + '; ' + extra + ' → ' + (q.q + 1);
+  return tr(bgText, ukText);
 }
 // The days after the 1st for the weekdays among them (191: «30», March, 2026-11-01); the 1st counted when it is that
 // weekday itself (191: «5» for the Mondays of April after a Monday 1st)
