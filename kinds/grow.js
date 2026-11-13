@@ -4,25 +4,26 @@
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
 // down 10 and the subtrahend up 10, so both changes take away: 30 − 20 = 10.
 import { BGNUM, KIND, SLOT, UKNUM, popAt, rnd, svgText, textW, tr } from '../js/core.js';
-function genGrowDiff(){
+// One 'diff' task: the minuend and the subtrahend each change by a, b (the same random draws for both levels).
+// Level 14 and level 230 differ in the ranges and the limit, and 230 also names the slip a child makes.
+function growDiff(mBase, mSpan, sBase, sSpan, aSpan, cap, slips){
   for(;;){
-    const M = 20 + rnd(60), S = 5 + rnd(M - 10), a = 1 + rnd(12), b = 1 + rnd(12), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
+    const M = mBase + rnd(mSpan), S = sBase + rnd(sSpan(M)), a = 1 + rnd(aSpan), b = 1 + rnd(aSpan), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
     const M2 = mUp ? M + a : M - a, S2 = sUp ? S + b : S - b;
-    if(M2 > 99 || S2 < 1 || M2 - S2 < 0) continue;
-    return {kind:'grow', shape:'diff', M, S, a, b, mUp, sUp, M2, S2, ans: M2 - S2};
+    if(M2 > cap || S2 < 1 || M2 - S2 < 0) continue;
+    const q = {kind:'grow', shape:'diff', M, S, a, b, mUp, sUp, M2, S2};
+    if(slips){
+      const slip = M2 - (sUp ? S - b : S + b);   // the subtrahend changed the other way: a bigger subtrahend taken as a bigger difference
+      q.traps = slip >= 0 ? [slip] : [];
+    }
+    q.ans = M2 - S2;
+    return q;
   }
 }
+const genGrowDiff = () => growDiff(20, 60, 5, M => M - 10, 12, 99, false);
 // МБГ Полуфинал 2022, 1 клас, задача 20: in 8 − 3 the minuend goes down 1 and the subtrahend up 2 — the new
 // difference? 7 − 5 = 2. Level 230, the 1st-grade cousin of 14's 'diff': within 20, every change 1 to 3.
-export function genGrowShort(){
-  for(;;){
-    const M = 6 + rnd(15), S = 2 + rnd(M - 2), a = 1 + rnd(3), b = 1 + rnd(3), mUp = Math.random() < 0.3, sUp = Math.random() < 0.7;
-    const M2 = mUp ? M + a : M - a, S2 = sUp ? S + b : S - b;
-    if(M2 > 20 || S2 < 1 || M2 - S2 < 0) continue;
-    const slip = M2 - (sUp ? S - b : S + b);   // the subtrahend changed the other way: a bigger subtrahend taken as a bigger difference
-    return {kind:'grow', shape:'diff', M, S, a, b, mUp, sUp, M2, S2, traps: slip >= 0 ? [slip] : [], ans: M2 - S2};
-  }
-}
+export const genGrowShort = () => growDiff(6, 15, 2, M => M - 2, 3, 20, true);
 // МБГ Пролет 2025, задача 10: in 15 + 18 + 27 + 28 each odd addend is made 3 times smaller. Only 15 and
 // 27 change, to 5 and 9: 5 + 18 + 9 + 28 = 60. Level 135, apart from 14: it needs the times table.
 export function genGrowTimes(){
