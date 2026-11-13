@@ -228,13 +228,13 @@ const server = http.createServer((req, res) => {
     const set = (at, date) => { $('paperAt').value = at; $('paperAt').onchange(); $('paperDate').value = date; $('paperDate').onchange(); };
     $('tabParents').click(); await tick();
     const r = { options: [...$('paperAt').options].map(o => o.value).includes('mbg-autumn') };
-    set('mbg-autumn', day(5)); r.saved = LOCAL.next && LOCAL.next.at === 'mbg-autumn' && LOCAL.next.date === day(5);
+    set('mbg-autumn', day(5)); r.saved = PLAYER.next && PLAYER.next.at === 'mbg-autumn' && PLAYER.next.date === day(5) && JSON.parse(localStorage.getItem('crossingten.players')).list.find(p => p.id === PLAYER.id).next.date === day(5);   // in the player's record, which sync carries
     $('tabToday').click(); await tick();
     const card = document.querySelector('#today .paperday'), ready = card && +card.querySelector('.ready b').textContent.replace('%', '');
     r.card = !!card && /5/.test(card.textContent) && Number.isInteger(ready) && ready >= 0 && ready <= 100;
     card.click(); await tick(); r.trains = !$('picker').hidden && PICK_COMP === 'mbg' && PICK_ROUND === 'autumn';
     set('mbg-autumn', day(-1)); $('tabToday').click(); await tick(); r.past = !document.querySelector('#today .paperday');
-    set('', ''); r.cleared = LOCAL.next === undefined;
+    set('', ''); r.cleared = !PLAYER.next;
     // R9.5: Today as drawn — Play on the start card, the next badge, the week's seven days, the sidebar's week block
     $('tabToday').click(); await tick();
     r.today = !!document.querySelector('#today .start .acts .btn') && !!document.querySelector('#today .badgecard') &&
@@ -812,6 +812,112 @@ const server = http.createServer((req, res) => {
       newRound(); delete navigator.wakeLock; return JSON.stringify(out); })()`) || '{}');
     expect(wl.task === 1 && wl.today === 0 && wl.again === 1 && wl.end === 0 && wl.asked === 2, 'the wake lock is not held on a task only: ' + JSON.stringify(wl));
   }
+  // A run of days is counted by day number, not by the milliseconds between two noons: the night the clocks go back
+  // (Sofia, 25 Oct 2026) is 25 hours long, and the days either side of it are still in a row
+  await cmd('Emulation.setTimezoneOverride', { timezoneId: 'Europe/Sofia' });
+  const dst = await page(`(() => { const rs = d => ({ id: d, ts: 0, day: d, level: 2, n: 10, firstTry: 8 });
+    return { best: statsFrom(['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-03-28', '2026-03-29', '2026-03-30'].map(rs)).streakBest }; })()`);
+  await cmd('Emulation.setTimezoneOverride', { timezoneId: '' });
+  expect(dst.best === 4, 'a run of days across the clocks going back was cut short (Sofia, 24 to 26 Oct): ' + JSON.stringify(dst));
+  // a paper in progress survives a reload (the iPad drops a home-screen app it is not showing): the same tasks, her answers, the
+  // task she was on and the same end of the hour; an hour that ran out meanwhile ends it with what she had answered
+  const paperDo = `(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)), K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    startComp(); await tick();
+    for(let n = 0; n < 3; n++){ const q = S.qs[S.i];
+      if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); $('nextBtn').click(); }
+      else { const want = answers(q).slice(0, q.slots || 1).map(String);   // each box; a task she counts herself opens them with +
+        want.forEach((v, k) => { [...v].forEach(K); if($('more')){ if(k < want.length - 1) K('more'); } else K('go'); }); if($('more')) K('go'); }
+      await tick(300); }
+    return JSON.stringify({ i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length }); })()`;
+  const pa = JSON.parse(await run(paperDo) || '{}');
+  await cmd('Page.reload'); await settle();
+  const pb = await page(`COMP ? { i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length, clock: !!$('compClock').textContent, sheet: $('sheet').hidden, ok: S.results.filter(Boolean).length } : null`);
+  expect(pa.answered === 3 && pb && pb.i === pa.i && pb.ans === pa.ans && pb.end === pa.end && pb.qs === pa.qs && pb.n === 20 && pb.sheet && pb.clock && pb.ok >= 1, 'a paper in progress did not survive a reload: ' + JSON.stringify({ pa, pb }));
+  // her hour ran out while the app was away: it opens on her result, with what she had answered
+  await run(`(() => { const k = LS + '.paper', p = JSON.parse(localStorage.getItem(k)); p.end = Date.now() - 1000; localStorage.setItem(k, JSON.stringify(p)); return ''; })()`);
+  await cmd('Page.reload'); await settle();
+  const pc = await page(`({ comp: !COMP, sheet: !$('sheet').hidden, kept: localStorage.getItem(LS + '.paper'), last: LOCAL.rounds[LOCAL.rounds.length - 1].level, pts: LOCAL.rounds[LOCAL.rounds.length - 1].n })`);
+  expect(pc.comp && pc.sheet && pc.kept === null && pc.last === 'comp' && pc.pts === 20, 'a paper whose hour ran out while away was not ended: ' + JSON.stringify(pc));
+  await run("$('sheet').hidden = true; newRound(); ''");
+  await cmd('Page.reload'); await settle();   // a fresh page: this one has played sounds already
+  // the audio context is made on the first touch or key, not on the first key of a task (about 75 ms she would feel)
+  const au = await page(`(() => { const Real = window.AudioContext; let made = 0; window.AudioContext = class extends Real { constructor(){ super(); made++; } };
+    const before = made; document.body.dispatchEvent(new Event('pointerdown', { bubbles: true })); const afterTouch = made;
+    document.querySelector('.key[data-k="1"]').click(); const afterKey = made; window.AudioContext = Real; return { before, afterTouch, afterKey }; })()`);
+  expect(au.before === 0 && au.afterTouch === 1 && au.afterKey === 1, 'the audio context was not made on the first touch: ' + JSON.stringify(au));
+  // a new round looks for a newer build at most once in ten minutes (each look fetches the whole page)
+  const bc = JSON.parse(await run(`(async () => { let n = 0; const f = window.fetch; window.fetch = (u, o) => { if(String(u) === location.pathname) n++; return f(u, o); };
+    newRound(); newRound(); newRound(); await new Promise(r => setTimeout(r, 100)); window.fetch = f; return JSON.stringify({ n }); })()`) || '{}');
+  expect(bc.n <= 1, 'three new rounds fetched the page ' + bc.n + ' times to look for a newer build');
+  // a new day while the app was away repaints the screen showing (Today, the sidebar's week)
+  const dy = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    $('tabToday').click(); await tick(); $('tabWeek').innerHTML = 'X'; const real = Date.now; Date.now = () => real() + 30 * 3600e3;
+    document.dispatchEvent(new Event('visibilitychange')); Date.now = real; const out = { repainted: $('tabWeek').innerHTML !== 'X' };
+    newRound(); await tick(); return JSON.stringify(out); })()`) || '{}');
+  expect(dy.repainted, 'Today was not repainted when the app came back on a new day');
+  // a held key is one press, and ⌘5 is no answer
+  const ky = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)), was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 5;
+    newRound([{ a:27, b:15, op:'+' }]); await tick(); const key = init => document.body.dispatchEvent(new KeyboardEvent('keydown', Object.assign({ bubbles: true }, init))), out = [];
+    key({ key: '5', metaKey: true }); out.push(S.parts[0]); key({ key: '5', ctrlKey: true }); out.push(S.parts[0]); key({ key: '5', repeat: true }); out.push(S.parts[0]); key({ key: '4' }); out.push(S.parts[0]);
+    LOCAL.choice = was; S.level = lvWas; newRound(); await tick(); return JSON.stringify(out); })()`) || '[]');
+  expect(ky.join() === ',,,4', 'a held key or a ⌘/Ctrl digit typed into the answer: ' + JSON.stringify(ky));
+  // storage too full for 100 rounds: the copy already there stays, a grown-up is told
+  const sf = JSON.parse(await run(`(() => { const set = Storage.prototype.setItem, was = localStorage.getItem(LS), line = $('synced').textContent;
+    Storage.prototype.setItem = function(k, v){ if(k === LS && v.length > 3000) throw new Error('quota'); return set.call(this, k, v); };
+    saveLocal(); Storage.prototype.setItem = set; const out = { kept: localStorage.getItem(LS) === was && was.length > 3000, note: $('synced').textContent === t('storageFull') };
+    $('synced').textContent = line; return JSON.stringify(out); })()`) || '{}');
+  expect(sf.kept && sf.note, 'a full storage wiped the rounds kept there, or said nothing: ' + JSON.stringify(sf));
+  // putting a kind right whose misses are all gone (put right in another round) starts a round of new tasks; it did not fail
+  const fk = JSON.parse(await run(`(async () => { const keep = LOCAL.rounds, now = Date.now(); let err = '';
+    LOCAL.rounds = [{ id: 'fk', ts: now - 1000, day: '', level: 2, n: 5, firstTry: 5, redo: { fix: 'forgotBorrow' }, t: [[2, null, 1, null, 1, 5]] }];
+    try { fixKind('forgotBorrow', false); } catch(e){ err = String(e); }
+    const out = { err, n: S.qs.length }; LOCAL.rounds = keep; newRound(); return JSON.stringify(out); })()`) || '{}');
+  expect(!fk.err && fk.n >= 5, 'a kind no longer open could not be put right: ' + JSON.stringify(fk));
+  // a deleted player takes her round and paper keys with her
+  const dp = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
+    PLAYERS.list.push({ id: 'pz', name: 'Zz', mascot: 'cat', lang: 'bg' }); ['', '.round', '.paper'].forEach(x => localStorage.setItem('crossingten.v3.pz' + x, '{}'));
+    $('who').click(); await tick(); document.querySelector('.pedit[data-edit="pz"]').click(); await tick(); $('pDelete').click(); $('pDelete').click(); await tick();
+    const out = { left: ['', '.round', '.paper'].filter(x => localStorage.getItem('crossingten.v3.pz' + x) !== null), gone: !PLAYERS.list.some(p => p.id === 'pz') };
+    $('closePlayers').click(); await tick(); newRound(); await tick(); return JSON.stringify(out); })()`) || '{}');
+  expect(dp.gone && dp.left.length === 0, 'a deleted player left her keys in storage: ' + JSON.stringify(dp));
+  // saving the profile form writes only what it edits: a sync that changed resetAt while the form was open keeps its value
+  const pe = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)); PLAYER.resetAt = 111;
+    $('who').click(); await tick(); document.querySelector('.pedit[data-edit="' + PLAYER.id + '"]').click(); await tick();
+    PLAYER.resetAt = 777; PLAYER.dropped = ['zz']; $('pSave').click();
+    const me = JSON.parse(localStorage.getItem('crossingten.players')).list.find(p => p.id === PLAYER.id); return JSON.stringify({ resetAt: me.resetAt, dropped: me.dropped }); })()`) || '{}');
+  expect(pe.resetAt === 777 && pe.dropped && pe.dropped[0] === 'zz', 'saving the profile wrote stale sync fields back: ' + JSON.stringify(pe));
+  await settle();   // saving the current player reloads the page
+  // Today's data is worked out once for the two paints of one opening (it replays the notebook's seeds and walks every round), and
+  // again as soon as a round is logged or the next paper's date is set
+  const tdm = JSON.parse(await run(`(() => { const a = todayData(), b = todayData(), out = { same: a === b };
+    const keep = LOCAL.rounds, was = PLAYER.next; LOCAL.rounds = keep.concat([Object.assign({}, keep[keep.length - 1], { id: 'tdm', ts: Date.now() })]); out.round = todayData() !== a;
+    const c = todayData(); PLAYER.next = { at: 'mbg-autumn', date: '2099-01-01' }; out.next = todayData() !== c && !!todayData().paper; PLAYER.next = was; LOCAL.rounds = keep; return JSON.stringify(out); })()`) || '{}');
+  expect(tdm.same && tdm.round && tdm.next, 'todayData is not kept between its two paints, or is kept past a change: ' + JSON.stringify(tdm));
+  // the grown-ups' lists find a round's earlier misses and a level's later tasks through an index of the log: the same answers as scanning it
+  const ix = JSON.parse(await run(`(() => { const keep = LOCAL.rounds, lv = [2, 5, 8, 10, 11], sh = [null, 'a', 'b']; let s = 7; const rnd = n => (s = (s * 1103515245 + 12345) % 2147483648) % n;
+    LOCAL.rounds = Array.from({ length: 80 }, (_, k) => ({ id: 'ix' + k, ts: 1e12 + k * 1e6 + rnd(5) * 1e5, day: '', level: 2, n: 6, firstTry: 3, t: Array.from({ length: 6 }, () => [lv[rnd(5)], sh[rnd(3)], 1, null, [1, 0, -1][rnd(3)], 5]) }));
+    const oldMissedIn = (r, [l, shape]) => LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === l && (e[1] ?? null) === (shape ?? null) && e[4] !== 1)).pop();
+    const oldSince = (l, ts) => LOCAL.rounds.reduce((a, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === l && e[4] !== -1){ a.n++; if(e[4] === 1) a.ok++; } }); return a; }, { n: 0, ok: 0 });
+    let bad = 0, n = 0; LOCAL.rounds.forEach(r => r.t.forEach(e => { n++; if(missedIn(r, e) !== oldMissedIn(r, e) || JSON.stringify(since(e[0], r.ts)) !== JSON.stringify(oldSince(e[0], r.ts))) bad++; }));
+    LOCAL.rounds = keep; return JSON.stringify({ bad, n }); })()`) || '{}');
+  expect(ix.n === 480 && ix.bad === 0, 'the log index answers differently from scanning the log: ' + JSON.stringify(ix));
+  // a paper date kept on this device by an older build (in the settings) moves into the player's record, where sync carries it
+  await run(`(() => { const v = JSON.parse(localStorage.getItem(LS)); v.next = { at: 'mbg-autumn', date: '2098-01-01' }; localStorage.setItem(LS, JSON.stringify(v));
+    const p = JSON.parse(localStorage.getItem('crossingten.players')); delete p.list.find(x => x.id === PLAYER.id).next; localStorage.setItem('crossingten.players', JSON.stringify(p)); return ''; })()`);
+  await cmd('Page.reload'); await settle();
+  const mn = await page('{ player: PLAYER.next && PLAYER.next.date, local: LOCAL.next === undefined, stored: !JSON.parse(localStorage.getItem(LS)).next }');
+  expect(mn.player === '2098-01-01' && mn.local, 'a paper date in the old settings did not move into the player: ' + JSON.stringify(mn));
+  await run("PLAYER.next = null; localStorage.setItem('crossingten.players', JSON.stringify(PLAYERS)); ''");
+  // a screen reader: marks drawn from spans have a role to carry their label (a bare span's aria-label is ignored), the feedback is announced,
+  // and focus goes back to the button that opened a sheet once it closes
+  const ax = JSON.parse(await run(`(async () => { try { const tick = (ms = 60) => new Promise(r => setTimeout(r, ms)), out = {};
+    newRound(); await tick(); $('levelPill').focus(); $('levelPill').click(); await tick();
+    out.bare = [...document.querySelectorAll('#picker span[aria-label]:not([role]), #picker div[aria-label]:not([role]), #dots:not([role]), #stars:not([role]), #side span[aria-label]:not([role])')].map(e => e.className || e.id);
+    $('tabToday').click(); await tick(); out.bareToday = [...document.querySelectorAll('#today span[aria-label]:not([role])')].map(e => e.className);
+    newRound(); await tick();
+    $('levelPill').focus(); $('levelPill').click(); await tick(); $('closePick').click(); await tick(); out.back = document.activeElement === $('levelPill'); out.live = $('hint').getAttribute('aria-live');
+    return JSON.stringify(out); } catch(e){ return JSON.stringify({ err: String(e) }); } })()`) || '{}');
+  expect(ax.err === undefined && ax.bare.length === 0 && ax.bareToday.length === 0 && ax.back && ax.live === 'polite', 'accessibility: ' + JSON.stringify(ax));
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){

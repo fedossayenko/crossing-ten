@@ -13,6 +13,7 @@ export function seeded(seed, fn){
   try { return fn(); } finally { Math.random = real; }
 }
 export const $ = s => document.getElementById(s);   // the page's elements by id (only called in the browser)
+export const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));   // text into HTML
 export const KIND = {};                     // kinds/*.js register { draw, eq, why } here
 // Task text in the player's language: tr('Колко са?', 'Скільки їх?'). Bulgarian is the
 // original and the fallback; anything not yet translated simply stays Bulgarian. Both

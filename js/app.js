@@ -1,4 +1,4 @@
-import { $, KIND, rnd, seeded, shuffle } from './core.js';
+import { $, KIND, esc, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, openAns, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
@@ -6,8 +6,8 @@ import { ARCHIVE, keeps, unionRounds, unmix } from './archive.js';
 import { dailyPlan } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
-import { choiceHtml, letterOf, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, startComp, startCompete } from './compete.js';
+import { choiceHtml, withChoices } from './choice.js';
+import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -31,9 +31,9 @@ const routeOfAddress = () => { const r = (location.hash.match(/^#\/([\w-]+)/) ||
 // The screen showing is kept here, not read back from the address: a browser may drop a history change
 // (Chrome does past a few hundred in seconds), and the screen must not follow it there.
 let ROUTE = routeOfAddress();
-export const routeNow = () => ROUTE;
+const routeNow = () => ROUTE;
 const TABBED = ['today', 'levels', 'badges', 'parents'];   // the sections the tab bar (sidebar on iPad) moves between
-export function applyRoute(){
+function applyRoute(){
   const r = ROUTES[ROUTE];
   Object.values(ROUTES).forEach(x => { if(x && x !== r) $(x.sheet).hidden = true; });
   if(r){ r.show(); $(r.sheet).hidden = false; }
@@ -65,18 +65,22 @@ export const S = { level:2, qs:[], i:0, parts:[''], at:0, tries:0, revealed:fals
 
 /* ---------- local log ---------- */
 const LS = roundsKey(PLAYER);
-export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:false, next:/** @type {{ at:string, date:string } | undefined} */ (undefined) };
+export let LOCAL = { rounds:[], muted:false, n:10, calm:false, whys:0, choice:false };
 // a competition under way (js/compete.js), and its clock
 export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
+// the next paper's date was kept here, on one device; it is in the player's record now (PLAYER.next), which sync carries to the others
+if(LOCAL.next){ if(PLAYER.next === undefined){ PLAYER.next = LOCAL.next; PLAYER.updated = Date.now(); savePlayers(); } delete LOCAL.next; }
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
 // localStorage holds the settings and the last 400 rounds; the archive (js/archive.js) holds them all.
-// Full storage keeps fewer recent rounds here rather than losing the settings.
+// Full storage keeps fewer recent rounds here rather than losing the settings; if even 100 do not fit, the copy
+// already there stays as it was (every round is in the archive too) and a grown-up is told, on the line under Parents.
 export function saveStore(key, store){
-  for(const keep of [400, 100, 0]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: keep ? store.rounds.slice(-keep) : [] }))); return; } catch(e){}
+  for(const keep of [400, 100]) try { localStorage.setItem(key, JSON.stringify(Object.assign({}, store, { rounds: store.rounds.slice(-keep) }))); return; } catch(e){}
+  try { $('synced').textContent = t('storageFull'); } catch(e){}
 }
 export function saveLocal(){ saveStore(LS, LOCAL); }
 export const lsRounds = p => { try { return (JSON.parse(localStorage.getItem(roundsKey(p))) || {}).rounds || []; } catch(e){ return []; } };
@@ -116,6 +120,8 @@ function actx(){
   if(AC.state === 'suspended') AC.resume();
   return AC;
 }
+// made on the first touch or key anywhere, not on the first key of a task: building it costs about 75 ms, a tap she would feel
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => actx(), { once: true, capture: true }));
 function tone(freq, at, dur, peak, type){
   const c = actx(); if(!c) return;
   const o = c.createOscillator(), g = c.createGain();
@@ -177,8 +183,8 @@ export function statsFrom(rounds){
   const sorted = Object.keys(days).sort();
   let streakBest = 0, run = 0, prev = null;
   sorted.forEach(d => {
-    const t = Date.parse(d + 'T12:00:00');
-    run = (prev !== null && t - prev === 86400000) ? run+1 : 1;
+    const t = Date.parse(d + 'T00:00:00Z') / 86400000;   // a day number: local noons are 23 or 25 hours apart when the clocks change
+    run = (prev !== null && t - prev === 1) ? run+1 : 1;
     if(run > streakBest) streakBest = run;
     prev = t;
   });
@@ -281,10 +287,9 @@ function fidget(kind){
   }, 7000 + rnd(7000));
 })();
 export function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
-function catFor(score, total){ return score >= total - 2 ? 'happy' : score >= total/2 ? 'idle' : 'sad'; }
 
 // How a round ends. The bottom tier is encouraging, not sad: the child who scores
-// low is the one who most needs to come back tomorrow. What each says is tiers[i] in js/i18n.js.
+// low is the one who most needs to come back tomorrow.
 const TIERS = [
   { min:1,   mood:'party',      tune:[523,659,784,1047,1319,1047,1319,1568], gap:.11 },
   { min:.8,  mood:'dance',     tune:[523,659,784,1047,880,988,1175],        gap:.13 },
@@ -332,7 +337,7 @@ const plainQ = q => q.own ? q : (({ options, pick, pts, ...rest }) => rest)(q); 
 // another level (a paper's redo, the notebook) is logged under its own level and seed
 // comp: a competition's own tasks, which come with their options and points already
 export function newRound(qs, comp){
-  if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
+  if(!comp){ COMP = null; clearInterval(compTick); try { localStorage.removeItem(PS); } catch(e){} setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   const wasDaily = S.daily;
@@ -410,11 +415,11 @@ export function show(){
 }
 // The round so far, kept at the start of every task: an iPad drops a home-screen app it is not
 // showing and loads it afresh, and a new build reloads it too — she comes back to the same task.
-// ponytail: a competition is not kept (its clock would need restoring); it ends with a reload.
-const RS = LS + '.round';
+// A competition is kept the same way, under its own key (js/compete.js paperSnap): its clock is real time, so it goes on.
+const RS = LS + '.round', PS = LS + '.paper';
 function saveRound(){
   try {
-    if(COMP) localStorage.removeItem(RS);
+    if(COMP){ localStorage.removeItem(RS); localStorage.setItem(PS, JSON.stringify(paperSnap())); }
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
       slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, asks:S.asks, ms:S.ms, after:S.after } }));
   } catch(e){}
@@ -608,7 +613,7 @@ const STAR = on => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6
   (on ? 'var(--warm)' : 'none') + '" stroke="' + (on ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 export function finish(){
   clearTimers(); clock();
-  try { localStorage.removeItem(RS); } catch(e){}
+  try { localStorage.removeItem(RS); localStorage.removeItem(PS); } catch(e){}
   const n = S.qs.length, got = S.results.filter(Boolean).length;
   const tier = tierFor(got, n);
   const lv = LEVELS.find(l => l.id === S.level) || { eq:'' };
@@ -672,28 +677,9 @@ export function finish(){
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
 
-  // a paper: task by task, and against her best paper before this one
+  // a paper: task by task, and against her best paper before this one (js/compete.js)
   $('compWrap').hidden = !COMP; $('compBest').hidden = true;
-  if(COMP){
-    const n = k => S.qs.filter((_, j) => k(j)).length, right = n(j => S.results[j]), none = n(j => S.skipped[j]);
-    $('compTable').innerHTML = '<div class="clegend">' + t('compLegend', right, S.qs.length - right - none, none) + '</div>' + S.qs.map((q, k) => {
-      const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
-      const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
-        t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
-      return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
-        '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
-    }).join('');
-    // a row opens its task and how it is solved
-    $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
-      const open = b.getAttribute('aria-expanded') !== 'true';
-      b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
-    });
-    const prev = bestComp(COMP.from);
-    if(prev){
-      $('compBest').hidden = false;
-      $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
-    }
-  }
+  if(COMP) paintPaperResult(pts, max);
 
   const before = earnedSet(LOCAL.rounds), was = mastery(LOCAL.rounds)[S.level];
   const now = Date.now();
@@ -895,22 +881,35 @@ export function renderParent(){
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.daily ? t('dailyName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
-const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
-  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
+const toPractiseNote = r => { const n = toPractise(r); return n ? t('toPractise', n) : ''; };
+const roundMeta = r => [dayAgo(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
+  r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' ? toPractiseNote(r) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
 // A round of her mistakes: each task's earlier round that missed one like it (its level and shape; the latest such), or none
 // for a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from.
 // Like it, not the same: a mistake is practised with other numbers (twin)
-const missedIn = (r, [lv, shape]) => LOCAL.rounds.filter(x => x.ts < r.ts && Array.isArray(x.t) && x.t.some(e => e[0] === lv && (e[1] ?? null) === (shape ?? null) && e[4] !== 1)).pop();
+// Both are asked once per task of every row of a list, so they read an index of the rounds (kept until a round is added or the log is replaced), not the log
+let LOG = null;
+const logIndex = () => {
+  const rs = LOCAL.rounds, last = rs[rs.length - 1];
+  if(LOG && LOG.rs === rs && LOG.n === rs.length && LOG.last === last) return LOG;
+  const missed = new Map(), tasks = new Map();   // 'level|shape' → the rounds that missed one like it, in order; level → [ts, right first time] of each of its tasks
+  rs.forEach(x => { if(!Array.isArray(x.t)) return;
+    const keys = new Set();
+    x.t.forEach(e => { if(e[4] !== 1) keys.add(e[0] + '|' + (e[1] ?? '')); if(e[4] !== -1){ if(!tasks.has(e[0])) tasks.set(e[0], []); tasks.get(e[0]).push([x.ts, e[4] === 1]); } });
+    keys.forEach(k => { if(!missed.has(k)) missed.set(k, []); missed.get(k).push(x); }); });
+  return LOG = { rs, n: rs.length, last, missed, tasks };
+};
+const missedIn = (r, [lv, shape]) => { const l = logIndex().missed.get(lv + '|' + (shape ?? '')) || []; for(let k = l.length - 1; k >= 0; k--) if(l[k].ts < r.ts) return l[k]; };
 const fixSum = r => {
   if(r.level !== 'mix') return '';
   const old = r.t.map(e => [e, missedIn(r, e)]).filter(x => x[1]), from = [...new Set(old.map(x => x[1]))];
   return !old.length ? '' : t('fixedOf', old.filter(x => x[0][4] === 1).length, old.length,
-    from.length > 1 ? t('rounds', from.length) : roundName(from[0]) + ', ' + ago(from[0].ts) + ' ' + new Date(from[0].ts).toTimeString().slice(0, 5));
+    from.length > 1 ? t('rounds', from.length) : roundName(from[0]) + ', ' + dayAgo(from[0].ts) + ' ' + new Date(from[0].ts).toTimeString().slice(0, 5));
 };
 // what «Провери» did on a paper: the tasks she opened in it, the answers she changed, the ones that became right
 const checkSum = r => { const a = r.t.filter(e => e[7] >= 4); return a.length ? t('checkSum', a.length, a.filter(e => e[7] > 4).length, a.filter(e => e[7] === 5).length) : ''; };
 // A level after a round: its tasks in her later rounds, and how many of them right first time
-const since = (lv, ts) => LOCAL.rounds.reduce((s, x) => { if(x.ts > ts && Array.isArray(x.t)) x.t.forEach(e => { if(e[0] === lv && e[4] !== -1){ s.n++; if(e[4] === 1) s.ok++; } }); return s; }, { n: 0, ok: 0 });
+const since = (lv, ts) => (logIndex().tasks.get(lv) || []).reduce((s, [at, ok]) => { if(at > ts){ s.n++; if(ok) s.ok++; } return s; }, { n: 0, ok: 0 });
 // the levels a round missed (or never reached) that she has not played since
 const toPractise = r => new Set(r.t.filter(e => e[4] !== 1 && !since(e[0], r.ts).n).map(e => e[0])).size;
 const roundRow = r => '<button class="nbitem rrow" data-r="' + esc(r.id) + '"><span class="eq">' + esc(roundName(r)) + '</span><span class="smeta">' + roundMeta(r) + '</span></button>';
@@ -1073,7 +1072,7 @@ export function notebookData(now = Date.now()){
 export function fixKind(kind, check){
   const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
   if(!levels.length) return;
-  const set = check ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
+  const set = check || !g ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
   newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels)));
   S.redo = check ? { check: kind } : { fix: kind };
 }
@@ -1134,8 +1133,20 @@ function nextBadge(st){
 }
 // Monday 00:00 of this week, local time
 const weekStart = now => { const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return +d; };
+// Opening Today draws it and the sidebar's week from this, twice, and it replays the notebook's seeds and walks every round
+// (about 30 ms on 500 rounds): kept while the rounds, the day (to the minute: what is due moves with the clock), the player
+// and the round under way are as they were.
+let TODAY = null;
 export function todayData(){
-  const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), now = Date.now(), day = dayKey(now);
+  const now = Date.now(), key = [LOCAL.rounds.length, (LOCAL.rounds[LOCAL.rounds.length - 1] || {}).id, Math.floor(now / 60000), LANG, PLAYER.id, PLAYER.name, PLAYER.mascot, PLAYER.grade,
+    JSON.stringify(PLAYER.next), [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER].join(), S.level, S.i, S.qs.length, !!COMP, midRound()].join('|');
+  if(TODAY && TODAY.rounds === LOCAL.rounds && TODAY.key === key) return TODAY.data;
+  const data = buildToday(now);
+  TODAY = { rounds: LOCAL.rounds, key, data };
+  return data;
+}
+function buildToday(now){
+  const m = mastery(LOCAL.rounds), st = statsFrom(LOCAL.rounds), day = dayKey(now);
   const last = LOCAL.rounds[LOCAL.rounds.length - 1], lastLvl = last && LEVELS.find(l => l.id === last.level);
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
   const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), desc: levelDesc(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
@@ -1187,17 +1198,18 @@ $('sideBtn').onclick = () => { const open = !document.body.classList.contains('s
 const paperAt = () => [...new Set(LEVELS.flatMap(l => l.papers).filter(p => p !== 'basics').map(p => compOf(p) === 'mbg' ? 'mbg-' + roundOf(p) : compOf(p)))];
 const paperAtName = at => t('comps')[at.split('-')[0]] + (at.includes('-') ? ' ' + t('mbgRounds')[at.split('-')[1]] : '');
 function paintPaperSet(){
-  const nx = LOCAL.next || { at:'', date:'' };
+  const nx = PLAYER.next || { at:'', date:'' };
   $('paperAt').innerHTML = '<option value="">' + t('noPaper') + '</option>' + paperAt().map(a => '<option value="' + a + '"' + (a === nx.at ? ' selected' : '') + '>' + paperAtName(a) + '</option>').join('');
   $('paperDate').value = nx.date || ''; $('paperDate').hidden = !nx.at;
 }
 $('paperAt').onchange = $('paperDate').onchange = () => {
-  LOCAL.next = $('paperAt').value ? { at: $('paperAt').value, date: $('paperDate').value } : undefined; saveLocal(); paintPaperSet();
+  PLAYER.next = $('paperAt').value ? { at: $('paperAt').value, date: $('paperDate').value } : null;   // null, not deleted: a sync copies fields over, it never removes one
+  PLAYER.updated = Date.now(); savePlayers(); syncSoon(); paintPaperSet();
 };
 // The countdown on Today: how many days to it, and how ready she is — the levels its papers ask (her grade) learned,
 // each counting 1 + how many dated papers ask it. Nothing once the day has passed or no date is set.
 export function nextPaper(){
-  const nx = LOCAL.next;
+  const nx = PLAYER.next;
   if(!nx || !nx.at || !/^\d{4}-\d\d-\d\d$/.test(nx.date || '')) return null;
   const [y, mo, d] = nx.date.split('-').map(Number), when = new Date(y, mo - 1, d), today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -1250,8 +1262,6 @@ $('reset').onclick = () => {
 // 'mbg-winter-2024-2' is the paper 'mbg-winter-2024' for the 2nd grade; its names are papers/paperTag in js/i18n.js
 const paperSrc = p => p.replace(/-\d+$/, ''), paperGrade = p => +p.slice(p.lastIndexOf('-') + 1);
 const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paperSrc(p)], paperGrade(p));
-// the picker's filter chip: the short tag and the grade, "Зима 2024 · 2 клас"; the full name is its tooltip
-const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), g = groupOf(l);
   // today's practice names no level: which kind a task is, she has to see herself, as on a paper
@@ -1261,7 +1271,7 @@ function paintPill(){
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
-function ago(ts){
+function dayAgo(ts){
   const today = dayKey(Date.now()), then = dayKey(ts);
   if(today === then) return t('today');
   const days = Math.round((Date.parse(today + 'T12:00:00') - Date.parse(then + 'T12:00:00')) / 86400000);
@@ -1358,14 +1368,14 @@ const myGrade = () => PLAYER.grade || 2;
 // One level as a row — the levels page and the list beside the task (a wide screen) draw the same one.
 // How hard it is, on the rubric in the README: operations, reading, search, number size and how easy
 // the trap is to miss — five dots. Its status: learned, new, or right first time on its last round.
-const hard = l => '<span class="dots5" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
+const hard = l => '<span class="dots5" role="img" title="' + t('difficulty', l.d) + '" aria-label="' + t('difficulty', l.d) + '">' +
   [1,2,3,4,5].map(k => '<i class="' + (k <= l.d ? 'on' : '') + '"></i>').join('') + '</span>';
 const sym = l => /[А-Яа-яЁёЇїІіЄєA-Za-z]{2}/.test(levelName(l)) ? '' : ' sym';   // "42 − 17" is set like a sum
 // Her last three answers to it in papers, ✓ or ✗, oldest first: one task a paper, so what happened there, not a grade.
 // Practice can read 100% on a level a paper found wrong (no hint there, no second try): the mark says so beside it.
 function paperMark(h){
   const p = h ? h.paper : [], k = p.filter(x => x.ok).length;
-  return p.length ? '<span class="ppr' + (p[p.length - 1].ok ? '' : ' no') + '" title="' + t('inPapers', k, p.length) + '" aria-label="' + t('inPapers', k, p.length) + '">' +
+  return p.length ? '<span class="ppr' + (p[p.length - 1].ok ? '' : ' no') + '" title="' + t('inPapers', k, p.length) + '" role="img" aria-label="' + t('inPapers', k, p.length) + '">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + GLYPH.stopwatch[1] + '"/></svg>' +
     p.slice(-3).map(x => '<i class="' + (x.ok ? 'ok">✓' : 'no">✗') + '</i>').join('') + '</span>' : '';
 }
@@ -1375,11 +1385,11 @@ function paperMark(h){
 const toFix = (h, x) => { const p = h && h.paper[h.paper.length - 1];
   return !!p && !p.ok && !(x && x.at > p.ts && x.lastRate >= 0.8); };
 function levelStatus(l, m, hist){
-  if(m[l.id] && m[l.id].done) return '<span class="tick" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
+  if(m[l.id] && m[l.id].done) return '<span class="tick" role="img" aria-label="' + t('learned') + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
   const h = hist[l.id];
   if(!h || !h.last) return h || !LOCAL.rounds.length ? '' : '<span class="isnew">' + t('isNew') + '</span>';   // before her first round every level is new: no tag on each; met in a paper, it is not new
   const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
-  return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + ago(h.last.ts) + '</i></span>';
+  return '<span class="stat" role="img" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + dayAgo(h.last.ts) + '</i></span>';
 }
 const levelRow = (l, m, hist, tags = '') => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
   '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + tags + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
@@ -1537,7 +1547,7 @@ export function compFocus(){
 }
 const srcName = (grade, comp, round) => t('src', comp ? t('comps')[comp] + (round ? ' ' + t('mbgRounds')[round] : '') : t('allComps'), grade);
 // where a paper came from, by its round's `from` (compFocus's key): a year's paper, the forecast, or a grade's focus ('g2-mbg-autumn')
-const fromName = k => !k ? '' : k === 'forecast' ? t('papers')['mbg-autumn-forecast2026'] : /^g\d/.test(k) ? srcName(+k[1], k.split('-')[1], k.split('-')[2]) : paperName(k);
+export const fromName = k => !k ? '' : k === 'forecast' ? t('papers')['mbg-autumn-forecast2026'] : /^g\d/.test(k) ? srcName(+k[1], k.split('-')[1], k.split('-')[2]) : paperName(k);
 const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
 const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&
   (!PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND)) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
@@ -1562,7 +1572,6 @@ paintPill();
    Tap the mascot to change player. Switching reloads the page: every setting, the log,
    the language and the mascot then come up exactly as a fresh launch would. */
 // function declarations, not consts: the side panel draws while the module is still loading (a saved round resumed)
-function esc(v){ return String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
 function playerName(p){ return p.name || t('playerN', PLAYERS.list.indexOf(p) + 1); }
 const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
 const FLAME = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 .5-3-1-5 1-9.5z"/></svg>';
@@ -1595,7 +1604,7 @@ function paintPlayers(){
   });
   document.querySelectorAll('.pedit').forEach(b => b.onclick = () => openEdit(PLAYERS.list.find(p => p.id === b.dataset.edit)));
   $('pAdd').onclick = () => openEdit(null);
-  if(typeof paintSync === 'function') paintSync();
+  paintSync();
   $('playerEdit').hidden = true;
 }
 // the players' screen, or drawn again when it is already showing (after an edit)
@@ -1640,7 +1649,7 @@ function paintEdit(){
 }
 function paintWelcome(){
   $('editSub').hidden = !WELCOME;
-  $('welcomeJoin').hidden = !WELCOME || typeof SYNC_ON === 'undefined' || !SYNC_ON;
+  $('welcomeJoin').hidden = !WELCOME || !SYNC_ON;
   if(!WELCOME) { $('pSave').textContent = t('save'); return; }
   $('editTitle').textContent = t('welcome');
   $('editSub').textContent = t('welcomeSub');
@@ -1650,7 +1659,8 @@ $('pSave').onclick = () => {
   EDIT.name = $('pName').value.trim().slice(0, 20);
   EDIT.updated = Date.now();
   const old = PLAYERS.list.find(p => p.id === EDIT.id);
-  if(old) Object.assign(old, EDIT); else PLAYERS.list.push(EDIT);
+  if(old) Object.assign(old, { name: EDIT.name, mascot: EDIT.mascot, lang: EDIT.lang, grade: EDIT.grade, updated: EDIT.updated });   // only what this form edits: a sync may have changed the rest (resetAt, dropped) since it opened
+  else PLAYERS.list.push(EDIT);
   savePlayers();
   // her settings travel with her log: calmer animation (sound is set under Parents)
   const kept = storeOf(EDIT);
@@ -1670,7 +1680,7 @@ $('pDelete').onclick = () => {
   clearTimeout(delArmed); delArmed = null;
   PLAYERS.list = PLAYERS.list.filter(p => p.id !== EDIT.id);
   PLAYERS.gone.push({ id: EDIT.id, updated: Date.now() });   // so the other devices delete her too
-  try { localStorage.removeItem(roundsKey(EDIT)); } catch(e){}
+  try { const k = roundsKey(EDIT); [k, k + '.round', k + '.paper'].forEach(x => localStorage.removeItem(x)); } catch(e){}
   ARCHIVE.drop(EDIT.id); delete ARCH[EDIT.id];
   if(EDIT.id === PLAYER.id) switchTo(PLAYERS.list[0].id); else { savePlayers(); openPlayers(); }
 };
@@ -1686,11 +1696,13 @@ $('card').addEventListener('click', () => { if(S.settled && !(COMP && COMP.check
 // A sheet up: the task under it is out of reach (no Tab into the hidden keys), and focus starts in the sheet
 // that just opened, where a keyboard or a screen reader should be.
 const SHEETS = /** @type {HTMLElement[]} */ ([...document.querySelectorAll('.sheet')]);
-let shown = new Set();
+let shown = new Set(), opener = null;   // opener: what had focus when the first sheet opened, to give focus back when the last closes
 const paintInert = () => {
   const open = new Set(SHEETS.filter(s => !s.hidden));
   /** @type {HTMLElement} */ (document.querySelector('.app')).inert = open.size > 0;
+  if(open.size && !shown.size && document.activeElement !== document.body) opener = document.activeElement;
   open.forEach(s => { if(!shown.has(s)){ s.tabIndex = -1; s.focus({ preventScroll: true }); } });
+  if(!open.size && shown.size && opener){ if(opener.isConnected && !/** @type {HTMLElement} */ (opener).closest('[hidden]')) /** @type {HTMLElement} */ (opener).focus({ preventScroll: true }); opener = null; }
   shown = open;
 };
 const sheetWatch = new MutationObserver(paintInert);
@@ -1702,7 +1714,7 @@ document.addEventListener('keydown', e => {
     if(b) b.click();
     return;
   }
-  if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input')) return;
+  if(document.querySelector('.sheet:not([hidden])') || e.target.closest('input') || e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;   // a held key is one press; ⌘5 is no answer
   if(!$('choices').hidden){   // А/Б/В/Г: a letter picks (Cyrillic or Latin), Enter moves on; a typed digit is no answer here
     const k = e.key.toUpperCase(), id = Math.max('АБВГДЕ'.indexOf(k), 'ABCDEF'.indexOf(k));
     const b = id >= 0 && /** @type {HTMLButtonElement | null} */ ($('choices').querySelector('.ch[data-o="' + id + '"]'));
@@ -1748,6 +1760,10 @@ ARCHIVE_READY.then(() => {
   }
   // a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
   (() => {
+    try {   // a paper under way first: its hour goes on (over, if the hour has passed: what she answered counts)
+      const paper = JSON.parse(localStorage.getItem(PS));
+      if(paper && Date.now() < paper.end + 12*3600e3 && paper.tasks.every(([lvl]) => LEVELS.some(l => l.id === lvl))){ resumeComp(paper); return; }
+    } catch(e){}
     try {
       const kept = JSON.parse(localStorage.getItem(RS));
       if(kept && Date.now() - kept.at < 12*3600e3 && LEVELS.some(l => l.id === kept.s.level) && kept.s.i < kept.s.qs.length){
@@ -1770,8 +1786,10 @@ if((matchMedia('(display-mode: standalone)').matches || navigator.standalone) &&
 // A home-screen app, or a tab, stays open for days. At the start of a round, and coming back
 // to the screen between rounds, it picks up a newer build, told by the page's Last-Modified
 // (no header: nothing happens). Nothing is lost: it only reloads before a key is pressed.
+let buildChecked = 0;   // at most one look every 10 minutes: each fetches the whole page (36 KB, never from cache)
 function newerBuild(){
-  if(document.visibilityState !== 'visible' || midRound() || COMP) return;
+  if(document.visibilityState !== 'visible' || midRound() || COMP || Date.now() - buildChecked < 600000) return;
+  buildChecked = Date.now();
   if(BUILT_STAMP) fetch(location.pathname, { cache:'no-cache' }).then(r => r.text()).then(html => {
     const m = html.match(/<meta name="build" content="([^"]+)">/);
     if(m && Date.parse(m[1]) > builtAt()){ chose(); location.reload(); }
@@ -1781,6 +1799,12 @@ function newerBuild(){
   }).catch(() => {});
 }
 document.addEventListener('visibilitychange', newerBuild);
+// An app left open overnight comes back on yesterday's Today: a new day repaints the screen showing
+let shownDay = dayKey(Date.now());
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState !== 'visible' || dayKey(Date.now()) === shownDay) return;
+  shownDay = dayKey(Date.now()); applyRoute();
+});
 // Offline play, and the same build everywhere.
 if('serviceWorker' in navigator && window.isSecureContext)
   navigator.serviceWorker.register('sw.js').catch(() => {});
@@ -1795,5 +1819,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

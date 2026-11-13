@@ -6,18 +6,18 @@
    where its tasks come from and how it goes before the clock starts.
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
-   ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
-import { $, rnd } from './core.js';
-import { accepts, answers, drawQ, openAns, seededRaw, slipOf } from './questions.js';
+   A reload keeps the paper (paperSnap, resumeComp). */
+import { $, esc, rnd, seeded } from './core.js';
+import { accepts, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipOf, why } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, go, groupOf, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, setComp, sfx, show } from './app.js';
 import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
-export const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
+const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
 const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kind whose answer is a word keeps its own А/Б/В/Г
 // The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
 // Nor a level only Аз и числата asks, a school contest far easier than an olympiad paper, unless that contest is the focus.
@@ -59,20 +59,36 @@ export const bestComp = from => LOCAL.rounds.filter(r => r.level === 'comp' && r
 export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 export const compLeft = () => compTime(COMP.end - Date.now());
 
+// The paper under way, kept at every task (app.js saveRound) so a reload, or an iPad dropping the app, does not end it:
+// its tasks by level and seed, her answers, the clock's start and end. The clock is real time: it ran while the app was away.
+export const paperSnap = () => ({ at: Date.now(), tasks: S.qs.map(q => [q.lvl, q.seed]), paper: COMP.paper || '', from: COMP.from, t0: COMP.t0, end: COMP.end,
+  ans: COMP.ans, picked: COMP.picked, queue: COMP.queue, skipped: [...(COMP.skipped || [])], looked: [...(COMP.looked || [])], first: COMP.first,
+  done: !!COMP.done, check: !!COMP.check, i: S.i, ms: S.ms });
+// The paper again from its snapshot, on the task and the screen she left it on; over if its hour has gone by
+export function resumeComp(s){
+  const qs = s.tasks.map(([lvl, seed]) => Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
+  run({ paper: s.paper, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
+  qs.forEach((q, k) => { const a = s.ans[k]; if(a){ S.results[k] = accepts(q, a); if(!S.results[k]){ S.typed[k] = a.join(' · '); S.slip[k] = slipOf(q, a); } } });
+  S.ms = s.ms || []; S.i = s.i;
+  if(Date.now() >= s.end) compEnd(); else if(s.check) compCheck(); else show();
+}
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
 export function startComp(paper){
   const f = compFocus(), qs = compTasks(paper, f), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
+  run({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, qs);
+}
+function run(c, qs){
   clearInterval(compTick);
-  setComp({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
+  setComp(c, setInterval(() => {
     if(!COMP){ clearInterval(compTick); return; }
     const c = $('compClock');
     if(c) c.textContent = compLeft();
     if(Date.now() >= COMP.end) compEnd();
   }, 1000));
   newRound(qs, true);
-  $('levelName').textContent = paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
-  $('sub').textContent = paper ? t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle') : f.name;   // where its tasks come from
+  $('levelName').textContent = c.paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
+  $('sub').textContent = c.paper ? t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle') : fromName(c.from);
 }
 // Before the clock: where the tasks come from, how the paper goes, her best from the same place; Start starts it.
 let NEXT = '';   // the paper the sheet is for: 'forecast', or one drawn from the focus
@@ -127,7 +143,7 @@ function compNext(){
 // Every task has an answer: before it is handed in, her answers to look over, as on paper, where she can turn back
 // to any task. A tap opens it with her answer in it, to keep (back to the list) or change (✓). The quick ones are
 // marked: her halfway numbers on 2026-10-18 each took under a minute. «Предай» hands it in; so does the clock.
-export function compCheck(){
+function compCheck(){
   clearTimers(); S.settled = true; clock();   // the last task's time stops here
   COMP.check = COMP.done = true;
   COMP.first = COMP.first || Object.assign({}, COMP.ans);   // her answers as the check found them
@@ -156,6 +172,27 @@ export function compEnd(){
   finish();
 }
 
+// The result sheet of a paper: her tasks one by one (a row opens its task and how it is solved), and against her best paper before this one
+export function paintPaperResult(pts, max){
+  const n = k => S.qs.filter((_, j) => k(j)).length, right = n(j => S.results[j]), none = n(j => S.skipped[j]);
+  $('compTable').innerHTML = '<div class="clegend">' + t('compLegend', right, S.qs.length - right - none, none) + '</div>' + S.qs.map((q, k) => {
+    const st = S.skipped[k] ? 'skip' : S.results[k] ? 'ok' : 'no';
+    const said = st === 'ok' ? '✓' : st === 'skip' ? t('notReached') : q.options && COMP.picked[k] !== undefined ?
+      t('chose', letterOf(COMP.picked[k])) + ' → ' + letterOf(q.pick) : esc(S.typed[k] || '') + ' → ' + answers(q).join(' · ');
+    return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + groupOf(LEVELS.find(l => l.id === q.lvl)) +
+      '</span><span class="co">' + said + '</span><span class="cp">' + mbgPts(q, COMP.ans[k]) + '</span></button><div class="why" hidden><div class="eq">' + eqText(q) + '</div>' + why(q, true) + '</div>';
+  }).join('');
+  // a row opens its task and how it is solved
+  $('compTable').querySelectorAll('.crow').forEach(b => b.onclick = () => {
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    b.setAttribute('aria-expanded', String(open)); b.nextElementSibling.hidden = !open;
+  });
+  const prev = bestComp(COMP.from);
+  if(prev){
+    $('compBest').hidden = false;
+    $('compBest').textContent = pts / max > prev.pts / prev.max ? t('compRecord', pts, max, prev.pts + ' / ' + prev.max) : t('compBest', prev.pts, prev.max);
+  }
+}
 // The picker's card: what a paper is, and her best one so far.
 const ICON = d => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + d + '"/></svg>';
 export function paintCompCard(){

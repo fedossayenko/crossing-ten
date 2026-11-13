@@ -373,3 +373,46 @@
   });
   console.log('МБГ marking: 2 points for the answer, 1 for at least half of a task\'s several answers, 0 otherwise');
 }
+
+/* The service worker's install caches the whole app, so one visit is enough to play offline: index.html's files and every module
+   they import, however deep (js/weekly.js and js/ui/*.js are named by no tag). A file it cannot fetch fails the install. */
+// (async: a check file runs inside eval, so a failure here exits the process from the promise)
+(async () => {
+  const path = require('path'), base = 'https://x.test/app/';
+  const file = u => path.join(__dirname, decodeURIComponent(new URL(u).pathname.slice('/app/'.length) || 'index.html'));
+  // the files the page needs, found on disk by a looser reading than sw.js's own: any relative `from '…'`, `import '…'`, `import('…')`
+  const need = new Set(), todo = [...src.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1]).filter(u => !/^(https?:|data:|#|mailto:)/.test(u)).map(u => new URL(u, base).href);
+  while(todo.length){
+    const u = todo.pop(); if(need.has(u)) continue; need.add(u);
+    if(u.endsWith('.js')) for(const m of fs.readFileSync(file(u), 'utf8').matchAll(/(?:from|import)\s*\(?\s*['"](\.\.?\/[^'"]+)['"]/g)) todo.push(new URL(m[1], u).href);
+  }
+  ['js/weekly.js', 'js/ui/today.js', 'js/ui/notebook.js', 'js/ui/badges.js', 'js/vendor/preact.js', 'kinds/timesw.js'].forEach(f => { if(!need.has(base + f)) throw new Error('check bug: ' + f + ' is not in the import graph found'); });
+  const install = async missing => {
+    const stored = new Set(), listeners = {};
+    const cache = { put: async (u, r) => { stored.add(typeof u === 'string' ? u : u.url); await r.arrayBuffer(); } };
+    const ctx = { self: { addEventListener: (n, f) => listeners[n] = f, skipWaiting(){}, clients: {} }, location: { href: base + 'sw.js' }, URL, Response, Promise, console,
+      caches: { open: async () => cache },
+      fetch: async u => { u = new URL(String(u), base).href; const p = file(u); if(u === missing || !fs.existsSync(p) || fs.statSync(p).isDirectory() && u !== base) return new Response('no', { status: 404 });
+        return new Response(fs.statSync(p).isDirectory() ? read('index.html') : fs.readFileSync(p), { status: 200 }); } };
+    vm.runInNewContext(read('sw.js'), ctx, { filename: 'sw.js' });
+    let waited; listeners.install({ waitUntil: p => waited = p });
+    await waited;
+    return stored;
+  };
+  const stored = await install();
+  const lacking = [...need].filter(u => !stored.has(u));
+  if(lacking.length) throw new Error('the service worker does not precache ' + lacking.map(u => u.slice(base.length)).join(', '));
+  let failed = false; await install(base + 'js/weekly.js').catch(() => failed = true);
+  if(!failed) throw new Error('the service worker installs although a module is missing: a half-filled cache would take over from a whole one');
+  console.log('service worker: installs with all ' + need.size + ' files of the page and its import graph, and fails when one is missing');
+})().catch(e => { console.error(e); process.exit(1); });
+
+// The manifest an installed app is made from: an id, the 192 and 512 icons Chrome asks for (each file there and the size it says),
+// and a maskable one apart from the plain one (a combined "any maskable" is discouraged; the 512 is full-bleed with its mark in the middle).
+{
+  const man = JSON.parse(read('manifest.json')), png = f => { const b = fs.readFileSync(__dirname + '/' + f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  if(!man.id) throw new Error('manifest.json has no id');
+  for(const i of man.icons){ const [w, h] = png(i.src); if(i.sizes !== w + 'x' + h) throw new Error('manifest icon ' + i.src + ' says ' + i.sizes + ' but is ' + w + 'x' + h); if(/\s/.test(i.purpose || '')) throw new Error('manifest icon ' + i.src + ' combines purposes: ' + i.purpose); }
+  for(const [size, purpose] of [['192x192', 'any'], ['512x512', 'any'], ['512x512', 'maskable']]) if(!man.icons.some(i => i.sizes === size && (i.purpose || 'any') === purpose)) throw new Error('manifest.json has no ' + size + ' ' + purpose + ' icon');
+  console.log('manifest: an id, 192 and 512 icons of the sizes they say, maskable apart from any');
+}
