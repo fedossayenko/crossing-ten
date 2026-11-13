@@ -17,7 +17,7 @@ import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
 // (check/forecast.js holds the forecast's levels). ponytail: goes with the forecast once the real paper is in.
-export const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
+const FORECAST = [8, 9, 10, 11, 12, 13, 270, 15, 16, 269, 17, 18, 21, 22, 271, 32, 24, 25, 27, 31];
 const task = id => Object.assign(seededRaw(id), { lvl: id, pts: 2 });   // a kind whose answer is a word keeps its own А/Б/В/Г
 // The basics (the plain sums, the times table, the units of length) are drill, not olympiad tasks: a paper leaves them out.
 // Nor a level only Аз и числата asks, a school contest far easier than an olympiad paper, unless that contest is the focus.
@@ -143,7 +143,7 @@ function compNext(){
 // Every task has an answer: before it is handed in, her answers to look over, as on paper, where she can turn back
 // to any task. A tap opens it with her answer in it, to keep (back to the list) or change (✓). The quick ones are
 // marked: her halfway numbers on 2026-10-18 each took under a minute. «Предай» hands it in; so does the clock.
-export function compCheck(){
+function compCheck(){
   clearTimers(); S.settled = true; clock();   // the last task's time stops here
   COMP.check = COMP.done = true;
   COMP.first = COMP.first || Object.assign({}, COMP.ans);   // her answers as the check found them

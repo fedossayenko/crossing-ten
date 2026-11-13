@@ -1,4 +1,4 @@
-import { $, KIND, rnd, seeded, shuffle } from './core.js';
+import { $, KIND, esc, rnd, seeded, shuffle } from './core.js';
 import { accepts, answer, answers, drawQ, eqText, factKey, gen, genForFact, mbgPts, openAns, raw, setW, slipOf, why } from './questions.js';
 import { LEVELS, PICK_GROUPS, groupKey } from './levels.js';
 import { FIRST, PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
@@ -31,9 +31,9 @@ const routeOfAddress = () => { const r = (location.hash.match(/^#\/([\w-]+)/) ||
 // The screen showing is kept here, not read back from the address: a browser may drop a history change
 // (Chrome does past a few hundred in seconds), and the screen must not follow it there.
 let ROUTE = routeOfAddress();
-export const routeNow = () => ROUTE;
+const routeNow = () => ROUTE;
 const TABBED = ['today', 'levels', 'badges', 'parents'];   // the sections the tab bar (sidebar on iPad) moves between
-export function applyRoute(){
+function applyRoute(){
   const r = ROUTES[ROUTE];
   Object.values(ROUTES).forEach(x => { if(x && x !== r) $(x.sheet).hidden = true; });
   if(r){ r.show(); $(r.sheet).hidden = false; }
@@ -285,10 +285,9 @@ function fidget(kind){
   }, 7000 + rnd(7000));
 })();
 export function clearTimers(){ S.timers.forEach(clearTimeout); S.timers = []; }
-function catFor(score, total){ return score >= total - 2 ? 'happy' : score >= total/2 ? 'idle' : 'sad'; }
 
 // How a round ends. The bottom tier is encouraging, not sad: the child who scores
-// low is the one who most needs to come back tomorrow. What each says is tiers[i] in js/i18n.js.
+// low is the one who most needs to come back tomorrow.
 const TIERS = [
   { min:1,   mood:'party',      tune:[523,659,784,1047,1319,1047,1319,1568], gap:.11 },
   { min:.8,  mood:'dance',     tune:[523,659,784,1047,880,988,1175],        gap:.13 },
@@ -899,7 +898,7 @@ export function renderParent(){
 }
 // A past round: its name, when, its score, and its time (a paper's always; a round's once it logs time a task)
 const roundName = r => r.level === 'comp' ? fromName(r.from) || t('compName') : r.daily ? t('dailyName') : r.level === 'mix' ? t('mixName') : levelName(LEVELS.find(l => l.id === r.level) || { eq: String(r.level) });
-const roundMeta = r => [ago(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
+const roundMeta = r => [dayAgo(r.ts) + ' ' + new Date(r.ts).toTimeString().slice(0, 5), r.level === 'comp' ? r.pts + ' / ' + r.max : r.firstTry + ' / ' + r.n,
   r.level === 'comp' || (r.t[0] || []).length > 6 ? compTime(r.secs * 1000) : '', r.level === 'comp' && toPractise(r) ? t('toPractise', toPractise(r)) : '', r.level === 'comp' ? checkSum(r) : '', fixSum(r)].filter(Boolean).join(' · ');
 // A round of her mistakes: each task's earlier round that missed one like it (its level and shape; the latest such), or none
 // for a new one drawn to pad it out; and how many of the old ones she now got right first time, and where they came from.
@@ -909,7 +908,7 @@ const fixSum = r => {
   if(r.level !== 'mix') return '';
   const old = r.t.map(e => [e, missedIn(r, e)]).filter(x => x[1]), from = [...new Set(old.map(x => x[1]))];
   return !old.length ? '' : t('fixedOf', old.filter(x => x[0][4] === 1).length, old.length,
-    from.length > 1 ? t('rounds', from.length) : roundName(from[0]) + ', ' + ago(from[0].ts) + ' ' + new Date(from[0].ts).toTimeString().slice(0, 5));
+    from.length > 1 ? t('rounds', from.length) : roundName(from[0]) + ', ' + dayAgo(from[0].ts) + ' ' + new Date(from[0].ts).toTimeString().slice(0, 5));
 };
 // what «Провери» did on a paper: the tasks she opened in it, the answers she changed, the ones that became right
 const checkSum = r => { const a = r.t.filter(e => e[7] >= 4); return a.length ? t('checkSum', a.length, a.filter(e => e[7] > 4).length, a.filter(e => e[7] === 5).length) : ''; };
@@ -1254,8 +1253,6 @@ $('reset').onclick = () => {
 // 'mbg-winter-2024-2' is the paper 'mbg-winter-2024' for the 2nd grade; its names are papers/paperTag in js/i18n.js
 const paperSrc = p => p.replace(/-\d+$/, ''), paperGrade = p => +p.slice(p.lastIndexOf('-') + 1);
 const paperName = p => p === 'basics' ? t('basics') : t('src', t('papers')[paperSrc(p)], paperGrade(p));
-// the picker's filter chip: the short tag and the grade, "Зима 2024 · 2 клас"; the full name is its tooltip
-const paperChip = p => p === 'basics' ? t('basics') : t('paperTag')[paperSrc(p)] + ' · ' + t('gradeN', paperGrade(p));
 function paintPill(){
   const l = LEVELS.find(x => x.id === S.level) || /** @type {Level} */ ({ eq:'' }), g = groupOf(l);
   // today's practice names no level: which kind a task is, she has to see herself, as on a paper
@@ -1265,7 +1262,7 @@ function paintPill(){
 }
 // "3 days ago", then a date once it stops being recent — precise enough to decide
 // what to practise without turning the picker into a log.
-function ago(ts){
+function dayAgo(ts){
   const today = dayKey(Date.now()), then = dayKey(ts);
   if(today === then) return t('today');
   const days = Math.round((Date.parse(today + 'T12:00:00') - Date.parse(then + 'T12:00:00')) / 86400000);
@@ -1383,7 +1380,7 @@ function levelStatus(l, m, hist){
   const h = hist[l.id];
   if(!h || !h.last) return h || !LOCAL.rounds.length ? '' : '<span class="isnew">' + t('isNew') + '</span>';   // before her first round every level is new: no tag on each; met in a paper, it is not new
   const pc = h.last.n ? Math.round(100 * h.last.firstTry / h.last.n) : 0;
-  return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + ago(h.last.ts) + '</i></span>';
+  return '<span class="stat" aria-label="' + t('pctFirst', pc) + '"><b>' + pc + '%</b><i>' + dayAgo(h.last.ts) + '</i></span>';
 }
 const levelRow = (l, m, hist, tags = '') => '<button class="pick" data-lvl="' + l.id + '" aria-pressed="' + (l.id === S.level) + '">' +
   '<span class="nm"><span class="eq' + sym(l) + '">' + levelName(l) + tags + '</span><span class="desc">' + levelDesc(l) + '</span></span>' +
@@ -1566,7 +1563,6 @@ paintPill();
    Tap the mascot to change player. Switching reloads the page: every setting, the log,
    the language and the mascot then come up exactly as a fresh launch would. */
 // function declarations, not consts: the side panel draws while the module is still loading (a saved round resumed)
-function esc(v){ return String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c])); }
 function playerName(p){ return p.name || t('playerN', PLAYERS.list.indexOf(p) + 1); }
 const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
 const FLAME = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 .5-3-1-5 1-9.5z"/></svg>';
@@ -1599,7 +1595,7 @@ function paintPlayers(){
   });
   document.querySelectorAll('.pedit').forEach(b => b.onclick = () => openEdit(PLAYERS.list.find(p => p.id === b.dataset.edit)));
   $('pAdd').onclick = () => openEdit(null);
-  if(typeof paintSync === 'function') paintSync();
+  paintSync();
   $('playerEdit').hidden = true;
 }
 // the players' screen, or drawn again when it is already showing (after an edit)
@@ -1644,7 +1640,7 @@ function paintEdit(){
 }
 function paintWelcome(){
   $('editSub').hidden = !WELCOME;
-  $('welcomeJoin').hidden = !WELCOME || typeof SYNC_ON === 'undefined' || !SYNC_ON;
+  $('welcomeJoin').hidden = !WELCOME || !SYNC_ON;
   if(!WELCOME) { $('pSave').textContent = t('save'); return; }
   $('editTitle').textContent = t('welcome');
   $('editSub').textContent = t('welcomeSub');

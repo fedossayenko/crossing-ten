@@ -7,7 +7,7 @@
 // after a round of it, then 3, 7, 14 and 30 days after each right answer here. Interleaved practice: Rohrer et al.
 // 2020, 61% against 38% a month later.
 // Pure: her rounds and the levels in, the plan out; app.js draws the tasks and plays them.
-export const DAILY_N = 6, DAILY_MISS = 2;
+const DAILY_N = 6, DAILY_MISS = 2;
 const GAPS = [1, 3, 7, 14, 30];
 const day0 = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return +d; };
 const daysFrom = (a, b) => Math.round((day0(b) - day0(a)) / 864e5);

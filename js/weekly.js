@@ -3,10 +3,11 @@
    canvas and saved as a PNG. Fredoka goes into the SVG itself (an SVG drawn as an image loads nothing). The PNG
    is made when the preview opens, not on the tap: iOS lets a page share only straight after a tap, with
    nothing awaited in between. Where there is no sharing of files, it downloads. */
+import { esc } from './core.js';
 import { mascotSvg } from './mascots.js';
 import { t } from './i18n.js';
 
-const W = 1080, H = 1350, esc = v => String(v).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const W = 1080, H = 1350;
 let FONT = null;   // Fredoka as a data: URL, read once
 async function fredoka(){
   if(FONT) return FONT;

@@ -433,3 +433,13 @@
   if(!failed) throw new Error('the service worker installs although a module is missing: a half-filled cache would take over from a whole one');
   console.log('service worker: installs with all ' + need.size + ' files of the page and its import graph, and fails when one is missing');
 })().catch(e => { console.error(e); process.exit(1); });
+
+// The manifest an installed app is made from: an id, the 192 and 512 icons Chrome asks for (each file there and the size it says),
+// and a maskable one apart from the plain one (a combined "any maskable" is discouraged; the 512 is full-bleed with its mark in the middle).
+{
+  const man = JSON.parse(read('manifest.json')), png = f => { const b = fs.readFileSync(__dirname + '/' + f); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
+  if(!man.id) throw new Error('manifest.json has no id');
+  for(const i of man.icons){ const [w, h] = png(i.src); if(i.sizes !== w + 'x' + h) throw new Error('manifest icon ' + i.src + ' says ' + i.sizes + ' but is ' + w + 'x' + h); if(/\s/.test(i.purpose || '')) throw new Error('manifest icon ' + i.src + ' combines purposes: ' + i.purpose); }
+  for(const [size, purpose] of [['192x192', 'any'], ['512x512', 'any'], ['512x512', 'maskable']]) if(!man.icons.some(i => i.sizes === size && (i.purpose || 'any') === purpose)) throw new Error('manifest.json has no ' + size + ' ' + purpose + ' icon');
+  console.log('manifest: an id, 192 and 512 icons of the sizes they say, maskable apart from any');
+}
