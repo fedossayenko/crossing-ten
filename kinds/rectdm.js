@@ -4,15 +4,14 @@
 // 16 + 24 = 40, twice is 80 см, and 10 см make a дециметър: 8. The trap is stopping at 80.
 // МБГ Зима 2021–2023: one side given, the other «с 2 дм по-дълга», and the perimeter asked in
 // метра — or in мм and дециметра. Two unit changes, one inside the problem and one at the end.
-import { CM, KIND, SLOT, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
-const RECT_U = { мм:1, см:10, дм:100, м:1000 }, RECT_W = { см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };
+import { CM, KIND, SLOT, UNIT_MM, UNIT_W2, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genRectLonger(){
   for(;;){
     const mm = Math.random() < 0.3, base = mm ? 'мм' : 'см', dU = mm ? 'мм' : 'дм';
-    const a = 5 + rnd(40), d = mm ? 5 + rnd(40) : 1 + rnd(4), b = a + d*RECT_U[dU]/RECT_U[base], P = 2*(a + b);
-    const to = (mm ? ['дм', 'см'] : ['м', 'дм']).find(u => P*RECT_U[base] % RECT_U[u] === 0);
+    const a = 5 + rnd(40), d = mm ? 5 + rnd(40) : 1 + rnd(4), b = a + d*UNIT_MM[dU]/UNIT_MM[base], P = 2*(a + b);
+    const to = (mm ? ['дм', 'см'] : ['м', 'дм']).find(u => P*UNIT_MM[base] % UNIT_MM[u] === 0);
     if(!to || (to === (mm ? 'см' : 'дм') && Math.random() < 0.7)) continue;   // mostly the bigger unit, as the papers ask
-    return {kind:'rectdm', shape:1, a, d, base, dU, b, P, to, ans: P*RECT_U[base]/RECT_U[to]};
+    return {kind:'rectdm', shape:1, a, d, base, dU, b, P, to, ans: P*UNIT_MM[base]/UNIT_MM[to]};
   }
 }
 // МБГ Полуфинал 2024, 1 клас, задача 15: one side 3 см, the other 2 см longer, all in сантиметри. The other
@@ -88,7 +87,7 @@ function drawRectPool(q){
     'Сторона кожного квадрата — <span class="num">' + q.s + '&nbsp;см</span>. Обчисли периметр усієї фігури.') + '</div><div class="fig small">' + rectRowSvg(q, false) + '</div>' + line;
   if(q.shape === 'house') return '<div class="ask">' + tr('Страната на равностранния триъгълник е <span class="num">' + q.t + '&nbsp;см</span>, а дължината на правоъгълника е <span class="num">' + q.L + '&nbsp;см</span>. Колко сантиметра е обиколката на правоъгълника?',
     'Сторона рівностороннього трикутника — <span class="num">' + q.t + '&nbsp;см</span>, а довжина прямокутника — <span class="num">' + q.L + '&nbsp;см</span>. Скільки сантиметрів становить периметр прямокутника?') + '</div><div class="fig small">' + rectHouseSvg(q, false) + '</div>' + line;
-  const T = RECT_POOL[q.thing], u = T[4], w = RECT_W[u], len = n => '<span class="num">' + n + '&nbsp;' + u + '</span>';
+  const T = RECT_POOL[q.thing], u = T[4], w = UNIT_W2[u], len = n => '<span class="num">' + n + '&nbsp;' + u + '</span>';
   return '<div class="ask">' + tr(T[0] + ' има правоъгълна форма. Едната страна е ' + len(q.a) + ', а другата е ' + bgWith(q.d) + ' ' + len(q.d) + (q.short ? ' по-къса' : ' по-дълга') + '. ' +
       (q.shape === 'perim' ? 'Колко ' + w[0] + ' е <b>обиколката</b> на ' + T[1] + '?' : 'Колко ' + w[0] + ' е <b>втората страна</b>?'),
     T[2] + ' має прямокутну форму. Одна сторона — ' + len(q.a) + ', а інша на ' + len(q.d) + (q.short ? ' коротша' : ' довша') + '. ' +
@@ -133,7 +132,7 @@ function drawRectDm(q){
       '<div class="line xl">' + SLOT + CM + '</div>';
   }
   if(q.shape === 1){
-    const w = RECT_W[q.to];
+    const w = UNIT_W2[q.to];
     return '<div class="ask">' + tr('Една от страните на правоъгълник е <span class="num">' + q.a + '&nbsp;' + q.base + '</span>, а другата е с <span class="num">' + q.d + '&nbsp;' + q.dU + '</span> по-дълга. Колко <b>' + w[0] + '</b> е обиколката на правоъгълника?',
       'Одна зі сторін прямокутника — <span class="num">' + q.a + '&nbsp;' + q.base + '</span>, а інша на <span class="num">' + q.d + '&nbsp;' + q.dU + '</span> довша. Скільки <b>' + w[1] + '</b> становить периметр прямокутника?') + '</div>' +
       '<div class="line xl">' + SLOT + ' <span class="unit">' + q.to + '</span></div>';
@@ -173,8 +172,8 @@ function whyRectDm(q, full){
   }
   if(q.shape === 1){
     if(!full) return tr('Първо двете страни в едни и същи мерки — после обиколката, и накрая в каквото е попитано.', 'Спершу обидві сторони в однакових одиницях — потім периметр, і нарешті в тому, про що питають.');
-    return (q.dU === q.base ? '' : q.d + ' ' + q.dU + ' = ' + q.d*RECT_U[q.dU]/RECT_U[q.base] + ' ' + q.base + ', ') + tr('другата страна ', 'інша сторона ') + q.a + ' + ' + (q.b - q.a) + ' = <b>' + q.b + ' ' + q.base + '</b> &nbsp;→&nbsp; ' +
-      q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + tr(', два пъти', ', двічі') + ' → <b>' + q.P + ' ' + q.base + '</b> &nbsp;→&nbsp; 1 ' + q.to + ' = ' + RECT_U[q.to]/RECT_U[q.base] + ' ' + q.base + tr(', значи ', ', отже ') + q.ans + ' ' + q.to;
+    return (q.dU === q.base ? '' : q.d + ' ' + q.dU + ' = ' + q.d*UNIT_MM[q.dU]/UNIT_MM[q.base] + ' ' + q.base + ', ') + tr('другата страна ', 'інша сторона ') + q.a + ' + ' + (q.b - q.a) + ' = <b>' + q.b + ' ' + q.base + '</b> &nbsp;→&nbsp; ' +
+      q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + tr(', два пъти', ', двічі') + ' → <b>' + q.P + ' ' + q.base + '</b> &nbsp;→&nbsp; 1 ' + q.to + ' = ' + UNIT_MM[q.to]/UNIT_MM[q.base] + ' ' + q.base + tr(', значи ', ', отже ') + q.ans + ' ' + q.to;
   }
   if(!full) return tr('Първо обиколката в сантиметри — после колко дециметра прави.', 'Спершу периметр у сантиметрах — потім скільки це дециметрів.');
   return q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + tr(', два пъти', ', двічі') + ' → <b>' + q.P + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм' +

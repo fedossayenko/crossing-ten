@@ -1,18 +1,17 @@
 // Question kind 'ribbon': level 32 Ленти — Centimetres, decimetres and metres.
 
 // Задача 12: centimetres against decimetres and metres.
-import { CM, KIND, SLOT, UK_PLURAL, addUp, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UK_PLURAL, UNIT_MM, UNIT_W2, addUp, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 // МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
 // 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
-const RIB_U = { мм:1, см:10, дм:100 }, RIB_W = { мм:['милиметра','міліметрів'], см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'] };
 function genRibbonDiff(){
   for(;;){
     const us = shuffle(['мм', 'см', 'дм']), [u1, u2] = us, to = Math.random() < 0.5 ? us[2] : ['мм', 'см'][rnd(2)];
     const a = 1 + rnd(u1 === 'дм' ? 9 : 99), b = 1 + rnd(u2 === 'дм' ? 9 : 99);
-    const A = a*RIB_U[u1], B = b*RIB_U[u2], D = A - B;
-    if(D <= 0 || D % RIB_U[to] || D / RIB_U[to] > 999) continue;
-    return {kind:'ribbon', shape:5, a, u1, b, u2, to, A, B, ans: D / RIB_U[to]};
+    const A = a*UNIT_MM[u1], B = b*UNIT_MM[u2], D = A - B;
+    if(D <= 0 || D % UNIT_MM[to] || D / UNIT_MM[to] > 999) continue;
+    return {kind:'ribbon', shape:5, a, u1, b, u2, to, A, B, ans: D / UNIT_MM[to]};
   }
 }
 // A length as she reads it on a paper: {d, c} is d дм and c см (c may be 10 or more, as in «4 дм и 18 см»),
@@ -117,8 +116,8 @@ function drawRibbon(q){
   }
   if(q.shape === 5){
     const n = (v, u) => '<span class="num">' + v + '&nbsp;' + u + '</span>';
-    return '<div class="ask">' + tr('Лента е дълга ' + n(q.a, q.u1) + '. С колко <b>' + RIB_W[q.to][0] + '</b> тя е по-дълга от лента с дължина ' + n(q.b, q.u2) + '?',
-      'Стрічка завдовжки ' + n(q.a, q.u1) + '. На скільки <b>' + RIB_W[q.to][1] + '</b> вона довша за стрічку завдовжки ' + n(q.b, q.u2) + '?') + '</div>' +
+    return '<div class="ask">' + tr('Лента е дълга ' + n(q.a, q.u1) + '. С колко <b>' + UNIT_W2[q.to][0] + '</b> тя е по-дълга от лента с дължина ' + n(q.b, q.u2) + '?',
+      'Стрічка завдовжки ' + n(q.a, q.u1) + '. На скільки <b>' + UNIT_W2[q.to][1] + '</b> вона довша за стрічку завдовжки ' + n(q.b, q.u2) + '?') + '</div>' +
       '<div class="line xl">' + SLOT + ' <span class="unit">' + q.to + '</span></div>';
   }
   if(q.shape === 4){
@@ -194,7 +193,7 @@ function ribSvg(segs, braces, foot){
 function ribbonSvg(q){
   const A = 'var(--accent)', W = 'var(--warm)', I = 'var(--ink)';
   if(q.shape === 5){
-    const u = RIB_U[q.to] <= Math.min(RIB_U[q.u1], RIB_U[q.u2]) ? q.to : RIB_U[q.u1] < RIB_U[q.u2] ? q.u1 : q.u2, f = RIB_U[u], D = (q.A - q.B)/f;
+    const u = UNIT_MM[q.to] <= Math.min(UNIT_MM[q.u1], UNIT_MM[q.u2]) ? q.to : UNIT_MM[q.u1] < UNIT_MM[q.u2] ? q.u1 : q.u2, f = UNIT_MM[u], D = (q.A - q.B)/f;
     return diffBars([[q.a + ' ' + q.u1, q.A/f, A], [q.b + ' ' + q.u2, q.B/f, I]], D + ' ' + u,
       u === q.to ? q.A/f + ' − ' + q.B/f + ' = ' + q.ans + ' ' + u : D + ' ' + u + ' = ' + q.ans + ' ' + q.to, tr('двете ленти', 'дві стрічки'));
   }
@@ -228,7 +227,7 @@ function whyRibbon(q, full){
   }
   if(q.shape === 5){
     if(!full) return tr('Първо двете дължини в едни и същи мерки.', 'Спершу обидві довжини в однакових одиницях.');
-    const u = RIB_U[q.to] <= Math.min(RIB_U[q.u1], RIB_U[q.u2]) ? q.to : RIB_U[q.u1] < RIB_U[q.u2] ? q.u1 : q.u2, f = RIB_U[u];
+    const u = UNIT_MM[q.to] <= Math.min(UNIT_MM[q.u1], UNIT_MM[q.u2]) ? q.to : UNIT_MM[q.u1] < UNIT_MM[q.u2] ? q.u1 : q.u2, f = UNIT_MM[u];
     const conv = (v, w, V) => w === u ? '' : v + ' ' + w + ' = ' + V/f + ' ' + u;   // a length already in u needs no line
     return [conv(q.a, q.u1, q.A), conv(q.b, q.u2, q.B)].filter(Boolean).join(', ') + ' &nbsp;→&nbsp; ' + q.A/f + ' − ' + q.B/f + ' = ' + (q.A - q.B)/f + ' ' + u +
       (u === q.to ? '' : ' = ' + q.ans + ' ' + q.to) + ribbonSvg(q);

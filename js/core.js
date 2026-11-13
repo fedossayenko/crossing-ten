@@ -68,6 +68,8 @@ export function diffBars(rows, extra, foot, label){
   g += svgText(136, rows.length * 30 + 20, foot, 15, 'var(--ink)', popAt(5));
   return '<svg viewBox="0 -8 262 ' + (rows.length * 30 + 38) + '" style="display:block; width:327px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
 }
+export const UNIT_MM = { мм:1, см:10, дм:100, м:1000 };   // millimetres in each length unit
+export const UNIT_W2 = { мм:['милиметра','міліметрів'], см:['сантиметра','сантиметрів'], дм:['дециметра','дециметрів'], м:['метра','метрів'] };   // «колко …» plural, Bulgarian and Ukrainian
 export const CM = ' <span class="unit">см</span>';
 
 export const exprText = terms => terms.map(t => (t.op ? t.op + ' ' : '') + t.n).join(' ');
