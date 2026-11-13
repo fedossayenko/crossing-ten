@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, textW, tr } from '../js/core.js';
+import { KIND, SLOT, popAt, rnd, shuffle, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -24,9 +24,8 @@ export function genBoth(){
 }
 
 const bothUkLang = {'английски':'англійську', 'френски':'французьку', 'немски':'німецьку', 'испански':'іспанську'};
-const bothUkPl = (n, one, few, many) => ({one, few})[UK_PLURAL.select(n)] || many;
-const bothUkPupils = n => n + ' ' + bothUkPl(n, 'учень', 'учні', 'учнів');
-const bothUkStudy = n => bothUkPl(n, 'вивчає', 'вивчають', 'вивчають');
+const bothUkPupils = n => ukN(n, 'учень', 'учні', 'учнів');
+const bothUkStudy = n => ukWord(n, 'вивчає', 'вивчають', 'вивчають');
 function vennSvg(tl, tr_, a, m, b){
   const box = (x, y) => '<rect x="' + (x - 8) + '" y="' + (y - 14) + '" width="16" height="16" fill="none" stroke="var(--accent)" stroke-width="2"/>';
   const tri = (x, y) => '<polygon points="' + (x - 9) + ',' + (y + 2) + ' ' + (x + 9) + ',' + (y + 2) + ' ' + x + ',' + (y - 14) + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>';
@@ -46,7 +45,7 @@ function drawBoth(q){
     q.A + '</span> учат <b>' + q.lang[0] + '</b> език, а <span class="num">' + q.B + '</span> — <b>' +
     q.lang[1] + '</b>. Колко ученици от този клас учат ' +
     (q.asksBoth ? '<b>и двата</b> езика?' : '<b>само ' + q.lang[1] + '</b> език?'),
-    'В одному класі <span class="num">' + q.T + '</span> ' + bothUkPl(q.T, 'учень', 'учні', 'учнів') +
+    'В одному класі <span class="num">' + q.T + '</span> ' + ukWord(q.T, 'учень', 'учні', 'учнів') +
     '. З них <span class="num">' + q.A + '</span> ' + bothUkStudy(q.A) + ' <b>' + bothUkLang[q.lang[0]] +
     '</b> мову, а <span class="num">' + q.B + '</span> — <b>' + bothUkLang[q.lang[1]] +
     '</b>. Скільки учнів цього класу вивчають ' +

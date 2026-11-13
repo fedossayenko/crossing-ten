@@ -1,5 +1,5 @@
 // Question kind 'trees': level 31 Дръвчета — Trees in a row: the gaps are one fewer, and the units may not match.
-import { KIND, NAMES, SLOT, UK_PLURAL, addUp, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, NAMES, SLOT, addUp, numSpan, popAt, rnd, svgText, tr, ukN, ukWord } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
 export function genTrees(){
@@ -19,13 +19,12 @@ export function genTrees(){
           ans: shape === 0 ? (n - 1) * d : shape === 1 ? n : d};
 }
 
-const treesPl = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);
-const treesN = n => n + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
-const treesM = n => treesPl(n, 'метр', 'метри', 'метрів');
-const treesGaps = n => treesPl(n, 'проміжок', 'проміжки', 'проміжків');
+const treesN = n => ukN(n, 'деревце', 'деревця', 'деревець');
+const treesM = n => ukWord(n, 'метр', 'метри', 'метрів');
+const treesGaps = n => ukWord(n, 'проміжок', 'проміжки', 'проміжків');
 function treesUkAsk(q){
   const nm = NAMES.find(x => x[0] === q.who), who = nm[2], did = nm[3];
-  const trees = n => numSpan(n) + ' ' + treesPl(n, 'деревце', 'деревця', 'деревець');
+  const trees = n => numSpan(n) + ' ' + ukWord(n, 'деревце', 'деревця', 'деревець');
   if(q.shape === 3) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + numSpan(q.dm) +
     ' дм одне від одного. Скільки <b>метрів</b> завдовжки цей ряд?';
   if(q.shape === 0) return who + ' ' + did + ' ' + trees(q.n) + ' в один ряд на відстані ' + numSpan(q.d) + ' ' +

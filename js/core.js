@@ -20,7 +20,8 @@ export const KIND = {};                     // kinds/*.js register { draw, eq, w
 export const tr = (bg, uk) => LANG === 'uk' && uk !== undefined ? uk : bg;
 // a Ukrainian noun after a number, whatever the page's language: 1 фігура, 2 фігури, 5 фігур, 21 фігура
 export const UK_PLURAL = new Intl.PluralRules('uk');   // one for all: building one per word was most of the checks' time
-export const ukN = (n, one, few, many) => n + ' ' + ({one, few}[UK_PLURAL.select(n)] || many);
+export const ukWord = (n, one, few, many) => ({one, few}[UK_PLURAL.select(n)] || many);   // the word alone, without the number
+export const ukN = (n, one, few, many) => n + ' ' + ukWord(n, one, few, many);
 // Bulgarian «с» becomes «със» before a word that starts with с or з — седем, седемнадесет, сто
 export const bgWith = n => /^(7|1[7]|7\d|100)$/.test(String(n)) ? 'със' : 'с';
 export const SLOT = '<span class="slot" id="slot0"></span>';
