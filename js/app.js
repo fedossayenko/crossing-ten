@@ -7,7 +7,7 @@ import { dailyPlan } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, letterOf, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, bestComp, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -332,7 +332,7 @@ const plainQ = q => q.own ? q : (({ options, pick, pts, ...rest }) => rest)(q); 
 // another level (a paper's redo, the notebook) is logged under its own level and seed
 // comp: a competition's own tasks, which come with their options and points already
 export function newRound(qs, comp){
-  if(!comp){ COMP = null; clearInterval(compTick); if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
+  if(!comp){ COMP = null; clearInterval(compTick); try { localStorage.removeItem(PS); } catch(e){} if(typeof newerBuild === 'function') setTimeout(newerBuild, 0); }   // a fresh round is the moment to update
   S.qs = qs || addFresh([], LOCAL.n, [S.level]);
   if(!comp) S.qs = S.qs.map(q => LOCAL.choice ? withChoices(plainQ(q)) : plainQ(q));
   const wasDaily = S.daily;
@@ -410,11 +410,11 @@ export function show(){
 }
 // The round so far, kept at the start of every task: an iPad drops a home-screen app it is not
 // showing and loads it afresh, and a new build reloads it too — she comes back to the same task.
-// ponytail: a competition is not kept (its clock would need restoring); it ends with a reload.
-const RS = LS + '.round';
+// A competition is kept the same way, under its own key (js/compete.js paperSnap): its clock is real time, so it goes on.
+const RS = LS + '.round', PS = LS + '.paper';
 function saveRound(){
   try {
-    if(COMP) localStorage.removeItem(RS);
+    if(COMP){ localStorage.removeItem(RS); localStorage.setItem(PS, JSON.stringify(paperSnap())); }
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,
       slip:S.slip, second:S.second, crossed:S.crossed, redo:S.redo, daily:S.daily, asks:S.asks, ms:S.ms, after:S.after } }));
   } catch(e){}
@@ -608,7 +608,7 @@ const STAR = on => '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6
   (on ? 'var(--warm)' : 'none') + '" stroke="' + (on ? 'var(--warm)' : 'var(--line)') + '" stroke-width="1.6" stroke-linejoin="round"/></svg>';
 export function finish(){
   clearTimers(); clock();
-  try { localStorage.removeItem(RS); } catch(e){}
+  try { localStorage.removeItem(RS); localStorage.removeItem(PS); } catch(e){}
   const n = S.qs.length, got = S.results.filter(Boolean).length;
   const tier = tierFor(got, n);
   const lv = LEVELS.find(l => l.id === S.level) || { eq:'' };
@@ -1537,7 +1537,7 @@ export function compFocus(){
 }
 const srcName = (grade, comp, round) => t('src', comp ? t('comps')[comp] + (round ? ' ' + t('mbgRounds')[round] : '') : t('allComps'), grade);
 // where a paper came from, by its round's `from` (compFocus's key): a year's paper, the forecast, or a grade's focus ('g2-mbg-autumn')
-const fromName = k => !k ? '' : k === 'forecast' ? t('papers')['mbg-autumn-forecast2026'] : /^g\d/.test(k) ? srcName(+k[1], k.split('-')[1], k.split('-')[2]) : paperName(k);
+export const fromName = k => !k ? '' : k === 'forecast' ? t('papers')['mbg-autumn-forecast2026'] : /^g\d/.test(k) ? srcName(+k[1], k.split('-')[1], k.split('-')[2]) : paperName(k);
 const saveFocus = () => { LOCAL.focus = [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER, myGrade()]; saveLocal(); };
 const inFocus = l => (!PICK_GRADE || l.grade === PICK_GRADE) && (!PICK_COMP || l.papers.some(p => compOf(p) === PICK_COMP)) &&
   (!PICK_ROUND || l.papers.some(p => compOf(p) === PICK_COMP && roundOf(p) === PICK_ROUND)) && (!PICK_PAPER || inPaper(l, PICK_PAPER));
@@ -1748,6 +1748,10 @@ ARCHIVE_READY.then(() => {
   }
   // a round left unfinished in the last 12 hours goes on where it was; anything odd starts a fresh one
   (() => {
+    try {   // a paper under way first: its hour goes on (over, if the hour has passed: what she answered counts)
+      const paper = JSON.parse(localStorage.getItem(PS));
+      if(paper && Date.now() < paper.end + 12*3600e3 && paper.tasks.every(([lvl]) => LEVELS.some(l => l.id === lvl))){ resumeComp(paper); return; }
+    } catch(e){}
     try {
       const kept = JSON.parse(localStorage.getItem(RS));
       if(kept && Date.now() - kept.at < 12*3600e3 && LEVELS.some(l => l.id === kept.s.level) && kept.s.i < kept.s.qs.length){
@@ -1795,5 +1799,5 @@ Object.defineProperties(window, Object.fromEntries(Object.entries({
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
   answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
-  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
+  notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, startComp: () => startComp, syncNow: () => syncNow, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

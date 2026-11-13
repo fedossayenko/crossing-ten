@@ -6,13 +6,13 @@
    where its tasks come from and how it goes before the clock starts.
    The tasks come from the levels' own generators, never from the competitions' papers, which
    are copyrighted. It is saved as one round with level 'comp' and the ids of its levels.
-   ponytail: a reload ends the paper; keep COMP in sessionStorage if she ever loses one that way. */
-import { $, rnd } from './core.js';
-import { accepts, answers, drawQ, openAns, seededRaw, slipOf } from './questions.js';
+   A reload keeps the paper (paperSnap, resumeComp). */
+import { $, rnd, seeded } from './core.js';
+import { accepts, answers, drawQ, openAns, raw, seededRaw, slipOf } from './questions.js';
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, go, groupOf, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, setComp, sfx, show } from './app.js';
 import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
@@ -59,20 +59,36 @@ export const bestComp = from => LOCAL.rounds.filter(r => r.level === 'comp' && r
 export const compTime = ms => { const s = Math.max(0, Math.round(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 export const compLeft = () => compTime(COMP.end - Date.now());
 
+// The paper under way, kept at every task (app.js saveRound) so a reload, or an iPad dropping the app, does not end it:
+// its tasks by level and seed, her answers, the clock's start and end. The clock is real time: it ran while the app was away.
+export const paperSnap = () => ({ at: Date.now(), tasks: S.qs.map(q => [q.lvl, q.seed]), paper: COMP.paper || '', from: COMP.from, t0: COMP.t0, end: COMP.end,
+  ans: COMP.ans, picked: COMP.picked, queue: COMP.queue, skipped: [...(COMP.skipped || [])], looked: [...(COMP.looked || [])], first: COMP.first,
+  done: !!COMP.done, check: !!COMP.check, i: S.i, ms: S.ms });
+// The paper again from its snapshot, on the task and the screen she left it on; over if its hour has gone by
+export function resumeComp(s){
+  const qs = s.tasks.map(([lvl, seed]) => Object.assign(seeded(seed, () => raw(lvl)), { seed, lvl, pts: 2 }));
+  run({ paper: s.paper, from: s.from, t0: s.t0, end: s.end, ans: s.ans, picked: s.picked, queue: s.queue, go: null, skipped: new Set(s.skipped), looked: new Set(s.looked), first: s.first, done: s.done }, qs);
+  qs.forEach((q, k) => { const a = s.ans[k]; if(a){ S.results[k] = accepts(q, a); if(!S.results[k]){ S.typed[k] = a.join(' · '); S.slip[k] = slipOf(q, a); } } });
+  S.ms = s.ms || []; S.i = s.i;
+  if(Date.now() >= s.end) compEnd(); else if(s.check) compCheck(); else show();
+}
 // paper: 'forecast' for the forecast's paper, nothing for one drawn afresh
 export function startComp(paper){
   const f = compFocus(), qs = compTasks(paper, f), now = Date.now();
   // queue: the tasks not answered yet, the one on screen first
+  run({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, qs);
+}
+function run(c, qs){
   clearInterval(compTick);
-  setComp({ paper, from: paper || f.key, t0: now, end: now + COMP_MIN * 60000, ans: {}, picked: {}, queue: qs.map((_, k) => k), go: null }, setInterval(() => {
+  setComp(c, setInterval(() => {
     if(!COMP){ clearInterval(compTick); return; }
     const c = $('compClock');
     if(c) c.textContent = compLeft();
     if(Date.now() >= COMP.end) compEnd();
   }, 1000));
   newRound(qs, true);
-  $('levelName').textContent = paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
-  $('sub').textContent = paper ? t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle') : f.name;   // where its tasks come from
+  $('levelName').textContent = c.paper ? t('papers')['mbg-autumn-forecast2026'] : t('compName');
+  $('sub').textContent = c.paper ? t('gradeN', PLAYER.grade || 2) + ' · ' + t('compSubtitle') : fromName(c.from);
 }
 // Before the clock: where the tasks come from, how the paper goes, her best from the same place; Start starts it.
 let NEXT = '';   // the paper the sheet is for: 'forecast', or one drawn from the focus

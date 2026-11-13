@@ -768,6 +768,25 @@ const server = http.createServer((req, res) => {
     return { best: statsFrom(['2026-10-23', '2026-10-24', '2026-10-25', '2026-10-26', '2026-03-28', '2026-03-29', '2026-03-30'].map(rs)).streakBest }; })()`);
   await cmd('Emulation.setTimezoneOverride', { timezoneId: '' });
   expect(dst.best === 4, 'a run of days across the clocks going back was cut short (Sofia, 24 to 26 Oct): ' + JSON.stringify(dst));
+  // a paper in progress survives a reload (the iPad drops a home-screen app it is not showing): the same tasks, her answers, the
+  // task she was on and the same end of the hour; an hour that ran out meanwhile ends it with what she had answered
+  const paperDo = `(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms)), K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+    startComp(); await tick();
+    for(let n = 0; n < 3; n++){ const q = S.qs[S.i];
+      if(q.options){ document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); $('nextBtn').click(); }
+      else { [...String(answers(q)[0])].forEach(K); K('go'); }
+      await tick(300); }
+    return JSON.stringify({ i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length }); })()`;
+  const pa = JSON.parse(await run(paperDo) || '{}');
+  await cmd('Page.reload'); await settle();
+  const pb = await page(`COMP ? { i: S.i, ans: JSON.stringify(COMP.ans), end: COMP.end, qs: S.qs.map(drawQ).join('|').length, n: S.qs.length, answered: Object.keys(COMP.ans).length, clock: !!$('compClock').textContent, sheet: $('sheet').hidden, ok: S.results.filter(Boolean).length } : null`);
+  expect(pa.answered === 3 && pb && pb.i === pa.i && pb.ans === pa.ans && pb.end === pa.end && pb.qs === pa.qs && pb.n === 20 && pb.sheet && pb.clock && pb.ok >= 1, 'a paper in progress did not survive a reload: ' + JSON.stringify({ pa, pb }));
+  // her hour ran out while the app was away: it opens on her result, with what she had answered
+  await run(`(() => { const k = LS + '.paper', p = JSON.parse(localStorage.getItem(k)); p.end = Date.now() - 1000; localStorage.setItem(k, JSON.stringify(p)); return ''; })()`);
+  await cmd('Page.reload'); await settle();
+  const pc = await page(`({ comp: !COMP, sheet: !$('sheet').hidden, kept: localStorage.getItem(LS + '.paper'), last: LOCAL.rounds[LOCAL.rounds.length - 1].level, pts: LOCAL.rounds[LOCAL.rounds.length - 1].n })`);
+  expect(pc.comp && pc.sheet && pc.kept === null && pc.last === 'comp' && pc.pts === 20, 'a paper whose hour ran out while away was not ended: ' + JSON.stringify(pc));
+  await run("$('sheet').hidden = true; newRound(); ''");
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
   // the page on 127.0.0.1 and on localhost has two separate storages, like an iPad and an iPhone.
   if(process.env.SMOKE_SYNC){
