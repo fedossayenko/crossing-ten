@@ -5,7 +5,7 @@
 // next 2 new ones, then 1: 3 + 2 + 1.
 // Есен 2019, задача 14: a 30 см segment, its two ends yellow; red points cut it into 10 pieces of
 // 3 см, so 9 red; then a blue point inside each piece, 10 blue. 2 + 9 + 10 = 21.
-import { KIND, SLOT, bgList, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 // МБГ Полуфинал 2022 and 2023, 1 клас, задача 14: points A, B, C on a line, «Тук са 3 отсечки: AB, AC и BC» (2023
 // only «Тук са 3 отсечки.»); then A, B, C, D — how many segments? From A 3, from B 2 more, from C 1: 6. The
 // example has a point fewer; the slips: a segment per gap (n − 1), or the example's number again.
@@ -38,7 +38,7 @@ function drawSegCount(q){
     for(let i = 0; i < m; i++) for(let j = i + 1; j < m; j++) segs.push('ABCDEF'[i] + 'ABCDEF'[j]);
     return '<div class="ask">' + tr('Тук са <span class="num">' + k + '</span> отсечки', 'Тут ' + ukN(k, 'відрізок', 'відрізки', 'відрізків').replace(/^(\d+)/, '<span class="num">$1</span>')) + (q.list ? ': ' + bgList(segs) : '') + '.</div>' +
       segCountSvg(m) + '<div class="ask">' + tr('Колко са <b>отсечките</b> тук?', 'Скільки тут <b>відрізків</b>?') + '</div>' +
-      segCountSvg(q.n) + '<div class="line xl">' + SLOT + '</div>';
+      segCountSvg(q.n) + answerLine('xl');
   }
   if(q.shape === 'dots'){
     const ask = q.asks === 0 ? tr('Колко <b>общо</b> са отбелязаните жълти, сини и червени точки?', 'Скільки <b>всього</b> позначено жовтих, синіх і червоних точок?')
@@ -47,14 +47,14 @@ function drawSegCount(q){
       '</span> отсечки, всяка с дължина <span class="num">' + q.d + '</span> см. След това между всеки две оцветени точки, които са на разстояние <span class="num">' + q.d + '</span> см, е отбелязана синя точка. ',
       'Кінці відрізка завдовжки <span class="num">' + q.L + '</span> см зафарбовано жовтим. Червоними точками цей відрізок поділено на <span class="num">' + q.n +
       '</span> відрізків, кожен завдовжки <span class="num">' + q.d + '</span> см. Потім між кожними двома зафарбованими точками, що стоять на відстані <span class="num">' + q.d + '</span> см, позначили синю точку. ') + ask + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.rev) return '<div class="ask">' + tr('Колко точки трябва да отбележим на една права, за да се получат <b>точно <span class="num">' + q.S + '</span> отсечки</b>?',
     'Скільки точок треба позначити на прямій, щоб утворилося <b>рівно <span class="num">' + ukN(q.S, 'відрізок', 'відрізки', 'відрізків').replace(' ', '</span> ') + '</b>?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
   return '<div class="ask">' + tr('На една права са отбелязани <span class="num">' + q.n + '</span> точки. Колко <b>отсечки</b> се получават с краища тези точки?',
     'На прямій позначено <span class="num">' + q.n + '</span> ' + (q.n < 5 ? 'точки' : 'точок') + '. Скільки <b>відрізків</b> з кінцями в цих точках утворилося?') + '</div>' +
-    segCountSvg(q.n) + '<div class="line xl">' + SLOT + '</div>';
+    segCountSvg(q.n) + answerLine('xl');
 }
 const segCountSum = n => Array.from({length: n - 1}, (_, i) => n - 1 - i).join(' + ');
 function eqSegCount(q){
@@ -77,7 +77,7 @@ function segArcs(n, full){
   for(let i = 0; i < n; i++) g += '<circle cx="' + X(i) + '" cy="0" r="5" fill="var(--ink)"/>' + svgText(X(i), 16, 'ABCDEF'[i], 12, 'var(--muted)');
   if(full) g += svgText(110, 58, segCountSum(n) + ' = ' + n*(n - 1)/2, 16, 'var(--ink)', popAt(step + 1));
   const top = -(n - 1)*gap*0.45 - 8, bottom = full ? 66 : 42;
-  return '<svg viewBox="0 ' + top.toFixed(0) + ' 220 ' + (bottom - top).toFixed(0) + '" style="display:block; width:220px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('отсечките между точките', 'відрізки між точками') + '">' + g + '</svg>';
+  return svgFrame('0 ' + top.toFixed(0) + ' 220 ' + (bottom - top).toFixed(0), 220, tr('отсечките между точките', 'відрізки між точками')) + g + '</svg>';
 }
 // The dots along the segment: yellow ends, red dividers, a blue one in each piece. The hint is a small
 // example of three pieces; the solution draws the real segment, one colour at a time.
@@ -89,7 +89,7 @@ function segDots(n, full){
   for(let i = 1; i < n; i++) g += dot(2*i, 'var(--bad)');
   for(let i = 0; i < n; i++) g += dot(2*i + 1, 'var(--accent)');
   if(full) g += svgText(110, 32, '2 + ' + (n - 1) + ' + ' + n + ' = ' + (2*n + 1), 15, 'var(--ink)', popAt(step + 1));
-  return '<svg viewBox="0 -14 220 ' + (full ? 54 : 30) + '" style="display:block; width:220px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('точките върху отсечката', 'точки на відрізку') + '">' + g + '</svg>';
+  return svgFrame('0 -14 220 ' + (full ? 54 : 30), 220, tr('точките върху отсечката', 'точки на відрізку')) + g + '</svg>';
 }
 function whySegCount(q, full){
   if(q.shape === 'dots'){

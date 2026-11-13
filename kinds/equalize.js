@@ -4,7 +4,7 @@
 // How many had Габи? Тони keeps 35 − 10 = 25, so Габи ends with 25 too — 10 of them given: 25 − 10 = 15. The slip is
 // to stop at 25. The other way round (shape 'give'): 35 and 15 — how many must one give? Each one given closes the gap
 // by two, one fewer on one side and one more on the other: half of 35 − 15 = 20, 10. The slip there is the whole gap.
-import { KIND, SLOT, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, numSpan, rnd, tr, ukN } from '../js/core.js';
 // [giver, speaker]: Bulgarian, Ukrainian, Ukrainian dative (for the one given to)
 /** @type {[string, string, string][][]} */
 const EQ_PAIRS = [[['Тони', 'Тоні', 'Тоні'], ['Габи', 'Габі', 'Габі']], [['Ния', 'Нія', 'Нії'], ['Мая', 'Мая', 'Маї']],
@@ -23,10 +23,10 @@ function drawEqualize(q){
   const [A, B] = EQ_PAIRS[q.pair], t = EQ_THINGS[q.thing];
   if(q.shape === 'give') return '<div class="ask">' + tr(A[0] + ' има ' + numSpan(q.a) + ' ' + t[0] + ', а ' + B[0] + ' — ' + numSpan(q.b) + '. <b>Колко ' + t[0] + ' трябва ' + A[0] + ' да даде на ' + B[0] + ', за да имат двете поравно?</b>',
       A[1] + ' має ' + eqUk(q, q.a) + ', а ' + B[1] + ' — ' + numSpan(q.b) + '. <b>Скільки ' + t[3] + ' має ' + A[1] + ' віддати ' + B[2] + ', щоб у них обох стало порівну?</b>') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
   return '<div class="ask">' + tr(A[0] + ' има ' + numSpan(q.a) + ' ' + t[0] + '. ' + B[0] + ' ѝ казала: „Ако ми дадеш ' + numSpan(q.k) + ' ' + t[0] + ' от твоите, двете ще имаме поравно.“ <b>Колко ' + t[0] + ' имала ' + B[0] + ' в началото?</b>',
       A[1] + ' має ' + eqUk(q, q.a) + '. ' + B[1] + ' сказала їй: «Якщо даси мені ' + eqUk(q, q.k) + ' зі своїх, у нас обох буде порівну». <b>Скільки ' + t[3] + ' мала ' + B[1] + ' спочатку?</b>') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqEqualize(q){
   if(q.shape === 'give') return q.a + ' − ' + q.b + ' = ' + 2*q.k + ' = ' + q.ans + ' + ' + q.ans + ' → ' + q.ans;

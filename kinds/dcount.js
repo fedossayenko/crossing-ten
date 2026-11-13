@@ -2,7 +2,7 @@
 
 // Задача 9: writing out a run of numbers and counting how often one digit turns up. The
 // run is walked rather than reasoned about, so the count is never a guess.
-import { KIND, SLOT, bgList, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
 export function genDigitRun(){
   if(Math.random() < 0.15){
     // Есен 2019, задача 3: how many digits it takes to write 12, 34, 60 and 79 — two each, 8. Here a
@@ -80,33 +80,33 @@ function drawDcount(q){
     return '<div class="ask">' + tr('Колко са всички цифри <span class="num">' + q.d + '</span>, които се използват за записване на числата от <span class="num">' + q.from + '</span> до <span class="num">' + q.to + '</span>?',
       'Скільки всього цифр <span class="num">' + q.d + '</span> використано, щоб записати числа від <span class="num">' + q.from + '</span> до <span class="num">' + q.to + '</span>?') + '</div>' +
       '<div class="given">' + run + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'omit'){
     return '<div class="ask">' + tr('Колко <b>общо</b> са цифрите на пропуснатите числа?', 'Скільки <b>всього</b> цифр у пропущених числах?') + '</div>' +
       '<div class="given">' + [q.a, q.a + 1, q.a + 2, q.a + 3].join(', ') + ', …, ' + [q.b - 2, q.b - 1, q.b].join(', ') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'freq'){
     return '<div class="ask">' + tr('Коя цифра е записана <b>' + FREQ_K[q.k][0] + '</b>?', 'Яку цифру записано <b>' + FREQ_K[q.k][1] + '</b>?') + '</div>' +
       '<div class="line" style="font-size:clamp(20px,calc((100vw - 64px)/' + (q.s.length * 0.66).toFixed(2) + '),44px); letter-spacing:.06em">' + q.s + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.zero){
     return '<div class="ask">' + tr('Колко цифри <span class="num">' + q.d + '</span> се използват за записването на всички числа, които са по-малки от <span class="num">' + q.N + '</span>?',
       'Скільки цифр <span class="num">' + q.d + '</span> використано, щоб записати всі числа, менші за <span class="num">' + q.N + '</span>?') + '</div>' +
       '<div class="given">' + [q.N - 1, q.N - 2, q.N - 3].join(', ') + ', …, 3, 2, 1, 0</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.below){
     return '<div class="ask">' + tr('Записах всички числа, по-малки от <span class="num">' + q.N + '</span>: ', 'Я записав усі числа, менші за <span class="num">' + q.N + '</span>: ') +
       '<span class="num">' + [q.N - 1, q.N - 2, q.N - 3].join(', ') + ', …, 3, 2, 1</span>. ' +
       tr('<b>Колко пъти</b> съм записал цифрата <span class="num">' + q.d + '</span>?', '<b>Скільки разів</b> я записав цифру <span class="num">' + q.d + '</span>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 2){
     return '<div class="ask">' + tr('С колко <b>цифри</b> са записани числата <span class="num">' + bgList(q.list.map(String)) + '</span>?', 'Скільки <b>цифр</b> потрібно, щоб записати числа <span class="num">' + bgList(q.list.map(String)) + '</span>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const ask = q.shape === 0
     ? tr('Записах последователните числа от <span class="num">' + q.from + '</span> до <span class="num">' + q.to +
@@ -122,7 +122,7 @@ function drawDcount(q){
       '</span> цифр <span class="num">' + q.d +
       '</span>. Яке <b>найбільше</b> число можна поставити замість <span class="circle">□</span>?');
   return '<div class="ask">' + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqDcount(q){
   if(q.shape === 2) return q.list.map(v => String(v).length).join(' + ') + ' = ' + q.ans;

@@ -1,7 +1,7 @@
 // Question kind 'cards': level 45 Четири карти — Arrange four digits for the smallest difference.
 
 // Задача 20: four cards into two two-digit numbers. Every arrangement is tried.
-import { KIND, SLOT, bgList, popAt, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, shuffle, svgText, tr } from '../js/core.js';
 export function genCards(){
   const digits = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 4);
   const smallest = Math.random() < 0.7;
@@ -25,7 +25,7 @@ function drawCards(q){
     '</span>, по одній на кожній картці. Розставте їх у клітинки так, щоб вийшла <b>най' +
     (q.smallest ? 'менша' : 'більша') + '</b> можлива різниця. Яка вона?') + '</div>' +
     '<div class="given"><span class="circle">□□</span> − <span class="circle">□□</span></div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCards(q){
   return q.digits.join(', ') + ' → ' + q.wit[0] + ' − ' + q.wit[1] + ' = ' + q.ans;

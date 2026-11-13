@@ -1,5 +1,5 @@
 // Question kind 'cmp': level 10 С колко? — How much bigger one sum is than the other.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 
 const spread = n => String(n).split('').join(' + ');
 
@@ -151,7 +151,7 @@ function drawCmp(q){
              'На скільки сума ' + R + ' <b>менша</b> за суму ' + L + '?')
         : tr('С колко сборът ' + L + ' е <b>по-голям</b> от сбора ' + R + '?',
              'На скільки сума ' + L + ' <b>більша</b> за суму ' + R + '?')) +
-      '</div><div class="line xl">' + SLOT + '</div>';
+      '</div>' + answerLine('xl');
   }
   if(q.runs){
     const line = a => '<span class="num">' + a.join(' + ') + '</span>';
@@ -163,19 +163,19 @@ function drawCmp(q){
       '<b>' + uk[0][0] + '</b> правильно обчислила ' + line(q.A) + ', а <b>' +
       uk[1][0] + '</b> правильно обчислила ' + line(q.back ? q.B.slice().reverse() : q.B) +
       '. На скільки сума в <b>' + uk[q.big][1] + '</b> більша, ніж у <b>' + uk[small][1] + '</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.written){
     return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
       '<div class="given">(' + q.terms.join(' + ') + ') − (' + q.kept.join(' + ') + ')</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 1){
     return '<div class="ask">' + tr('С колко сборът <span class="num">' + q.terms.join(' + ') +
       '</span> е <b>по-голям</b> от сбора <span class="num">' + q.kept.join(' + ') + '</span>?',
       'На скільки сума <span class="num">' + q.terms.join(' + ') +
       '</span> <b>більша</b> за суму <span class="num">' + q.kept.join(' + ') + '</span>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 2){
     return '<div class="ask">' + tr('С колко сборът <span class="num">' + q.x + ' + ' + q.y +
@@ -184,14 +184,14 @@ function drawCmp(q){
       'На скільки сума <span class="num">' + q.x + ' + ' + q.y +
       '</span> <b>' + (q.less ? 'менша' : 'більша') + '</b> за різницю <span class="num">' +
       q.p + ' − ' + q.q + '</span>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const A = '<span class="num">' + q.a + ' + ' + q.b + '</span>';
   const B = '<span class="num">' + spread(q.a) + ' + ' + spread(q.s || q.b) + '</span>';
   return '<div class="ask">' + (q.flip
       ? tr('С колко сборът ' + B + ' е по-малък от сбора ' + A + '?', 'На скільки сума ' + B + ' менша за суму ' + A + '?')
       : tr('С колко сборът ' + A + ' е по-голям от сбора ' + B + '?', 'На скільки сума ' + A + ' більша за суму ' + B + '?')) +
-    '</div><div class="line xl">' + SLOT + '</div>';
+    '</div>' + answerLine('xl');
 }
 function eqCmp(q){
   const vs = tr(' срещу ', ' проти ');

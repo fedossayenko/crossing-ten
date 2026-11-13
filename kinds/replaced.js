@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 6: 20 numbers, several rubbed out and their sum written, 10 numbers now.
 // Rubbing out k and writing one takes the count down by k − 1: 20 − 10 = 10 = k − 1, so k = 11.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genReplaced(){
   const N = 8 + rnd(23), M = 2 + rnd(N - 3);
   return {kind:'replaced', N, M, ans: N - M + 1};
@@ -10,7 +10,7 @@ export function genReplaced(){
 function drawReplaced(q){
   return '<div class="ask">' + tr('Записах <span class="num">' + q.N + '</span> числа. Няколко от тях изтрих и записах <b>сбора им</b>. Числата са вече <span class="num">' + q.M + '</span>. Колко са изтритите числа?',
     'Я записала <span class="num">' + ukN(q.N, 'число', 'числа', 'чисел').replace(' ', '</span> ') + '. Кілька з них стерла й записала <b>їхню суму</b>. Тепер їх <span class="num">' + q.M + '</span>. Скільки чисел стерто?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqReplaced(q){
   return q.N + ' − ' + q.M + ' + 1 = ' + q.ans;

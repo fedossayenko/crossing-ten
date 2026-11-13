@@ -2,7 +2,7 @@
 
 // Задача 19: one digit struck out makes the equation true. Built backwards, then every
 // possible deletion is tried so the digit to cross is never in doubt.
-import { KIND, SLOT, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, rnd, shuffle, tr } from '../js/core.js';
 export function genCross(){
   for(;;){
     const A = 10*(1 + rnd(5)), C = 10*(1 + rnd(5)), B = 10*(1 + rnd(9));
@@ -101,13 +101,13 @@ function drawCross(q){
     return '<div class="ask">' + tr('Колко <b>най-малко</b> цифри трябва да зачеркнем, за да е вярно следното?',
       'Яку <b>найменшу</b> кількість цифр треба закреслити, щоб рівність стала правильною?') + '</div>' +
       '<div class="given">' + crossFewEq(q.shown) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'few'){
     return '<div class="ask">' + tr('Колко <b>най-малко</b> цифри трябва да зачеркнем, така че след пресмятането да се получи верен отговор?',
       'Яку <b>найменшу</b> кількість цифр треба закреслити, щоб після обчислення вийшла правильна відповідь?') + '</div>' +
       '<div class="given">' + q.shown[0] + ' + ' + q.shown[1] + ' + ' + q.shown[2] + ' = ' + q.shown[3] + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'two'){
     const ex = e => { const s = [e[0], e[2], e[3]], l = s.slice(); l[e[4]] = e[5]; return '<div class="given" style="font-size:clamp(15px,4vw,21px)">' + crossTwoText(s, e[1]) + ' &nbsp;⟹&nbsp; ' + crossTwoText(l, e[1]) + ' &nbsp;⟹&nbsp; ☹ = ' + e[6] + '</div>'; };
@@ -116,7 +116,7 @@ function drawCross(q){
   }
   return '<div class="ask">' + tr('Коя цифра трябва да се зачеркне, за да се получи вярно равенство?', 'Яку цифру треба закреслити, щоб вийшла правильна рівність?') + '</div>' +
     '<div class="given">' + q.A + ' + ' + q.B + ' + ' + q.C + ' = ' + q.D + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCross(q){
   if(q.shape === 'few' || q.shape === 'tens') return crossFewEq(q.shown) + ' → ' + crossFewEq(crossFewNums(q, () => '')) + ' → ' + q.ans;

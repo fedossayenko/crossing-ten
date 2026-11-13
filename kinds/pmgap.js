@@ -2,7 +2,7 @@
 
 // МБГ Есен, 3 клас, задача 4: how much bigger 9 · 7 + 7 · 5 + 9 is than 9 · 7 + 7 · 5 − 9.
 // The shared start never needs working out: one is 9 above it and the other 9 below, 18 apart.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genPmGap(){
   for(;;){
     const a = 2 + rnd(8), b = 2 + rnd(8), c = 2 + rnd(8), d = 2 + rnd(8);
@@ -36,7 +36,7 @@ function drawPmGap(q){
          'На скільки число, що дорівнює ' + S + ', <b>менше</b> від числа, що дорівнює ' + B + '?')
     : tr('С колко числото, равно на ' + B + ', е <b>по-голямо</b> от числото, равно на ' + S + '?',
          'На скільки число, що дорівнює ' + B + ', <b>більше</b> за число, що дорівнює ' + S + '?')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqPmGap(q){
   return '(' + pmBig(q) + ') − (' + pmSmall(q) + ') = ' + q.ans;

@@ -4,7 +4,7 @@
 // flower 14 m away? 14 is only 3 + 3 + 4 + 4, and those four jumps can come in 6 orders:
 // 3344, 3434, 3443, 4334, 4343, 4433. The order matters — each order is another way.
 // every order of jumps a and b that lands exactly on N, as strings like '3344'
-import { KIND, SLOT, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, svgText, tr, ukN } from '../js/core.js';
 function hopWays(a, b, N){
   const out = [];
   (function go(left, path){ if(left === 0){ out.push(path); return; } if(left >= a) go(left - a, path + a); if(left >= b) go(left - b, path + b); })(N, '');
@@ -36,7 +36,7 @@ function hopsSvg(q){
 function drawHops(q){
   return '<div class="ask">' + tr('Скакалец скача по права линия или <span class="num">' + q.a + '</span> метра, или <span class="num">' + q.b + '</span> метра. По колко начина той може да достигне по права до цветче, което се намира на <span class="num">' + q.N + '</span> метра?',
     'Коник стрибає по прямій або на ' + hopsUk(q.a) + ', або на ' + hopsUk(q.b) + '. Скількома способами він може дістатися по прямій до квіточки, яка розташована за ' + hopsUk(q.N) + '?') + '</div>' +
-    hopsSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    hopsSvg(q) + answerLine('xl');
 }
 // the ways grouped by which jumps they use: for each mix, all its orders
 const hopsMixes = q => { const m = {}; hopWays(q.a, q.b, q.N).forEach(w => { const k = w.split('').sort().join(''); (m[k] = m[k] || []).push(w); }); return Object.values(m); };

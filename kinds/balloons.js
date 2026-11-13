@@ -6,7 +6,7 @@
 // with one. The 3 children are counted as well as the ones with a single balloon: 3 + 12 = 15.
 // Level 262, МБГ Есен 2024, 3 клас, задача 15: 50 balloons, 10 children with three each and every other child with
 // two (e). The rest of the balloons, 50 − 30 = 20, are shared out two by two: 10 children, and with the first 10, 20.
-import { KIND, SLOT, UKNUM_F, UK_PLURAL, addUp, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, UKNUM_F, UK_PLURAL, addUp, answerLine, numSpan, rnd, tr, ukN } from '../js/core.js';
 export function genBalloons(){
   const k = 2 + rnd(4), m = 2 + rnd(4), rest = 2 + rnd(Math.random() < 0.3 ? 30 : 14);   // Зима 2023: 3 by 3 and 31 more
   return {kind:'balloons', k, m, rest, T: k*m + rest, ans: k + rest};
@@ -52,7 +52,7 @@ function drawBalloonsOne(q){
       '. Колко чифта обувки имат Снежанка и джуджетата общо?',
     'Білосніжка мала ' + numSpan(q.a) + ' ' + oneUk(q.a, 'пару', 'пари', 'пар') + ' взуття, а семеро гномів — лише по ' + numSpan(q.b) + (q.b === 1 ? ' парі' : ' пари') +
       '. Скільки пар взуття мають Білосніжка і гноми разом?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
   if(q.shape === 'week') return '<div class="ask">' + tr('Ани спестявала пари за коледни играчки. В понеделник спестила ' + EUR_BG(q.a) + ', а през останалите шест дни от седмицата — по ' +
       EUR_BG(q.b) + ' на ден. Колко пари спестила Ани за една седмица?',
     'Ані відкладала гроші на ялинкові іграшки. У понеділок вона відклала ' + ONE_UK[q.a] + ' євро, а протягом решти шести днів тижня — по ' +
@@ -62,7 +62,7 @@ function drawBalloonsOne(q){
       ' молива, а останалите — по един. Колко деца носят по един молив?',
     'На змагання «Я і числа» кілька дітей несуть разом ' + numSpan(q.T) + ' ' + oneUk(q.T, 'олівець', 'олівці', 'олівців') + ', причому ' + numSpan(q.k) + ' несуть по ' + ONE_UK[q.m] +
       ' олівці, а решта — по одному. Скільки дітей несуть по одному олівцю?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBalloonsOne(q){
   if(q.shape === 'shoes') return q.a + ' + ' + Array(7).fill(q.b).join(' + ') + ' = ' + q.ans;
@@ -89,7 +89,7 @@ function drawBalloons(q){
     '</span> деца имат по <span class="num">' + q.m + '</span> балона, а всяко от останалите — по ' + (q.e ? BALLOONS_BG[q.e] : 'един') + '. <b>Колко са децата?</b>',
     'Кілька дітей мають разом <span class="num">' + q.T + '</span> ' + balloonsUk(q.T) + ', причому <span class="num">' + q.k +
     '</span> ' + ukN(q.k, 'дитина', 'дитини', 'дітей').replace(/^\d+ /, '') + ' мають по <span class="num">' + q.m + '</span> ' + balloonsUk(q.m) + ', а кожна з решти — по ' + (q.e ? UKNUM_F[q.e] : 'одній') + '. <b>Скільки всього дітей?</b>') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBalloons(q){
   if(q.shape) return eqBalloonsOne(q);

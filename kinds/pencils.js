@@ -1,7 +1,7 @@
 // Question kind 'pencils': level 38 Моливи — Colours counted by what they are not.
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
-import { KIND, NAMES, SLOT, UK_PLURAL, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, NAMES, UK_PLURAL, answerLine, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
 // Задача 10: the other colour is the whole minus the named one, and then two lots are
 // given away — three plain steps, with only the first one needing any thought.
@@ -50,7 +50,7 @@ function drawPencils(q){
       c1[pencilsUkForm(q.g1)] + ' ' + pencilsUkPencils(q.g1) + ', а другові — <span class="num">' + q.g2 + '</span> ' +
       c1[pencilsUkForm(q.g2)] + (q.other ? ' і <span class="num">' + q.other + '</span> ' + c0[pencilsUkForm(q.other)] : '') +
       '. Скільки <b>' + c1[2] + '</b> олівців залишилося в ' + pencilsUkGen[q.who] + '?') + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
   }
   return '<div class="ask">' + tr(q.who + ' има <span class="num">' + q.T + '</span> молива с различен цвят — ' +
     q.col.map(c => c[1]).join(', ') + '. От тях <span class="num">' + q.notA + '</span> <b>не са ' +
@@ -60,7 +60,7 @@ function drawPencils(q){
     q.col.map(c => pencilsUkCol[c[0]][1]).join(', ') + '. З них <span class="num">' + q.notA + '</span> — <b>не ' +
     pencilsUkCol[q.col[0][0]][1] + '</b>, а <span class="num">' + q.b + '</span> — ' + pencilsUkCol[q.col[1][0]][1] +
     '. Скільки <b>' + pencilsUkCol[q.col[2][0]][2] + '</b> олівців має ' + pencilsUkName(q.who) + '?') + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqPencils(q){
   if(q.shape === 'gave') return tr(q.T + ' молива, ' + q.a + ' ' + q.col[0][0] +

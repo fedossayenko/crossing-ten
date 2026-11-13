@@ -2,7 +2,7 @@
 
 // МБГ Пролет 2025, задача 5: two-digit numbers less than 50 − 10 · 2. Multiplication first: the
 // bound is 30, and 10 to 29 are 20 numbers. Worked left to right it would be 800, which is the trap.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genCountX(){
   for(;;){
     const form = rnd(3), a = 10*(3 + rnd(7)), b = 2 + rnd(9), c = 2 + rnd(4);
@@ -19,7 +19,7 @@ function drawCountX(q){
   const rel = [tr('по-малки от', 'менші від'), tr('не са по-големи от', 'не більші за'), tr('по-големи от', 'більші за')][q.rel];
   return '<div class="ask">' + tr('Колко са <b>двуцифрените</b> числа, които са ' + rel + ' числото, равно на <span class="num">' + countXExpr(q) + '</span>?',
     'Скільки є <b>двоцифрових</b> чисел, які ' + rel + ' число, що дорівнює <span class="num">' + countXExpr(q) + '</span>?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCountX(q){
   return countXExpr(q) + ' = ' + q.N + ' → ' + q.ans;

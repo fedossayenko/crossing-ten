@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 11: four squirrels share 16 nuts, each more than 2. For one to get as many
 // as possible the other three get as few as allowed — 3 each, 9 — and she gets 16 − 9 = 7.
-import { BGNUM, KIND, SLOT, addUp, rnd, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, addUp, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genNuts(){
   for(;;){
     const k = 3 + rnd(3), m = 1 + rnd(4), T = k*(m + 1) + 2 + rnd(12);
@@ -23,11 +23,11 @@ function drawNuts(q){
   if(q.shape === 'least'){
     return '<div class="ask">' + tr(LEAST_BG[q.T] + ' балона трябва да се раздадат на ' + BGNUM[q.k] + ' деца. Всяко дете трябва да получи <b>поне един</b> балон. Колко най-много балона може да има детето с най-голям брой балони?',
       LEAST_UK[q.T] + ' кульок треба роздати ' + (q.k === 3 ? 'трьом' : 'чотирьом') + ' дітям. Кожна дитина має отримати <b>щонайменше одну</b> кульку. Яку найбільшу кількість кульок може мати дитина, в якої кульок найбільше?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return '<div class="ask">' + tr(({3:'Три', 4:'Четири', 5:'Пет'})[q.k] + ' катерички си разделили общо <span class="num">' + q.T + '</span> ореха, като всяка е получила <b>повече от ' + q.m + '</b> ' + (q.m === 1 ? 'орех' : 'ореха') + '. Колко е най-големият възможен брой орехи, който е получила катеричката с най-много орехи?',
     ({3:'Три', 4:'Чотири', 5:'П’ять'})[q.k] + (q.k === 5 ? ' білочок' : ' білочки') + ' поділили <span class="num">' + ukN(q.T, 'горіх', 'горіхи', 'горіхів').replace(' ', '</span> ') + ', і кожна отримала <b>більше ніж ' + q.m + '</b>. Яку найбільшу кількість горіхів могла отримати білочка, в якої горіхів найбільше?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqNuts(q){
   if(q.shape === 'least') return q.T + ' − ' + Array(q.k - 1).fill(1).join(' − ') + ' = ' + q.ans;

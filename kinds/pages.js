@@ -3,7 +3,7 @@
 // МБГ Зима 2021, задача 15: how many leaves lie between page 14 and page 25? Each leaf holds an odd
 // page and the next even one: 14 is on the leaf with 13, 25 on the leaf with 26, and between them
 // sit 15–16, 17–18, …, 23–24 — five leaves.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genPages(){
   for(;;){
     const a = 2 + rnd(40), b = a + 5 + rnd(25), la = Math.ceil(a/2), lb = Math.ceil(b/2);
@@ -15,7 +15,7 @@ function drawPages(q){
   return '<div class="ask">' + tr('Колко <b>листа</b> има между страница <span class="num">' + q.a + '</span> и страница <span class="num">' + q.b + '</span> на една книга?',
     'Скільки <b>аркушів</b> між сторінкою <span class="num">' + q.a + '</span> і сторінкою <span class="num">' + q.b + '</span> у книжці?') + '</div>' +
     '<div class="note">' + tr('Всеки лист има две страници: 1 и 2, 3 и 4, …', 'Кожен аркуш має дві сторінки: 1 і 2, 3 і 4, …') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const pagesLeaf = n => n % 2 ? n + '–' + (n + 1) : (n - 1) + '–' + n;
 function eqPages(q){

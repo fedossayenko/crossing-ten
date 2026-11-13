@@ -1,7 +1,7 @@
 // Question kind 'fruit': level 28 Ябълки и круши — Count two groups, then add to reach a difference.
 
 // Задача 6: count two mixed groups, then work out how many to add to reach a gap.
-import { KIND, SLOT, UK_PLURAL, fruitBody, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 export function genFruit(){
   if(Math.random() < 0.3){
     // Есен 2019, задача 6: 11 apples, 5 of them red and the rest yellow; 2 yellow ones eaten. The
@@ -33,13 +33,13 @@ function drawFruit(q){
   if(q.shape === 'rest'){
     return '<div class="ask">' + tr('Петьо имал <span class="num">' + q.T + '</span> ябълки, от които <span class="num">' + q.r + '</span> червени, а останалите — жълти. Изял <span class="num">' + q.e + '</span> ' + (q.e === 1 ? 'жълта ябълка' : 'жълти ябълки') + '. Колко <b>жълти</b> ябълки са му останали?',
       'У Петра було <span class="num">' + fruitApple(q.T).replace(/^/, q.T + '</span> ') + ', з них <span class="num">' + q.r + '</span> червоних, а решта — жовті. Він з’їв <span class="num">' + q.e + '</span> ' + fruitUk(q.e, ['жовте яблуко', 'жовті яблука', 'жовтих яблук']) + '. Скільки <b>жовтих</b> яблук у нього залишилося?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return tr('<div class="ask">Колко <b>ябълки</b> трябва да добавим, така че броят им да е с <span class="num">' +
     q.k + '</span> по-голям от броя на <b>крушите</b>?</div>',
     '<div class="ask">Скільки <b>яблук</b> треба додати, щоб їх стало на <span class="num">' +
     q.k + '</span> більше, ніж <b>груш</b>?</div>') + fruitSvg(q.row) +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqFruit(q){
   if(q.shape === 'rest') return q.T + ' − ' + q.r + ' = ' + q.y + ', ' + q.y + ' − ' + q.e + ' = ' + q.ans;

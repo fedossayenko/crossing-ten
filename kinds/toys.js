@@ -4,7 +4,7 @@
 // until 63 in all: 3 + 4 + … + 11 = 63, so А) 9 days, Б) the 9th day from a Monday is a Tuesday, В) 63 : 9 = 7
 // boxes, Г) 7 − 1 − 3 = 3 boxes sold, one for 11 лв. and the rest for 14 лв. each: 11 + 14 + 14 = 39 — asked in euro, as Bulgaria pays since 2026.
 // The weekday cannot be typed, so part Б brings its own А/Б/В/Г, with the days on either side as the traps.
-import { KIND, SLOT, rnd, shuffle, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, shuffle, tr, ukN } from '../js/core.js';
 import { DAYS, weekdayUk } from './weekday.js';
 const TOY_ON = ['в понеделник', 'във вторник', 'в сряда', 'в четвъртък', 'в петък', 'в събота', 'в неделя'];
 const TOY_ON_UK = ['у понеділок', 'у вівторок', 'у середу', 'у четвер', 'у п’ятницю', 'у суботу', 'у неділю'];
@@ -40,7 +40,7 @@ function drawToys(q){
     box + tr('Колко кутии е използвала?', 'Скільки коробок знадобилося?'),
     box + tr('Оставила една кутия за себе си, подарила по една на ' + q.f + ' свои приятелки и останалите продала на коледния базар. За едната кутия получила ' + toyEur(q.p1) + ', а за останалите — по ' + toyEur(q.p2) + '. Колко евро общо е получила?',
       'Одну коробку залишила собі, по одній подарувала ' + q.f + ' подругам, а решту продала на різдвяному ярмарку. За одну коробку отримала ' + toyEur(q.p1) + ', а за решту — по ' + toyEur(q.p2) + '. Скільки всього євро вона отримала?')][q.shape];
-  return '<div class="ask">' + story + ask + '</div>' + (q.shape === 1 ? '' : '<div class="line xl">' + SLOT + '</div>');
+  return '<div class="ask">' + story + ask + '</div>' + (q.shape === 1 ? '' : answerLine('xl'));
 }
 const toyRun = q => { const d = []; for(let i = 0; i < q.n; i++) d.push(q.a + i); return d; };
 function eqToys(q){

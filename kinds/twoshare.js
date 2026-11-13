@@ -3,7 +3,7 @@
 // МБГ Есен, 3 клас, задача 20: under 30 oranges; 7 to each child leaves me 4 short, 6 to each
 // shares them all. One more for each child costs exactly the 4 missing, so there are 4 children
 // and 6 · 4 = 24 oranges. Sometimes the first way leaves some over instead of short.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genTwoShare(){
   for(;;){
     const b = 3 + rnd(6), g = Math.random() < 0.75 ? 1 : 2, a = b + g, k = 2 + rnd(7), over = Math.random() < 0.3;
@@ -23,7 +23,7 @@ function drawTwoShare(q){
     'У мене менше ніж <span class="num">' + q.L + '</span> ' + apl(q.L) + '. Якщо я вирішу подарувати кожній із кількох дітей по <span class="num">' + first +
     '</span> ' + apl(first) + ', ' + (q.over ? 'у мене залишиться <span class="num">' + q.s + '</span> ' + apl(q.s) : 'мені забракне <span class="num">' + q.s + '</span> ' + apl(q.s)) +
     '. Тому я подарував кожній дитині по <span class="num">' + second + '</span> ' + apl(second) + ' й роздав усі апельсини, які мав. Скільки апельсинів у мене було?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqTwoShare(q){
   return q.s + ' : ' + (q.a - q.b) + ' = ' + tr(q.k + ' деца', ukN(q.k, 'дитина', 'дитини', 'дітей')) + ' → ' + (q.over ? q.a : q.b) + ' · ' + q.k + ' = ' + q.N;

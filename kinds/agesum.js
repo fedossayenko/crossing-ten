@@ -3,7 +3,7 @@
 // МБГ Есен 2023, 3 клас, задача 17: Иван and Стефан are 10, Петър is 11. In how many years will their ages add up to 43?
 // Now they add up to 10 + 10 + 11 = 31, and every year each of the three is a year older, so the sum grows by 3 a year:
 // 43 − 31 = 12, 12 : 3 = 4 years. Sometimes the question goes back: how many years ago did they add up to less.
-import { KIND, SLOT, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, numSpan, rnd, tr, ukN } from '../js/core.js';
 // the children, two groups of the same age: [Bulgarian, Ukrainian dative]
 const AGESUM_KIDS = [[['Иван', 'Іванові'], ['Стефан', 'Стефанові']], [['Петър', 'Петрові'], ['Мартин', 'Мартинові']]];
 export function genAgeSum(){
@@ -24,7 +24,7 @@ function drawAgeSum(q){
       (q.ago ? '<b>Преди колко години сборът на годините им е бил ' + numSpan(q.T) + '?</b>' : '<b>След колко години сборът на годините им ще е ' + numSpan(q.T) + '?</b>'),
     uk(k1, q.a) + ', а ' + uk(k2, q.b) + '. ' +
       (q.ago ? '<b>Скільки років тому сума їхніх років дорівнювала ' + numSpan(q.T) + '?</b>' : '<b>Через скільки років сума їхніх років дорівнюватиме ' + numSpan(q.T) + '?</b>')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const agesumNow = q => Array(q.g1).fill(q.a).concat(Array(q.g2).fill(q.b)).join(' + ') + ' = ' + q.S;
 const agesumGap = q => q.ago ? q.S + ' − ' + q.T : q.T + ' − ' + q.S;

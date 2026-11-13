@@ -3,7 +3,7 @@
 // Аз и числата 2023, 2 клас, задача 4: Антон has 5 shirts and 2 pairs of trousers, each a different colour. Each pair
 // of trousers goes with all 5 shirts: 5 + 5 = 10 outfits. The slip adds the two numbers, 5 + 2 = 7. The tops stay
 // few enough to add up, as a 2nd-grader does in January, before the times table.
-import { KIND, SLOT, UK_PLURAL, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
 // who wears it: [Bulgarian, Ukrainian, feminine]; what: [tops, bottoms] — Bulgarian count forms, Ukrainian 2–4 and 5+
 const OUT_WHO = [['Антон', 'Антон', false], ['Ива', 'Іва', true], ['Петър', 'Петро', false], ['Мая', 'Мая', true]];
 const OUT_SETS = [
@@ -21,7 +21,7 @@ function drawOutfits(q){
   return '<div class="ask">' + tr(bgWho + ' има ' + numSpan(q.a) + ' различни по цвят ' + S.bg[0] + ' и ' + numSpan(q.b) + ' различни по цвят ' + S.bg[1] + '. Колко различни тоалета може да облече ' + bgWho + '?',
     ukWho + ' має ' + numSpan(q.a) + ' ' + outUk(q.a, S.uk[0][0], S.uk[0][1]) + ' різного кольору і ' + numSpan(q.b) + ' ' + outUk(q.b, S.uk[1][0], S.uk[1][1]) +
       ' різного кольору. Скільки різних комплектів одягу може вдягнути ' + ukWho + '?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqOutfits(q){ return Array(q.b).fill(q.a).join(' + ') + ' = ' + q.ans; }
 // The picture: one row for each bottom, with every top beside it — the rows hold as many as there are tops,

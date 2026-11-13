@@ -1,5 +1,5 @@
 // Question kind 'both': level 48 Два езика — Two groups that overlap — who is counted twice.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
+import { KIND, SLOT, answerLine, popAt, rnd, shuffle, svgFrame, svgText, textW, tr, ukN, ukWord } from '../js/core.js';
 
 const SUBJECTS = ['английски', 'френски', 'немски', 'испански'];
 // Задача 16: two groups that add up to more than the class, so the overlap is the excess.
@@ -51,7 +51,7 @@ function drawBoth(q){
     '</b>. Скільки учнів цього класу вивчають ' +
     (q.asksBoth ? '<b>обидві</b> мови?' : '<b>лише ' + bothUkLang[q.lang[1]] + '</b> мову?')) + '</div>' +
     '<div class="note">' + tr('Всеки ученик учи поне един от двата езика.', 'Кожен учень вивчає щонайменше одну з двох мов.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqBoth(q){
   if(q.shape === 'venn') return '□ = ' + q.L + ' − ' + q.m + ', △ = ' + q.R + ' − ' + q.m + ' → ' + q.ans;
@@ -70,7 +70,7 @@ function bothSvg(q){
   g += brace(0, q.A, -12, q.A + ' ' + tr(q.lang[0], bothUkLang[q.lang[0]]), 'var(--accent)', 2) + brace(lo, q.T, 12, q.B + ' ' + tr(q.lang[1], bothUkLang[q.lang[1]]), 'var(--good)', 3);
   const foot = q.A + ' + ' + q.B + ' − ' + q.T + ' = ' + q.both + (q.asksBoth ? '' : ', ' + q.B + ' − ' + q.both + ' = ' + q.ans);
   g += svgText(121, 52, foot, 15, 'var(--ink)', popAt(4.5));
-  return '<svg viewBox="0 -36 242 96" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('учениците и езиците им', 'учні та їхні мови') + '">' + g + '</svg>';
+  return svgFrame('0 -36 242 96', 300, tr('учениците и езиците им', 'учні та їхні мови')) + g + '</svg>';
 }
 function whyBoth(q, full){
   if(q.shape === 'venn'){

@@ -5,7 +5,7 @@
 // Задача 9: three numbers to drop into three boxes so a chain of inequalities holds.
 // Exactly one arrangement fits, so it is found by trying, not by computing — and what
 // is asked is read off the arrangement, not off the numbers.
-import { KIND, SLOT, bgList, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, bgList, rnd, tr } from '../js/core.js';
 export function genOrder(){
   for(;;){
     const base = 2 + rnd(8), step = 2 + rnd(3);
@@ -29,7 +29,7 @@ function drawOrder(q){
     '<div class="ask">' + (q.asksMid ? tr('Кое число е в <b>празното</b> квадратче □?', 'Яке число в <b>порожньому</b> квадратику □?')
                                      : tr('Колко е <b>сборът</b> на числата в <b>оцветените</b> квадратчета ■?',
                                           'Яка <b>сума</b> чисел у <b>зафарбованих</b> квадратиках ■?')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqOrder(q){
   return q.nums.join(', ') + ' → ' + q.fit.join(', ') + ' → ' + q.ans;

@@ -3,7 +3,7 @@
 // Задача 7: every addend moves by the same amount, so the sum moves that many times.
 // МБГ Зима 2020–2022: a difference, its minuend and subtrahend each changed — 40 − 10, the minuend
 // down 10 and the subtrahend up 10, so both changes take away: 30 − 20 = 10.
-import { BGNUM, KIND, SLOT, UKNUM, numSpan, popAt, rnd, svgText, textW, tr } from '../js/core.js';
+import { BGNUM, KIND, UKNUM, answerLine, numSpan, popAt, rnd, svgFrame, svgText, textW, tr } from '../js/core.js';
 // One 'diff' task: the minuend and the subtrahend each change by a, b (the same random draws for both levels).
 // Level 14 and level 230 differ in the ranges and the limit, and 230 also names the slip a child makes.
 function growDiff(mBase, mSpan, sBase, sSpan, aSpan, cap, slips){
@@ -49,12 +49,12 @@ function drawGrow(q){
   if(q.shape === 'times'){
     return '<div class="ask">' + tr('Всяко от <b>' + (q.odd ? 'нечетните' : 'четните') + '</b> събираеми в сбора <span class="num">' + q.xs.join(' + ') + '</span> е ' + (q.down ? 'намалено' : 'увеличено') + ' <span class="num">' + q.k + '</span> пъти. Пресметнете получения нов сбор.',
       'Кожен <b>' + (q.odd ? 'непарний' : 'парний') + '</b> доданок у сумі <span class="num">' + q.xs.join(' + ') + '</span> ' + (q.down ? 'зменшили' : 'збільшили') + ' в <span class="num">' + q.k + '</span> рази. Обчисліть нову суму.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'diff'){
     return '<div class="ask">' + tr('В разликата ' + numSpan(q.M + ' − ' + q.S) + ' умаляемото е ' + (q.mUp ? 'увеличено' : 'намалено') + ' с ' + numSpan(q.a) + ', а умалителят е ' + (q.sUp ? 'увеличен' : 'намален') + ' с ' + numSpan(q.b) + '. Колко е <b>новата разлика</b>?',
       'У різниці ' + numSpan(q.M + ' − ' + q.S) + ' зменшуване ' + (q.mUp ? 'збільшили' : 'зменшили') + ' на ' + numSpan(q.a) + ', а від’ємник ' + (q.sUp ? 'збільшили' : 'зменшили') + ' на ' + numSpan(q.b) + '. Якою стала <b>нова різниця</b>?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return '<div class="ask">' + tr('Сборът на ' + BGNUM[q.k] + ' числа е <span class="num">' + q.base +
     '</span>. Всяко от събираемите ' + (q.up ? 'увеличаваме' : 'намаляваме') +
@@ -62,7 +62,7 @@ function drawGrow(q){
     'Сума ' + growUkGen[q.k] + ' чисел дорівнює <span class="num">' + q.base +
     '</span>. Кожен доданок ' + (q.up ? 'збільшуємо' : 'зменшуємо') +
     ' на <span class="num">' + q.d + '</span>. Якою буде нова сума?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqGrow(q){
   if(q.shape === 'times') return q.ys.join(' + ') + ' = ' + q.ans;
@@ -85,7 +85,7 @@ function growSvg(q, full){
   }
   if(full) g += svgText(120, 122, Array(q.k).fill(sign + q.d).join(' ') + ' = ' + sign + q.k*q.d, 17, 'var(--ink)', popAt(2*q.k + 3)) +
     svgText(120, 148, q.base + ' ' + sign + ' ' + q.k*q.d + ' = ' + q.ans, 20, 'var(--ink)', popAt(2*q.k + 6));
-  return '<svg viewBox="0 0 240 ' + (full ? 156 : 100) + '" style="display:block; width:200px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('събираемите и промяната на всяко', 'доданки та зміна кожного') + '">' + g + '</svg>';
+  return svgFrame('0 0 240 ' + (full ? 156 : 100), 200, tr('събираемите и промяната на всяко', 'доданки та зміна кожного')) + g + '</svg>';
 }
 // A difference as a bar: the minuend is the whole bar, the subtrahend the shaded part, the difference
 // what is left. The new bar below shows both changes at once — the end moving, the shading growing or shrinking.
@@ -103,7 +103,7 @@ function growDiffSvg(q, full){
                    : tr('умаляемото ', 'зменшуване ') + arrow(q.mUp) + tr(', умалителят ', ', від’ємник ') + arrow(q.sUp);
   const g = bar(14, q.M, q.S, 0) + svgText(120, full ? 66 : 76, say, Math.min(12, Math.floor(12 * 232 / textW(say, 12))), 'var(--muted)') +   // the longer Ukrainian line a size smaller
     (full ? bar(80, q.M2, q.S2, 3) : '');
-  return '<svg viewBox="0 0 240 ' + (full ? 112 : 84) + '" style="display:block; width:230px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('разликата като ивица', 'різниця як смужка') + '">' + g + '</svg>';
+  return svgFrame('0 0 240 ' + (full ? 112 : 84), 230, tr('разликата като ивица', 'різниця як смужка')) + g + '</svg>';
 }
 function whyGrow(q, full){
   if(q.shape === 'times'){

@@ -3,7 +3,7 @@
 // МБГ Полуфинал 2025, 1 клас, задача 17: two smaller boxes were put in a box, and three boxes in each of the smaller
 // ones — how many boxes are there? The big one, the 2 smaller ones and 3 + 3 = 6 small ones: 1 + 2 + 6 = 9.
 // Or how many are empty: only the smallest, 6.
-import { BGNUM, KIND, SLOT, UKNUM_F, popAt, rnd, tr } from '../js/core.js';
+import { BGNUM, KIND, UKNUM_F, answerLine, popAt, rnd, svgFrame, tr } from '../js/core.js';
 export function genNest(){
   const a = 2 + rnd(3), b = 2 + rnd(3), empty = Math.random() < 0.35, all = 1 + a + a*b, ans = empty ? a*b : all;
   return {kind:'nest', a, b, empty, traps: [...new Set(empty ? [all, a + b, a + a*b] : [a*b, a + b, a + a*b])].filter(v => v !== ans), ans};
@@ -14,7 +14,7 @@ function drawNest(q){
       (q.empty ? 'Колко от всички кутии са <b>празни</b>?' : 'Колко са <b>всичките</b> кутии?'),
     'В одну коробку поклали ' + UKNUM_F[q.a] + ' менші, а в кожну з менших коробок поклали по ' + UKNUM_F[q.b] + ' коробки. ' +
       (q.empty ? 'Скільки з усіх коробок <b>порожні</b>?' : 'Скільки <b>всього</b> коробок?')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqNest(q){
   return q.empty ? nestSmall(q) : '1 + ' + q.a + ' + ' + q.a*q.b + ' = ' + q.ans;
@@ -30,7 +30,7 @@ function nestSvg(q){
     for(let j = 0; j < q.b; j++) g += '<rect' + popAt(3 + q.a*0.3 + (i*q.b + j)*0.2) + ' x="' + (x0 + j*(s + 4)).toFixed(1) + '" y="' + (39 - s/2).toFixed(1) + '" width="' + s.toFixed(1) + '" height="' + s.toFixed(1) +
       '" rx="2" fill="' + (q.empty ? 'var(--goodbg)' : 'none') + '" stroke="var(--good)" stroke-width="1.8"/>';
   }
-  return '<svg viewBox="0 0 260 78" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('кутиите една в друга', 'коробки одна в одній') + '">' + g + '</svg>';
+  return svgFrame('0 0 260 78', 300, tr('кутиите една в друга', 'коробки одна в одній')) + g + '</svg>';
 }
 function whyNest(q, full){
   if(q.empty){

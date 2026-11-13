@@ -3,7 +3,7 @@
 // МБГ Зима 2024, задача 13: a stepped pyramid, three boxes wide, four rows high, the top
 // three shown. Row by row from the top: 3, 9, 15 — six more each time — so the fourth is
 // 21 and the whole pyramid 48. The picture has to be counted; the rule does the rest.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genPyramid(){
   const w = 2 + rnd(3), shown = 2 + rnd(2), n = shown + 1 + (Math.random() < 0.3 ? 1 : 0);
   const rows = [];
@@ -36,7 +36,7 @@ function drawPyramid(q){
   return '<div class="ask">' + tr('Продавач на плодове е построил пирамида от еднакви кутии с плодове в <span class="num">' + q.n + '</span> реда. ',
     'Продавець фруктів збудував піраміду з однакових ящиків із фруктами у <span class="num">' + ukN(q.n, 'ряд', 'ряди', 'рядів').replace(' ', '</span> ') + '. ') +
     top + tr(' са показани на изображението. ', ' показано на малюнку. ') + ask + '</div>' +
-    pyramidSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    pyramidSvg(q) + answerLine('xl');
 }
 function eqPyramid(q){
   return q.rows.join(q.last ? ', ' : ' + ') + (q.last ? ' → ' : ' = ') + q.ans;

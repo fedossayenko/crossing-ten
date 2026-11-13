@@ -6,7 +6,7 @@
 // 2) the green make a square: 60 : 4 = 15 дм. 3) the red make the roof's two sides: 12 м : 2 = 6 м.
 // 4) all of them make a tree of two equal-sided triangles, the lower one's side 4 м: 21 − 12 = 9 м
 // for the upper, 3 м a side.
-import { KIND, SLOT, addUp, rnd, tr } from '../js/core.js';
+import { KIND, addUp, answerLine, rnd, tr } from '../js/core.js';
 const GARLAND_LEN = [[8, 10, 12, 14, 16, 20], [10, 15, 20, 25, 30], [20, 30, 40, 50]];
 export function genGarland(){
   const shape = rnd(4);
@@ -43,7 +43,7 @@ function drawGarland(q){
     : q.shape === 2 ? tr('От всички гирлянди Яна „нарисувала“ къщичка. По колко <b>метра</b> са бедрата на равнобедрения триъгълник, „нарисувани“ от всички червени гирлянди?', 'З усіх гірлянд Яна «намалювала» будиночок. Скільки <b>метрів</b> кожна бічна сторона рівнобедреного трикутника, «намальована» всіма червоними гірляндами?')
     : tr('От всички гирлянди Яна „нарисувала“ елха от два равностранни триъгълника. Страната на долния е <span class="num">' + q.L + '</span> м. Колко <b>метра</b> е страната на горния триъгълник?', 'З усіх гірлянд Яна «намалювала» ялинку з двох рівносторонніх трикутників. Сторона нижнього — <span class="num">' + q.L + '</span> м. Скільки <b>метрів</b> сторона верхнього трикутника?');
   return '<div class="ask">' + story + ask + '</div>' + T + (q.shape === 1 || q.shape === 2 ? garlandSvg() : '') +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqGarland(q){
   if(q.shape === 1) return q.dm[0] + ' = ' + Array(4).fill(q.ans).join(' + ') + ' → ' + q.ans + ' дм';

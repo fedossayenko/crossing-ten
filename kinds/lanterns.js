@@ -3,7 +3,7 @@
 // МБГ Есен 2021, задача 18: all 33 lanterns in the castle were lit, and 11 were put out. How many
 // lanterns are left? All 33 — a lantern that is out is still there. Asked the other way too: how
 // many are still burning (33 − 11), so the question has to be read, not just the numbers.
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 export function genLanterns(){
   const N = 10 + rnd(40), K = 2 + rnd(N - 4), burning = Math.random() < 0.3;
   return {kind:'lanterns', N, K, burning, ans: burning ? N - K : N};
@@ -13,7 +13,7 @@ function drawLanterns(q){
     (q.burning ? 'Колко фенера <b>светят</b> още?' : 'Колко <b>фенера</b> са останали?'),
     'У замку засвітили всі <span class="num">' + ukN(q.N, 'ліхтар', 'ліхтарі', 'ліхтарів').replace(' ', '</span> ') + '. З них погасили <span class="num">' + q.K + '</span>. ' +
     (q.burning ? 'Скільки ліхтарів ще <b>світять</b>?' : 'Скільки <b>ліхтарів</b> залишилося?')) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqLanterns(q){
   return q.burning ? q.N + ' − ' + q.K + ' = ' + q.ans : tr('загасеният фенер пак е фенер → ', 'погаслий ліхтар — теж ліхтар → ') + q.ans;

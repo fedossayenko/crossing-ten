@@ -6,7 +6,7 @@
 // right: 6 in each row, and 3 more standing across both rows where they overlap — 15.
 // A figure is its pieces, [x, y, width, height] on a grid; a rectangle counts when it is exactly
 // some of the pieces put together, none of them cut by its border.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgText, tr } from '../js/core.js';
 function rectFigAll(tiles){
   const xs = [...new Set(tiles.flatMap(t => [t[0], t[0] + t[2]]))].sort((a, b) => a - b);
   const ys = [...new Set(tiles.flatMap(t => [t[1], t[1] + t[3]]))].sort((a, b) => a - b), out = [];
@@ -100,18 +100,18 @@ function drawRectFig(q){
   const m = ex.length*(ex.length + 1)/2, fig = tr('фигура от части', 'фігура з частин');
   if(q.shape === 'bare') return '<div class="ask">' + tr('Колко са правоъгълниците?', 'Скільки прямокутників?') + '</div>' +
     '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
   return dots
     ? '<div class="ask">' + tr('Тук правоъгълниците са <span class="num">6</span>.', 'Тут прямокутників <span class="num">6</span>.') + '</div>' +
       '<div class="fig small">' + rectFigSvg(ex, true, fig) + '</div>' +
       '<div class="ask">' + tr('Колко са правоъгълниците тук?', 'Скільки тут прямокутників?') + '</div>' +
       '<div class="fig">' + rectFigSvg(q.tiles, true, fig) + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>'
+      answerLine('lg')
     : '<div class="ask">' + tr('На тази картинка има <span class="num">' + m + '</span> правоъгълника:', 'На цьому малюнку <span class="num">' + m + '</span> ' + (m < 5 ? 'прямокутники' : 'прямокутників') + ':') + '</div>' +
       '<div class="fig small">' + rectFigSvg(ex, false, fig) + '</div>' +
       '<div class="ask">' + tr('Колко са правоъгълниците на тази картинка?', 'Скільки прямокутників на цьому малюнку?') + '</div>' +
       '<div class="fig">' + rectFigSvg(q.tiles, false, fig) + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
 }
 function eqRectFig(q){
   const all = rectFigAll(q.tiles), ns = [...new Set(all.map(r => r.n))].sort((a, b) => a - b);

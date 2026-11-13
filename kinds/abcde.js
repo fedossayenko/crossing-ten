@@ -5,7 +5,7 @@
 // starts a number, so it is the 2; the units C and E what is left, 3 and 4: 103 + 24 = 127. The smallest ABC first
 // (102) and then the smallest DE of the digits left (34) gives 136 — that order is the trap. The same with other
 // lengths (AB + CD, ABC + DEF, ABC + D …), and the largest sum where it stays under a thousand.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 const ABC_FORMS = [[[3, 2], false], [[3, 2], false], [[2, 3], false], [[2, 2], false], [[2, 2], true], [[3, 3], false], [[3, 1], false], [[3, 1], true], [[2, 1], true]];
 const LETTERS = 'ABCDEF';
 // every letter's place: its number, its weight (100, 10, 1), and whether it starts a number of two or more digits
@@ -46,7 +46,7 @@ function drawAbcSum(q){
   return '<div class="ask">' + tr('Ако на различните букви съответстват различни цифри, пресметнете <b>' + (q.max ? 'най-големия' : 'най-малкия') + '</b> възможен сбор',
     'Якщо різним буквам відповідають різні цифри, обчисліть <b>' + (q.max ? 'найбільшу' : 'найменшу') + '</b> можливу суму') + '</div>' +
     '<div class="given">' + abcWords(q).map(over).join(' + ') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqAbcSum(q){
   return abcNums(q.lens, q.dig).join(' + ') + ' = ' + q.ans;

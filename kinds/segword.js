@@ -5,7 +5,7 @@
 // МБГ Пролет 2025, 1 клас, задача 14: the first is 12 см, the second 3 см shorter than the first, the
 // third 8 см longer than the second. One step at a time: 12 − 3 = 9, then 9 + 8 = 17.
 // [Bulgarian, Ukrainian, Bulgarian "drew", Ukrainian "drew"]
-import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
 const SEGWORD_WHO = [['Мария', 'Марія', 'начертала', 'накреслила'], ['Петър', 'Петро', 'начертал', 'накреслив'],
                      ['Ива', 'Іва', 'начертала', 'накреслила'], ['Борис', 'Борис', 'начертал', 'накреслив']];
 // МБГ Полуфинал 2025, 1 клас, задача 14: the same, from a first segment over 20 — 21, then 3 shorter, then 8
@@ -83,7 +83,7 @@ function segWordSvg(q){
         '<line x1="' + X(lo) + '" y1="' + (y - 8) + '" x2="' + X(hi) + '" y2="' + (y - 8) + '" stroke="var(--warm)" stroke-width="3"/>' +
         svgText(((+X(lo) + +X(hi)) / 2).toFixed(1), y - 12, [q.d1, q.d2][i - 1], 11, 'var(--warm)') + '</g>'; }
   });
-  return '<svg viewBox="0 0 280 104" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('трите отсечки', 'три відрізки') + '">' + g + '</svg>';
+  return svgFrame('0 0 280 104', 300, tr('трите отсечки', 'три відрізки')) + g + '</svg>';
 }
 function whySegWord(q, full){
   if(q.shape === 'bars') return full ? segWordBarsSvg(q, true) + tr('пунктирът: до края на средната ', 'пунктир: до кінця середнього ') + q.d2 + tr(' см, после до края на горната още ', ' см, потім до кінця верхнього ще ') + q.d1 + ' см &nbsp;→&nbsp; ' + q.d1 + ' + ' + q.d2 + ' = ' + q.ans

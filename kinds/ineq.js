@@ -4,7 +4,7 @@
 // negation both move, so "не е вярно" has to be worked through rather than skipped.
 // Level 120: the same inequalities with the traps moved — any number counts, only two-digit ones
 // do, or the unknown is a tens digit (Зима 2021–2023). Rated a dot easier than level 16.
-import { KIND, SLOT, exprText, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, exprText, rnd, tr } from '../js/core.js';
 export function genIneqWide(){
   const pick = rnd(3);
   if(pick === 0){
@@ -96,15 +96,15 @@ function drawIneq(q){
   if(q.shape === 7){
     return '<div class="ask">' + (q.ask === 'count' ? tr('Колко е броят на различните цифри, които можем да поставим вместо □, за да е вярно:', 'Скільки різних цифр можна поставити замість □, щоб було правильно:')
       : tr('Коя е цифрата, която трябва да поставим вместо □, за да е вярно:', 'Яку цифру треба поставити замість □, щоб було правильно:')) + '</div>' +
-      '<div class="given">' + ineqDigitText(q) + '</div><div class="line xl">' + SLOT + '</div>';
+      '<div class="given">' + ineqDigitText(q) + '</div>' + answerLine('xl');
   }
   if(q.shape === 6 || q.shape === 8){   // 8: the same with bigger numbers
     return '<div class="ask">' + tr('Колко числа можем да поставим вместо ■, за да е вярно?', 'Скільки чисел можна поставити замість ■, щоб було правильно?') + '</div>' +
-      '<div class="given">' + ineqSmallText(q) + '</div><div class="line xl">' + SLOT + '</div>';
+      '<div class="given">' + ineqSmallText(q) + '</div>' + answerLine('xl');
   }
   if(q.shape === 4){
     return '<div class="ask">' + tr('Колко са всички <b>двуцифрени</b> числа, които могат да се запишат в □, така че да е вярно', 'Скільки всього <b>двоцифрових</b> чисел можна записати в □, щоб було правильно') + '</div>' +
-      '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div><div class="line xl">' + SLOT + '</div>';
+      '<div class="given">□ + ' + q.C + ' &lt; ' + q.T + '</div>' + answerLine('xl');
   }
   if(q.shape === 5){
     const slots = q.fits.map((_, i) => i ? ' <span class="or">' + tr('и', 'і') + '</span> <span class="slot" id="slot' + i + '"></span>' : SLOT).join('');
@@ -128,7 +128,7 @@ function drawIneq(q){
       (q.shape === 1 ? '<b>було правильно</b>' : '<b>НЕ було правильно</b>') + ':');
   return '<div class="ask">' + head + '</div>' +
     '<div class="given">' + rel + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqIneq(q){
   if(q.shape === 7) return ineqDigitText(q).replace('&lt;', '<').replace('&gt;', '>') + ' → ' + q.V + ' → ' + q.ans;

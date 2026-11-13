@@ -6,7 +6,7 @@
 // colour first, 3 cubes, and the 4th must repeat one.
 // [Bulgarian plural, Ukrainian plural for 2–4, Ukrainian plural for 5 and more, colour]
 /** @type {[string, string, string, string][]} */
-import { BGNUM, KIND, SLOT, UKNUM_F, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UKNUM_F, answerLine, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
 const BLIND_COLS = [['сини', 'сині', 'синіх', 'var(--accent)'], ['зелени', 'зелені', 'зелених', 'var(--good)'], ['жълти', 'жовті', 'жовтих', 'var(--lemon)'], ['червени', 'червоні', 'червоних', 'var(--rose)']];
 // МБГ Полуфинал 2022, 1 клас, задача 13: of five pens alike in size and colour, two write in blue and three in red;
 // how many to take to be sure one writes in blue? The unluckiest hand is the three red ones first, so 3 + 1 = 4 —
@@ -66,7 +66,7 @@ function drawBlind(q){
   return '<div class="ask">' + tr('Имам <span class="num">' + q.T + '</span> еднакви по големина кубчета – ' + blindList(q) + '. Колко <b>най-малко</b> кубчета трябва да взема със затворени очи, за да имам <b>със сигурност</b> две кубчета ' + (q.diff ? 'с <b>различен</b> цвят' : 'с <b>еднакъв</b> цвят') + '?',
     'У мене ' + ukN(q.T, 'однаковий за розміром кубик', 'однакові за розміром кубики', 'однакових за розміром кубиків').replace(/^(\d+)/, '<span class="num">$1</span>') + ' – ' + blindList(q) +
     '. Яку <b>найменшу</b> кількість кубиків треба взяти із заплющеними очима, щоб <b>точно</b> мати два кубики ' + (q.diff ? '<b>різного</b> кольору' : '<b>однакового</b> кольору') + '?') + '</div>' +
-    blindSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    blindSvg(q) + answerLine('xl');
 }
 function eqBlind(q){
   if(q.shape === 'one') return q.n[1] + ' + 1 = ' + q.ans + ' → ' + [q.ans].concat(q.alt).join(', ');

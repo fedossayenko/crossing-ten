@@ -5,7 +5,7 @@
 // The trap is to count the sides only (21), or one triangle as 3.
 // [Bulgarian singular, Bulgarian count form, Ukrainian genitive singular, Ukrainian genitive plural, sides]
 /** @type {[string, string, string, string, number][]} */
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 /** @type {any[]} */
 export const CORNER_FIGS = [['правоъгълник', 'правоъгълника', 'прямокутника', 'прямокутників', 4],
                      ['квадрат', 'квадрата', 'квадрата', 'квадратів', 4],
@@ -27,7 +27,7 @@ function drawCorners(q){
   const what = [['страните и върховете', 'сторін і вершин'], ['страните', 'сторін'], ['върховете', 'вершин']][q.asks];
   return '<div class="ask">' + tr('Колко общо са <b>' + what[0] + '</b> на ' + cornersList(q) + '?',
     'Скільки всього <b>' + what[1] + '</b> у ' + cornersList(q, true) + '?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 // every figure's own share, one figure at a time: 8 + 8 + 6
 const cornersEach = q => [].concat(...q.n.map((k, i) => Array(k).fill(CORNER_FIGS[i][4]*(q.asks ? 1 : 2))));

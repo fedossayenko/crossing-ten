@@ -4,7 +4,7 @@
 // there was. Asked the other way round: so many pieces, how many cuts. Аз и числата 2024, задача 10: four pines,
 // a rose bush between each two of them: 3 bushes, one fewer than the pines (the paper's picture shows two pines and
 // a bush; the text counts). The slip is the number given, or one too many.
-import { KIND, SLOT, UK_PLURAL, numSpan, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, numSpan, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
 // who: [Bulgarian, feminine, Ukrainian]
 const CUT_WHO = [['Капитан Защо', false, 'Капітан Чому'], ['Пинки', true, 'Пінкі'], ['Мая', true, 'Мая'], ['Иво', false, 'Іво']];
 // what is cut: [Bulgarian, which (by gender), with the article, Ukrainian (accusative), Ukrainian short]
@@ -34,15 +34,15 @@ function drawCuts(q){
     const T = CUT_TREES[q.t];
     return '<div class="ask">' + tr('В парк засадили ' + CUT_BG[q.n] + ' ' + T[0] + '. Между тях засаждали по един розов храст. Колко розови храста засадили?',
       'У парку посадили ' + CUT_UK[q.n] + ' ' + cutUk(q.n, T[1], T[2]) + '. Між ними садили по одному кущу троянд. Скільки кущів троянд посадили?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const [bgWho, f, ukWho] = CUT_WHO[q.who], T = CUT_THING[q.th], a = f ? 'а' : '';
   if(q.shape === 'pieces') return '<div class="ask">' + tr(bgWho + ' разрязал' + a + ' ' + T[0] + ' на ' + numSpan(q.n) + ' парчета. На колко места е срязал' + a + ' ' + T[2] + '?',
       ukWho + (f ? ' розрізала ' : ' розрізав ') + T[3] + ' на ' + numSpan(q.n) + ' ' + cutUk(q.n, 'шматки', 'шматків') + '. У скількох місцях ' + (f ? 'вона різала' : 'він різав') + ' ' + T[4] + '?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
   return '<div class="ask">' + tr(bgWho + ' купил' + a + ' ' + T[0] + ', ' + T[1] + ' срязал' + a + ' на ' + numSpan(q.k) + ' места. Колко парчета са се получили?',
     ukWho + (f ? ' купила ' : ' купив ') + T[3] + ', яку ' + (f ? 'розрізала' : 'розрізав') + ' у ' + numSpan(q.k) + ' місцях. Скільки шматків вийшло?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqCuts(q){
   if(q.shape === 'cut') return q.k + ' + 1 = ' + q.ans;
@@ -51,7 +51,7 @@ function eqCuts(q){
 // The pictures: a ribbon with its cuts, or a row of trees with a bush in each gap. The hint's has no numbers;
 // the solution's numbers the pieces, the cuts or the bushes, and ends on the count.
 function cutsSvg(h, label, g){
-  return '<svg viewBox="0 0 260 ' + h + '" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + label + '">' + g + '</svg>';
+  return svgFrame('0 0 260 ' + h, 300, label) + g + '</svg>';
 }
 function ribbonSvg(cuts, full, q){
   const X0 = 10, W = 240, Y = 26, H = 20, step = W / (cuts + 1), at = i => (X0 + i*step).toFixed(1);

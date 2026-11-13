@@ -4,7 +4,7 @@
 // correctly. Only four sums can come out — 0 + 20 = 20, 1 + 20 = 21, 10 + 0 = 10, 10 + 2 = 12 — so with
 // five children at least two got the same one: 2.
 // [the sum written with that digit erased, its value] for each of the four digits of x + y
-import { KIND, SLOT, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, rnd, tr, ukN } from '../js/core.js';
 const pigeonTries = (x, y) => {
   const [a, b] = [String(x), String(y)];
   return [[a[1], +a[1] + y, '<s>' + a[0] + '</s>' + a[1] + ' + ' + b], [a[0], +a[0] + y, a[0] + '<s>' + a[1] + '</s> + ' + b],
@@ -29,7 +29,7 @@ function drawPigeon(q){
     '</span>. След това всяко дете изтрило по една цифра и пресметнало вярно сбора. Колко от получените сборове <b>със сигурност</b> са равни?',
     '<span class="num">' + ukN(q.k, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + ' записали в зошитах <span class="num">' + q.x + ' + ' + q.y +
     '</span>. Потім кожна дитина стерла одну цифру й правильно обчислила суму. Скільки з отриманих сум <b>точно</b> однакові?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqPigeon(q){
   return pigeonSums(q).join(', ') + tr(' — ', ' — ') + pigeonKids(q.k) + ' → ' + q.ans;

@@ -4,7 +4,7 @@
 // cubes weigh 63 g, so one is 9 and two are 18; задача 16, Никола 16 pencils, Пиер 2 times fewer (8),
 // Клод 2 more than Пиер (10), so Никола has 6 more than Клод; задача 18, 6 kg and 3 times more (18),
 // 24 kg into 8 crates, 3 kg each.
-import { KIND, SLOT, bgWith, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgWith, numSpan, rnd, tr, ukN } from '../js/core.js';
 export function genTimesW(){
   const shape = rnd(4);
   for(;;){
@@ -42,7 +42,7 @@ function drawTimesW(q){
          'У Миколи ' + numSpan(q.x) + ' ' + ukN(q.x, 'олівець', 'олівці', 'олівців').split(' ')[1] + '. У П’єра ' + timesWord(q.k) + ' рази менше олівців, ніж у Миколи, а в Клода на ' + numSpan(q.d) + ' ' + ukN(q.d, 'олівець', 'олівці', 'олівців').split(' ')[1] + ' більше, ніж у П’єра. На скільки в Миколи більше олівців, ніж у Клода?')
     : tr('От едно ябълково дърво набрали ' + numSpan(q.x) + ' кг ябълки, а от друго — ' + numSpan(q.k) + ' пъти повече. Набраните ябълки разпределили поравно в ' + numSpan(q.m) + ' щайги. Колко килограма има във всяка от тези щайги?',
          'З однієї яблуні зібрали ' + numSpan(q.x) + ' кг яблук, а з іншої — у ' + numSpan(q.k) + ' рази більше. Зібрані яблука порівну розклали в ' + numSpan(q.m) + ' ' + ukN(q.m, 'ящик', 'ящики', 'ящиків').split(' ')[1] + '. Скільки кілограмів у кожному ящику?');
-  return '<div class="ask">' + text + '</div><div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + text + '</div>' + answerLine('xl');
 }
 function eqTimesW(q){
   if(q.shape === 0) return q.a + (q.fewer ? ' : ' : ' · ') + q.k + ' = ' + q.b + ', ' + q.a + ' + ' + q.b + ' = ' + q.ans;

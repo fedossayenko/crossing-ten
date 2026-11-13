@@ -1,7 +1,7 @@
 // Question kind 'ribbon': level 32 Ленти — Centimetres, decimetres and metres.
 
 // Задача 12: centimetres against decimetres and metres.
-import { CM, KIND, SLOT, UK_PLURAL, UNIT_MM, UNIT_W2, addUp, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UK_PLURAL, UNIT_MM, UNIT_W2, addUp, answerLine, diffBars, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 const LEN = [{ nm:'дм', cm:10 }, { nm:'м', cm:100 }];
 // МБГ Зима 2021, 2022: two ribbons measured in different units, and the difference asked in a third —
 // 1 дм against 9 см, in милиметра: 100 − 90 = 10; 9 дм against 10 мм, in сантиметра: 90 − 1 = 89.
@@ -102,7 +102,7 @@ function drawRibbon(q){
     const list = q.groups.map((g, i) => (i ? (i === q.groups.length - 1 ? tr(' и ', ' і ') : ', ') : '') + tr(RIB_N[g.n][0], RIB_N[g.n][1]) + ' — ' + tr('по ', 'по ') + ribLen(g.r)).join('');
     return '<div class="ask">' + tr('Ива купила гирлянди: ' + list + '. Колко от гирляндите са <b>по-' + (q.longer ? 'дълги' : 'къси') + '</b> от <span class="num">' + q.T + '</span> см?',
       'Іва купила гірлянди: ' + list + '. Скільки гірлянд <b>' + (q.longer ? 'довші' : 'коротші') + '</b> за <span class="num">' + q.T + '</span> см?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 7){
     // two lists side by side, so ten ribbons take five rows on a phone
@@ -112,7 +112,7 @@ function drawRibbon(q){
       [...Array(half).keys()].map(i => '<tr>' + cell(i) + cell(i + half) + '</tr>').join('') + '</table>';
     return '<div class="ask">' + tr('Лили подредила лентите в кутии. Всяка кутия съдържа ленти с еднаква дължина и всички ленти с еднаква дължина са в една кутия. Колко кутии е използвала?',
       'Лілі розклала стрічки в коробки. У кожній коробці стрічки однакової довжини, і всі стрічки однакової довжини в одній коробці. Скільки коробок вона використала?') + '</div>' +
-      T + '<div class="line lg">' + SLOT + '</div>';
+      T + answerLine('lg');
   }
   if(q.shape === 5){
     const n = (v, u) => '<span class="num">' + v + '&nbsp;' + u + '</span>';

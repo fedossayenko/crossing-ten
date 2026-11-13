@@ -3,7 +3,7 @@
 // Коледно състезание 2025, задача 1: seven triangles on squared paper, how many are NOT
 // isosceles (4). On a grid the tell is the apex: straight over the middle of a flat side,
 // or a right angle with two equal legs. Checked by the squared side lengths, never by eye.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 const isoSq = (a, b) => (a[0] - b[0])**2 + (a[1] - b[1])**2;
 export function isoTriIs(t){
   const [p, q, r] = t, x = isoSq(p, q), y = isoSq(q, r), z = isoSq(r, p);
@@ -54,7 +54,7 @@ function isoTriSvg(q){
 function drawIsoTri(q){
   return '<div class="ask">' + (q.asksNot ? tr('Колко от триъгълниците на чертежа <b>не са</b> равнобедрени?', 'Скільки трикутників на рисунку <b>не є</b> рівнобедреними?')
                                           : tr('Колко от триъгълниците на чертежа са <b>равнобедрени</b>?', 'Скільки трикутників на рисунку є <b>рівнобедреними</b>?')) + '</div>' +
-    isoTriSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    isoTriSvg(q) + answerLine('xl');
 }
 function eqIsoTri(q){
   return tr('равнобедрени: ', 'рівнобедрені: ') + q.iso.map((v, i) => v ? i + 1 : 0).filter(Boolean).join(', ') + ' → ' + q.ans;

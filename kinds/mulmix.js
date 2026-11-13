@@ -5,7 +5,7 @@
 // МБГ Есен 2024 and 2023, 3 клас, задача 1 (shape 'zero'): 7 − 3 · 2 − 2 · 0 + 2 · 4 and 20 − 2 · 3 − 2 · 0 + 2 · 3:
 // three products, one of them by 0, so 7 − 6 − 0 + 8 = 9 and 20 − 6 − 0 + 6 = 20. It is drawn after the old
 // question, so a seed that asked the old one still does, unless this draw turns it into the new shape.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genMulMix(){
   for(;;){
     const a = 10 + rnd(31), b = 2 + rnd(4), c = 2 + rnd(8), d = 2 + rnd(8);
@@ -32,7 +32,7 @@ export const mulMixExpr = q => q.shape === 'zero' ? q.a + ' − ' + q.b + ' · '
 function drawMulMix(q){
   return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
     '<div class="given">' + mulMixExpr(q) + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqMulMix(q){
   return mulMixExpr(q) + ' = ' + q.ans;

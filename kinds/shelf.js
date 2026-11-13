@@ -4,7 +4,7 @@
 // right? To its left are 14 others, so to its right are 28 − 15 = 13, and it comes after them: 13 + 1 = 14. The slips are
 // one off either way (13, or 15 — the place it had). The other way round (shape 'total'): the fifteenth from the left
 // and the fourteenth from the right — 15 + 14 counts that book twice, so 28.
-import { KIND, SLOT, numSpan, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, numSpan, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 // feminine ordinals (a book, a girl), 1–39
 const SH_BG = ['', 'първа', 'втора', 'трета', 'четвърта', 'пета', 'шеста', 'седма', 'осма', 'девета', 'десета', 'единадесета', 'дванадесета', 'тринадесета', 'четиринадесета',
   'петнадесета', 'шестнадесета', 'седемнадесета', 'осемнадесета', 'деветнадесета'];
@@ -46,7 +46,7 @@ function drawShelf(q){
       : tr('В една редица стоят ' + numSpan(q.n) + ' деца. ' + G[0] + ' е ' + shOrd(q.k) + ' отляво надясно. <b>Коя по ред е тя, ако се брои отдясно наляво?</b>',
         'У ряду стоїть ' + ukN(q.n, 'дитина', 'дитини', 'дітей').replace(/^\d+/, numSpan(q.n)) + '. ' + G[1] + ' — ' + shOrd(q.k) + ' зліва направо. <b>Яка вона за рахунком, якщо рахувати справа наліво?</b>');
   }
-  return '<div class="ask">' + ask + '</div><div class="line xl">' + SLOT + '</div>';
+  return '<div class="ask">' + ask + '</div>' + answerLine('xl');
 }
 function eqShelf(q){
   return q.shape === 'total' ? q.k + ' + ' + q.m + ' − 1 = ' + q.ans : q.n + ' − ' + q.k + ' + 1 = ' + q.ans;
@@ -60,7 +60,7 @@ function shelfSvg(q){
   if(left) g += svgText(mid(1, k - 1), 24, left, 13, 'var(--muted)', popAt(1));
   if(right) g += svgText(mid(k + 1, n), 24, right, 13, 'var(--accent)', popAt(2));
   g += svgText(mid(k, k), 82, '★', 13, 'var(--warm)', popAt(3));
-  return '<svg viewBox="0 0 300 90" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('редицата, броена от двата края', 'ряд, порахований з обох кінців') + '">' + g + '</svg>';
+  return svgFrame('0 0 300 90', 300, tr('редицата, броена от двата края', 'ряд, порахований з обох кінців')) + g + '</svg>';
 }
 function whyShelf(q, full){
   if(q.shape === 'total'){

@@ -8,7 +8,7 @@
 // 55, 22, 22 and 11 are shown; the letters are found row by row, from wherever only one box is missing:
 // A = 99 − 55 = 44, Б = 33, В = 22, then down to the base. (A+Б+В) − (Г+Д+Е+Ж+З+И+К) = 99 − 55 = 44 (here A … M).
 // rows[r][i]: row r from the top. Shown are the paper's five places; every other box has a letter.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
 /** @type {[number, number, string][]} */
@@ -63,13 +63,13 @@ function drawNumPyr(q){
     const ask = q.asks < 0 ? tr('пресметнете <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>', 'обчисліть <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>')
       : tr('кое число стои на мястото на буквата <b>' + PYR_LET[q.asks][2] + '</b>?', 'яке число стоїть на місці букви <b>' + PYR_LET[q.asks][2] + '</b>?');
     return '<div class="ask">' + tr('Всяко число в пирамидата е сборът на двете под него. След като замените буквите с числа, ', 'Кожне число в піраміді — сума двох чисел під ним. Замінивши букви числами, ') + ask + '</div>' +
-      pyrOneSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+      pyrOneSvg(q) + answerLine('xl');
   }
   const ask = q.asks === 2 ? tr('Колко е <b>разликата</b> от числата, които трябва да се запишат на мястото на звездичките?', 'Чому дорівнює <b>різниця</b> чисел, які треба записати замість зірочок?')
     : tr('Кое число трябва да се запише на мястото на звездичката в <b>' + (q.asks ? 'долната' : 'горната') + '</b> пирамида?', 'Яке число треба записати замість зірочки в <b>' + (q.asks ? 'нижній' : 'верхній') + '</b> піраміді?');
   return '<div class="ask">' + tr('В горната пирамида всяко число е сборът от двете под него, а в долната — от двете над него. Редовете, свързани с ‖, са еднакви. ',
     'У верхній піраміді кожне число — сума двох під ним, а в нижній — двох над ним. Ряди, з’єднані знаком ‖, однакові. ') + ask + '</div>' +
-    numPyrSvg(q) + '<div class="line xl">' + SLOT + '</div>';
+    numPyrSvg(q) + answerLine('xl');
 }
 function eqNumPyr(q){
   if(q.shape === 'one') return q.asks < 0 ? q.up + ' − ' + q.low + ' = ' + q.ans : PYR_LET[q.asks][2] + ' = ' + q.ans;

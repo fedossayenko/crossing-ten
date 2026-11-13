@@ -2,7 +2,7 @@
 
 // Задача 13: flowers of three kinds. Generated so that every way of reaching the
 // total with at least one of each kind gives the SAME number of flowers.
-import { KIND, SLOT, bgList, rnd, tr, ukWord } from '../js/core.js';
+import { KIND, answerLine, bgList, rnd, tr, ukWord } from '../js/core.js';
 export function genFlowers(){
   for(;;){
     const p0 = 3 + rnd(4);
@@ -27,7 +27,7 @@ function drawFlowers(q){
     'Маємо квіти з <span class="num">' + bgList(q.p) +
     '</span> пелюстками — усіх трьох видів. На всіх квітах разом <span class="num">' +
     q.T + '</span> ' + ukWord(q.T, 'пелюстка', 'пелюстки', 'пелюсток') + '. Скільки всього квіток?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqFlowers(q){
   return tr('по ' + q.p.join(', ') + ' листенца, общо ', 'пелюсток ' + q.p.join(', ') + ', разом ') +

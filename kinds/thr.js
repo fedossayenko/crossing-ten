@@ -3,7 +3,7 @@
 // Задача 19: the smallest three-digit number with all different digits is 102. Pinning a
 // digit to one place shifts it, and the gap between the two is what is asked. Found by
 // scanning rather than by a rule, so the rule cannot be got wrong.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 const POSN = ['стотиците', 'десетиците', 'единиците'];
 const allDiff = n => { const d = String(n); return d[0] !== d[1] && d[1] !== d[2] && d[0] !== d[2]; };
 function pick3(small, pos, dig, any = false){
@@ -39,7 +39,7 @@ function drawThr(q){
     : tr('С колко ' + pinned + ' е <b>по-' + (q.small ? 'голямо' : 'малко') + '</b> от ' + which + '?',
          'На скільки ' + pinned + ', <b>' + (q.small ? 'більше' : 'менше') + '</b> за ' + which + '?');
   return '<div class="ask">' + ask + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqThr(q){
   return tr((q.small ? 'най-малко' : 'най-голямо') + ', ' + POSN[q.pos] + '=' + q.dig,

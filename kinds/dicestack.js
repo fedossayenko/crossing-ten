@@ -3,7 +3,7 @@
 // МБГ Пролет 2022, 1 клас, задача 16: two dice one on the other; the top one shows 1 on top, 5 and 4 at the
 // sides, the bottom one 6 and 3. A die has 1 + 2 + 3 + 4 + 5 + 6 = 21 dots, two have 42; 19 can be seen,
 // so 42 − 19 = 23 cannot. Faces seen together on one die are never opposite (opposite faces make 7).
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function genDiceStack(){
   for(;;){
     const t = 1 + rnd(6), l = 1 + rnd(6), r = 1 + rnd(6), bl = 1 + rnd(6), br = 1 + rnd(6);
@@ -29,7 +29,7 @@ function diceStackSvg(q){
 }
 function drawDiceStack(q){
   return '<div class="ask">' + tr('Колко е броят на точките, които <b>не се виждат</b>?', 'Скільки всього точок, яких <b>не видно</b>?') + '</div>' + diceStackSvg(q) +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const diceStackSeen = q => q.top.concat(q.bot);
 function eqDiceStack(q){

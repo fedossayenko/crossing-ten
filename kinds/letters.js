@@ -3,7 +3,7 @@
 // МБГ Зима 2024, задача 18: C + 1A + B7 = 86, different letters different digits. Take
 // the known digits away: C + A + 10·B = 69. Two digits add to at most 17, so B is 6 and
 // C + A = 9 — which is all the question C + A − B needs, without finding A or C.
-import { KIND, SLOT, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, rnd, tr } from '../js/core.js';
 export function lettersSolve(d, e, N){
   const out = [];
   for(let A = 0; A <= 9; A++) for(let B = 1; B <= 9; B++) for(let C = 0; C <= 9; C++)
@@ -31,7 +31,7 @@ function drawLetters(q){
     '<div class="line md"><span class="num">' + lettersSum(q) + '</span></div>' +
     '<div class="ask">' + tr('на различните букви съответстват <b>различни цифри</b>. Пресметнете <span class="num">' + lettersAsk(q) + '</span>.',
                             'різним буквам відповідають <b>різні цифри</b>. Обчисліть <span class="num">' + lettersAsk(q) + '</span>.') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqLetters(q){
   return 'B = ' + q.B + ', C + A = ' + q.CA + ' → ' + lettersAsk(q) + ' = ' + q.ans;

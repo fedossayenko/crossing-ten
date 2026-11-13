@@ -2,7 +2,7 @@
 
 // Задача 5: find the rule, fill the two gaps — then read whether the question wants
 // the digits of the missing numbers or the numbers themselves.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genMissing(){
   if(Math.random() < 0.2){
     // Коледно 2024, задача 2: 2, 3, 5, 8, 12, …, 23, …, 38, 47 — the step grows by one each time,
@@ -111,7 +111,7 @@ function drawMissing(q){
   if(q.shape === 'many'){
     return '<div class="ask">' + tr('Колко числа са пропуснати?', 'Скільки чисел пропущено?') + '</div>' +
       '<div class="seq">' + q.run.slice(0, 3).join(', ') + ', …, ' + q.run.slice(-2).join(', ') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'gap'){
     const x = q.row[0], ex = q.row.map(v => v - 2);
@@ -136,21 +136,21 @@ function drawMissing(q){
       : i === q.hideAt[1] ? '<span class="circle">★</span>' : v).join(', ');
     return '<div class="ask"><span class="circle">★</span> − <span class="circle">●</span> = ?</div>' +
       '<div class="seq">' + shown + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
   }
   if(q.one){
     const shown = q.next ? q.seq.join(', ') + ', …' : q.seq.map((v, i) => i === q.at ? '…' : v).join(', ');
     return '<div class="ask">' + tr('Кое е <b>' + (q.next ? 'следващото' : 'пропуснатото') + '</b> число?',
       'Яке число <b>' + (q.next ? 'наступне' : 'пропущене') + '</b>?') + '</div>' +
       '<div class="seq">' + shown + '</div>' +
-      '<div class="line lg">' + SLOT + '</div>';
+      answerLine('lg');
   }
   const shown = q.seq.map((v, i) => i === q.at || i === q.at + 1 ? '…' : v).join(', ');
   return '<div class="ask">' + (q.asksDigits
       ? tr('Колко е <b>броят на цифрите</b> на пропуснатите числа?', 'Скільки <b>всього цифр</b> у пропущених числах?')
       : tr('Колко е <b>сборът</b> на пропуснатите числа?', 'Чому дорівнює <b>сума</b> пропущених чисел?')) + '</div>' +
     '<div class="seq">' + shown + '</div>' +
-    '<div class="line lg">' + SLOT + '</div>';
+    answerLine('lg');
 }
 function eqMissing(q){
   if(q.shape === 'many') return gapGone(q).join(', ') + ' → ' + q.ans;

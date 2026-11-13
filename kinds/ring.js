@@ -2,7 +2,7 @@
 
 // МБГ Зима 2020, задача 19: to Петър's left, between him and Иван, 4 children; to his right 6. The
 // two groups fill the circle between the two boys — and the boys themselves count: 4 + 6 + 2 = 12.
-import { KIND, SLOT, popAt, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, tr, ukN } from '../js/core.js';
 export function genRing(){
   const l = 1 + rnd(9), r = 1 + rnd(9);
   return {kind:'ring', l, r, ans: l + r + 2};
@@ -10,7 +10,7 @@ export function genRing(){
 function drawRing(q){
   return '<div class="ask">' + tr('Няколко деца са наредени в кръг. Отляво на Петър, между Петър и Иван, има <span class="num">' + q.l + '</span> ' + (q.l === 1 ? 'дете' : 'деца') + '. Отдясно на Петър, между Петър и Иван, има <span class="num">' + q.r + '</span> ' + (q.r === 1 ? 'дете' : 'деца') + '. Колко общо са децата в кръга?',
     'Кілька дітей стоять у колі. Ліворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.l, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Праворуч від Петра, між Петром та Іваном, <span class="num">' + ukN(q.r, 'дитина', 'дитини', 'дітей').replace(' ', '</span> ') + '. Скільки всього дітей у колі?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 function eqRing(q){
   return q.l + ' + ' + q.r + ' + 2 = ' + q.ans;

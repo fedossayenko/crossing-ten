@@ -3,7 +3,7 @@
 // МБГ Зима 2022, задача 14: a figure of 11 square tiles; 11 small squares and 3 of two by two, 14.
 // The big ones are the trap: every 2 × 2 (or 3 × 3) block of tiles is a square too. Counted here
 // by looking at every block, never by a rule.
-import { KIND, SLOT, popAt, rnd, tr } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, tr } from '../js/core.js';
 function countSquares(cells){
   const has = (x, y) => cells.some(c => c[0] === x && c[1] === y), sizes = [];
   for(let k = 1; k <= 4; k++){
@@ -47,10 +47,10 @@ function countSqSvg(cells){
 function drawCountSq(q){
   if(q.shape === 'strip') return '<div class="ask">' + tr('Фигурата е образувана от <span class="num">' + q.cells.length + '</span> еднакви малки квадратчета. Колко са <b>всичките</b> квадрати на фигурата?',
     'Фігуру утворено з <span class="num">' + q.cells.length + '</span> однакових маленьких квадратиків. Скільки <b>всього</b> квадратів на фігурі?') + '</div>' +
-    countSqSvg(q.cells) + '<div class="line xl">' + SLOT + '</div>';
+    countSqSvg(q.cells) + answerLine('xl');
   return '<div class="ask">' + tr('Фигурата е образувана от <span class="num">' + q.cells.length + '</span> квадратни плочки. Колко <b>общо</b> са квадратите на фигурата?',
     'Фігуру складено з <span class="num">' + q.cells.length + '</span> квадратних плиток. Скільки <b>всього</b> квадратів на фігурі?') + '</div>' +
-    countSqSvg(q.cells) + '<div class="line xl">' + SLOT + '</div>';
+    countSqSvg(q.cells) + answerLine('xl');
 }
 // The bigger squares of the figure, each on a small copy of its own, two by two first, then three by three.
 function countSqBig(q){

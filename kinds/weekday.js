@@ -1,5 +1,5 @@
 // Question kind 'weekday': level 25 Колко вторника? — A weekday across a run of days — two answers.
-import { KIND, SLOT, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
+import { KIND, SLOT, answerLine, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
 import { LANG } from '../js/i18n.js';
 
 export const DAYS = [                                   // f marks the feminine days: "по една", not "по един"
@@ -120,7 +120,7 @@ function drawWeekday(q){
       ' може да има сред <span class="num">' + q.n + '</span> последователни дни от календара?',
       'Скільки <b>' + (q.most ? 'найбільше' : 'найменше') + '</b> ' + weekdayUk[q.day.nm].many +
       ' може бути за <span class="num">' + q.n + '</span> ' + ukWord(q.n, 'день', 'дні', 'днів') + ' календаря поспіль?') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'which'){
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm +
@@ -128,7 +128,7 @@ function drawWeekday(q){
       'Перший день <b>' + weekdayMonUk[q.mon[0]][1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm +
       '</b>. Яким днем тижня буде <b>' + q.n + '-й</b> день цього місяця?') + '</div>' +
       '<div class="note">' + DAYS.map((d, i) => (i + 1) + ' ' + tr(d.nm, weekdayUk[d.nm].nm)).join(' · ') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'back'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
@@ -136,14 +136,14 @@ function drawWeekday(q){
       (q.ask ? 'На коя дата е <b>' + (q.day.f ? 'първата ' : 'първият ') + q.day.nm + '</b> през този месец?' : 'Колко са <b>всички</b> ' + WEEKDAY_ALL[q.day.nm] + ' през този месец?'),
       (u.f ? 'Остання ' : 'Останній ') + u.nm + ' ' + m[1] + ' — <span class="num">' + q.L + '</span>-го числа. ' +
       (q.ask ? 'Якого числа <b>' + (u.f ? 'перша ' : 'перший ') + u.nm + '</b> цього місяця?' : 'Скільки <b>всього</b> ' + u.many + ' у цьому місяці?')) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'after'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
     return '<div class="ask">' + tr('Първият ден на месец <b>' + q.mon[0] + '</b> е <b>' + q.d1.nm + '</b>. Колко <b>' + q.day.cnt + '</b> има през ' + q.mon[0] + ' <b>след</b> първия ден?',
       'Перший день <b>' + m[1] + '</b> — <b>' + weekdayUk[q.d1.nm].nm + '</b>. Скільки <b>' + u.many + '</b> у ' + m[2] + ' <b>після</b> першого дня?') + '</div>' +
       '<div class="note">' + tr('Месец ' + q.mon[0] + ' има ' + q.mon[1] + ' дни.', 'У ' + m[2] + ' ' + weekdayDays(q.mon[1]) + '.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'last'){
     const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.mon[0]];
@@ -154,7 +154,7 @@ function drawWeekday(q){
       '</b>. Якого числа буде <b>' + (u.f ? 'остання ' : 'останній ') + u.nm + '</b> ' + m[1] + '?') + '</div>' +
       '<div class="note">' + tr('Месец ' + q.mon[0] + ' има ' + q.mon[1] + ' дни.',
       'У ' + m[2] + ' ' + weekdayDays(q.mon[1]) + '.') + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   return '<div class="ask">' + tr('Колко <b>' + q.day.cnt + '</b> може да има сред <span class="num">' + q.n +
     '</span> последователни дни?',

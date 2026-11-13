@@ -4,7 +4,7 @@
 // green — how many are red? «7 are not white» is the red and the green together. The three numbers count every
 // colour twice: 7 + 3 + 6 = 16 = 8 + 8, so there are 8 balloons, and the red ones are 8 − 3 = 5.
 // Полуфинал 2023, задача 19: 6 not white, 5 not red, 3 not green — 7 balloons, 7 − 3 = 4 green.
-import { KIND, SLOT, popAt, rnd, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, tr, ukN } from '../js/core.js';
 // [Bulgarian, Ukrainian, Ukrainian genitive plural, the colour drawn]
 /** @type {[string, string, string, string][]} */
 const NC_COLS = [['бели', 'білі', 'білих', '#fff'], ['червени', 'червоні', 'червоних', 'var(--bad)'], ['зелени', 'зелені', 'зелених', 'var(--good)']];
@@ -22,7 +22,7 @@ function drawNotColor(q){
       '</span> балона не са зелени. Колко са <b>' + NC_COLS[q.ask][0] + 'те</b> балони?',
     'Є кульки трьох кольорів: білі, червоні й зелені. <span class="num">' + ukN(n[0], 'кулька', 'кульки', 'кульок').replace(' ', '</span> ') + ' не білі, <span class="num">' + ukN(n[1], 'кулька', 'кульки', 'кульок').replace(' ', '</span> ') +
       ' не червоні, а <span class="num">' + ukN(n[2], 'кулька', 'кульки', 'кульок').replace(' ', '</span> ') + ' не зелені. Скільки <b>' + NC_COLS[q.ask][2] + '</b> кульок?') + '</div>' +
-    '<div class="line xl">' + SLOT + '</div>';
+    answerLine('xl');
 }
 const ncSum = q => q.not.join(' + ') + ' = ' + 2*(q.ans + q.not[q.ask]) + ' = ' + (q.ans + q.not[q.ask]) + ' + ' + (q.ans + q.not[q.ask]);
 function eqNotColor(q){

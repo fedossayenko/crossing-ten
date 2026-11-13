@@ -5,7 +5,7 @@
 // and every 6 letters the word starts again: 15 = 6 + 6 + 3, the 3rd letter, Л. A letter
 // cannot be typed, so this kind brings its own А/Б/В/Г, and ans is the right one's id.
 // Each pair is the word in Bulgarian and in Ukrainian, the same length, no letter twice.
-import { KIND, SLOT, addUp, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, addUp, answerLine, popAt, rnd, roomFor, shuffle, svgText, tr, ukN } from '../js/core.js';
 export const WORDPOS = [['КОЛЕДА', 'КОЛЯДА'], ['СНЯГ', 'СНІГ'], ['ШЕЙНА', 'САНКИ']];
 // Есен 2019, задача 11: ○ ○ ○ ○ △ □ over and over; how many circles among the first 31. Six to a
 // round, so 31 = 5 · 6 + 1: five rounds of 4 circles, and the 31st starts a sixth — 21.
@@ -53,14 +53,14 @@ function drawWordPos(q){
     return '<div class="ask">' + tr('Колко цифри <span class="num">' + q.dig + '</span> са записани в редицата от <span class="num">' + q.n + '</span> числа?',
       'Скільки цифр <span class="num">' + q.dig + '</span> записано в ряду з <span class="num">' + q.n + '</span> чисел?') + '</div>' +
       '<div class="seq">' + Array.from({length: 2*L + 1}, (_, i) => at(i)).join(', ') + ', …, ' + at(q.n - 2) + ', ' + at(q.n - 1) + '</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   if(q.shape === 'count'){
     const what = q.sym === '○' ? tr('кръгчета', 'кружечків') : tr('триъгълничета', 'трикутничків');
     return '<div class="ask">' + tr('Според модела, показан по-долу, броейки отляво надясно, колко ' + what + ' има от 1-вия до <span class="num">' + q.n + '-ия</span> символ включително?',
       'За зразком нижче, рахуючи зліва направо, скільки ' + what + ' від 1-го до <span class="num">' + q.n + '-го</span> символу включно?') + '</div>' +
       '<div class="seq">' + q.pat.concat(q.pat, q.pat).join(' ') + ' …</div>' +
-      '<div class="line xl">' + SLOT + '</div>';
+      answerLine('xl');
   }
   const W = wordPosWord(q);
   return '<div class="ask">' + tr('Петя написала <span class="num">' + q.n + '</span> пъти ' + W + ' слято и получила една дълга дума, започваща с ',

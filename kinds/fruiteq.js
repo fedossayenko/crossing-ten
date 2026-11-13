@@ -1,7 +1,7 @@
 // Question kind 'fruiteq': level 29 Плодове — Three fruit, three totals — find one from the others.
 // Level 233 (3rd grade): two flowers, two lines with counts (genFlowerEq, shapes 'sum' and 'diff').
 // Level 279: a star and a pentagon, each once doubled (genFigTwins, shape 'twin').
-import { KIND, SLOT, fruitBody, rnd, shuffle, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, fruitBody, rnd, shuffle, tr } from '../js/core.js';
 
 export const ic = t => '<svg class="ic" viewBox="-11 -14 22 26" aria-hidden="true">' + fruitBody(t) + '</svg>';
 
@@ -81,7 +81,7 @@ function drawFlowerEq(q){
   return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + floAsk(q) + tr(', ако', ', якщо') + '</div>' +
     '<div class="eqs"><span>' + flo(0) + ' + ' + flo(1) + ' = ' + q.S + '</span>' +
     '<span>' + floTerm(q.cx, 0) + ' + ' + floTerm(q.cy, 1) + ' = ' + q.T + '</span></div>' +
-    '<div class="line md">' + SLOT + '</div>';
+    answerLine('md');
 }
 // the summary line is plain text (it is shown with textContent), so it names the numbers, not the flowers
 function eqFlowerEq(q){
@@ -139,7 +139,7 @@ function drawFruiteq(q){
     const row = (y, t) => '<text x="80" y="' + y + '" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)" font-family="Nunito, sans-serif">' + t + '</text>';
     return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="fig"><svg viewBox="0 0 160 100" style="max-width:220px" role="img" aria-label="' + tr('три равенства с фигури', 'три рівності з фігурами') + '">' +
       row(26, '● + ○ = ' + q.s1) + row(58, '○ + ■ = ' + q.s2) + row(90, '■ + ● = ' + q.s3) + '</svg></div>' +
-      '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div><div class="line xl">' + SLOT + '</div>';
+      '<div class="ask">' + tr('пресметнете ● + ○ + ■.', 'обчисліть ● + ○ + ■.') + '</div>' + answerLine('xl');
   }
   if(q.grid){
     const F = q.f.map(ic);
@@ -156,14 +156,14 @@ function drawFruiteq(q){
         cell('=') + blank + cell('=') + blank + blank +
         cell(q.C1) + blank + cell(q.C2) + blank + blank +
       '</div>' +
-      '<div class="line md">' + SLOT + '</div>';
+      answerLine('md');
   }
   const F = q.f.map(ic);
   return '<div class="ask">' + tr('Пресметнете ', 'Обчисліть ') + F[q.askd[0]] + ' − ' + F[q.askd[1]] + tr(', ако:', ', якщо:') + '</div>' +
     '<div class="eqs"><span>' + F[1] + ' + ' + F[0] + ' = ' + q.s1 + '</span>' +
     '<span>' + F[0] + ' + ' + F[2] + ' = ' + q.s2 + '</span>' +
     '<span>' + F[2] + ' + ' + F[0] + ' + ' + F[1] + ' = ' + q.s3 + '</span></div>' +
-    '<div class="line md">' + SLOT + '</div>';
+    answerLine('md');
 }
 function eqFruiteq(q){
   if(q.shape === 'twin') return eqFigTwins(q);

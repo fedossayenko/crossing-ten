@@ -1,7 +1,7 @@
 // Question kind 'shared': level 22 Обща страна — Two figures share an edge — what it costs the outline.
 
 // A square with a rectangle standing on it, corners named the way the question names them.
-import { CM, KIND, SLOT, addUp, popAt, rnd, roomFor, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, addUp, popAt, rnd, roomFor, svgFrame, svgText, tr } from '../js/core.js';
 import { sqWalkSvg } from './sqcut.js';
 function stackSvg(q){
   const u = 150 / (q.a + q.h), W = q.a * u, hh = q.h * u, aa = q.a * u;
@@ -118,7 +118,7 @@ function sharedSvg(q){
     svgText(30, 112, q.p1, 13, 'var(--accent)', popAt(1)) + svgText(150, 112, q.p2, 13, 'var(--accent)', popAt(2)) +
     svgText(85, 112, '?', 14, 'var(--warm)', popAt(3)) +
     svgText(90, 140, q.p1 + ' + ' + q.p2 + ' − ' + q.P + ' = ' + q.ans + ' + ' + q.ans, 15, 'var(--ink)', popAt(4));
-  return '<svg viewBox="-30 -10 240 160" style="display:block; width:280px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('двете части и общата им страна', 'дві частини і їхня спільна сторона') + '">' + g + '</svg>';
+  return svgFrame('-30 -10 240 160', 280, tr('двете части и общата им страна', 'дві частини і їхня спільна сторона')) + g + '</svg>';
 }
 function whyShared(q, full){
   const text = whySharedText(q, full);

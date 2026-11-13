@@ -1,5 +1,5 @@
 // Question kind 'paint': level 34 Оцветени — Paint whole rows and columns — what is left.
-import { KIND, SLOT, addUp, gridSvg, popAt, rnd, roomFor, svgText, tr, ukWord } from '../js/core.js';
+import { KIND, addUp, answerLine, gridSvg, popAt, rnd, roomFor, svgText, tr, ukWord } from '../js/core.js';
 
 const BGROW = {1:['един ред','един стълб'], 2:['два реда','два стълба'], 3:['три реда','три стълба']};
 
@@ -25,7 +25,7 @@ function drawPaint(q){
     paintRowUk[q.r][0] + '</b> і в <b>' + paintRowUk[q.c][1] + '</b>, скільки квадратиків ' +
     (q.asksLeft ? 'залишиться <b>незафарбованими</b>' : 'буде <b>зафарбовано</b>') + '?') + '</div>' +
     gridSvg(q.C, q.R, 0, 0) +
-    '<div class="line md">' + SLOT + '</div>';
+    answerLine('md');
 }
 function eqPaint(q){
   return tr(q.R + ' на ' + q.C + ', оцветени ' + q.r + ' реда и ' + q.c + ' стълба → ' + q.ans,
