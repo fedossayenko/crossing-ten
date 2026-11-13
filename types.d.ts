@@ -76,3 +76,11 @@ declare var google: any;
 
 /** iOS Safari: true when opened from the home screen */
 interface Navigator { standalone?: boolean }
+
+// sw.js and worker/index.js run outside the page (a service worker, a Cloudflare Worker): only what they use,
+// merged into the DOM types, so no extra type package is needed. The page itself never calls these.
+interface ExtendableEvent extends Event { waitUntil(p: Promise<any>): void }
+interface FetchEvent extends ExtendableEvent { request: Request; respondWith(r: Promise<Response> | Response): void }
+interface WindowEventMap { install: ExtendableEvent; activate: ExtendableEvent; fetch: FetchEvent }
+interface Window { skipWaiting(): Promise<void>; clients: { claim(): Promise<void> } }
+interface SubtleCrypto { timingSafeEqual(a: BufferSource, b: BufferSource): boolean }   // the Workers runtime's own
