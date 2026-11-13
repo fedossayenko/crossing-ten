@@ -71,7 +71,8 @@ export let COMP = null, compTick = null;
 export function setComp(c, tick){ COMP = c; compTick = tick; }   // compete.js starts one
 try { const raw0 = localStorage.getItem(LS); if(raw0) LOCAL = Object.assign(LOCAL, JSON.parse(raw0)); } catch(e){}
 // the next paper's date was kept here, on one device; it is in the player's record now (PLAYER.next), which sync carries to the others
-if(LOCAL.next){ if(PLAYER.next === undefined){ PLAYER.next = LOCAL.next; PLAYER.updated = Date.now(); savePlayers(); } delete LOCAL.next; }
+if(LOCAL.next){ if(PLAYER.next === undefined){ PLAYER.next = LOCAL.next; savePlayers(); }   // updated is not bumped: this device may be the stale one, and the record with the newer updated wins a sync
+  delete LOCAL.next; saveLocal(); }
 // calm: the player's own "less motion", on top of the system setting
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches || !!LOCAL.calm;
 document.documentElement.classList.toggle('calm', !!LOCAL.calm);
@@ -417,7 +418,7 @@ export function show(){
 // showing and loads it afresh, and a new build reloads it too — she comes back to the same task.
 // A competition is kept the same way, under its own key (js/compete.js paperSnap): its clock is real time, so it goes on.
 const RS = LS + '.round', PS = LS + '.paper';
-function saveRound(){
+export function saveRound(){
   try {
     if(COMP){ localStorage.removeItem(RS); localStorage.setItem(PS, JSON.stringify(paperSnap())); }
     else localStorage.setItem(RS, JSON.stringify({ at:Date.now(), s:{ level:S.level, qs:S.qs, i:S.i, results:S.results, typed:S.typed,

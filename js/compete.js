@@ -12,7 +12,7 @@ import { accepts, answers, drawQ, eqText, mbgPts, openAns, raw, seededRaw, slipO
 import { LEVELS } from './levels.js';
 import { PLAYER } from './players.js';
 import { LANG, t } from './i18n.js';
-import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, setComp, sfx, show } from './app.js';
+import { COMP, GLYPH, LOCAL, S, back, clearTimers, clock, compFocus, compTick, finish, fromName, go, groupOf, newRound, saveRound, setComp, sfx, show } from './app.js';
 import { choiceHtml, letterOf } from './choice.js';
 export const COMP_N = 20, COMP_MIN = 60;
 // МБГ Есен 2026, 2 клас, as forecast: a task from each level, in the order the forecast page puts them
@@ -128,6 +128,7 @@ export function compAnswer(){
   S.typed[S.i] = ok ? undefined : S.parts.join(' · ');
   S.slip[S.i] = ok ? undefined : slipOf(q, S.parts);
   sfx.tap();
+  saveRound();   // her answer is kept before she moves on (a reload on a choice she has not yet gone on from)
   clearTimeout(COMP.go);
   if(q.options){ $('nextBtn').disabled = false; return; }   // a choice waits for Next: she may still change it
   COMP.go = setTimeout(compNext, 150);
@@ -159,6 +160,7 @@ function compCheck(){
   $('verdict').textContent = ''; $('hint').innerHTML = '';
   $('stage').querySelectorAll('.chk').forEach(b => b.onclick = () => { COMP.check = false; S.i = +b.dataset.k; (COMP.looked = COMP.looked || new Set()).add(S.i); show(); });
   $('handIn').onclick = e => { e.stopPropagation(); compEnd(); };
+  saveRound();   // the check is part of the paper in progress (a reload on it opens it again)
 }
 export function compEnd(){
   if(!COMP) return;
