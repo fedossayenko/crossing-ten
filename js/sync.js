@@ -40,6 +40,7 @@ function keepRounds(p, rounds){
   saveStore(roundsKey(p), Object.assign(kept, { rounds }));
 }
 
+let reloadNow = false;      // the player in use was deleted on another device
 function mergeFromServer(r){
   let reload = false;
   PLAYERS.gone = PLAYERS.gone || [];
@@ -51,7 +52,7 @@ function mergeFromServer(r){
     PLAYERS.list = PLAYERS.list.filter(p => p.id !== g.id);
     try { localStorage.removeItem(roundsKey(mine)); } catch(e){}
     ARCHIVE.drop(mine.id); delete ARCH[mine.id];
-    if(mine.id === PLAYER.id) reload = true;
+    if(mine.id === PLAYER.id) reload = reloadNow = true;       // PLAYER and LOCAL are stale now: no waiting
   });
   (r.players || []).forEach(p => {
     if(PLAYERS.gone.some(g => g.id === p.id && g.updated >= (p.updated || 0))) return;
@@ -82,10 +83,15 @@ function mergeFromServer(r){
   return reload;
 }
 
+// AbortSignal.timeout is missing before Safari 16
+function timeoutSignal(ms){
+  if(AbortSignal.timeout) return AbortSignal.timeout(ms);
+  const c = new AbortController(); setTimeout(() => c.abort(), ms); return c.signal;
+}
 async function account(path, body){
   const headers = { 'content-type':'application/json' };
   if(IN()) headers.authorization = 'Bearer ' + FAMILY.token;
-  const res = await fetch(SYNC_URL + path, { method:'POST', headers, body: JSON.stringify(body || {}), signal: AbortSignal.timeout(15000) });
+  const res = await fetch(SYNC_URL + path, { method:'POST', headers, body: JSON.stringify(body || {}), signal: timeoutSignal(15000) });
   return { status: res.status, body: await res.json().catch(() => ({})) };
 }
 
@@ -94,7 +100,7 @@ export let syncing = null;
 // round or a paper, as newerBuild in app.js does: it would lose what she has typed.
 let reloadPending = false;
 const reloadWhenIdle = () => {
-  if(!reloadPending || COMP || midRound()) return;
+  if(!reloadPending || (!reloadNow && (COMP || midRound()))) return;
   reloadPending = false; chose(); location.reload();
 };
 setInterval(reloadWhenIdle, 5000);
@@ -104,9 +110,10 @@ export function syncNow(){
   if(syncing) return syncing;
   syncing = (async () => {
     let reload = false, ok = false;
+    const F = FAMILY;       // a reply belongs to the family that asked: logging out, or into another family, ends this sync
     try {
       await ARCHIVE_READY;          // the whole log first: what was sent is told apart by the rounds held here
-      if(!FAMILY) return false;     // logged out meanwhile
+      if(FAMILY !== F) return false;
       FAMILY.sent = FAMILY.sent || {};
       for(let page = 0; page < 20; page++){
         const out = [];
@@ -117,18 +124,19 @@ export function syncNow(){
         const batch = out.slice(0, 1500);
         const res = await account('/sync', { since: FAMILY.cursor || 0, players: PLAYERS.list.map(p => Object.assign({ updated:0 }, p)),
                                             gone: PLAYERS.gone || [], rounds: batch, device: deviceLabel() });
-        if(!FAMILY) return false;             // logged out while this was on its way: nothing of it belongs here now
+        if(FAMILY !== F) return false;             // logged out (or into another family) while this was on its way: nothing of it belongs here now
         if(res.status === 401){ FAMILY = null; break; }          // this session was logged out
         if(res.status !== 200) throw new Error('sync ' + res.status);
         const r = res.body;
         // only what the server stored counts as sent; a round it refused (too big) stays unsent
         const refused = new Set(((r.refused || {}).rounds || []).map(x => x.player + '/' + x.id));
         batch.forEach(x => { if(!refused.has(x.player + '/' + x.round.id)) (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id); });
+        if((r.refused || {}).players && r.refused.players.length) console.warn('sync: the server refused players', r.refused.players);   // a record over its size limit: it stays here, unsynced
         reload = mergeFromServer(r) || reload;
         FAMILY.account = r.account;          // null: a family made with Google alone, still without a family name
         if(r.devices) FAMILY.devices = r.devices;   // the family's devices, latest first (this one marked me)
         FAMILY.cursor = r.cursor;
-        if(!r.more && out.length <= batch.length) break;
+        if(reloadNow || (!r.more && out.length <= batch.length)) break;       // a deleted current player: stop before sending her again
       }
       if(FAMILY){
         // only ids still held here need remembering
@@ -137,7 +145,7 @@ export function syncNow(){
         FAMILY.at = Date.now(); FAMILY.failed = false;
       }
       ok = true;
-    } catch(e){ if(FAMILY) FAMILY.failed = true; }
+    } catch(e){ if(FAMILY === F && F) F.failed = true; }
     finally { syncing = null; }
     saveFamily();
     paintSync();

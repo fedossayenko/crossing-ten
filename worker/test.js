@@ -210,8 +210,8 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   // wrong passwords are counted in the database: five at once lock the account
   const L = 'lock ' + tag;
   await signup(L);
-  await Promise.all([1, 2, 3, 4, 5].map(() => call('/login', { name: L, password: 'wrong horse' })));
-  ok((await call('/login', { name: L, password: 'correct horse' })).status === 429, 'five parallel wrong passwords should lock the account');
+  await Promise.all([1, 2, 3, 4, 5, 6, 7, 8].map(() => call('/login', { name: L, password: 'wrong horse' })));
+  ok((await call('/login', { name: L, password: 'correct horse' })).status === 429, 'eight parallel wrong passwords should lock (the lock must hold past the fifth) the account');
   // and one address only so often: the 11th try in a minute is refused, another address is not
   if(LOCAL){
     IP = '203.0.113.' + crypto.randomInt(250);

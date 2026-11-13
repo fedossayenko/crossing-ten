@@ -48,7 +48,7 @@ const same = (a, b) => a.length === b.length && crypto.subtle.timingSafeEqual(en
 // true when it was the FAILS-th in a row, which locks the account and starts over from 0.
 async function wrongPass(db, name, now){
   const row = await db.prepare(`UPDATE accounts SET fails = CASE WHEN fails + 1 >= ?2 THEN 0 ELSE fails + 1 END,
-    locked = CASE WHEN fails + 1 >= ?2 THEN ?3 ELSE 0 END WHERE name = ?1 RETURNING locked`).bind(name, FAILS, now + LOCK_MS).first();
+    locked = CASE WHEN fails + 1 >= ?2 THEN ?3 ELSE locked END WHERE name = ?1 RETURNING locked`).bind(name, FAILS, now + LOCK_MS).first();
   return !!row && row.locked > 0;
 }
 const keyOf = name => String(name || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
