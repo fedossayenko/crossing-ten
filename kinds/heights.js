@@ -37,7 +37,7 @@ function eqHeights(q){
   return q.c.map(fem).join(' < ') + ' → ' + fem(q.c[q.shape === 'high' ? 3 : 0]);
 }
 function whyHeights(q, full){
-  if(!full) return tr('Подреди ги от най-ниската до най-високата: първо двете от първото изречение, после тази от второто.', 'Розстав від найнижчої до найвищої: спершу ті, що в першому реченні, потім та, що в другому.');
+  if(!full) return tr('Подреди ги от най-ниската до най-високата: първо тези от първото изречение, после тази от второто.', 'Розстав від найнижчої до найвищої: спершу ті, що в першому реченні, потім та, що в другому.');
   return q.c.map(i => swatch(i) + fem(i)).join(' &lt; ') + ' &nbsp;→&nbsp; ' + tr(q.shape === 'high' ? 'най-висока е ' : 'най-ниска е ', q.shape === 'high' ? 'найвища — ' : 'найнижча — ') + '<b>' + fem(q.c[q.shape === 'high' ? 3 : 0]) + '</b>';
 }
 KIND.heights = { draw:drawHeights, eq:eqHeights, why:whyHeights };
