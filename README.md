@@ -308,7 +308,7 @@ ratings put above their level were moved). On 2026-10-18 the layers rule below s
 shapes were two dots apart: 300 from 79 (Зима 2020–2023's long chains), 301 from 24 (Зима 2023's sums from a
 list), 302 from 55 (where the run must stop, Есен 2019 and 2020 #9), 303 from 17 (the widest gap, Есен 2022 #10),
 304 before 21 (a square cut into squares), 305 before 146 (the boxes) and 306 before 154 (one leg's minutes);
-24, 55, 79 and 17 went down a dot with their hard shape gone.
+24, 55, 79 and 17 went down a dot with their hard shape gone; 11 and 130 followed on 2026-11-14, when `check/shapes.js` began to require that a level be as hard as its hardest shape (19, 23, 98, 146 and 160 kept their dots: one shape each was rated up to match).
 
 **One level is one layer of difficulty.** A task the papers ask in several forms (another year, a later
 round, another competition, a harder variant) stays one level only while its forms are about equally hard:

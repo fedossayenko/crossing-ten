@@ -19,6 +19,8 @@
       if(d > L.d) throw new Error('level ' + L.id + ' (d' + L.d + ') hides a harder shape: ' + s + ' is d' + d + ' (' + Math.round(seen[s] / 30) + '% of its questions) — give it a level of its own, or rate the level up');
       rated++;
     }
+    // and the level is as hard as its hardest shape: a split that took the hard shape away re-rates the level (23, 11, 19 kept theirs once)
+    if(Math.max(...Object.values(L.shapes)) !== L.d) throw new Error('level ' + L.id + ' (d' + L.d + ') is harder than all its shapes (' + Object.entries(L.shapes).map(([s, d]) => s + ' d' + d).join(', ') + '): rate the level down, or the shape that makes it d' + L.d + ' up');
     // one level is one layer: shapes two dots apart are two layers, and a ✓ on the easy one would stand for both
     const ds = Object.values(L.shapes), lo = Math.min(...ds), hi = Math.max(...ds);
     if(hi - lo > 1) throw new Error('level ' + L.id + ' mixes layers: ' + Object.entries(L.shapes).filter(([, d]) => d === lo).map(([s]) => s).join(', ') + ' d' + lo +
