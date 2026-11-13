@@ -3,48 +3,21 @@
 // The app as a whole: the level table, the modules, the languages, the mistakes it names,
 // А/Б/В/Г, and the training path.
 
-// The level table is a static thing, so it is checked on the file rather than through
-// the generators: every level rated, in a known group, and easiest first.
+// The ordering rules below stay with the 57 autumn rows they were designed for (ids 1-58, no 3): on other papers
+// groundwork can be harder than a level it unlocks (the times table, d:3, opens "3 + 3 + 3 − 3 · 3", d:2).
+// Every row's own sanity (id, difficulty, group, prerequisites) is checked on the whole table just after.
 {
-  const block = js.slice(js.indexOf('const LEVELS = ['), js.indexOf('// Picker sections'));
-  const rows = [...block.matchAll(/id:(\d+), op:.(.).(?:, grp:.(\w+).)?(?:, needs:\[([\d,]*)\])?, d:(\d),(?: shapes:\{[^}]*\},)? eq:(?:'(.*?)'|\{ bg:'(.*?)'.*?\}), desc/g)]
-    .map(m => ({ id:+m[1], grp: m[3] || m[2], needs: m[4] ? m[4].split(',').map(Number) : [], d:+m[5], eq:m[6] || m[7] }));
-  if(rows.length !== 58) throw new Error('parsed ' + rows.length + ' levels, expected 58');
-  const seen = new Set();
-  rows.forEach(r => {
-    if(!(r.d >= 1 && r.d <= 5)) throw new Error(r.eq + ' has no usable difficulty');
-    if(seen.has(r.id)) throw new Error('level id ' + r.id + ' appears twice');
-    seen.add(r.id);
-  });
-  const known = ['-', '+', 'chain', 'count', 'num', 'seq', 'find', 'word', 'geo'];
-  rows.forEach(r => { if(known.indexOf(r.grp) < 0) throw new Error(r.eq + ' is in no known group'); });
-  known.slice(2).forEach(g => {
+  const rows = APP.LEVELS.filter(l => l.id <= 58).map(l => ({ id: l.id, grp: l.grp || l.op, needs: l.needs || [], d: l.d, eq: l.eq.bg || l.eq }));
+  if(rows.length !== 57) throw new Error('found ' + rows.length + ' autumn levels (ids 1-58), expected 57');
+  [...new Set(rows.map(r => r.grp))].filter(g => !['-', '+', 'x'].includes(g)).forEach(g => {
     const ds = rows.filter(r => r.grp === g).map(r => r.d);
     if(ds.some((v, i) => i && v < ds[i-1])) throw new Error('group ' + g + ' is not easiest first');
   });
   const ladder = rows.filter(r => r.grp === '-' || r.grp === '+').map(r => r.d);
   if(ladder.join() !== '2,2,3,1,2,3') throw new Error('the arithmetic ladder lost its designed order');
-  // prerequisites must exist, never point forward, and never form a cycle
-  const byId = {};
-  rows.forEach(r => byId[r.id] = r);
-  rows.forEach(r => r.needs.forEach(n => {
-    if(!byId[n]) throw new Error(r.eq + ' needs a level that does not exist: ' + n);
-    if(byId[n].d > r.d) throw new Error(r.eq + ' needs something harder than itself: ' + byId[n].eq);
-  }));
-  const depth = (id, seen) => {
-    if(seen.has(id)) throw new Error('prerequisites form a loop at ' + byId[id].eq);
-    seen.add(id);
-    return byId[id].needs.reduce((d, n) => Math.max(d, 1 + depth(n, new Set(seen))), 0);
-  };
-  rows.forEach(r => depth(r.id, new Set()));
-  // starting from nothing learned, the path must be able to reach every level
-  {
-    const done = new Set();
-    for(let pass = 0; pass < 50 && done.size < rows.length; pass++)
-      rows.forEach(r => { if(!done.has(r.id) && r.needs.every(n => done.has(n))) done.add(r.id); });
-    if(done.size !== rows.length) throw new Error('some levels can never be reached by the path');
-  }
-  console.log('level table: all 57 rated 1-5, grouped, easiest first, prerequisites sound and reachable');
+  const byId = Object.fromEntries(rows.map(r => [r.id, r]));
+  rows.forEach(r => r.needs.forEach(n => { if(byId[n] && byId[n].d > r.d) throw new Error(r.eq + ' needs something harder than itself: ' + byId[n].eq); }));
+  console.log('level table: the 57 autumn levels are easiest first in their groups, the arithmetic ladder is as designed, no prerequisite is harder than its level');
 }
 // The same table as the app loads it — every row, whatever order its fields are written in. The two
 // ordering rules above stay with the 57 autumn rows they were designed for: on other papers groundwork

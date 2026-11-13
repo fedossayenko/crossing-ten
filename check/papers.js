@@ -227,7 +227,6 @@
    asks exactly that question, so the printed task is one she can really meet. */
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
   const paper = [
@@ -279,7 +278,6 @@
    as printed, and met by its level's own generator. */
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
   const paper = [
@@ -328,7 +326,6 @@
    a name, a colour or a thing to count, the numbers alone are matched (the listed fields). */
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const metExact = [], metLike = [];
   const paper = [
@@ -375,7 +372,6 @@
    level picks a name, a colour or a thing to count, the listed fields alone are matched. */
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const T = (op, n) => ({ op, n }), chain = (...xs) => xs.map((x, i) => i ? T(x < 0 ? '−' : '+', Math.abs(x)) : T('', x));
   const D = nm => Q.DAYS.find(d => d.nm === nm), run = (a, b, s) => { const r = []; for(let v = a; s > 0 ? v <= b : v >= b; v += s) r.push(v); return r; };
   const paperCheck = (name, tag, keyText, paper, missing) => {

@@ -49,11 +49,13 @@ const js = scripts.map(read).map(classic).join('\n');
   const parts = Array.from({ length: N }, (_, w) => ids.filter((_, i) => i % N === w));   // interleaved: costly levels spread out
   const levelRuns = parts.map(part => new Promise((ok, fail) => {
     const w = new Worker(__filename, { workerData: { part } });
-    w.on('message', ok); w.on('error', fail); w.on('exit', c => { if(c) fail(new Error('a level worker stopped with ' + c)); });
+    const t0 = Date.now();
+    w.on('message', r => { if(process.env.CHECK_TIME) console.error('TIME level thread', Date.now() - t0, 'levels', part.length); ok(r); });
+    w.on('error', fail); w.on('exit', c => { if(c) fail(new Error('a level worker stopped with ' + c)); });
   }));
   levelRuns.forEach(p => p.catch(() => {}));   // reported where they are awaited, below
   if(N) Object.assign(globalThis, { LEVEL_PART: [], LEVEL_REPORT: () => {} });   // this thread: the helpers and the small checks only
-  ['check/levels.js', 'check/kinds.js'].forEach(f => vm.runInThisContext(read(f), { filename:f }));
+  ['check/levels.js', 'check/kinds.js'].forEach(f => { const t0 = Date.now(); vm.runInThisContext(read(f), { filename:f }); if(process.env.CHECK_TIME) console.error('TIME', f, Date.now() - t0, N && f === 'check/levels.js' ? '(helpers only: the levels run in the threads)' : ''); });
 
   // A printed task is replayed from a seed instead of searched for among hundreds of thousands of draws:
   // seeded(seed, fn) (js/core.js) runs fn with Math.random drawn from that seed, so a level's generator
@@ -91,6 +93,9 @@ const js = scripts.map(read).map(classic).join('\n');
   // shapes.js reads what the level threads drew, so it runs once they are done
   const beside = fs.readdirSync(__dirname + '/check').filter(f => f.endsWith('.js')).map(f => 'check/' + f)
     .filter(f => !inScope.includes(f) && f !== 'check/golden.js' && f !== 'check/shapes.js').sort().concat('check/golden.js');
+  // Shared by the check files below (they are eval'd in this scope): a drawn task as plain text, tags and spaces gone.
+  // A file that needs another reading of it declares its own `strip`.
+  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   // every kind file is loaded by the page, and the page loads no kind that is not there
   {
     const files = fs.readdirSync(__dirname + '/kinds').filter(f => f.endsWith('.js')).map(f => 'kinds/' + f), listed = scripts.filter(f => f.startsWith('kinds/'));

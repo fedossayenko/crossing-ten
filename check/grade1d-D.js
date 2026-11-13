@@ -4,7 +4,6 @@
 // worked out again by brute force.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   const run = (a, b) => Array.from({length: b - a + 1}, (_, i) => a + i);
   const one = f => f.length === 1 ? f[0] : 'fits ' + f;

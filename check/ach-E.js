@@ -5,7 +5,6 @@
 // is worked out again another way.
 {
   const Q = APP;
-  const strip = h => String(h).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, '');
   const fail = (m, q) => { throw new Error(m + ' ' + JSON.stringify(q)); };
   // sig: the fields that make the printed question; tries: how far to search when no seed is recorded
   const pin = (name, tag, id, q, key, shows, sig, tries = 2e6) => {
