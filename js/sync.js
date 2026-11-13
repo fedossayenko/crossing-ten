@@ -10,7 +10,7 @@ import { setW } from './questions.js';
 import { PLAYER, PLAYERS, roundsKey, savePlayers } from './players.js';
 import { ARCHIVE, keeps, unionRounds } from './archive.js';
 import { LANG, LANG_TAG, t } from './i18n.js';
-import { ARCH, ARCHIVE_READY, LOCAL, builtOn, chose, heldHere, lsRounds, renderParent, renderStats, saveLocal, saveStore, say, weightsFrom } from './app.js';
+import { ARCH, ARCHIVE_READY, COMP, LOCAL, builtOn, chose, heldHere, lsRounds, midRound, renderParent, renderStats, saveLocal, saveStore, say, weightsFrom } from './app.js';
 const SYNC_URL = (() => { try { return localStorage.getItem('crossingten.syncurl'); } catch(e){ return null; } })()
   || 'https://crossing-ten-sync.sayenkofedor.workers.dev';   // worker/, deployed with wrangler
 // Google sign-in's web client id (Google Cloud console → Credentials); empty hides the button.
@@ -85,18 +85,28 @@ function mergeFromServer(r){
 async function account(path, body){
   const headers = { 'content-type':'application/json' };
   if(IN()) headers.authorization = 'Bearer ' + FAMILY.token;
-  const res = await fetch(SYNC_URL + path, { method:'POST', headers, body: JSON.stringify(body || {}) });
+  const res = await fetch(SYNC_URL + path, { method:'POST', headers, body: JSON.stringify(body || {}), signal: AbortSignal.timeout(15000) });
   return { status: res.status, body: await res.json().catch(() => ({})) };
 }
 
 export let syncing = null;
+// A reload after a sync (another device changed this player's language, mascot or grade) waits for the end of a
+// round or a paper, as newerBuild in app.js does: it would lose what she has typed.
+let reloadPending = false;
+const reloadWhenIdle = () => {
+  if(!reloadPending || COMP || midRound()) return;
+  reloadPending = false; chose(); location.reload();
+};
+setInterval(reloadWhenIdle, 5000);
 export function syncNow(){
   if(!SYNC_ON || !IN()) return Promise.resolve(false);
+  reloadWhenIdle();
   if(syncing) return syncing;
   syncing = (async () => {
-    await ARCHIVE_READY;          // the whole log first: what was sent is told apart by the rounds held here
-    let reload = false;
+    let reload = false, ok = false;
     try {
+      await ARCHIVE_READY;          // the whole log first: what was sent is told apart by the rounds held here
+      if(!FAMILY) return false;     // logged out meanwhile
       FAMILY.sent = FAMILY.sent || {};
       for(let page = 0; page < 20; page++){
         const out = [];
@@ -107,10 +117,13 @@ export function syncNow(){
         const batch = out.slice(0, 1500);
         const res = await account('/sync', { since: FAMILY.cursor || 0, players: PLAYERS.list.map(p => Object.assign({ updated:0 }, p)),
                                             gone: PLAYERS.gone || [], rounds: batch, device: deviceLabel() });
+        if(!FAMILY) return false;             // logged out while this was on its way: nothing of it belongs here now
         if(res.status === 401){ FAMILY = null; break; }          // this session was logged out
         if(res.status !== 200) throw new Error('sync ' + res.status);
         const r = res.body;
-        batch.forEach(x => (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id));
+        // only what the server stored counts as sent; a round it refused (too big) stays unsent
+        const refused = new Set(((r.refused || {}).rounds || []).map(x => x.player + '/' + x.id));
+        batch.forEach(x => { if(!refused.has(x.player + '/' + x.round.id)) (FAMILY.sent[x.player] = FAMILY.sent[x.player] || []).push(x.round.id); });
         reload = mergeFromServer(r) || reload;
         FAMILY.account = r.account;          // null: a family made with Google alone, still without a family name
         if(r.devices) FAMILY.devices = r.devices;   // the family's devices, latest first (this one marked me)
@@ -123,14 +136,15 @@ export function syncNow(){
         Object.keys(FAMILY.sent).forEach(id => { if(!PLAYERS.list.some(p => p.id === id)) delete FAMILY.sent[id]; });
         FAMILY.at = Date.now(); FAMILY.failed = false;
       }
-    } catch(e){ FAMILY.failed = true; }
+      ok = true;
+    } catch(e){ if(FAMILY) FAMILY.failed = true; }
+    finally { syncing = null; }
     saveFamily();
     paintSync();
     if(!$('stats').hidden) renderStats();
     if(!$('parent').hidden) renderParent();
-    syncing = null;
-    if(reload){ chose(); location.reload(); }
-    return IN() && !FAMILY.failed;
+    if(reload){ reloadPending = true; reloadWhenIdle(); }
+    return ok && IN() && !FAMILY.failed;
   })();
   return syncing;
 }
@@ -151,10 +165,10 @@ export function paintSync(){
   $('devList').innerHTML = devs.length > 1 ? devs.map(d => '<div class="devrow' + (d.me ? ' me' : '') + '"><span>' + esc(d.device || '?') +
     (d.me ? ' · ' + t('thisDevice') : '') + '</span><span>' + ago(d.last) + '</span></div>').join('') : '';
   $('syncChangePass').hidden = !FAMILY.account || !$('passForm').hidden;   // a family name has a password to change
-  googleButton($('gLink'));        // logged in, it links a Google account to this family
+  if(!$('parent').hidden) googleButton($('gLink'));        // logged in, it links a Google account to this family
 }
 // what this device calls itself on the family's list: "iPad · Safari" (an iPad says it is a Mac, but has a touch screen)
-export function deviceLabel(){
+function deviceLabel(){
   const ua = navigator.userAgent, mac = /Macintosh/.test(ua);
   const kind = /iPad/.test(ua) || (mac && navigator.maxTouchPoints > 1) ? 'iPad' : /iPhone/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' :
     mac ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : '';
@@ -242,6 +256,7 @@ $('syncLeave').onclick = () => {
   FAMILY = null; saveFamily(); paintSync(); say(heldHere());
 };
 
+const gWant = new Map();      // buttons waiting for Google's script
 // Google: its button hands back a signed ID token, which the Worker checks with Google.
 function googleButton(el){
   if(!GOOGLE_ID || !SYNC_ON) return;
@@ -252,15 +267,19 @@ function googleButton(el){
     el.hidden = false;
   };
   if(window.google && window.google.accounts) return draw();
+  gWant.set(el, draw);
   if(document.getElementById('gsi')) return;
   const s = document.createElement('script');
-  s.id = 'gsi'; s.src = 'https://accounts.google.com/gsi/client'; s.onload = draw;
+  s.id = 'gsi'; s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = () => { gWant.forEach(f => f()); gWant.clear(); };
+  s.onerror = () => { s.remove(); gWant.clear(); };      // offline now: the next time it is wanted, it tries again
   document.head.appendChild(s);
 }
 async function googleIn(credential){
   let r = null;
   try { r = await account('/google', { credential }); } catch(e){}
   if(r && r.body.linked){ say(t('googleLinked')); return; }
+  if(r && r.status === 409 && IN()){ say(t('syncFailed')); return; }      // that Google account already opens another family
   // a family made with Google alone has no family name; show whose Google it is instead
   let who = '';
   try { const p = JSON.parse(decodeURIComponent(escape(atob(credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))); who = p.name || p.email || ''; } catch(e){}
@@ -272,6 +291,8 @@ async function googleIn(credential){
 let syncTimer = null;
 export const syncSoon = () => { clearTimeout(syncTimer); syncTimer = setTimeout(syncNow, 800); };
 document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible') syncSoon(); });
+// Google's script is fetched only when a button is on screen: the login sheet, or the grown-ups' screen once this device is in.
+new MutationObserver(() => { if(!$('parent').hidden && IN() && SYNC_ON) googleButton($('gLink')); }).observe($('parent'), { attributes:true, attributeFilter:['hidden'] });
 // The first paint and sync, once app.js has set the page up: as a module this file runs before app.js
 // (app.js imports it), and paintSync reads what app.js defines.
 export function startSync(){ paintSync(); syncNow(); }

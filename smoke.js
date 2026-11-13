@@ -792,8 +792,8 @@ const server = http.createServer((req, res) => {
     await settle(2500);
     const rb = await run(playOne);
     await open(A); await settle(1500);
-    const a2 = await page(`{ name: PLAYER.name, has: LOCAL.rounds.some(r => r.id === '${rb}'), synced: $('synced').textContent }`);
-    expect(a2.name === 'Ани' && a2.has, 'device A did not get the name and round from B: ' + JSON.stringify(a2));
+    const a2 = await page(`{ name: PLAYER.name, has: LOCAL.rounds.some(r => r.id === '${rb}'), synced: $('synced').textContent, gsi: !!document.getElementById('gsi') }`);
+    expect(a2.name === 'Ани' && a2.has && !a2.gsi, 'device A did not get the name and round from B, or loaded Google\'s script at launch: ' + JSON.stringify(a2));
     // the family's devices: both listed on the players' screen, this one marked; then A changes the password,
     // a wrong current one first
     await run(`syncNow().then(() => $('who').click()); 1`); await settle(1500);
@@ -807,15 +807,23 @@ const server = http.createServer((req, res) => {
     expect(pw1.msg && pw1.open && pw2.closed && pw2.again, 'changing the password went wrong: ' + JSON.stringify({ pw1, pw2 }));
     // A resets her progress; B drops the older rounds on its next sync
     await run(`$('tabBadges').click(); $('reset').click(); $('reset').click(); 1`); await settle(1500);
+    // the password change ended B's session: B is logged out, and logs in again with the new password
     await open(B); await settle(2000);
-    const b2 = await page(`{ n: LOCAL.rounds.length }`);
-    expect(b2.n === 0, 'a reset on A did not reach B: ' + JSON.stringify(b2));
+    const b2o = await page(`{ in: IN(), login: !$('syncOff').hidden }`);
+    expect(!b2o.in && b2o.login, 'changing the password did not end the other device\'s session: ' + JSON.stringify(b2o));
+    await run(`$('tabParents').click(); $('syncLogin').click(); 1`); await settle(300);
+    await run(fill('smoke-pass-2', 'lLogin')); await settle(2500);
+    const b2 = await page(`{ n: LOCAL.rounds.length, in: IN() }`);
+    expect(b2.in && b2.n === 0, 'a reset on A did not reach B: ' + JSON.stringify(b2));
     // logging out on B ends only B's session; A keeps syncing
     await run(`$('syncLeave').click(); 1`); await settle(800);
     const b3 = await page(`{ in: IN(), login: !$('syncOff').hidden }`);
     await open(A); await settle(1500);
     const a3 = JSON.parse(await run(`syncNow().then(ok => JSON.stringify({ in: IN(), ok }))`) || '{}');
     expect(!b3.in && b3.login && a3.in && a3.ok, 'logging out went wrong: ' + JSON.stringify({ b3, a3 }));
+    // logging out while a sync is on its way: it ends quietly and the next one is not stuck behind it
+    const mid = JSON.parse(await run(`(async () => { const p = syncNow(); $('syncLeave').click(); const r = await p; return JSON.stringify({ r, idle: syncing === null, out: !IN() }); })()`) || '{}');
+    expect(mid.r === false && mid.idle && mid.out, 'logging out during a sync left it stuck: ' + JSON.stringify(mid));
     if(bad.length + errors.length === before) console.log('smoke: sync between two devices - signup, a wrong password, login from the welcome, rounds, a rename, the device list, a password change, a reset and logout all work');
   }
   // Offline, as on a plane: the server gone altogether, a fresh navigation, and a round played from

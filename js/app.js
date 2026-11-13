@@ -1553,7 +1553,7 @@ const roundOf = p => compOf(p) === 'mbg' ? paperSrc(p).split('-')[1] : '';
 const compOf = p => p === 'basics' ? 'basics' : p.split('-')[0];
 // the autumn levels with no year are the ones not yet traced to a paper; the rest are under their year
 const inPaper = (l, p) => paperSrc(p) === 'mbg-autumn' ? l.papers[0] === p && !l.papers.some(q => /^mbg-autumn-\d{4}-/.test(q)) : l.papers.includes(p);
-const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
+export const midRound = () => S.i > 0 || S.parts.some(p => p !== '') || S.results.length > 0;
 $('levelPill').onclick = () => go('levels');
 $('closePick').onclick = back;
 paintPill();
