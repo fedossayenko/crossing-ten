@@ -9,6 +9,8 @@
 //                                          links that Google account to the family instead
 //   POST /logout                          ends this session
 //   POST /password {old, password}        a family name's new password (old one checked, same lockout)
+//   POST /hello  {site, signed}           counts one visit: a row per UTC day, site ('pages'|'cf'|'other') and
+//                                          signed-in or not; no id, cookie or address is kept
 //   POST /sync   {since, players, gone, rounds, device} → {cursor, players, gone, rounds, more, account, devices}
 // Sync sends what the server has not seen from this device and replies with what this device
 // has not seen. Rounds carry ids and never change, so merging is a set union (INSERT OR
@@ -97,17 +99,31 @@ export default {
     if(req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });   // a browser's preflight
     const route = new URL(req.url).pathname;
     // Who calls, for Workers Logs (observability in wrangler.toml): the device and where, never the IP.
-    console.log(JSON.stringify({ route, ua: req.headers.get('user-agent'), country: req.cf?.country, city: req.cf?.city }));
-    if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync', '/password'].includes(route)) return reply(404, { error: 'not found' });
+    console.log(JSON.stringify({ route, ua: req.headers.get('user-agent'), country: req.cf?.country, city: req.cf?.city, origin: req.headers.get('origin') }));
+    if(req.method !== 'POST' || !['/signup', '/login', '/logout', '/google', '/sync', '/password', '/hello'].includes(route)) return reply(404, { error: 'not found' });
     // a guess at a password, or a new account, only so often from one address (not in tests: no binding)
     if(env.LIMIT && ['/signup', '/login', '/google'].includes(route) &&
        !(await env.LIMIT.limit({ key: req.headers.get('cf-connecting-ip') || 'unknown' })).success) return reply(429, { error: 'slow', retry: 60 });
+    // the address is only the limiter's key (in Cloudflare's counter, not our database); a visit count is cheap, so its own key
+    if(env.LIMIT && route === '/hello' &&
+       !(await env.LIMIT.limit({ key: 'hello:' + (req.headers.get('cf-connecting-ip') || 'unknown') })).success) return reply(429, { error: 'slow', retry: 60 });
     const text = await req.text();
     if(text.length > MAX_BODY) return reply(413, { error: 'too much at once' });
     let body;
     try { body = text ? JSON.parse(text) : {}; } catch(e){ return reply(400, { error: 'not json' }); }
     if(!body || typeof body !== 'object') return reply(400, { error: 'not an object' });
     const db = env.DB, now = Date.now();
+
+    if(route === '/hello'){
+      // exactly {site, signed}: nothing else is stored, and nothing else is accepted
+      const keys = Object.keys(body).sort().join();
+      if(Array.isArray(body) || keys !== 'signed,site' || !['pages', 'cf', 'other'].includes(body.site) || typeof body.signed !== 'boolean') return reply(400, { error: 'hello' });
+      try {
+        await db.prepare(`INSERT INTO hello (day, site, signed, n) VALUES (?1, ?2, ?3, 1)
+          ON CONFLICT(day, site, signed) DO UPDATE SET n = n + 1`).bind(new Date(now).toISOString().slice(0, 10), body.site, body.signed ? 1 : 0).run();
+      } catch(e){ console.log('hello failed: ' + e.message); return reply(503, { error: 'busy' }); }
+      return new Response(null, { status: 204, headers: CORS });
+    }
 
     if(route === '/signup'){
       const name = keyOf(body.name), display = String(body.name || '').trim().replace(/\s+/g, ' ');

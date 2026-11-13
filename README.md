@@ -486,6 +486,11 @@ checks the server (against `wrangler dev`, which reads a stand-in Google key fro
 `worker/.dev.vars`, or the deployed URL, where it deletes its test accounts afterwards);
 `SMOKE_SYNC=<worker url> node smoke.js` runs two real browser "devices" through it.
 
+**Visit count.** Once a day per device the app sends the Worker (`POST /hello`) which site it was opened from (GitHub
+Pages, Cloudflare or another address) and whether the device is signed in, and the Worker adds one to a counter for that
+UTC day (table `hello`). That is all that is counted: no id, no cookie, no address, no name and nothing a child did; a
+device that is offline says nothing until its next launch.
+
 ### For the grown-ups
 
 Under Progress: first try by group over the last 30 days, the slips that keep coming

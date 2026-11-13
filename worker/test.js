@@ -61,6 +61,22 @@ const signup = async (name, extra, token) => { made.push(name); return call('/si
   ok((await call('/signup', null, null, '{not json')).status === 400, 'a malformed body should be refused');
   ok((await call('/signup', null, null, 'x'.repeat(600 * 1024))).status === 413, 'an oversized body should be refused');
 
+  // the visit count: /hello adds one to a (day, site, signed) row and keeps nothing else; anything but those two fields is refused
+  // (only against a local worker: a deployed database must not count the test's visits)
+  if(LOCAL){
+    const today = new Date().toISOString().slice(0, 10);
+    const hello = site => d1(`SELECT n FROM hello WHERE day = '${today}' AND site = '${site}' AND signed = 0`)[0]?.n || 0;
+    const h0 = hello('other');
+    ok((await call('/hello', { site: 'other', signed: false })).status === 204, 'a visit should be counted');
+    ok((await call('/hello', { site: 'other', signed: false })).status === 204, 'a second visit should be counted');
+    ok(hello('other') === h0 + 2, 'two visits should add two to the day: ' + h0 + ' -> ' + hello('other'));
+    for(const bad of [{ site: 'evil', signed: false }, { site: 'cf' }, { site: 'cf', signed: 1 }, { signed: true }, { site: 'cf', signed: true, id: 'x' }, {}])
+      ok((await call('/hello', bad)).status === 400, 'a bad visit should be refused: ' + JSON.stringify(bad));
+    ok((await call('/hello', null, null, '[1]')).status === 400, 'a non-object visit should be refused');
+    ok((await call('/hello', null, null, '{not json')).status === 400, 'a malformed visit should be refused');
+    ok(hello('other') === h0 + 2 && !d1("SELECT 1 FROM hello WHERE site NOT IN ('pages','cf','other')").length, 'refused visits must count nothing');
+  }
+
   // an account: a short password or name is refused, a name is taken once, whatever its case
   const fam = 'Сайенко ' + tag;
   ok((await call('/signup', { name: fam, password: 'short' })).body.error === 'password', 'a short password should be refused');
