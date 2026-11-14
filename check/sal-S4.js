@@ -209,19 +209,23 @@
     if(says.flat().some(v => v > +N)) fail('484: a number past the last card is said', q);
     const svg = Q.drawQ(q); if((svg.match(/<rect /g) || []).length !== +N) fail('484: the picture holds other cards than the task', q);
   }, 3000);
+  const answersSeen485 = new Set();
   // 485: the four faces read from the words; every way up of both cards, each digit read as it looks (a turned 6 is 9, a 9 is 6), every number written out
   seen(485, (q, t) => {
     const f = [...t.matchAll(/пише(\d),аот(?:другата|друга)–(\d)/g)].map(x => [+x[1], +x[2]]);
     if(f.length !== 2) fail('485: the faces are not read', q);
     const read = x => x === 6 ? [6, 9] : x === 9 ? [9, 6] : [x], set = new Set();
-    [[0, 1], [1, 0]].forEach(([a, b]) => f[a].forEach(x => f[b].forEach(y => read(x).forEach(r => read(y).forEach(s => set.add(10*r + s))))));
+    [[0, 1], [1, 0]].forEach(([a, b]) => f[a].forEach(x => f[b].forEach(y => read(x).forEach(r => read(y).forEach(s => { if(r) set.add(10*r + s); })))));   // a 0 does not stand first
     if(set.size !== q.ans || Q.answers(q)[0] !== set.size) fail('485: the cards write ' + set.size + ' numbers', q);
-    if(f.flat().filter(x => x === 6 || x === 9).length !== 1) fail('485: one turning face expected', q);
+    const turning = f.flat().filter(x => x === 6 || x === 9).length;
+    if(turning < 1 || turning > 2) fail('485: one or two turning faces expected', q);
     if(q.traps.includes(q.ans)) fail('485: a slip is the answer', q);
     // the picture shows the same four faces, the pair in each card
     const faces = [...Q.drawQ(q).matchAll(/<text[^>]*>(\d)<\/text>/g)].map(x => +x[1]);
     if(faces.join() !== f.flat().join()) fail('485: the picture shows other faces: ' + faces, q);
+    answersSeen485.add(q.ans);
   });
+  if(answersSeen485.size < 4) throw new Error('485: the cards write the same few counts every time: ' + [...answersSeen485]);
   // 102: the six chess players: every pair counted out as listed
   seen(102, (q, t) => {
     if(q.shape !== 'games') return;

@@ -15,9 +15,10 @@ const CATS_DAY = ['день','дні','днів'], CATS_BOX = ['коробка',
 export function genCats(){
   const nm = CATS[rnd(CATS.length)];
   const p = 3 + rnd(3);
-  let q = 2 + rnd(4);
+  let q = 3 + rnd(3);
   if(q === p) q = p === 5 ? 3 : p + 1;
   const k = Math.random() < 0.3 ? 2 : 1;
+  if(Math.random() < 0.25) q = 2;   // drawn after the old question, so a seed recorded before it keeps its task unless this turns it
   return {kind:'cats', nm, p, q, k, boxes: k*(p + q), ans: k*p*q};
 }
 

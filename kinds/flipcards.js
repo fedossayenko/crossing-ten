@@ -3,22 +3,24 @@
 // Салабашев 2024, 2 клас, задача 14: one card has 3 on one side and 4 on the other, another 5 and 6. The cards may be turned and flipped.
 // How many two-digit numbers can be written with the two cards? Turned upside down a 6 reads 9, so the second card gives 5, 6 or 9 and
 // the first 3 or 4: 35, 36, 39, 45, 46, 49 and the other way round 53, 63, 93, 54, 64, 94 — 6 + 6 = 12 (not 8, the answer that forgets the
-// turn). The faces are digits that mean nothing turned (1, 3, 4, 5, 7, 8) but for one face, a 6 or a 9, which turned reads the other.
+// turn). The faces are digits that mean nothing turned (0, 1, 3, 4, 5, 7, 8) but for one or two faces, a 6 or a 9, which turned reads
+// the other; a 0 cannot stand first, so the count changes from task to task (not always the paper's 12).
 import { KIND, answerLine, popAt, rnd, shuffle, svgFrame, svgText, tr } from '../js/core.js';
-const PLAIN = [1, 3, 4, 5, 7, 8];
+const PLAIN = [0, 1, 3, 4, 5, 7, 8];
 // the digits a face can be read as, the card turned any way
 const reads = f => f === 6 ? [6, 9] : f === 9 ? [9, 6] : [f];
 const cardReads = c => [...new Set(c.flatMap(reads))];
 export function genFlipCards(){
-  const faces = shuffle(PLAIN.slice()).slice(0, 3), special = Math.random() < 0.7 ? 6 : 9, at = rnd(4), all = faces.slice();
-  all.splice(at, 0, special);
-  const cards = [all.slice(0, 2), all.slice(2, 4)];
-  return {kind:'flipcards', cards, traps:[8], ans: flipNumbers(cards).length};
+  const sp = Math.random() < 0.3 ? [6, rnd(2) ? 9 : 6] : [Math.random() < 0.7 ? 6 : 9];
+  const all = shuffle(shuffle(PLAIN.slice()).slice(0, 4 - sp.length).concat(sp));
+  const cards = [all.slice(0, 2), all.slice(2, 4)], ans = flipNumbers(cards).length, flat = flipNumbers(cards, f => [f]).length;
+  return {kind:'flipcards', cards, traps: flat !== ans ? [flat] : [], ans};
 }
 // every two-digit number the two cards write: a card for the tens, the other for the ones, each read any way up
-export function flipNumbers(cards){
-  const out = new Set();
-  [[0, 1], [1, 0]].forEach(([t, o]) => cardReads(cards[t]).forEach(a => cardReads(cards[o]).forEach(b => out.add(10*a + b))));
+// (read: how a face may be read; the default turns a 6 into a 9 — the answer that forgets the turn reads every face as written)
+export function flipNumbers(cards, read = reads){
+  const out = new Set(), on = c => [...new Set(c.flatMap(read))];
+  [[0, 1], [1, 0]].forEach(([t, o]) => on(cards[t]).forEach(a => on(cards[o]).forEach(b => { if(a) out.add(10*a + b); })));
   return [...out].sort((x, y) => x - y);
 }
 const side = (n, uk) => uk ? ['одного', 'другого'][n] : ['едната', 'другата'][n];
@@ -39,7 +41,7 @@ function drawFlip(q){
     cardsSvg(q) + answerLine('xl');
 }
 // the numbers with the first card for the tens, and the other way round
-const halves = q => { const [a, b] = q.cards.map(cardReads), x = [], y = []; a.forEach(s => b.forEach(t => { x.push(10*s + t); y.push(10*t + s); })); return [x.sort((m, n) => m - n), y.sort((m, n) => m - n)]; };
+const halves = q => { const [a, b] = q.cards.map(cardReads), x = [], y = []; a.forEach(s => b.forEach(t => { if(s) x.push(10*s + t); if(t) y.push(10*t + s); })); return [x.sort((m, n) => m - n), y.sort((m, n) => m - n)]; };
 function eqFlip(q){ const [x, y] = halves(q); return x.length + ' + ' + y.length + ' = ' + q.ans; }
 function whyFlip(q, full){
   if(!full) return tr('Картичките могат и да се въртят: коя от цифрите става друга цифра, ако я обърнеш наопаки?', 'Картки можна й обертати: яка з цифр стає іншою цифрою, якщо її перевернути?');

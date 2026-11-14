@@ -297,7 +297,8 @@ const shapeOf = q => String(q.shape ?? '-');
 const only = (gen, ...shapes) => () => { for(;;){ const q = gen(); if(shapes.includes(shapeOf(q))) return q; } };
 const without = (gen, ...shapes) => () => { for(;;){ const q = gen(); if(!shapes.includes(shapeOf(q))) return q; } };
 // a level's generator with one more generator drawn now and then (a share p of the questions): the shape of another generator joins it
-const mixIn = (gen, p, other) => () => Math.random() < p ? other() : gen();
+// the old question is drawn first, so a seed recorded before the widening keeps its task unless the draw after it turns it into the new shape
+const mixIn = (gen, p, other) => () => { const q = gen(); return Math.random() < p ? other() : q; };
 const genTwoTotWide = mixIn(only(genTwoTot, 'one', 'halves'), 0.25, genTwoCost);
 const genTwoMixWide = mixIn(only(genTwoTot, 'mix'), 0.3, genTwoTiles);
 const genExtrasWide = mixIn(only(genExtras, 'humps', 'darts'), 0.3, genCowLegs);

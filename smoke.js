@@ -839,7 +839,7 @@ const server = http.createServer((req, res) => {
       out.sum = q0.reduce((a, x) => a + x.pts, 0);
       $('sheet').hidden = true; $('compStart').click(); await wait(100);
       out.sheet = !$('compSheet').hidden && $('compRules').textContent.includes(t('salRulePts', 60)) && $('compRules').textContent.includes(t('compRuleTime', 15, 120)) &&
-        $('compRules').textContent.includes(t('ekRuleOpts', 10, 4, 15));
+        $('compRules').textContent.includes(t('choiceRuleOpts', 10, 4, 15));
       $('compGo').click(); await wait(100);
       out.start = !!COMP && COMP.fmt === 'sal' && S.qs.length === 15 && COMP.end - COMP.t0 === 120 * 60000 && $('run').textContent.includes(t('ptsN', 2));
       const q = S.qs[S.i]; document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(100);

@@ -26,8 +26,13 @@ function genGames(){
   const n = 4 + rnd(4), g = rnd(GAMES.length);
   return {kind:'segcount', shape:'games', n, g, S: n*(n - 1)/2, traps:[n, n*(n - 1)/2 - n].filter(t => t > 0), ans: n*(n - 1)/2};
 }
+function segCountOld(){
+  if(Math.random() < 0.3) return genDots();
+  const n = 3 + rnd(4), S = n*(n - 1)/2, rev = Math.random() < 0.45;
+  return {kind:'segcount', n, S, rev, ans: rev ? n : S};
+}
 export function genSegCount(){
-  const q = Math.random() < 0.3 ? genDots() : (() => { const n = 3 + rnd(4), S = n*(n - 1)/2, rev = Math.random() < 0.45; return {kind:'segcount', n, S, rev, ans: rev ? n : S}; })();
+  const q = segCountOld();   // the old question first, so a seed recorded before 'games' keeps its task unless the draw after turns it
   return Math.random() < 0.22 ? genGames() : q;
 }
 function segCountSvg(n){

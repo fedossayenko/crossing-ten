@@ -24,10 +24,8 @@ const COMBO = [{ bg:['супа', 'основно ястие', 'десерт'], u
   { bg:['билет за кино', 'пуканки', 'напитка'], uk:['квиток у кіно', 'попкорн', 'напій'], at:['В киното предлагат', 'комбо от трите неща', 'комбото', 'трите неща'],
     atUk:['У кінотеатрі пропонують', 'комбо з трьох речей', 'комбо', 'три речі'] }];
 export function genCombo(){
-  for(;;){
-    const set = rnd(COMBO.length), p = [3 + rnd(8), 4 + rnd(9), 3 + rnd(8)], S = p[0] + p[1] + p[2], save = 1 + rnd(6);
-    return {kind:'prices', shape:'combo', set, p, S, M: S - save, traps:[S].filter(v => v !== save && v > 0), ans: save};
-  }
+  const set = rnd(COMBO.length), p = [3 + rnd(8), 4 + rnd(9), 3 + rnd(8)], S = p[0] + p[1] + p[2], save = 1 + rnd(6);
+  return {kind:'prices', shape:'combo', set, p, S, M: S - save, traps:[S].filter(v => v !== save && v > 0), ans: save};
 }
 // the things, drawn small: a ruler, an eraser, a set square, a pencil, a sharpener
 function priceThing(i, x, y){

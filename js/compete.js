@@ -180,7 +180,7 @@ export function paintCompSheet(){
   const f = compFocus(), fmt = fmtOf(f, NEXT), F = FMT[fmt], best = bestComp(NEXT || f.key, fmt);
   $('compFrom').innerHTML = '<span class="lab">' + t('compFrom') + '</span><b>' + (NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name) + '</b>' +
     '<span class="meta">' + t(NEXT ? 'compForecastHow' : 'compHow') + '</span>' + (best ? '<span class="meta">' + t('compBest', best.pts, best.max) + '</span>' : '');
-  $('compRules').innerHTML = (F ? [t('compRuleTime', F.n, F.min), t('ekRuleOpts', F.choice, F.opts, F.n), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t(fmt + 'RulePts', fmtMax(F))] :
+  $('compRules').innerHTML = (F ? [t('compRuleTime', F.n, F.min), t('choiceRuleOpts', F.choice, F.opts, F.n), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t(fmt + 'RulePts', fmtMax(F))] :
     [t('compRuleTime', COMP_N, COMP_MIN), t('compRuleQuiet'), t('compRuleSkip'), t('compRuleCheck'), t('compRulePts', 2 * COMP_N)]).map(s => '<li>' + s + '</li>').join('');
 }
 // The same paper on paper: 20 tasks drawn as the sheet would start them, each with a blank where its answer goes
@@ -199,7 +199,7 @@ export function printComp(){
   const key = q => q.options ? letterOf(q.pick) : answers(q).join((q.slots || 1) > 1 ? ', ' : ' / ');
   const name = NEXT ? t('papers')['mbg-autumn-forecast2026'] : f.name;
   $('print').innerHTML = '<header class="phead"><b>' + t('compName') + ' · ' + name + '</b><span>' + t('compWhat', n, min).replace(/ · [^·]*$/, '') +
-    ' · ' + (F ? t('ekRuleOpts', F.choice, F.opts, F.n) + ' ' + t(fmt + 'RulePts', fmtMax(F)) : t('compRulePts', 2 * COMP_N)) + '</span><span>' + t('printName') + ' ______________________ &nbsp; ' + new Date().toLocaleDateString(LANG) + '</span></header>' +
+    ' · ' + (F ? t('choiceRuleOpts', F.choice, F.opts, F.n) + ' ' + t(fmt + 'RulePts', fmtMax(F)) : t('compRulePts', 2 * COMP_N)) + '</span><span>' + t('printName') + ' ______________________ &nbsp; ' + new Date().toLocaleDateString(LANG) + '</span></header>' +
     qs.map((q, k) => '<section class="ptask"><span class="pn">' + (k + 1) + '.</span><div class="stage">' + blank(q) + '</div></section>').join('') +
     '<section class="pkey"><b>' + t('printKey') + ' · ' + name + '</b><ol>' + qs.map(q => '<li>' + key(q) + '</li>').join('') + '</ol></section>';
   window.print();

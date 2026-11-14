@@ -68,10 +68,8 @@ export function genTwoTiles(){
   return {kind:'twotot', shape:'tiles', t, s, m, A: t + s, B: m*t + (m + 1)*s, traps:[t + s + s].filter(v => v !== m*t + (m - 1)*s), ans: m*t + (m - 1)*s};
 }
 export function genBerries(){
-  for(;;){
-    const b = 4 + rnd(9), y = 5 + rnd(10), k = 10 + rnd(13), d = 1 + rnd(7), m = b + d;
-    return {kind:'twotot', shape:'berries', s: b + y, t: k + m + y, k, traps:[k + m + y - (b + y)], ans: d};
-  }
+  const b = 4 + rnd(9), y = 5 + rnd(10), k = 10 + rnd(13), d = 1 + rnd(7), m = b + d;
+  return {kind:'twotot', shape:'berries', s: b + y, t: k + m + y, k, traps:[k + m + y - (b + y)], ans: d};
 }
 export function genTwoTot(){
   const r = Math.random(), shape = r < 0.3 ? 'one' : r < 0.55 ? 'halves' : r < 0.8 ? 'mix' : 'rest';

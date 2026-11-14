@@ -12,15 +12,15 @@
 import { KIND, SLOT, answerLine, rnd, tr } from '../js/core.js';
 export function genConsec(){
   const q = consecOld();
+  if(Math.random() < 0.2){
+    const m = 2 + rnd(31);
+    return {kind:'consec', shape:'three', m, S: 3*m, slots:3, stated:true, ans: m - 1, alt:[m, m + 1]};
+  }
   // Салабашев 2023, задача 13 (shape 'digits'): three consecutive two-digit numbers add to 84 — the sum of all their digits? 84 : 3 = 28,
   // so 27, 28, 29 and 2 + 7 + 2 + 8 + 2 + 9 = 30. Drawn after 'three', so the others keep their seeds.
   if(Math.random() < 0.15){
     const m = 11 + rnd(80);
     return {kind:'consec', shape:'digits', m, S: 3*m, ans: [m - 1, m, m + 1].join('').split('').reduce((t, d) => t + +d, 0)};
-  }
-  if(Math.random() < 0.2){
-    const m = 2 + rnd(31);
-    return {kind:'consec', shape:'three', m, S: 3*m, slots:3, stated:true, ans: m - 1, alt:[m, m + 1]};
   }
   return q;
 }
