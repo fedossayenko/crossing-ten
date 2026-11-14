@@ -286,6 +286,11 @@ const server = http.createServer((req, res) => {
     [...String(answer(qs[3]))].forEach(K); K('go'); await tick(); next(); await tick();
     const last = LOCAL.rounds[LOCAL.rounds.length - 1];
     r.logged = JSON.stringify(last.judged.slice(0, 3)) === JSON.stringify([null, [sh[1], 1], [sh[2], 0]]) && last.t[2][3] === String(sh[2]) && last.t[2][4] === 0 && last.t[1][4] === 1 && JSON.stringify(last).length < 4096;
+    // Мишо right: «Вярно» is the call and she types it; «Грешно» is a miss with the answer shown
+    newRound(lvs.map(qOf)); S.daily = true; S.mist[1] = answer(S.qs[1]); S.mist[2] = answer(S.qs[2]); S.judged = []; next(); await tick();
+    pickJ(0); await tick(); r.yes = S.judged[1] === 1 && !S.settled && $('hint').textContent.includes(t('mistYes', S.mist[1]));
+    [...String(answer(S.qs[1]))].forEach(K); K('go'); await tick(); next(); await tick();
+    pickJ(1); await tick(); r.wasRight = S.judged[2] === 0 && S.settled && S.results[2] === false && $('hint').textContent.includes(t('mistWasRight', S.mist[2]));
     // a round picked up again before it was judged asks again; a paper, a level round and a plain round ask nothing
     newRound(lvs.map(qOf)); S.mist[1] = sh[1]; S.judged = []; next(); await tick(); r.again = !!S.ask && S.ask.mist;
     newRound(); await tick(); r.none = !S.ask && !S.mist.some(v => v != null);
@@ -293,10 +298,11 @@ const server = http.createServer((req, res) => {
     LOCAL.rounds = [2, 5, 8, 9, 10, 11, 12, 13].map((lv, k) => ({ id: 'dm-' + lv, ts: Date.now() - (3 + k) * 864e5, day: '', level: lv, n: 10, firstTry: 9 }));
     startDaily(); await tick();
     const ms = S.mist.map((v, k) => v != null ? k : -1).filter(k => k >= 0);
-    r.daily = S.daily === true && ms.length <= 1 && !ms.includes(0) && ms.every(k => trapShown(S.qs[k]).includes(S.mist[k]) && !answers(S.qs[k]).includes(S.mist[k]));
+    r.daily = S.daily === true && ms.length <= 1 && !ms.includes(0) && ms.every(k => trapShown(S.qs[k]).includes(S.mist[k]) || answers(S.qs[k]).includes(S.mist[k]));
+    LOCAL.choice = true; startDaily(); await tick(); r.noChoice = !S.mist.some(v => v != null); LOCAL.choice = false;
     LOCAL.rounds = keep; saveLocal(); LOCAL.choice = was; S.level = lvWas; $('sheet').hidden = true; newRound(); await tick();
     return JSON.stringify(r); })()`) || '{}');
-  expect(mist.levels >= 3 && mist.plain1 && mist.asks && mist.blocked && mist.found && mist.right && mist.missed && mist.kept && mist.logged && mist.again && mist.none && mist.daily, 'the mistake task went wrong: ' + JSON.stringify(mist));
+  expect(mist.levels >= 3 && mist.plain1 && mist.asks && mist.blocked && mist.found && mist.right && mist.missed && mist.kept && mist.logged && mist.again && mist.none && mist.daily && mist.yes && mist.wasRight && mist.noChoice, 'the mistake task went wrong: ' + JSON.stringify(mist));
   // two right in a row earn a treat: her mascot eats it beside the praise; the third gets star eyes, not another treat
   const treat = JSON.parse(await run(`(async () => { const tick = (ms = 30) => new Promise(r => setTimeout(r, ms));
     const K = k => document.querySelector('.key[data-k="' + k + '"]').click(), was = LOCAL.choice, lvWas = S.level; LOCAL.choice = false; S.level = 5;

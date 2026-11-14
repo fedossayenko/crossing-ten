@@ -39,8 +39,12 @@
     // the pick: never the first task, a missed level first, one task and one trap of it; none when no task has a trap
     const plain = { a:3, b:4, op:'+' }, tq = APP.seeded(5, () => APP.raw(APP.LEVELS.find(l => APP.trapShown(APP.seeded(5, () => APP.raw(l.id))).length).id));
     const qs = [tq, plain, tq, tq], items = [{}, {}, { miss: true }, {}], seen = new Set();
-    for(let i = 0; i < 40; i++){ const m = APP.mistakePick(items, qs, n => Math.floor(Math.random() * n)); if(!m || m.k !== 2 || !APP.trapShown(tq).includes(m.shown)) throw new Error('mistake: picked ' + JSON.stringify(m)); seen.add(m.shown); }
+    // Мишо's answer: a trap of the task or, about half the time, its right answer, so «Грешно» is never always the call
+    let rightN = 0;
+    for(let i = 0; i < 200; i++){ const m = APP.mistakePick(items, qs, n => Math.floor(Math.random() * n)), right = m && APP.accepts(tq, [String(m.shown)]);
+      if(!m || m.k !== 2 || !(right || APP.trapShown(tq).includes(m.shown))) throw new Error('mistake: picked ' + JSON.stringify(m)); seen.add(m.shown); if(right) rightN++; }
+    if(rightN < 60 || rightN > 140) throw new Error('mistake: Мишо was right ' + rightN + ' times in 200, not about half');
     if(APP.mistakePick([{}, {}], [tq, plain], n => 0) !== null) throw new Error('mistake: a trap on the first task, or on a plain sum');
   }
-  console.log('daily practice: picks, order, done today, study vs check, too few levels, the mistake task never shows a right answer');
+  console.log('daily practice: picks, order, done today, study vs check, too few levels, Мишо shows a trap or, half the time, the right answer');
 }

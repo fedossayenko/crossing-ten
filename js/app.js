@@ -700,7 +700,7 @@ export function finish(){
     redo: S.redo || undefined, daily: S.daily || undefined,
     // the step before answering (asksOf): wrong picks before the right one, by task; null where it was not asked
     asked: S.asks.some(w => w !== undefined && w !== null) ? S.qs.map((_, k) => S.asks[k] ?? null) : undefined,
-    // «Намери грешката» (mistakePick): per task null, or [the wrong answer shown, 1 she called it wrong / 0 she called it right (a miss)]
+    // «Намери грешката» (mistakePick): per task null, or [Мишо's answer, 1 she judged it rightly / 0 wrongly (a miss)]
     judged: S.mist.some(v => v != null) ? S.qs.map((_, k) => S.mist[k] == null ? null : [S.mist[k], S.judged[k] ?? null]) : undefined,
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
@@ -952,8 +952,9 @@ function pickAsk(k){
   $('hint').innerHTML = '<div class="whatq done">' + t('asksOk') + ' <b>' + t('asks')[a.set][k] + '</b></div>';
   saveRound();
 }
-// «Намери грешката» (js/daily.js mistakePick): a task of today's practice that shows a typical wrong answer first. «Грешно»
-// is the right call, and she then types the answer as usual; «Вярно» is a miss: the answer and why the shown one is wrong.
+// «Намери грешката» (js/daily.js mistakePick): a task of today's practice that shows Мишо's answer first — a typical wrong
+// one, or half the time the right one. The right call, and she types the answer as usual; the wrong call is a miss, with
+// the answer and its way.
 function mistOf(){
   const shown = S.mist[S.i];
   return !COMP && shown != null && S.judged[S.i] == null ? { mist: true, shown } : null;
@@ -968,8 +969,10 @@ function paintMist(){
 function judge(said){
   const a = S.ask, q = S.qs[S.i];
   if(!a || !a.mist) return;
-  S.judged[S.i] = said; S.ask = null;
-  if(said){ sfx.tap(); $('hint').innerHTML = '<div class="whatq done">' + t('mistOk', a.shown) + '</div>'; saveRound(); return; }
+  const right = accepts(q, [String(a.shown)]), ok = right ? said === 0 : said === 1;
+  S.judged[S.i] = ok ? 1 : 0; S.ask = null;
+  if(ok){ sfx.tap(); $('hint').innerHTML = '<div class="whatq done">' + t(right ? 'mistYes' : 'mistOk', a.shown) + '</div>'; saveRound(); return; }
+  if(right){ sfx.bad(); reveal(); S.after[S.i] = 0; $('hint').insertAdjacentHTML('afterbegin', '<div class="fb status">' + mascotSvg(PLAYER.mascot, 'thinking') + '<div><b>' + t('mistWasRight', a.shown) + '</b></div></div>'); saveRound(); return; }
   // Мишо's answer, not hers: it marks the task missed (and practised again) but is no slip of hers, and the
   // slip nudges speak to her as the one who wrote it, so the general line explains it
   S.typed[S.i] = String(a.shown);
@@ -1008,7 +1011,9 @@ export function startDaily(){
   if(!p.items.length) return;
   const avoid = drawnOf(p.items.filter(x => x.miss).map(x => replay(x.id, x.shape ?? null, x.seed, x.ans)));
   const qs = p.items.map(x => x.miss ? twin(x.id, x.shape, avoid) : Object.assign(gen(x.id), { lvl: x.id }));
-  const m = mistakePick(p.items, qs, rnd);   // «Намери грешката»: at most one task a day (never the first, so newRound's show() has none to ask)
+  // «Намери грешката»: at most one task a day (never the first, so newRound's show() has none to ask); none in А/Б/В/Г,
+  // where Мишо's wrong answer would stand among the four and give one away
+  const m = LOCAL.choice ? null : mistakePick(p.items, qs, rnd);
   newRound(qs);
   if(m) S.mist[m.k] = m.shown;
   S.daily = true; saveRound(); paintPill();
@@ -1023,7 +1028,7 @@ function paintReview(){
     const task = comp ? groupOf(L) : !q ? (L ? levelName(L) : String(lv)) : q.kind ? eqText(q) : q.a + (q.op === '-' ? ' − ' : ' + ') + q.b;
     const said = ok === 1 ? '✓' : ok === -1 ? t('notReached') : esc(wrote ?? '') + ' → ' + (q ? answers(q).join(' · ') : ans);
     const did = after === 5 ? t('checkFixed', esc(was ?? '')) : after === 6 ? t('checkStill', esc(was ?? '')) : after === 7 ? t('checkSpoiled', esc(was ?? '')) : AFTER[after] || '';
-    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : '', r.judged && r.judged[k] ? t(r.judged[k][1] === 1 ? 'judgedOk' : 'judgedMiss', r.judged[k][0]) : ''].filter(Boolean).join(' · ');
+    const note = [r.level === 'mix' ? t(missedIn(r, [lv, shape]) ? 'oldMiss' : 'newTask') : '', did, Number.isInteger(secs) ? compTime(secs * 1000) : '', r.judged && r.judged[k] ? t((q && accepts(q, [String(r.judged[k][0])]) ? 'judgedR' : 'judged') + (r.judged[k][1] === 1 ? 'Ok' : 'Miss'), r.judged[k][0]) : ''].filter(Boolean).join(' · ');
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');

@@ -8,7 +8,7 @@
 // 2020, 61% against 38% a month later.
 // Pure: her rounds and the levels in, the plan out; app.js draws the tasks and plays them.
 import { KIND } from './core.js';
-import { accepts } from './questions.js';
+import { accepts, answer } from './questions.js';
 const DAILY_N = 6, DAILY_MISS = 2;
 const GAPS = [1, 3, 7, 14, 30];
 const day0 = ts => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return +d; };
@@ -54,6 +54,7 @@ export function trapShown(q){
 export function mistakePick(items, qs, rnd){
   const ok = qs.map((q, k) => k > 0 && trapShown(q).length ? k : -1).filter(k => k >= 0), miss = ok.filter(k => items[k] && items[k].miss), from = miss.length ? miss : ok;
   if(!from.length) return null;
+  // half the time Мишо is right: «Грешно» on every one would be a button to tap, not a judgement
   const k = from[rnd(from.length)], traps = trapShown(qs[k]);
-  return { k, shown: traps[rnd(traps.length)] };
+  return { k, shown: rnd(2) ? traps[rnd(traps.length)] : answer(qs[k]) };
 }
