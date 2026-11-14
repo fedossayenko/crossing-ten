@@ -73,8 +73,7 @@
     const z = Q.raw(194);
     if(z.zero){ seen.zero++; let n = 0; for(let v = 0; v < z.N; v++) n += count(v, z.d); if(n !== z.ans || z.from !== 0 || z.to !== z.N - 1) fail('dcount zero: ' + n, z); }
     // 225: a run of six, the middle two added; the example (drawn) is the same run two lower, its own gap added
-    let m = Q.raw(225); while(m.shape === 'syms') m = Q.raw(225);   // 'syms' (Салабашев 2020 #2) is worked again in check/sal-S1.js
-    const ex = m.row.map(v => v - 2);
+    const m = Q.raw(225), ex = m.row.map(v => v - 2);
     if(m.row.some((v, k) => k && v !== m.row[k - 1] + 1) || m.row[2] + m.row[3] !== m.ans || ex[0] < 1 || m.hide.join() !== '2,3') fail('missing gap', m);
     if(strip(Q.drawQ(m)).indexOf(ex.slice(0, 2).join(',') + ',…,…,' + ex.slice(4).join(',') + (ex[2] + '+' + ex[3] + '=' + (ex[2] + ex[3]))) < 0) fail('missing gap: the example', m);
     // 226: the places by turns are two runs counting on by one, the second always k more; the hidden pair is one pair

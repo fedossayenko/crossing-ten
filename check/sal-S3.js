@@ -61,6 +61,7 @@
     if(fig.length !== 3 || fig[0].join() !== '1,1') fail('321 tiles: three figures, the first one of each', q);
     for(let a = 1; a < 100; a++) for(let b = 1; b < 100; b++) if(a + b === A && fig[1][0]*a + fig[1][1]*b === B) sols.push(fig[2][0]*a + fig[2][1]*b);
     if(sols.join() !== String(q.ans) || /[×÷]/.test(t) || fig[1][1] !== fig[1][0] + 1 || fig[2][1] !== fig[2][0] - 1) fail('321 tiles: the third figure', q);
+    if(B > 100 || fig[1][0]*A > 100) fail('321 tiles: a weight (or the hint\'s figure) over a hundred', q);
   });
   // 460: blueberry+strawberry = s, blackberry+raspberry+strawberry = t, blackberry = k: every weight tried; raspberry − blueberry is one number, positive
   each(460, 3000, (q, v) => {

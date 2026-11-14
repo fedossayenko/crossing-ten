@@ -73,18 +73,17 @@ export function genMissing(){
 }
 // МБГ Полуфинал 2022, 1 клас, задача 2: 1, 2, …, …, 5, 6 — under the gap 3 + 4 = 7, so ? = 7; then 3, 4, …, …, 7, 8 — ? = 5 + 6 = 11.
 // A run of six from x, the middle two left out and added; the example is the same run two lower.
+// Салабашев 2020, задача 2 (level 488, 2nd grade): 0, 5, 10, ✱, ★, 25, ✹, 35 — a run in fives (or tens) with three symbols for the gaps,
+// two of them side by side: ✱ = 15, ★ = 20, ✹ = 30, and ✱ + ★ + ✹ = 65 (shape 'syms'); the sum stays within 100.
+export function genGapSyms(){
+  for(;;){
+    const k = Math.random() < 0.6 ? 5 : 10, s = Math.random() < 0.7 ? 0 : k, a = 2 + rnd(2), b = Math.min(6, a + 3 + rnd(2)), row = [];
+    for(let i = 0; i < 8; i++) row.push(s + i*k);
+    const ans = row[a] + row[a + 1] + row[b];
+    if(ans <= 100) return {kind:'missing', shape:'syms', row, hide:[a, a + 1, b], ans};
+  }
+}
 export function genGapSum(){
-  const q = genGapSumOld();
-  return Math.random() < 0.15 ? genGapSyms() : q;   // drawn after the old shape, so it keeps its seeds
-}
-// Салабашев 2020, задача 2: 0, 5, 10, ✱, ★, 25, ✹, 35 — a run in fives (or tens) with three symbols for the gaps, two of them side by side:
-// ✱ = 15, ★ = 20, ✹ = 30, and ✱ + ★ + ✹ = 65 (shape 'syms').
-function genGapSyms(){
-  const k = Math.random() < 0.6 ? 5 : 10, s = Math.random() < 0.7 ? 0 : k, a = 2 + rnd(2), b = Math.min(6, a + 3 + rnd(2)), row = [];
-  for(let i = 0; i < 8; i++) row.push(s + i*k);
-  return {kind:'missing', shape:'syms', row, hide:[a, a + 1, b], ans: row[a] + row[a + 1] + row[b]};
-}
-function genGapSumOld(){
   const x = 3 + rnd(10), row = [0, 1, 2, 3, 4, 5].map(i => x + i);
   // the slips: the example's sum copied, or one of the two numbers alone
   return {kind:'missing', shape:'gap', row, hide:[2, 3], traps:[2*x + 1, x + 3], ans: 2*x + 5};
@@ -214,7 +213,7 @@ function missingSvg(q){
 }
 function whyMissing(q, full){
   if(q.shape === 'syms'){
-    if(!full) return tr('С колко расте всяко число? Върви по редицата и намери всяка фигура.', 'На скільки зростає кожне число? Іди рядом і знайди кожну фігуру.');
+    if(!full) return tr('С колко расте всяко число? Върви по редицата и намери всяка фигура.', 'На скільки зростає кожне число? Іди по ряду і знайди кожну фігуру.');
     return tr('числата растат с ', 'числа зростають на ') + (q.row[1] - q.row[0]) + ': ' + q.row.map((v, i) => q.hide.includes(i) ? '<b>' + v + '</b>' : v).join(', ') + ' &nbsp;→&nbsp; ' + q.hide.map(i => q.row[i]).join(' + ') + ' = ' + q.ans;
   }
   const text = whyMissingText(q, full);

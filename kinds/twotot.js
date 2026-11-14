@@ -55,7 +55,7 @@ const FRU = { apple:['ябълка', 'ябълки', 'една ябълка', '�
 const COST_PAIRS = [['apple', 'pear'], ['plum', 'peach'], ['pear', 'plum'], ['peach', 'apple']];
 export function genTwoCost(){
   let a, p;
-  do { a = 10 + rnd(36); p = 10 + rnd(36); } while(2*a + p > 110);   // prices stay within the paper's hundred or so
+  do { a = 10 + rnd(36); p = 10 + rnd(36); } while(2*a + p > 100);   // prices stay within a hundred
   return {kind:'twotot', shape:'cost', pr: rnd(COST_PAIRS.length), a, p, A: a + p, B: 2*a + p, traps:[a], ans: p};
 }
 // a figure of triangle and square tiles, m + 1 squares in the second and m − 1 in the third
@@ -64,7 +64,8 @@ const tileN = (n, k) => n + ' ' + TILE.bg[k][n === 1 ? 0 : 1];
 // Ukrainian after «з»: the genitive, 1 трикутної плитки, 3 трикутних плиток
 const tileUk = (n, k) => n + ' ' + [['трикутної', 'квадратної'][k], ['трикутних', 'квадратних'][k]][n === 1 ? 0 : 1] + ' ' + (n === 1 ? 'плитки' : 'плиток');
 export function genTwoTiles(){
-  const t = 5 + rnd(16), s = 5 + rnd(16), m = 2 + rnd(2);
+  let t, s, m;
+  do { t = 5 + rnd(16); s = 5 + rnd(16); m = 2 + rnd(2); } while(m*t + (m + 1)*s > 100 || m*(t + s) > 100);   // every weight within a hundred
   return {kind:'twotot', shape:'tiles', t, s, m, A: t + s, B: m*t + (m + 1)*s, traps:[t + s + s].filter(v => v !== m*t + (m - 1)*s), ans: m*t + (m - 1)*s};
 }
 export function genBerries(){

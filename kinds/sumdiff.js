@@ -57,7 +57,7 @@ export function genSumDiffPair(){
 const ATE_FOOD = [['наденичка', 'наденички', 'сосиска', 'сосиски', 'сосисок'], ['поничка', 'понички', 'пончик', 'пончики', 'пончиків']];
 export function genAte(){
   for(;;){
-    const me = 5 + rnd(14), k = 2 + rnd(8), left = 1 + rnd(5), E = 2*me + k, T = E + left;
+    const me = 5 + rnd(14), k = 2 + rnd(8), left = 2 + rnd(5), E = 2*me + k, T = E + left;
     if(T > 60) continue;
     return {kind:'sumdiff', shape:'ate', food: rnd(ATE_FOOD.length), T, k, left, E, me, traps:[E], ans: me + k};
   }

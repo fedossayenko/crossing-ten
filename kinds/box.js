@@ -67,9 +67,10 @@ export function genBox(){
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
 // Level 11's draw: the old shapes, and now and then one of three from the Салабашев papers (drawn after the old, so those keep their seeds).
-export function genBoxMore(){
-  const q = genBox(), w = Math.random();
-  return w < 0.05 ? genDefBox() : w < 0.1 ? genDiffBox() : w < 0.15 ? genThreeBox() : q;
+// the three Салабашев shapes of level 11, mixed in by js/levels.js after the old question (outside its 'sym' filter, so old seeds keep their tasks)
+export function genBoxExtra(){
+  const w = rnd(3);
+  return w === 0 ? genDefBox() : w === 1 ? genDiffBox() : genThreeBox();
 }
 // Салабашев 2022, задача 1: 66 − 9 + 11 = ♡, what is ♡ + 25? — the number is found by a short chain, then used (shape 'def').
 function genDefBox(){

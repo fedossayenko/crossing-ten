@@ -21,6 +21,7 @@
     const sig = g => fields.map(f => JSON.stringify(g[f])).join('|'), want = sig(q);
     const hit = pinSeed(name, () => Q.raw(id), g => g.kind !== q.kind || g.shape !== q.shape ? 0 : sig(g) === want ? 2 : like ? 1 : 0, tries);
     if(!hit) throw new Error(name + ': level ' + id + ' never asks it');
+    if(hit.exact && Q.answers(hit.q).join() !== String(key)) throw new Error(name + ': the level asks it, but answers ' + Q.answers(hit.q) + ', the key says ' + key);
     met.push(task + (hit.exact ? '' : '*') + ' (' + year + ')');
     return hit.q;
   };
@@ -36,14 +37,14 @@
   pin(2025, 1, 99, {kind:'brackets', shape:7, a:20, b:25, ds:[2, 0, 2, 5], ans:36}, 36, '20 + 25 − (2 + 0 + 2 + 5) =', ['a', 'b', 'ds']);
   pin(2022, 1, 11, {kind:'box', shape:'def', a:66, b:9, c:11, v:68, k:25, ans:93}, 93, '66 − 9 + 11 = ♡', ['a', 'b', 'c', 'k']);
   pin(2024, 2, 11, {kind:'box', shape:'diff', h:25, t:42, m:68, p:43, n:57, w:99, ans:17}, 17, '68 − ♡ = 43 и 57 + △ = 99', ['m', 'p', 'n', 'w']);
-  pin(2022, 12, 160, {kind:'symeq', shape:'sides', x:18, c1:15, c2:33, ans:18}, 18, '♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ ♣ + 15 = ♡ + 33', ['x', 'c1', 'c2']);
+  pin(2022, 12, 486, {kind:'symeq', shape:'sides', x:18, c1:15, c2:33, ans:18}, 18, '♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ ♣ + 15 = ♡ + 33', ['x', 'c1', 'c2']);
   pin(2023, 2, 440, {kind:'bounds', h:13, k:18, club:31, f:48, lo:[5, 7], hi:[20, 6], m:16, up:[21, 28], ans:4}, 4, '5 + 7 < ♡ < 20 − 6 ♡ + 18 = ♣ 16 + ♣ < ◊ < 21 + 28', ['lo', 'hi', 'k', 'm', 'up']);
   pin(2019, 4, 277, {kind:'ovals', shape:'first', nums:[66, 29, 55], steps:[-37, 26], hideN:[0, 1], hideS:[], at:['n', 0], ans:66}, 66, 'Намери неизвестните числа', ['nums', 'steps']);
   pin(2020, 5, 277, {kind:'ovals', shape:'short', nums:[16, 21, 53, 44], steps:[5, 32, -9], hideN:[1, 2], hideS:[1], at:['s', 1], ans:32}, 32, 'Намери неизвестните числа', ['nums', 'steps']);
   const L = pin(2025, 3, 441, {kind:'ovals', shape:'letters', nums:[8, 21, 15, 32, 23], steps:[13, -6, 17, -9], hideN:[0, 1], hideS:[2, 3], at:['n', 0],
     options:[8, 9, 17, 19].map((v, id) => ({id, v})), pick:3, own:true, ans:19}, 19, 'Част от числата на схемата са скрити с буквите a, b, c и d', ['nums', 'steps', 'options']);
   if('АБВГ'[L.pick] !== 'Г' && L.options.map(o => o.v).join() === '8,9,17,19') fail('2025 #3: the right option is not Г', L);
-  pin(2020, 2, 225, {kind:'missing', shape:'syms', row:[0, 5, 10, 15, 20, 25, 30, 35], hide:[3, 4, 6], ans:65}, 65, '0, 5, 10, ✱, ★, 25, ✹, 35', ['row', 'hide']);
+  pin(2020, 2, 488, {kind:'missing', shape:'syms', row:[0, 5, 10, 15, 20, 25, 30, 35], hide:[3, 4, 6], ans:65}, 65, '0, 5, 10, ✱, ★, 25, ✹, 35', ['row', 'hide']);
   pin(2023, 6, 290, {kind:'diffseq', shape:'hole', seq:[1, 2, 4, 7, 11, 16], down:false, d0:1, g:1, asksSum:false, at:3, ans:7}, 7, '1, 2, 4, ?, 11, 16', ['seq', 'at']);
   pin(2021, 5, 51, {kind:'tens', shape:'over', a:2, b:15, traps:[25, 15], ans:35}, 35, 'Кое число съдържа 2 десетици и 15 единици?', ['a', 'b']);
   pin(2024, 3, 13, {kind:'named', shape:'dsum', w:0, n:99, sum:18, traps:[18], ans:81}, 81, 'С колко най-голямото двуцифрено число е по-голямо от сбора на цифрите си?', ['w']);
@@ -105,12 +106,12 @@
     const [a, b, c, d, e, f, g, h, i] = m.slice(1).map(Number), X = b + c - a, Y = e - f + d, Z = i - g - h;
     if(X < 1 || Y < 1 || Z < 1 || X + Y - Z !== q.ans || q.ans < 1) fail('11 three: wrong', q);
   });
-  // 160: the two lines solved by trying every pair of numbers; one pair only
-  seen(160, 'sides', 1500, (q, t) => {
+  // 486 (Салабашев 2022 #12, split off the 1st-grade 160): the two lines solved by trying every pair of numbers; one pair only
+  seen(486, 'sides', 1500, (q, t) => {
     const m = t.match(/♣\+(\d+)=♡\+(\d+)/), sols = [];
-    if(!m) fail('160 sides: unexpected text ' + t, q);
+    if(!m) fail('486 sides: unexpected text ' + t, q);
     for(let h = 0; h <= 100; h++) for(let c = 0; c <= 200; c++) if(4*h === h + c + h && c + +m[1] === h + +m[2]) sols.push(h);
-    if(sols.length !== 1 || sols[0] !== q.ans) fail('160 sides: not one solution', q);
+    if(sols.length !== 1 || sols[0] !== q.ans) fail('486 sides: not one solution', q);
   });
   // 440: three whole numbers found by trying them all
   for(let i = 1; i <= 3000; i++){
@@ -172,15 +173,15 @@
     if(none.length !== 1 || opts.filter(o => vals.includes(o)).length !== 3 || opts[q.pick] !== none[0] || q.ans !== none[0] || opts.join() !== opts.slice().sort((x, y) => x - y).join()) fail('441: not exactly one option that is none of a, b, c, d', q);
     if(!q.own || Q.answers(q).join() !== String(none[0])) fail('441: answer', q);
   }
-  // 225: the run in fives or tens, three symbols, the sum
-  seen(225, 'syms', 3000, (q, t) => {
-    const m = t.match(/^Пресметни✱\+★\+✹\.(.*?)✱\+★\+✹=/); if(!m) fail('225 syms: unexpected text ' + t, q);
+  // 488 (Салабашев 2020 #2, split off the 1st-grade 225): the run in fives or tens, three symbols, the sum
+  seen(488, 'syms', 3000, (q, t) => {
+    const m = t.match(/^Пресметни✱\+★\+✹\.(.*?)✱\+★\+✹=/); if(!m) fail('488 syms: unexpected text ' + t, q);
     const cells = m[1].split(','), shown = cells.map(Number), at = ['✱', '★', '✹'].map(s => cells.indexOf(s));
-    if(cells.length !== 8 || at.some(x => x < 0)) fail('225 syms: not eight cells with three symbols', q);
-    const k = shown[1] - shown[0]; if(![5, 10].includes(k) || (at[1] !== at[0] + 1) || at[2] < at[1] + 2) fail('225 syms: step or places', q);
+    if(cells.length !== 8 || at.some(x => x < 0)) fail('488 syms: not eight cells with three symbols', q);
+    const k = shown[1] - shown[0]; if(![5, 10].includes(k) || (at[1] !== at[0] + 1) || at[2] < at[1] + 2) fail('488 syms: step or places', q);
     const base = shown[0], run = cells.map((_, i) => base + i*k);
-    cells.forEach((c, i) => { if(!isNaN(shown[i]) && shown[i] !== run[i]) fail('225 syms: not a steady run', q); });
-    if(run[at[0]] + run[at[1]] + run[at[2]] !== q.ans || run[7] > 100) fail('225 syms: wrong', q);
+    cells.forEach((c, i) => { if(!isNaN(shown[i]) && shown[i] !== run[i]) fail('488 syms: not a steady run', q); });
+    if(run[at[0]] + run[at[1]] + run[at[2]] !== q.ans || q.ans > 100) fail('488 syms: wrong', q);
   });
   // 290: the hole inside a run whose steps grow by 1 or 2
   seen(290, 'hole', 3000, (q, t) => {

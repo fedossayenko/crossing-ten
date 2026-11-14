@@ -79,14 +79,14 @@ function genSymDirect(){
 }
 // 'double' (Полуфинал 2024) takes half of the chain's old share; 'direct', 'triple' and 'arrow' (Полуфинал 2022
 // and 2023) take slices of the tri, def and part shares — so the other shapes keep their seeds
-export function genSymEq(){ const q = genSymEqOld(); return Math.random() < 0.1 ? genSymSides() : q; }   // 'sides' drawn after the old shapes, so they keep their seeds
-// Салабашев 2022, задача 12: ♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ and ♣ + 15 = ♡ + 33 — ♡? The figure stands on both sides: take ♡ + ♡
-// off both sides of the first line and ♣ = ♡ + ♡; put that in the second, ♡ + ♡ + 15 = ♡ + 33, take ♡ off both sides, ♡ = 33 − 15.
-function genSymSides(){
+// Салабашев 2022, задача 12 (level 486, 2nd grade: a 2nd-grade paper never draws the 1st-grade 160): ♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ and
+// ♣ + 15 = ♡ + 33 — ♡? The figure stands on both sides: take ♡ + ♡ off both sides of the first line and ♣ = ♡ + ♡; put that in the
+// second, ♡ + ♡ + 15 = ♡ + 33, take ♡ off both sides, ♡ = 33 − 15.
+export function genSymSides(){
   const x = 5 + rnd(16), c1 = 3 + rnd(18);
   return {kind:'symeq', shape:'sides', x, c1, c2: c1 + x, ans: x};
 }
-function genSymEqOld(){ const r = Math.random(); return r < 0.15 ? genSymChain() : r < 0.3 ? genSymDouble() : r < 0.45 ? genSymTri() : r < 0.55 ? genSymDirect() : r < 0.63 ? genSymTriple() : r < 0.8 ? genSymDef() : r < 0.94 ? genSymPart() : genSymArrow(); }
+export function genSymEq(){ const r = Math.random(); return r < 0.15 ? genSymChain() : r < 0.3 ? genSymDouble() : r < 0.45 ? genSymTri() : r < 0.55 ? genSymDirect() : r < 0.63 ? genSymTriple() : r < 0.8 ? genSymDef() : r < 0.94 ? genSymPart() : genSymArrow(); }
 
 const SYMS = ['■', '∆', '○'];
 const symDefOf = q => ['□ + □ − ' + q.j, '□ − ' + q.j, '□ + ' + q.j][q.df].replace(' − 0', '');

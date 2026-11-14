@@ -160,11 +160,11 @@
   // 2022 #7: 25 + ▢ = 62, ▢ − ▢ = 51 (the shaded one on top), 32 + ▢ = 50, ▢ − ▢ = ▢ across: 37 − 19 = 18, the shaded box 51 + 19 = 70 (key В)
   {
     const name = 'Салабашев 2022 task 7', q = {kind:'eqcross', shape:'h', a:25, l:37, b:62, c:32, r:18, d:50, m:19, e:51, s:70, ans:70};
-    printed(name, 'sal-2022-2', 158, q, ['Кое е числото в оцветеното квадратче?'], 70);
+    printed(name, 'sal-2022-2', 487, q, ['Кое е числото в оцветеното квадратче?'], 70);
     const cells = readCells(svgs(Q.drawQ(q))[0], 34, 'var(--warmbg)'), { val } = solveCells(cells), shaded = Object.keys(cells).find(k => cells[k].tint);
     if(val[shaded] !== 70) throw new Error(name + ': the H drawn gives ' + val[shaded]);
     if(!['25', '62', '32', '50', '51'].every(v => Object.values(cells).some(c => c.text === v))) throw new Error(name + ': the printed numbers are not in the H');
-    asks(name, 158, g => g.shape === 'h');
+    asks(name, 487, g => g.shape === 'h');
   }
   // 2024 #6: 3 rows of 6, + − − + − − / − + − − + − / − − + − − +: 6 plus, 12 minus, 3 of the − to turn into + (key А)
   {
@@ -265,12 +265,12 @@
   }
   // ---- 158 'h': the H solved as drawn; the shaded box is the answer, every box found
   for(let i = 1; i <= 4000; i++){
-    const q = Q.seeded(i, () => Q.raw(158)); if(q.shape !== 'h') continue;
+    const q = Q.seeded(i, () => Q.raw(487)); if(q.shape !== 'h') continue;
     count('eqcross h');
     const cells = readCells(svgs(Q.drawQ(q))[0], 34, 'var(--warmbg)'), { val, eqs } = solveCells(cells), shaded = Object.keys(cells).filter(k => cells[k].tint);
-    if(shaded.length !== 1 || eqs.length !== 4) fail('158 h: not one shaded box and four equalities', q);
-    if(Object.keys(cells).filter(k => cells[k].box).some(k => val[k] === undefined || val[k] < 1 || val[k] > 99)) fail('158 h: a box is not found, or is out of 1 to 99', q);
-    if(val[shaded[0]] !== q.ans || Object.values(cells).filter(c => c.box && c.text === '').length !== 4) fail('158 h: the H drawn gives ' + val[shaded[0]], q);
+    if(shaded.length !== 1 || eqs.length !== 4) fail('487 h: not one shaded box and four equalities', q);
+    if(Object.keys(cells).filter(k => cells[k].box).some(k => val[k] === undefined || val[k] < 1 || val[k] > 99)) fail('487 h: a box is not found, or is out of 1 to 99', q);
+    if(val[shaded[0]] !== q.ans || Object.values(cells).filter(c => c.box && c.text === '').length !== 4) fail('487 h: the H drawn gives ' + val[shaded[0]], q);
   }
   // ---- 360 'sign': the + and − drawn, counted; the number of − to turn over for equal counts, tried one by one
   for(let i = 1; i <= 4000; i++){
