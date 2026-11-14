@@ -2,7 +2,7 @@
 
 // Задача 10: each letter sits a given distance from the same number, on either side of
 // it. Sending them opposite ways opens the widest gap — the two distances added.
-import { KIND, SLOT, answerLine, lineSvg, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, lineSvg, popAt, rnd, svgFrame, svgText, tr, ukN } from '../js/core.js';
 function genGap(){
   const c = 10 + rnd(30);
   const d1 = 1 + rnd(8);
@@ -50,6 +50,18 @@ export function genSumDiffPair(){
     return {kind:'sumdiff', shape:'two', S, d, small, big, slots:2, stated:true, ans: big, alt:[small]};
   }
 }
+// Level 463. Салабашев 2022, задача 15: 25 sausages were bought, the sister ate 5 more than the speaker, 2 were left on the
+// plate — how many did the sister eat? 25 − 2 = 23 were eaten; take the 5 off the sister's, and two equal shares are left:
+// 23 − 5 = 18 = 9 + 9, so the speaker ate 9 and the sister 9 + 5 = 14.
+// food: [Bulgarian one, many, Ukrainian one, few, many]
+const ATE_FOOD = [['наденичка', 'наденички', 'сосиска', 'сосиски', 'сосисок'], ['поничка', 'понички', 'пончик', 'пончики', 'пончиків']];
+export function genAte(){
+  for(;;){
+    const me = 5 + rnd(14), k = 2 + rnd(8), left = 1 + rnd(5), E = 2*me + k, T = E + left;
+    if(T > 60) continue;
+    return {kind:'sumdiff', shape:'ate', food: rnd(ATE_FOOD.length), T, k, left, E, me, traps:[E], ans: me + k};
+  }
+}
 export function genSumDiff(){
   if(Math.random() < 0.2) return genSumAndDiff();
   if(Math.random() < 0.4) return genGap();
@@ -59,6 +71,12 @@ export function genSumDiff(){
 }
 
 function drawSumdiff(q){
+  if(q.shape === 'ate'){
+    const f = ATE_FOOD[q.food], ukW = (n, a) => ukN(n, a[0], a[1], a[2]);
+    return '<div class="ask">' + tr('Купихме <span class="num">' + q.T + '</span> ' + f[1] + ', но сестра ми изяде с <span class="num">' + q.k + '</span> повече от мен! На чинията ' + (q.left === 1 ? 'остана само <span class="num">1</span> ' + f[0] : 'останаха само <span class="num">' + q.left + '</span> ' + f[1]) + '. <b>Колко ' + f[1] + ' е изяла сестра ми?</b>',
+      'Ми купили <span class="num">' + q.T + '</span> ' + ukW(q.T, [f[2], f[3], f[4]]).split(' ')[1] + ', але сестра з’їла на <span class="num">' + q.k + '</span> більше за мене! На тарілці залишилося лише <span class="num">' + q.left + '</span> ' + ukW(q.left, [f[2], f[3], f[4]]).split(' ')[1] + '. <b>Скільки ' + f[4] + ' з’їла моя сестра?</b>') + '</div>' +
+      answerLine('xl');
+  }
   if(q.shape === 'two'){
     return '<div class="ask">' + tr('Маймунката Мунка те пита кои две числа имат <b>сбор</b> <span class="num">' + q.S + '</span> и <b>разлика</b> <span class="num">' + q.d + '</span>. Запиши ги.',
       'Мавпочка Мунка питає тебе, які два числа мають <b>суму</b> <span class="num">' + q.S + '</span> і <b>різницю</b> <span class="num">' + q.d + '</span>. Напиши їх.') + '</div>' +
@@ -98,6 +116,7 @@ function drawSumdiff(q){
     ' <span class="or">' + tr('или', 'або') + '</span> <span class="slot" id="slot1"></span></div>';
 }
 function eqSumdiff(q){
+  if(q.shape === 'ate') return q.T + ' − ' + q.left + ' = ' + q.E + ', ' + q.E + ' − ' + q.k + ' = ' + (q.E - q.k) + ' = ' + q.me + ' + ' + q.me + ', ' + q.me + ' + ' + q.k + ' = ' + q.ans;
   if(q.shape === 'two') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.small + tr(' и ', ' і ') + q.big;
   if(q.shape === 'board') return q.small + ' + ' + q.big + ' = ' + q.S + ', ' + q.big + ' − ' + q.small + ' = ' + q.d + ' → ' + q.ans;
   if(q.shape === 'sd') return q.S + ' − ' + q.d + ' = ' + q.small + ' + ' + q.small + (q.asksBig ? ', ' + q.small + ' + ' + q.d + ' = ' + q.big : '') + ' → ' + q.ans;
@@ -150,6 +169,10 @@ function sumdiffSvg(q){
     lo - 1, hi + 1, tr('другото число от двете страни', 'інше число з обох боків'));
 }
 function whySumdiff(q, full){
+  if(q.shape === 'ate'){
+    if(!full) return tr('Първо колко са изядени. После махни разликата — остават две равни части.', 'Спершу скільки з’їдено. Потім прибери різницю — лишаються дві рівні частини.');
+    return q.T + ' − ' + q.left + ' = <b>' + q.E + '</b> ' + tr('са изядени', 'з’їдено') + ' &nbsp;→&nbsp; ' + q.E + ' − ' + q.k + ' = ' + (q.E - q.k) + ' = <b>' + q.me + '</b> + ' + q.me + ' &nbsp;→&nbsp; ' + tr('сестрата: ', 'сестра: ') + q.me + ' + ' + q.k + ' = ' + q.ans;
+  }
   if(q.shape === 'two'){
     if(!full) return tr('Махни разликата от сбора — остават две равни части.', 'Прибери різницю із суми — лишаються дві рівні частини.');
     return q.S + ' − ' + q.d + ' = ' + (q.S - q.d) + ' = <b>' + q.small + '</b> + ' + q.small + ' &nbsp;→&nbsp; ' + q.small + ' + ' + q.d + ' = <b>' + q.big + '</b>' + sumdiffSvg(q);

@@ -40,6 +40,39 @@ const BUY = [
 const REST = [['Мама Кенга и синът ѝ Скокчо заедно тежат', 'самата мама Кенга тежи', 'кенгурчето Скокчо', 'Мама Кенга та її син Скокчо разом важать', 'сама мама Кенга важить', 'кенгуреня Скокчо'],
   ['Кучето Барни и кученцето му заедно тежат', 'самото Барни тежи', 'кученцето', 'Пес Барні та його цуценя разом важать', 'сам Барні важить', 'цуценя'],
   ['Два чувала с картофи заедно тежат', 'единият тежи', 'другият', 'Два мішки картоплі разом важать', 'один важить', 'інший']];
+// Салабашев 2020, задача 14 (shape 'cost'): two apples and a pear cost 95 цента, an apple and a pear 56 — a pear? The
+// apple is the difference, 95 − 56 = 39, and the pear 56 − 39 = 17 (the same two totals as 'one', in prices).
+// Салабашев 2019, задача 14 (shape 'tiles', figures drawn in words): a figure of 1 triangle and 1 square tile weighs 22 кг,
+// one of 3 triangles and 4 squares 79 кг — one of 3 triangles and 2 squares? Three times the first (22 + 22 + 22 = 66) leaves
+// the 4th square: 79 − 66 = 13, so 66 − 13 = 53. Never multiplied.
+// Салабашев 2024, задача 9 (shape 'berries', level 460): blueberry and strawberry weigh 17 г, a blackberry, a raspberry and
+// the strawberry 37 г, the blackberry 18 г — by how many г is the raspberry heavier than the blueberry? 37 − 18 = 19 for
+// raspberry and strawberry, and 19 − 17 = 2: the strawberry is in both totals and drops out.
+// fruit: [Bulgarian one, Bulgarian two, Bulgarian «една …»; Ukrainian one, Ukrainian two to four, Ukrainian «одна …»]
+/** @type {Record<string, string[]>} */
+const FRU = { apple:['ябълка', 'ябълки', 'една ябълка', 'яблуко', 'яблука', 'одне яблуко', 'Два'], pear:['круша', 'круши', 'една круша', 'груша', 'груші', 'одна груша', 'Дві'],
+  plum:['слива', 'сливи', 'една слива', 'слива', 'сливи', 'одна слива', 'Дві'], peach:['праскова', 'праскови', 'една праскова', 'персик', 'персики', 'один персик', 'Два'] };
+const COST_PAIRS = [['apple', 'pear'], ['plum', 'peach'], ['pear', 'plum'], ['peach', 'apple']];
+export function genTwoCost(){
+  let a, p;
+  do { a = 10 + rnd(36); p = 10 + rnd(36); } while(2*a + p > 110);   // prices stay within the paper's hundred or so
+  return {kind:'twotot', shape:'cost', pr: rnd(COST_PAIRS.length), a, p, A: a + p, B: 2*a + p, traps:[a], ans: p};
+}
+// a figure of triangle and square tiles, m + 1 squares in the second and m − 1 in the third
+const TILE = { bg:[['триъгълна плоча', 'триъгълни плочи'], ['квадратна плоча', 'квадратни плочи']] };
+const tileN = (n, k) => n + ' ' + TILE.bg[k][n === 1 ? 0 : 1];
+// Ukrainian after «з»: the genitive, 1 трикутної плитки, 3 трикутних плиток
+const tileUk = (n, k) => n + ' ' + [['трикутної', 'квадратної'][k], ['трикутних', 'квадратних'][k]][n === 1 ? 0 : 1] + ' ' + (n === 1 ? 'плитки' : 'плиток');
+export function genTwoTiles(){
+  const t = 5 + rnd(16), s = 5 + rnd(16), m = 2 + rnd(2);
+  return {kind:'twotot', shape:'tiles', t, s, m, A: t + s, B: m*t + (m + 1)*s, traps:[t + s + s].filter(v => v !== m*t + (m - 1)*s), ans: m*t + (m - 1)*s};
+}
+export function genBerries(){
+  for(;;){
+    const b = 4 + rnd(9), y = 5 + rnd(10), k = 10 + rnd(13), d = 1 + rnd(7), m = b + d;
+    return {kind:'twotot', shape:'berries', s: b + y, t: k + m + y, k, traps:[k + m + y - (b + y)], ans: d};
+  }
+}
 export function genTwoTot(){
   const r = Math.random(), shape = r < 0.3 ? 'one' : r < 0.55 ? 'halves' : r < 0.8 ? 'mix' : 'rest';
   if(shape === 'one'){
@@ -62,7 +95,17 @@ export function genTwoTot(){
 }
 function drawTwoTot(q){
   let ask;
-  if(q.shape === 'one') ask = tr(ONE[q.sc](q.A, q.B)[0], ONE[q.sc](q.A, q.B)[1]);
+  if(q.shape === 'cost'){
+    const [x, y] = COST_PAIRS[q.pr].map(k => FRU[k]);
+    ask = tr('Две ' + x[1] + ' и ' + y[0] + ' струват ' + num(q.B) + ' цента, а ' + x[0] + ' и ' + y[0] + ' — ' + num(q.A) + ' цента. <b>Колко цента струва ' + y[2] + '?</b>',
+      x[6] + ' ' + x[4] + ' й ' + y[3] + ' коштують ' + ukPl(q.B, 'цент', 'центи', 'центів') + ', а ' + x[3] + ' й ' + y[3] + ' — ' + ukPl(q.A, 'цент', 'центи', 'центів') + '. <b>Скільки центів коштує ' + y[5] + '?</b>');
+  } else if(q.shape === 'tiles'){
+    ask = tr('Фигури са сглобени от еднакви триъгълни плочи и еднакви квадратни плочи. Фигура от ' + tileN(1, 0) + ' и ' + tileN(1, 1) + ' тежи ' + num(q.A) + ' кг, а фигура от ' + tileN(q.m, 0) + ' и ' + tileN(q.m + 1, 1) + ' — ' + num(q.B) + ' кг. <b>Колко кг тежи фигура от ' + tileN(q.m, 0) + ' и ' + tileN(q.m - 1, 1) + '?</b>',
+      'Фігури складені з однакових трикутних плиток і однакових квадратних плиток. Фігура з ' + tileUk(1, 0) + ' і ' + tileUk(1, 1) + ' важить ' + num(q.A) + ' кг, а фігура з ' + tileUk(q.m, 0) + ' і ' + tileUk(q.m + 1, 1) + ' — ' + num(q.B) + ' кг. <b>Скільки кг важить фігура з ' + tileUk(q.m, 0) + ' і ' + tileUk(q.m - 1, 1) + '?</b>');
+  } else if(q.shape === 'berries'){
+    ask = tr('Боровинка и ягодка тежат общо ' + num(q.s) + ' грама. Една къпинка, една малинка и ягодката тежат общо ' + num(q.t) + ' грама. Къпинката тежи ' + num(q.k) + ' грама. <b>С колко грама малинката е по-тежка от боровинката?</b>',
+      'Лохина й суничка важать разом ' + ukPl(q.s, 'грам', 'грами', 'грамів') + '. Одна ожина, одна малина й суничка важать разом ' + ukPl(q.t, 'грам', 'грами', 'грамів') + '. Ожина важить ' + ukPl(q.k, 'грам', 'грами', 'грамів') + '. <b>На скільки грамів малина важча за лохину?</b>');
+  } else if(q.shape === 'one') ask = tr(ONE[q.sc](q.A, q.B)[0], ONE[q.sc](q.A, q.B)[1]);
   else if(q.shape === 'halves'){
     const [x, y] = q.it.map(i => FRUIT[i]);
     ask = tr(x[0][0].toUpperCase() + x[0].slice(1) + ' заедно струват ' + num(q.A) + ' цента, а ' + y[0] + ' заедно — ' + num(q.B) + ' цента. <b>Колко цента струват заедно ' + y[1] + ' и ' + x[1] + '?</b>',
@@ -75,16 +118,33 @@ function drawTwoTot(q){
     const r = REST[q.sc];
     ask = tr(r[0] + ' ' + num(q.T) + ' кг, а ' + r[1] + ' ' + num(q.a) + ' кг. <b>Колко кг тежи ' + r[2] + '?</b>', r[3] + ' ' + num(q.T) + ' кг, а ' + r[4] + ' ' + num(q.a) + ' кг. <b>Скільки кг важить ' + r[5] + '?</b>');
   }
-  return '<div class="ask">' + ask + '</div><div class="line lg">' + SLOT + ' <span class="unit">' + (q.shape === 'mix' ? tr('евро', 'євро') : q.shape === 'halves' ? tr('цента', 'ц.') : tr('кг', 'кг')) + '</span></div>';
+  return '<div class="ask">' + ask + '</div><div class="line lg">' + SLOT + ' <span class="unit">' + (q.shape === 'mix' ? tr('евро', 'євро') : q.shape === 'halves' || q.shape === 'cost' ? tr('цента', 'ц.') : q.shape === 'berries' ? tr('грама', 'г') : tr('кг', 'кг')) + '</span></div>';
 }
 const sumList = (n, v) => Array(n).fill(v).join(' + ');
 function eqTwoTot(q){
+  if(q.shape === 'cost') return q.B + ' − ' + q.A + ' = ' + q.a + ', ' + q.A + ' − ' + q.a + ' = ' + q.ans;
+  if(q.shape === 'tiles') return sumList(q.m, q.A) + ' = ' + q.m*q.A + ', ' + q.B + ' − ' + q.m*q.A + ' = ' + q.s + ', ' + q.m*q.A + ' − ' + q.s + ' = ' + q.ans;
+  if(q.shape === 'berries') return q.t + ' − ' + q.k + ' = ' + (q.t - q.k) + ', ' + (q.t - q.k) + ' − ' + q.s + ' = ' + q.ans;
   if(q.shape === 'one') return q.B + ' − ' + q.A + ' = ' + q.s + ', ' + q.A + ' − ' + q.s + ' = ' + q.ans;
   if(q.shape === 'halves') return q.A + ' = ' + q.a + ' + ' + q.a + ', ' + q.B + ' = ' + q.b + ' + ' + q.b + ', ' + q.a + ' + ' + q.b + ' = ' + q.ans;
   if(q.shape === 'mix') return q.B + ' − ' + q.A + ' = ' + q.j + ', ' + q.A + ' − ' + q.j + ' = ' + q.p + ', ' + sumList(q.m, q.p) + ' + ' + sumList(q.n, q.j) + ' = ' + q.ans;
   return q.T + ' − ' + q.a + ' = ' + q.ans;
 }
 function whyTwoTot(q, full){
+  if(q.shape === 'cost'){
+    const [x, y] = COST_PAIRS[q.pr].map(k => FRU[k]);
+    if(!full) return tr('Сравни двете цени: с какво се различават? Точно толкова струва ' + x[2] + '.', 'Порівняй дві ціни: чим вони різні? Рівно стільки коштує ' + x[5] + '.');
+    return q.B + ' − ' + q.A + ' = <b>' + q.a + '</b> &nbsp;→&nbsp; ' + tr('толкова струва ' + x[2] + ', значи ' + y[2] + ' е ', 'стільки коштує ' + x[5] + ', отже ' + y[5] + ' — ') + q.A + ' − ' + q.a + ' = ' + q.ans;
+  }
+  if(q.shape === 'tiles'){
+    if(!full) return tr('Първата фигура я сложи няколко пъти, докато има толкова триъгълни плочи, колкото във втората. Какво остава?', 'Поклади першу фігуру кілька разів, поки трикутних плиток не стане стільки, скільки в другій. Що лишається?');
+    return tr(tileN(q.m, 0) + ' и ' + tileN(q.m, 1) + ': ', tileUk(q.m, 0) + ' і ' + tileUk(q.m, 1) + ': ') + sumList(q.m, q.A) + ' = <b>' + q.m*q.A + '</b> &nbsp;→&nbsp; ' +
+      q.B + ' − ' + q.m*q.A + ' = <b>' + q.s + '</b> ' + tr('е една квадратна плоча', '— одна квадратна плитка') + ' &nbsp;→&nbsp; ' + q.m*q.A + ' − ' + q.s + ' = ' + q.ans;
+  }
+  if(q.shape === 'berries'){
+    if(!full) return tr('Махни къпинката от втория сбор. Какво остава? Сравни с първия сбор.', 'Прибери ожину з другої суми. Що лишається? Порівняй з першою сумою.');
+    return q.t + ' − ' + q.k + ' = <b>' + (q.t - q.k) + '</b> ' + tr('(малинка и ягодка)', '(малина й суничка)') + ' &nbsp;→&nbsp; ' + (q.t - q.k) + ' − ' + q.s + ' ' + tr('(боровинка и ягодка)', '(лохина й суничка)') + ' = ' + q.ans + ' &nbsp;→&nbsp; ' + tr('ягодката е и в двата сбора', 'суничка є в обох сумах');
+  }
   if(q.shape === 'one'){
     const w = ONE_W[q.sc];
     if(!full) return tr('Сравни двата сбора: с какво са различни? Точно толкова тежи ' + w[0] + '.', 'Порівняй дві суми: чим вони різні? Рівно стільки важить ' + w[2] + '.');

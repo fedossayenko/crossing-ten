@@ -1,7 +1,7 @@
 // Question kind 'pencils': level 38 Моливи — Colours counted by what they are not.
 
 // Задача 8: one clue is a negative — "not green" is every other colour together.
-import { KIND, NAMES, UK_PLURAL, answerLine, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
+import { KIND, NAMES, UK_PLURAL, answerLine, popAt, rnd, shuffle, svgText, tr, ukPl } from '../js/core.js';
 const PENCIL = [['жълти','жълт'], ['зелени','зелен'], ['сини','син'], ['червени','червен']];
 // Задача 10: the other colour is the whole minus the named one, and then two lots are
 // given away — three plain steps, with only the first one needing any thought.
@@ -17,6 +17,16 @@ function genGave(){
     return {kind:'pencils', shape:'gave', who: nm[0], f, col, T, a, rest, g1, g2, other,
             ans: rest - g1 - g2};
   }
+}
+// Салабашев 2025, задача 11 (shape 'twonot'): 32 sweets of three kinds, 19 are not cream, 20 are not chocolate — marzipan?
+// «Not cream» is chocolate and marzipan, «not chocolate» is cream and marzipan: together 19 + 20 = 39 is all 32 and the
+// marzipan once more, so 39 − 32 = 7. [Bulgarian ×3, Ukrainian one / few / many ×3 — the kinds as adjectives]
+const SWEETS = [[['шоколадови', 'марципанови', 'сметанови'], ['шоколадні', 'марципанові', 'вершкові'], ['шоколадних', 'марципанових', 'вершкових']],
+                [['карамелени', 'ментови', 'плодови'], ['карамельні', 'м’ятні', 'фруктові'], ['карамельних', 'м’ятних', 'фруктових']]];
+export function genTwoNot(){
+  const set = rnd(SWEETS.length), c = [3 + rnd(12), 3 + rnd(12), 3 + rnd(12)], T = c[0] + c[1] + c[2];
+  // sweets 0 and 2 are the two «not» kinds, sweet 1 is asked
+  return {kind:'pencils', shape:'twonot', set, c, T, n0: T - c[0], n2: T - c[2], traps:[T - c[0]].filter(v => v !== c[1]), ans: c[1]};
 }
 export function genPencils(){
   if(Math.random() < 0.4) return genGave();
@@ -35,6 +45,11 @@ const pencilsUkPencils = n => ['олівець', 'олівці', 'олівців
 const pencilsUkName = bg => NAMES.find(r => r[0] === bg)[2];
 const pencilsUkGen = {'Хари':'Харі', 'Мая':'Маї', 'Ния':'Нії', 'Борис':'Бориса', 'Ива':'Іви', 'Асен':'Асена'};
 function drawPencils(q){
+  if(q.shape === 'twonot'){
+    const [bg, uk, ukG] = SWEETS[q.set];
+    return '<div class="ask">' + tr('В кутия има общо <span class="num">' + q.T + '</span> бонбона от три вида: ' + bg[0] + ', ' + bg[1] + ' и ' + bg[2] + '. От бонбоните <span class="num">' + q.n2 + '</span> не са ' + bg[2] + ', а <span class="num">' + q.n0 + '</span> не са ' + bg[0] + '. <b>Колко са ' + bg[1] + 'те бонбони в кутията?</b>',
+      'У коробці всього ' + ukPl(q.T, 'цукерка', 'цукерки', 'цукерок') + ' трьох видів: ' + uk[0] + ', ' + uk[1] + ' і ' + uk[2] + '. З цукерок <span class="num">' + q.n2 + '</span> — не ' + uk[2] + ', а <span class="num">' + q.n0 + '</span> — не ' + uk[0] + '. <b>Скільки в коробці ' + ukG[1] + ' цукерок?</b>') + '</div>' + answerLine('lg');
+  }
   if(q.shape === 'gave'){
     const had = q.f ? 'имала' : 'имал', gave = q.f ? 'подарила' : 'подарил';
     const Gave = gave[0].toUpperCase() + gave.slice(1);   // it opens a sentence
@@ -64,6 +79,7 @@ function drawPencils(q){
     answerLine('lg');
 }
 function eqPencils(q){
+  if(q.shape === 'twonot') return q.n2 + ' + ' + q.n0 + ' = ' + (q.n2 + q.n0) + ', ' + (q.n2 + q.n0) + ' − ' + q.T + ' = ' + q.ans;
   if(q.shape === 'gave') return tr(q.T + ' молива, ' + q.a + ' ' + q.col[0][0] +
     ', подарени ' + q.g1 + ' и ' + q.g2,
     q.T + ' ' + pencilsUkPencils(q.T) + ', ' + q.a + ' ' + pencilsUkCol[q.col[0][0]][pencilsUkForm(q.a)] +
@@ -103,6 +119,10 @@ function pencilsSvg(q, full){
   }
 }
 function whyPencils(q, full){
+  if(q.shape === 'twonot'){
+    if(!full) return tr('„Не са от първия вид“ са другите два вида заедно. Събери двете такива групи — кой вид е броен два пъти?', '«Не першого виду» — це два інші види разом. Додай обидві такі групи — який вид пораховано двічі?');
+    return q.n2 + ' + ' + q.n0 + ' = <b>' + (q.n2 + q.n0) + '</b> &nbsp;→&nbsp; ' + tr('това са всичките ' + q.T + ' и още веднъж ' + SWEETS[q.set][0][1] + 'те', 'це всі ' + q.T + ' і ще раз ' + SWEETS[q.set][1][1]) + ' &nbsp;→&nbsp; ' + (q.n2 + q.n0) + ' − ' + q.T + ' = ' + q.ans;
+  }
   if(q.shape === 'gave'){
     if(!full) return tr('Първо колко са останалите на цвят, чак после кой колко е подарил.',
       'Спочатку — скільки олівців іншого кольору, а вже потім — хто скільки подарував.');

@@ -11,6 +11,12 @@ function genSegUnits(){
     return {kind:'seg', shape:'units', ab, cm, cd, traps:[ab + cm + cd], ans: (ab + 10*cm + cd) / 100};
   }
 }
+// Салабашев 2024, задача 8 (shape 'ab'): A, B, C, D in a row on a drawing that is not to scale, AD = 49 см, BC = 11 см,
+// CD = 17 см — AB? The three pieces make AD: 49 − 11 − 17 = 21.
+export function genSegAb(){
+  const p = 5 + rnd(26), q = 5 + rnd(16), r = 5 + rnd(21);
+  return {kind:'seg', shape:'ab', p, q, r, AD: p + q + r, traps:[p + q + r - q], ans: p};
+}
 export function genSeg(){
   if(Math.random() < 0.2) return genSegUnits();
   if(Math.random() < 0.4) return genRuler();
@@ -111,7 +117,19 @@ function segMidSvg(q){
     '<line x1="' + at(0) + '" y1="0" x2="' + at(q.AD) + '" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
     xs.map((v, i) => '<circle cx="' + at(v) + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + at(v) + '" y="-9" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + 'ABCD'[i] + '</text>').join('') + '</svg></div>';
 }
+// the four points in a row A, B, C, D (the drawing is not to scale: the gaps are kept apart so every name has room)
+function segAbSvg(){
+  const xs = [14, 84, 140, 222];
+  return '<div class="fig"><svg viewBox="0 -12 236 44" role="img" aria-label="' + tr('четири точки върху права', 'чотири точки на прямій') + '">' +
+    '<line x1="4" y1="0" x2="232" y2="0" stroke="var(--ink)" stroke-width="2"/>' +
+    xs.map((x, i) => '<circle cx="' + x + '" cy="0" r="3.4" fill="var(--ink)"/><text x="' + x + '" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)" ' + SVG_FONT + '>' + 'ABCD'[i] + '</text>').join('') + '</svg></div>';
+}
 function drawSeg(q){
+  if(q.shape === 'ab'){
+    return '<div class="ask">' + tr('На долния чертеж, който не е точен, AD = <span class="num">' + q.AD + '</span> см, BC = <span class="num">' + q.q + '</span> см, CD = <span class="num">' + q.r + '</span> см. <b>Колко сантиметра е AB?</b>',
+      'На нижньому кресленні, яке не точне, AD = <span class="num">' + q.AD + '</span> см, BC = <span class="num">' + q.q + '</span> см, CD = <span class="num">' + q.r + '</span> см. <b>Скільки сантиметрів AB?</b>') + '</div>' +
+      segAbSvg() + '<div class="line md">' + SLOT + CM + '</div>';
+  }
   if(q.shape === 'mid'){
     const g = segMidGiven(q), ask = q.toB ? 'MB' : 'MC';
     return '<div class="ask">' + tr('Ако ' + g[0] + ', ' + g[1] + ', ' + g[2] + ' и AM = MD, пресметнете в <b>сантиметри</b> дължината на отсечката <b>' + ask + '</b>.',
@@ -149,6 +167,7 @@ function drawSeg(q){
 }
 const segMidLast = q => q.toB ? (q.AD / 2) + ' − ' + q.cm[0] : (q.cm[0] + q.cm[1]) + ' − ' + (q.AD / 2);
 function eqSeg(q){
+  if(q.shape === 'ab') return 'AD ' + q.AD + ' − BC ' + q.q + ' − CD ' + q.r + ' = ' + q.ans;
   if(q.shape === 'mid') return q.cm.join(' + ') + ' = ' + q.AD + ', ' + q.AD + ' : 2 = ' + q.AD / 2 + ', ' + segMidLast(q) + ' = ' + q.ans + ' см';
   if(q.shape === 'units') return q.ab + ' + ' + 10*q.cm + ' + ' + q.cd + ' = ' + (q.ans*100) + ' мм = ' + q.ans + ' дм';
   if(q.shape === 'ruler') return 'AB ' + q.a + '→' + q.b + ', CD ' + q.c + '→' + q.d + ' → ' + q.ans;
@@ -157,6 +176,13 @@ function eqSeg(q){
   return 'AB ' + q.AB + ', CD ' + q.CD + ', CB ' + q.q + ' → AD ' + q.ans;
 }
 function whySeg(q, full){
+  if(q.shape === 'ab'){
+    if(!full) return tr('AB, BC и CD заедно правят цялата AD. Махни от нея това, което знаеш.', 'AB, BC і CD разом складають увесь AD. Відніми від нього те, що знаєш.');
+    return 'AB = AD − BC − CD = ' + q.AD + ' − ' + q.q + ' − ' + q.r + ' = ' + q.ans +
+      lineSvg([{at:0, name:'A'}, {at:q.p, name:'B'}, {at:q.p + q.q, name:'C'}, {at:q.AD, name:'D'}],
+        [{from:0, to:q.AD, row:-2, label:'AD ' + q.AD, step:1}, {from:q.p, to:q.p + q.q, row:1, label:'BC ' + q.q, col:'var(--accent)', step:3},
+         {from:q.p + q.q, to:q.AD, row:2, label:'CD ' + q.r, col:'var(--accent)', step:5}, {from:0, to:q.p, row:-1, label:'AB ' + q.p, col:'var(--warm)', step:7}], 0, q.AD, tr('отсечките от A до D', 'відрізки від A до D'));
+  }
   if(q.shape === 'mid'){
     if(!full) return tr('Първо трите отсечки в сантиметри и цялата AD. Точката M е по средата на AD.', 'Спершу три відрізки в сантиметрах і весь AD. Точка M — посередині AD.');
     const half = q.AD / 2, [ab, bc] = q.cm, ask = q.toB ? 'MB' : 'MC', to = q.units.map((u, i) => u === 'см' ? '' : Math.round(q.cm[i] / SEG_MID_U[u]) + ' ' + u + ' = ' + q.cm[i] + ' см').filter(Boolean);

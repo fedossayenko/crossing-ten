@@ -100,7 +100,7 @@
     if(p.shape === 'house' && p.L <= p.t) fail('281 house: the rectangle is not longer than it is wide', p);
     // 282: the perimeter is the three sides; the third side what is left, and a real triangle
     const t = Q.raw(282), sides = t.shape === 'sum' ? t.s : t.shape === 'eq' ? [t.a, t.a, t.a] : [t.a, t.b, t.P - t.a - t.b];
-    const P = sides[0] + sides[1] + sides[2], ans282 = t.shape === 'back' ? sides[2] : P;
+    const P = sides[0] + sides[1] + sides[2], ans282 = t.shape === 'back' || t.shape === 'rel' ? sides[2] : P;
     if(t.ans !== ans282 || P > 100 || sides.some((v, k) => v < 1 || v >= P - v)) fail('282: worked out ' + ans282, t);
     // 283: the kind from how many sides are equal; the drawing to scale (each side's drawn length over its label the same)
     const y = Q.raw(283);

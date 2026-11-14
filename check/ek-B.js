@@ -57,6 +57,8 @@
     } else if(q.shape === 'mix'){
       for(let p = 1; p < q.A; p++){ const j = q.A - p; if(p + 2*j === q.B) sols.push((q.m === 2 ? p + p : p + p + p) + (q.n === 2 ? j + j : q.n === 3 ? j + j + j : j + j + j + j)); }
       if(sols.join() !== String(q.ans) || q.ans > 100 || !/^[^×÷]*$/.test(strip(Q.drawQ(q)))) fail('321: the price', q);
+    } else if(q.shape === 'cost' || q.shape === 'tiles'){
+      continue;   // Салабашев 2020 #14 and 2019 #14, worked out again in check/sal-S3.js
     } else {
       for(let o = 1; o < q.T; o++) if(o + q.a === q.T) sols.push(o);
       if(sols.join() !== String(q.ans) || q.a < 1 || q.ans < 3) fail('322: the other', q);
@@ -64,6 +66,7 @@
   }
   for(let i = 0; i < 3000; i++){
     const q = Q.raw(323); count('extras ' + q.shape);
+    if(q.shape === 'legs') continue;   // Салабашев 2023 #11, worked out again in check/sal-S3.js
     const sols = [];
     if(q.shape === 'humps') for(let t = 0; t <= q.n; t++) if(q.n + t === q.total) sols.push(t);      // one hump each, a second one on each two-humped
     if(q.shape === 'darts') for(let k = 0; q.n0 + k * q.e <= q.total; k++) if(q.n0 + k * q.e === q.total) sols.push(k);

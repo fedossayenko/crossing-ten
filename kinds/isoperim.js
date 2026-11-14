@@ -16,6 +16,15 @@ import { CM, KIND, SLOT, SVG_FONT, addUp, rnd, shuffle, tr } from '../js/core.js
 import { triSideSvg } from './tritype.js';
 // the triangle's sides as [base, left, right]: the longest across, so it stands
 const triPerimSides = s => { const x = s.slice().sort((p, q) => q - p); return [x[0], x[1], x[2]]; };
+// Салабашев 2024, задача 5 (shape 'rel'): perimeter 60 см, one side 18, 3 см longer than the second — the third? The second
+// is 18 − 3 = 15, and the third 60 − 18 − 15 = 27. The second may also be told shorter than the first.
+export function genTriRel(){
+  for(;;){
+    const a = 6 + rnd(30), k = 2 + rnd(6), longer = Math.random() < 0.7, b = longer ? a - k : a + k, c = 6 + rnd(30), P = a + b + c;
+    if(b < 3 || P > 100 || 2*Math.max(a, b, c) >= P - 1) continue;
+    return {kind:'isoperim', shape:'rel', u: 'см', a, b, k, longer, P, traps:[P - a - k].filter(v => v !== c), ans: c};
+  }
+}
 export function genTriPerim(){
   for(;;){
     const r = Math.random(), shape = r < 0.35 ? 'sum' : r < 0.6 ? 'eq' : 'back', u = Math.random() < 0.75 ? 'см' : Math.random() < 0.5 ? 'дм' : 'м';
@@ -35,6 +44,8 @@ const TRI_UW = { см:['сантиметра', 'сантиметрів'], дм:[
 const triLen = (n, u) => '<span class="num">' + n + '&nbsp;' + u + '</span>';
 function drawTriPerim(q){
   const w = TRI_UW[q.u], line = '<div class="line md">' + SLOT + ' <span class="unit">' + q.u + '</span></div>';
+  if(q.shape === 'rel') return '<div class="ask">' + tr('Обиколката на триъгълник е ' + triLen(q.P, 'см') + '. Едната му страна е дълга ' + triLen(q.a, 'см') + ' и е с ' + triLen(q.k, 'см') + ' ' + (q.longer ? 'по-дълга' : 'по-къса') + ' от втората му страна. Колко сантиметра е дълга третата страна на триъгълника?',
+    'Периметр трикутника — ' + triLen(q.P, 'см') + '. Одна його сторона завдовжки ' + triLen(q.a, 'см') + ' і на ' + triLen(q.k, 'см') + ' ' + (q.longer ? 'довша' : 'коротша') + ' за другу сторону. Скільки сантиметрів третя сторона трикутника?') + '</div>' + line;
   if(q.shape === 'eq') return '<div class="ask">' + tr('Страната на равностранен триъгълник е ' + triLen(q.a, q.u) + '. Колко ' + w[0] + ' е обиколката на триъгълника?',
     'Сторона рівностороннього трикутника — ' + triLen(q.a, q.u) + '. Скільки ' + w[1] + ' становить периметр трикутника?') + '</div>' + line;
   if(q.shape === 'sum') return '<div class="ask">' + tr('Страните на триъгълник са ' + triLen(q.s[0], q.u) + ', ' + triLen(q.s[1], q.u) + ' и ' + triLen(q.s[2], q.u) + '. Колко ' + w[0] + ' е обиколката на триъгълника?',
@@ -48,11 +59,16 @@ function drawTriPerim(q){
     'Периметр трикутника — ' + triLen(q.P, q.u) + '. Одна його сторона — ' + triLen(q.a, q.u) + ', а друга — ' + triLen(q.b, q.u) + '. Скільки ' + w[1] + ' довжина третьої сторони?') + '</div>' + line;
 }
 function eqTriPerim(q){
+  if(q.shape === 'rel') return q.a + (q.longer ? ' − ' : ' + ') + q.k + ' = ' + q.b + ', ' + q.P + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans + ' см';
   if(q.shape === 'eq') return q.a + ' + ' + q.a + ' + ' + q.a + ' = ' + q.ans + ' ' + q.u;
   if(q.shape === 'sum') return q.s.join(' + ') + ' = ' + q.ans + ' ' + q.u;
   return q.P + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans + ' ' + q.u;
 }
 function whyTriPerim(q, full){
+  if(q.shape === 'rel'){
+    if(!full) return tr('Първо намери втората страна. После махни от обиколката двете известни.', 'Спершу знайди другу сторону. Потім відніми від периметра дві відомі.');
+    return tr('втората страна: ', 'друга сторона: ') + q.a + (q.longer ? ' − ' : ' + ') + q.k + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + q.P + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans + ' см';
+  }
   const fig = (s, last) => '<div class="fig small">' + triSideSvg(s, s.map(v => v + ' ' + q.u), { last, hot: last }) + '</div>';
   if(q.shape === 'eq'){
     if(!full) return tr('Обиколката е сборът на трите страни. Колко дълги са другите две?', 'Периметр — це сума трьох сторін. Яка довжина двох інших?');
@@ -120,7 +136,7 @@ export function genIsoPerim(){
   }
 }
 function drawIsoPerim(q){
-  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return drawTriPerim(q);
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return drawTriPerim(q);
   if(q.shape === 2){
     const times = ['', 'веднъж', 'два пъти', 'три пъти'][q.laps], timesUk = ['', 'один раз', 'двічі', 'тричі'][q.laps];
     return '<div class="ask">' + tr('Мравка изминала ' + times + ' пътечката <b>ABCA</b> (триъгълник ABC е равностранен). Костенурка се разходила по равнобедрения триъгълник MEK по следния начин: <b>' + q.route.split('').join('') + '</b>. Колко метра повече е изминало едното животно от другото?',
@@ -146,14 +162,14 @@ function drawIsoPerim(q){
     '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqIsoPerim(q){
-  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return eqTriPerim(q);
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return eqTriPerim(q);
   if(q.shape === 2) return (q.laps > 1 ? Array(q.laps).fill(3*q.a).join(' + ') + ' = ' : '') + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
   if(q.shape === 3) return q.b + ' + ' + tr('бедро + бедро', 'бічна + бічна') + ' = ' + q.P + ' → ' + q.ans;
   if(q.shape === 1) return q.T + ' − ' + 4*q.leg + ' = ' + (q.T - 4*q.leg) + ', ' + (q.T - 4*q.leg) + ' − ' + q.d + ' = ' + 2*q.b + ' = ' + q.b + ' + ' + q.b + ' → ' + q.ans;
   return q.P + ' = ' + Array(4).fill(q.s).join(' + ') + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
 }
 function whyIsoPerim(q, full){
-  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back') return whyTriPerim(q, full);
+  if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return whyTriPerim(q, full);
   if(q.shape === 2){
     if(!full) return tr('Колко отсечки има всеки път и колко е дълга всяка? Внимавай кои страни на MEK са равни.', 'Скільки відрізків у кожному шляху і яка довжина кожного? Зверни увагу, які сторони MEK рівні.');
     const segs = []; for(let i = 1; i < q.route.length; i++) segs.push('ME EM'.includes(q.route[i-1] + q.route[i]) ? q.base : q.leg);

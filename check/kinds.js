@@ -315,7 +315,7 @@ console.log('unknown from an addition: the given holds and the second step is wo
 // the pencils, where one clue is a negative
 for(let i = 0; i < 4000; i++){
   const q = raw(38);
-  if(q.shape === 'gave') continue;             // задача 10 has two colours, and is checked below
+  if(q.shape === 'gave' || q.shape === 'twonot') continue;             // задача 10 has two colours, and is checked below; twonot is checked in check/sal-S3.js
   if(q.a + q.b + q.c !== q.T) throw new Error('the three colours do not add to the total');
   if(q.notA !== q.T - q.a) throw new Error('"not the first colour" is not the rest of them');
   if(q.ans !== q.notA - q.b || q.ans < 1) throw new Error('pencil answer wrong');
@@ -451,6 +451,7 @@ for(let i = 0; i < 4000; i++){
     continue;
   }
   if(q.shape === 'units'){ if((q.ab + 10*q.cm + q.cd) !== 100*q.ans) throw new Error('AD in дм: ' + JSON.stringify(q)); continue; }   // Пролет 2025
+  if(q.shape === 'ab') continue;                // Салабашев 2024 задача 8, checked in check/sal-S3.js
   if(q.AB !== q.p + q.q || q.CD !== q.q + q.r) throw new Error('the given lengths do not match the points');
   if(q.ans !== q.p + q.q + q.r) throw new Error('AD wrong');
   if(q.AB - q.q !== q.p) throw new Error('AC does not come out of AB and CB');

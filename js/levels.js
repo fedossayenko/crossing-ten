@@ -13,7 +13,7 @@ import { genGrow, genGrowShort, genGrowTimes } from '../kinds/grow.js';
 import { genErase } from '../kinds/erase.js';
 import { genIneq, genIneqSmall, genIneqWide } from '../kinds/ineq.js';
 import { genOrder } from '../kinds/order.js';
-import { genSumBoard, genSumDiff, genSumDiffPair } from '../kinds/sumdiff.js';
+import { genAte, genSumBoard, genSumDiff, genSumDiffPair } from '../kinds/sumdiff.js';
 import { genDigits, genDigitOvals, genTensDigit } from '../kinds/digits.js';
 import { genVowels } from '../kinds/vowels.js';
 import { genCardSaid } from '../kinds/cardsaid.js';
@@ -21,7 +21,7 @@ import { genFlipCards } from '../kinds/flipcards.js';
 import { genDigitBelow, genDigitCal, genDigitFreq, genDigitOmit, genDigitPages, genDigitRun } from '../kinds/dcount.js';
 import { genBucket } from '../kinds/bucket.js';
 import { genRects, genRectsAnts, genRectsIn } from '../kinds/rects.js';
-import { genLine } from '../kinds/line.js';
+import { genLine, genToward } from '../kinds/line.js';
 import { genShared } from '../kinds/shared.js';
 import { genStep } from '../kinds/step.js';
 import { genAfter, genBoundShort, genDateSum, genShift, genWeekday } from '../kinds/weekday.js';
@@ -61,7 +61,7 @@ import { genFlowers } from '../kinds/flowers.js';
 import { genTwoDig, genTwoDigUnder } from '../kinds/twodig.js';
 import { genCandy } from '../kinds/candy.js';
 import { genShapes } from '../kinds/shapes.js';
-import { genPencils } from '../kinds/pencils.js';
+import { genPencils, genTwoNot } from '../kinds/pencils.js';
 import { genCrates } from '../kinds/crates.js';
 import { genMultiple } from '../kinds/multiple.js';
 import { genSudoku } from '../kinds/sudoku.js';
@@ -70,7 +70,7 @@ import { genTens, genTensSaid } from '../kinds/tens.js';
 import { genSigns } from '../kinds/signs.js';
 import { genBoth } from '../kinds/both.js';
 import { genShort } from '../kinds/short.js';
-import { genSeg, genSegMid, genSegShort } from '../kinds/seg.js';
+import { genSeg, genSegAb, genSegMid, genSegShort } from '../kinds/seg.js';
 import { genThree } from '../kinds/three.js';
 import { genCats } from '../kinds/cats.js';
 import { genCoins } from '../kinds/coins.js';
@@ -97,7 +97,7 @@ import { genYesNo } from '../kinds/yesno.js';
 import { genDigitBlocks, genWordPos } from '../kinds/wordpos.js';
 import { genDiffSeq, genDiffSeqNext } from '../kinds/diffseq.js';
 import { genDaily } from '../kinds/daily.js';
-import { genIsoPerim, genTriPerim, genTwoIso } from '../kinds/isoperim.js';
+import { genIsoPerim, genTriPerim, genTriRel, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
 import { genBrackets, genBracketsShort } from '../kinds/brackets.js';
 import { genMatch } from '../kinds/match.js';
@@ -111,7 +111,7 @@ import { genWeights } from '../kinds/weights.js';
 import { genCountSq, genCountSqStrip } from '../kinds/countsq.js';
 import { genCutRect } from '../kinds/cutrect.js';
 import { genAlternate } from '../kinds/alternate.js';
-import { genPages } from '../kinds/pages.js';
+import { genPages, genTales } from '../kinds/pages.js';
 import { genPairSum } from '../kinds/pairsum.js';
 import { genEqBoxes, genEqSwap } from '../kinds/eqrows.js';
 import { genCardFree, genCardSum } from '../kinds/cardsum.js';
@@ -133,8 +133,13 @@ import { genLeast3 } from '../kinds/least3.js';
 import { genNuts, genNutsLeast } from '../kinds/nuts.js';
 import { genAndMore, genFishers, genThreeGroups } from '../kinds/andmore.js';
 import { genEqualize, genEqualizeTold } from '../kinds/equalize.js';
-import { genTwoTot } from '../kinds/twotot.js';
-import { genExtras } from '../kinds/extras.js';
+import { genBerries, genTwoCost, genTwoTiles, genTwoTot } from '../kinds/twotot.js';
+import { genSweetsHalf } from '../kinds/sweetshalf.js';
+import { genBloomChange } from '../kinds/bloomchange.js';
+import { genPace } from '../kinds/pace.js';
+import { genFishTalk } from '../kinds/fishtalk.js';
+import { genGingerBags } from '../kinds/gingerbags.js';
+import { genExtras, genCowLegs } from '../kinds/extras.js';
 import { genSwap } from '../kinds/swap.js';
 import { genShelf } from '../kinds/shelf.js';
 import { genInRow, genInRowPlaces, genInRowSpan } from '../kinds/inrow.js';
@@ -237,7 +242,7 @@ import { genFib, genTribo } from '../kinds/tribo.js';
 import { genBetween } from '../kinds/between.js';
 import { genWhoMore } from '../kinds/whomore.js';
 import { genSegWord } from '../kinds/segword.js';
-import { genPrices } from '../kinds/prices.js';
+import { genCombo, genPrices } from '../kinds/prices.js';
 import { genHops } from '../kinds/hops.js';
 import { genWhoCity, genWhoColor, genWhoFruit } from '../kinds/whocolor.js';
 import { genDigRule } from '../kinds/digrule.js';
@@ -268,7 +273,7 @@ import { genSibs, genSibsAll } from '../kinds/sibs.js';
 import { genAllDiff } from '../kinds/alldiff.js';
 import { genYearsAgo, genYearsSame } from '../kinds/yearsago.js';
 import { genCakes } from '../kinds/cakes.js';
-import { genNeither, genParents } from '../kinds/groups2.js';
+import { genNeither, genNeitherBoth, genParents } from '../kinds/groups2.js';
 import { genHalfGrid } from '../kinds/halfgrid.js';
 import { genCutout } from '../kinds/cutout.js';
 import { genStairs } from '../kinds/stairs.js';
@@ -291,6 +296,16 @@ import { genPyrCol } from '../kinds/pyrcol.js';
 const shapeOf = q => String(q.shape ?? '-');
 const only = (gen, ...shapes) => () => { for(;;){ const q = gen(); if(shapes.includes(shapeOf(q))) return q; } };
 const without = (gen, ...shapes) => () => { for(;;){ const q = gen(); if(!shapes.includes(shapeOf(q))) return q; } };
+// a level's generator with one more generator drawn now and then (a share p of the questions): the shape of another generator joins it
+const mixIn = (gen, p, other) => () => Math.random() < p ? other() : gen();
+const genTwoTotWide = mixIn(only(genTwoTot, 'one', 'halves'), 0.25, genTwoCost);
+const genTwoMixWide = mixIn(only(genTwoTot, 'mix'), 0.3, genTwoTiles);
+const genExtrasWide = mixIn(only(genExtras, 'humps', 'darts'), 0.3, genCowLegs);
+const genPencilsWide = mixIn(genPencils, 0.3, genTwoNot);
+const genNeitherWide = mixIn(genNeither, 0.3, genNeitherBoth);
+const genLineWide = mixIn(genLine, 0.3, genToward);
+const genSegWide = mixIn(genSeg, 0.25, genSegAb);
+const genTriPerimWide = mixIn(genTriPerim, 0.25, genTriRel);
 /** @type {Level[]} */
 export const LEVELS = [
   { id:1, op:'-', d:2, eq:'42 − 7', desc:{ en:'Two digits take away one, crossing a ten', bg:'Двуцифрено минус едноцифрено, с преминаване през десетицата', uk:'Двоцифрове мінус одноцифрове, з переходом через десяток' } },
@@ -440,7 +455,7 @@ export const LEVELS = [
   { id:75, op:'w', grp:'find', needs:[11], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Кръстът', uk:'Хрест' }, desc:{ en:'Rows and columns multiply to the shaded numbers — find the one missing', bg:'Редове и колони се умножават до оцветените числа — намери липсващото', uk:'Рядки й стовпці множаться до зафарбованих чисел — знайди відсутнє' }, gen:genProdGrid },
   { id:244, op:'w', grp:'find', needs:[243], grade:3, src:'mbg-autumn-2023', d:4, eq:'1 + 2 + … + N', desc:{ en:'The smallest N for which 1 + 2 + … + N (or from a later start) is a number times itself, divides by a number, ends in a digit or has two equal digits', bg:'Най-малкото N, за което 1 + 2 + … + N (или от друго начало) е число, умножено по себе си, дели се на число, завършва на цифра или има две еднакви цифри', uk:'Найменше N, для якого 1 + 2 + … + N (або від іншого початку) — число, помножене саме на себе, ділиться на число, закінчується цифрою або має дві однакові цифри' }, gen:genSqSumLeast },
   { id:28, op:'w', grp:'word', d:2, shapes:{ '-':2, rest:2 }, eq:{ bg:'Ябълки и круши', uk:'Яблука і груші' }, desc:{ en:'Count two groups, then add to reach a difference', bg:'Преброй двете групи и добави, за да стигнеш разликата', uk:'Порахуй дві групи й додай, щоб отримати різницю' }, also:['mbg-autumn-2024-2', 'mbg-autumn-2019-2'], gen:genFruit },
-  { id:38, op:'w', grp:'word', d:3, shapes:{ '-':3, gave:3 }, eq:{ bg:'Моливи', uk:'Олівці' }, desc:{ en:'Colours counted by what they are not', bg:'Цветове, броени по това, което не са', uk:'Кольори, пораховані через те, чим вони не є' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-winter-2024-2'], gen:genPencils },
+  { id:38, op:'w', grp:'word', d:3, shapes:{ '-':3, gave:3, twonot:3 }, eq:{ bg:'Моливи', uk:'Олівці' }, desc:{ en:'Colours counted by what they are not', bg:'Цветове, броени по това, което не са', uk:'Кольори, пораховані через те, чим вони не є' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-winter-2024-2', 'sal-2025-2'], gen:genPencilsWide },
   { id:39, op:'w', grp:'word', d:3, shapes:{ '0':3, '1':2 }, eq:{ bg:'Не достигат', uk:'Бракує' }, desc:{ en:'Short by so many — so how many are there now?', bg:'Не достигат толкова — колко има сега?', uk:'Бракує стількох — то скільки є зараз?' }, also:['mbg-autumn-2023-2', 'mbg-winter-2024-2'], gen:genShort },
   { id:47, op:'w', grp:'word', needs:[2], d:3, shapes:{ '-':3, more:3 }, eq:{ bg:'Три щайги', uk:'Три ящики' }, desc:{ en:'A total, a part of it, and a gap between the rest', bg:'Общо, част от него и разлика между останалите', uk:'Усього, частина з того й різниця між рештою' }, also:['mbg-autumn-2022-2', 'sal-2022-2'], gen:genCrates },
   { id:14, op:'w', grp:'word', d:3, shapes:{ '-':3, diff:3 }, eq:{ bg:'Нов сбор', uk:'Нова сума' }, desc:{ en:'Every addend changes by the same amount', bg:'Всяко събираемо се променя с едно и също число', uk:'Кожен доданок змінюється на те саме число' }, also:['mbg-winter-2020-2', 'mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-autumn-2025-2'], gen:genGrow },
@@ -449,7 +464,7 @@ export const LEVELS = [
   { id:197, op:'w', grp:'word', needs:[10], also:['mbg-autumn-2020-2', 'mbg-autumn-2019-2'], d:4, eq:{ bg:'Дълги сборове', uk:'Довгі суми' }, desc:{ en:'Two long sums past 100, and by how much one is bigger', bg:'Два дълги сбора над 100 и с колко единият е по-голям', uk:'Дві довгі суми понад 100 і на скільки одна більша' }, gen:only(genCmp, '-') },
   { id:57, op:'w', grp:'word', d:4, eq:{ bg:'Класирането', uk:'Хто на якому місці' }, desc:{ en:'Who beat whom — and how many are above someone', bg:'Кой кого е изпреварил — и колко са пред някого', uk:'Хто кого випередив — і скільки людей попереду когось' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2019-2'], gen:genRank },
   { id:48, op:'w', grp:'word', needs:[47], d:4, shapes:{ '-':4, venn:3 }, eq:{ bg:'Два езика', uk:'Дві мови' }, desc:{ en:'Two groups that overlap — who is counted twice', bg:'Две групи, които се застъпват — кой е броен два пъти', uk:'Дві групи, що перетинаються — кого пораховано двічі' }, also:['mbg-winter-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2'], gen:genBoth },
-  { id:42, op:'w', grp:'word', d:4, eq:{ bg:'Котките', uk:'Кішки' }, desc:{ en:'Two cats and one box of food between them', bg:'Две котки и една кутия храна за двете', uk:'Дві кішки й одна коробка корму на двох' }, also:['mbg-autumn-2023-2'], gen:genCats },
+  { id:42, op:'w', grp:'word', d:4, eq:{ bg:'Котките', uk:'Кішки' }, desc:{ en:'Two cats and one box of food between them', bg:'Две котки и една кутия храна за двете', uk:'Дві кішки й одна коробка корму на двох' }, also:['mbg-autumn-2023-2', 'sal-2021-2'], gen:genCats },
   { id:43, op:'w', grp:'word', d:4, shapes:{ '-':4, mix:4 }, eq:{ bg:'Монети', uk:'Монети' }, desc:{ en:'The one amount a handful of coins cannot pay', bg:'Сумата, която шепа монети не може да плати', uk:'Сума, яку жменька монет не може сплатити' }, also:['mbg-winter-2023-2', 'mbg-autumn-2023-2'], gen:genCoins },
   { id:17, op:'w', grp:'word', needs:[2], d:4, shapes:{ '-':3, sd:4 }, eq:{ bg:'Сбор и разлика', uk:'Сума і різниця' }, desc:{ en:'A number given by how far it sits from another', bg:'Число, зададено с това колко е далеч от друго', uk:'Число, задане тим, наскільки воно далеко від іншого' }, also:['mbg-winter-2020-2', 'mbg-autumn-2025-2', 'mbg-autumn-forecast2026-2'], gen:without(genSumDiff, 'gap') },
   { id:303, op:'w', grp:'word', needs:[17], src:'mbg-autumn-2022', d:5, eq:{ bg:'Най-голямата разлика', uk:'Найбільша різниця' }, desc:{ en:'Two numbers, each a given distance from the same number: the widest they can be apart', bg:'Две числа, всяко на дадено разстояние от едно и също число: колко най-много може да са раздалечени', uk:'Два числа, кожне на заданій відстані від того самого числа: наскільки найбільше вони можуть віддалитися' }, gen:only(genSumDiff, 'gap') },
@@ -474,10 +489,19 @@ export const LEVELS = [
   { id:454, op:'w', grp:'count', needs:[310], src:'sal-2024', d:3, shapes:{ cross:3, ahead:3 }, eq:{ bg:'Две броения в редица', uk:'Два лічильники в ряду' }, desc:{ en:'Places counted from both ends of a row, told roundabout: how many stand between the two, whose places cross or are given by how many came before and after', bg:'Места в редица, броени от двата края и казани в кръг: колко са между двамата, чиито места се пресичат или са дадени чрез това колко са преди и след тях', uk:'Місця в ряду, пораховані з обох кінців і сказані навколо: скільки між двома, чиї місця перетинаються або задані тим, скільки було перед і після них' }, also:['sal-2025-2'], gen:genInRowPlaces },
   { id:455, op:'w', grp:'word', src:'sal-2019', d:4, eq:{ bg:'Етажите на Мишо', uk:'Поверхи Мішо' }, desc:{ en:'As many floors above mine as below: how many floors has the block, when mine is found from a chain of floors', bg:'Над моя етаж има толкова етажи, колкото и под него: колко етажа има блокът, когато моят се намира по верига от етажи', uk:'Над моїм поверхом стільки ж поверхів, скільки й під ним: скільки поверхів у будинку, коли мій знаходимо за ланцюжком поверхів' }, gen:genFloorsChain },
   { id:456, op:'w', grp:'word', needs:[39], src:'sal-2019', d:4, eq:{ bg:'Раници', uk:'Наплічники' }, desc:{ en:'Money left over for two, short for one more: how much money', bg:'За двама остават парички, за още един не стигат: с колко парички е тръгнала', uk:'На двох залишається, на ще одного бракує: скільки грошей було' }, gen:genTwoSharePrice },
-  { id:320, op:'w', grp:'find', src:'ek-2025', d:3, shapes:{ one:3, halves:3 }, eq:{ bg:'Два сбора', uk:'Дві суми' }, desc:{ en:'Two totals that differ by one thing: how much that one is, then the other — or two of each priced in pairs', bg:'Два сбора, които се различават с една вещ: колко е тя, после другата — или по две от всяка, с цена за двете', uk:'Дві суми, що різняться на одну річ: скільки вона, потім інша, — або по дві кожної, з ціною за дві' }, also:['ek-2019-2'], gen:only(genTwoTot, 'one', 'halves') },
-  { id:321, op:'w', grp:'find', needs:[320], src:'ek-2022', d:4, eq:{ bg:'Две пици, три сока', uk:'Дві піци, три соки' }, desc:{ en:'One of each, then one and two of the other: the price of each, then of a few of each', bg:'Едно от двете, после едно и две от другото: цената на всяко, после на няколко от всяко', uk:'По одному, потім одне й дві іншого: ціна кожного, потім кількох кожного' }, gen:only(genTwoTot, 'mix') },
+  { id:320, op:'w', grp:'find', src:'ek-2025', d:3, shapes:{ one:3, halves:3, cost:3 }, eq:{ bg:'Два сбора', uk:'Дві суми' }, desc:{ en:'Two totals that differ by one thing: how much that one is, then the other — or two of each priced in pairs', bg:'Два сбора, които се различават с една вещ: колко е тя, после другата — или по две от всяка, с цена за двете', uk:'Дві суми, що різняться на одну річ: скільки вона, потім інша, — або по дві кожної, з ціною за дві' }, also:['ek-2019-2', 'sal-2020-2'], gen:genTwoTotWide },
+  { id:321, op:'w', grp:'find', needs:[320], src:'ek-2022', d:4, shapes:{ mix:4, tiles:4 }, eq:{ bg:'Две пици, три сока', uk:'Дві піци, три соки' }, desc:{ en:'One of each, then one and two of the other: the price of each, then of a few of each', bg:'Едно от двете, после едно и две от другото: цената на всяко, после на няколко от всяко', uk:'По одному, потім одне й дві іншого: ціна кожного, потім кількох кожного' }, also:['sal-2019-2'], gen:genTwoMixWide },
   { id:322, op:'w', grp:'find', src:'ek-2019', d:2, eq:{ bg:'Заедно и едното', uk:'Разом і одне' }, desc:{ en:'Two together and one of them given: how much the other is', bg:'Двамата заедно и единият известен: колко е другият', uk:'Двоє разом і один відомий: скільки інший' }, gen:only(genTwoTot, 'rest') },
-  { id:323, op:'w', grp:'find', src:'ek-2019', d:3, shapes:{ humps:3, darts:3 }, eq:{ bg:'Гърбици и стрелички', uk:'Горби й дротики' }, desc:{ en:'Everyone counts once, the special ones add more: how many special ones — camels with two humps, bullseyes that give darts', bg:'Всеки се брои веднъж, особените добавят още: колко са особените — двугърби камили, улучвания, които дават стрелички', uk:'Кожен рахується раз, особливі додають ще: скільки особливих — двогорбих верблюдів, влучань, що дають дротики' }, also:['ek-2024-2'], gen:only(genExtras, 'humps', 'darts') },
+  { id:460, op:'w', grp:'find', needs:[320], src:'sal-2024', d:3, eq:{ bg:'Малинка и боровинка', uk:'Малина й лохина' }, desc:{ en:'Two totals share one berry: by how much one berry is heavier than another', bg:'Два сбора с една обща ягода: с колко едната е по-тежка от другата', uk:'Дві суми з однією спільною ягодою: на скільки одна важча за іншу' }, gen:genBerries },
+  { id:461, op:'w', grp:'find', src:'sal-2023', d:2, eq:{ bg:'Менюто', uk:'Меню' }, desc:{ en:'Three prices and one price for all three together: how much the bundle saves', bg:'Три цени и една обща цена за трите: колко се спестява', uk:'Три ціни й одна спільна ціна на всі три: скільки заощаджуємо' }, gen:genCombo },
+  { id:462, op:'w', grp:'word', src:'sal-2022', d:3, eq:{ bg:'Две приказки', uk:'Дві казки' }, desc:{ en:'Two stretches of pages, first and last page both read: how many pages in all', bg:'Два откъса от страници, първата и последната се четат: колко страници общо', uk:'Два уривки зі сторінок, перша й остання теж читаються: скільки сторінок разом' }, gen:genTales },
+  { id:463, op:'w', grp:'find', src:'sal-2022', d:3, eq:{ bg:'Лакомата сестра', uk:'Ласа сестра' }, desc:{ en:'Some are left, one ate more than the other: how many the greedier one ate', bg:'Остават няколко, единият изял повече от другия: колко е изял по-лакомият', uk:'Лишилося кілька, один з’їв більше за іншого: скільки з’їв ласіший' }, gen:genAte },
+  { id:464, op:'w', grp:'word', src:'sal-2019', d:4, eq:{ bg:'Половината и още', uk:'Половина та ще' }, desc:{ en:'Half of one kind and some of the other are eaten, so much is left: how many of the second kind are left', bg:'Изядена е половината от единия вид и още от другия: колко остават от втория вид', uk:'З’їли половину одного виду й ще з іншого: скільки лишилося другого виду' }, gen:genSweetsHalf },
+  { id:465, op:'w', grp:'word', src:'sal-2024', d:3, eq:{ bg:'Лалета и нарциси', uk:'Тюльпани й нарциси' }, desc:{ en:'One count grows, the other shrinks: how many more of the first', bg:'Едното расте, другото намалява: с колко е повече първото', uk:'Одне зростає, інше зменшується: на скільки перше більше' }, gen:genBloomChange },
+  { id:466, op:'w', grp:'word', src:'sal-2023', d:2, eq:{ bg:'За по-дълго време', uk:'За довший час' }, desc:{ en:'So much in a few minutes: how much in a longer time, counted in lots, by adding', bg:'Толкова за няколко минути: колко за по-дълго време, на порции, със събиране', uk:'Стільки за кілька хвилин: скільки за довший час, порціями, додаванням' }, gen:genPace },
+  { id:467, op:'w', grp:'find', src:'sal-2021', d:3, eq:{ bg:'Рибарите си говорят', uk:'Рибалки розмовляють' }, desc:{ en:'Four true statements about catches: two of the four together', bg:'Четири верни твърдения за улова: двама от четиримата заедно', uk:'Чотири правдиві твердження про улов: двоє з чотирьох разом' }, gen:genFishTalk },
+  { id:468, op:'w', grp:'find', src:'sal-2025', d:4, eq:{ bg:'Торбичките с меденки', uk:'Пакетики з пряниками' }, desc:{ en:'Four bags: totals, a pair by name and two comparisons — how many in one bag', bg:'Четири торбички: сборове, двойка по име и две сравнения: колко е в една торбичка', uk:'Чотири пакетики: суми, пара за іменем і два порівняння: скільки в одному пакетику' }, gen:genGingerBags },
+  { id:323, op:'w', grp:'find', src:'ek-2019', d:3, shapes:{ humps:3, darts:3, legs:3 }, eq:{ bg:'Гърбици и стрелички', uk:'Горби й дротики' }, desc:{ en:'Everyone counts once, the special ones add more: how many special ones — camels with two humps, bullseyes that give darts', bg:'Всеки се брои веднъж, особените добавят още: колко са особените — двугърби камили, улучвания, които дават стрелички', uk:'Кожен рахується раз, особливі додають ще: скільки особливих — двогорбих верблюдів, влучань, що дають дротики' }, also:['ek-2024-2', 'sal-2023-2'], gen:genExtrasWide },
   { id:324, op:'w', grp:'word', src:'ek-2021', d:4, eq:{ bg:'Превръщане', uk:'Перетворення' }, desc:{ en:'Things turned into others by a rule, again and again until it cannot be done: how many are left', bg:'Неща, превръщани в други по правило, докато може: колко остават', uk:'Речі, що перетворюються на інші за правилом, поки можна: скільки лишається' }, gen:only(genSwap, 'fruit') },
   { id:325, op:'w', grp:'word', needs:[324], src:'ek-2019', d:5, eq:{ bg:'Жетони', uk:'Фішки' }, desc:{ en:'A machine changes one token for several of the other colour: the fewest tokens after a few changes', bg:'Машина заменя един жетон с няколко от другия цвят: най-малко жетони след няколко замени', uk:'Автомат міняє одну фішку на кілька іншого кольору: найменше фішок після кількох обмінів' }, gen:only(genSwap, 'tokens') },
   { id:326, op:'w', grp:'find', needs:[323], src:'ek-2022', d:5, eq:{ bg:'Крави и кокошки', uk:'Корови й кури' }, desc:{ en:'Legs counted, two animals sold, heads and legs counted again: how many hens there were', bg:'Преброени крака, продадени две животни, пак преброени глави и крака: колко са били кокошките', uk:'Пораховані ноги, продано дві тварини, знову пораховані голови й ноги: скільки було курей' }, gen:only(genExtras, 'farm') },
@@ -565,7 +589,7 @@ export const LEVELS = [
   { id:332, op:'w', grp:'word', needs:[47], src:'ek-2026', d:4, shapes:{ birds:4, family:4 }, eq:{ bg:'Всички различни', uk:'Усі різні' }, desc:{ en:'The most one can have when all are different and the others as small as they can be', bg:'Най-много, което може да има един, когато всички са различни, а другите — възможно най-малки', uk:'Найбільше, що може мати один, коли всі різні, а інші — якнайменші' }, also:['ek-2025-2'], gen:genAllDiff },
   { id:333, op:'w', grp:'word', needs:[47], src:'ek-2025', d:2, eq:{ bg:'Преди и след', uk:'Раніше й згодом' }, desc:{ en:'Two ages added up some years ago (or on): how old is the other one now?', bg:'Годините на двама, събрани преди (или след) няколко години: на колко е другият сега?', uk:'Роки двох, складені кілька років тому (або згодом): скільки років другому зараз?' }, gen:genYearsAgo },
   { id:334, op:'w', grp:'word', needs:[47], src:'ek-2023', d:3, eq:{ bg:'Тортите', uk:'Торти' }, desc:{ en:'Five children of different ages and their cakes: from the clues, whose is the last one?', bg:'Пет деца на различна възраст и техните торти: по подсказките — на кого е последната?', uk:'П\'ятеро дітей різного віку та їхні торти: за підказками — чия остання?' }, gen:genCakes },
-  { id:335, op:'w', grp:'word', needs:[47], src:'ek-2021', d:3, shapes:{ neither:3, table:3 }, eq:{ bg:'Нито едното', uk:'Ні те, ні інше' }, desc:{ en:'Two groups: how many are in neither — or the dark-haired boys from a table of boys, girls and hair', bg:'Две групи: колко не са в нито една — или тъмнокосите момчета по таблица момчета, момичета и коса', uk:'Дві групи: скільки не в жодній — або темноволосі хлопці за таблицею хлопців, дівчат і волосся' }, gen:genNeither },
+  { id:335, op:'w', grp:'word', needs:[47], src:'ek-2021', d:3, shapes:{ neither:3, table:3, both:3 }, eq:{ bg:'Нито едното', uk:'Ні те, ні інше' }, desc:{ en:'Two groups: how many are in neither — or the dark-haired boys from a table of boys, girls and hair', bg:'Две групи: колко не са в нито една — или тъмнокосите момчета по таблица момчета, момичета и коса', uk:'Дві групи: скільки не в жодній — або темноволосі хлопці за таблицею хлопців, дівчат і волосся' }, also:['sal-2021-2'], gen:genNeitherWide },
   { id:336, op:'w', grp:'word', needs:[335], src:'ek-2022', d:4, shapes:{ none:4, both:4 }, eq:{ bg:'Колко най-много', uk:'Скільки найбільше' }, desc:{ en:'Only the counts of two groups are known: the most in neither, the fewest in both', bg:'Знаят се само броят на двете групи: колко най-много са в нито една, колко най-малко са в двете', uk:'Відомо лише скільки в кожній із двох груп: скільки найбільше в жодній, скільки найменше в обох' }, gen:genParents },
   { id:370, op:'w', grp:'geo', src:'ek-2021', d:2, shapes:{ shirt:2, window:2 }, eq:{ bg:'В огледалото', uk:'У дзеркалі' }, desc:{ en:'A number on a T-shirt, or letters on a window: how it looks in a mirror, or from the other side', bg:'Число на тениска или букви на прозорец: как изглеждат в огледало или от другата страна', uk:'Число на футболці або літери на вікні: як вони виглядають у дзеркалі або з іншого боку' }, also:['ek-2026-2'], gen:genMirrorRow },
   { id:371, op:'w', grp:'geo', src:'ek-2026', d:3, shapes:{ lady:3, stamp:3 }, eq:{ bg:'Калинки', uk:'Сонечка' }, desc:{ en:'Which ladybug is the one shown turned, or the print of a stamp', bg:'Коя калинка е показаната, само завъртяна, или е отпечатъкът от печат', uk:'Яке сонечко — те саме, лише повернуте, або відбиток штампа' }, also:['ek-2024-2', 'ek-2022-2'], gen:genTurnFig },
@@ -584,8 +608,8 @@ export const LEVELS = [
   { id:418, op:'w', grp:'seq', needs:[417], src:'ek-2019', d:4, eq:{ bg:'Редът на картите', uk:'Порядок карток' }, desc:{ en:'Five equal cards overlap on a table: in what order they were put down', bg:'Пет еднакви карти се застъпват на масата: в какъв ред са поставени', uk:'П’ять однакових карток перекриваються на столі: у якому порядку їх клали' }, gen:genCardOrder },
   { id:78, op:'w', grp:'word', needs:[39], grade:3, src:'mbg-autumn-2025', d:4, eq:{ bg:'Портокалите', uk:'Апельсини' }, desc:{ en:'Sharing out two ways: short with one, exact with the other', bg:'Раздаване по два начина: с едното не стигат, с другото е точно', uk:'Роздати двома способами: одним бракує, другим — рівно' }, gen:genTwoShare },
   { id:263, op:'w', grp:'word', needs:[133], grade:3, src:'mbg-autumn-2024', d:4, eq:{ bg:'Етажите', uk:'Поверхи' }, desc:{ en:'A block of flats: so many times more floors above mine than below — or the other way round: which floor is mine', bg:'Блок: над моя етаж има няколко пъти повече етажи, отколкото под него — или обратно: на кой етаж съм', uk:'Будинок: над моїм поверхом у кілька разів більше поверхів, ніж під ним, — або навпаки: на якому я поверсі' }, gen:genFloors },
-  { id:20, op:'w', grp:'geo', d:3, eq:'A, B, C', desc:{ en:'Along a line, right then left — how far apart?', bg:'По права, надясно и после наляво — колко са далеч?', uk:'Уздовж прямої, праворуч, потім ліворуч — яка відстань?' }, also:['mbg-autumn-2025-2'], gen:genLine },
-  { id:40, op:'w', grp:'geo', d:3, shapes:{ '-':2, ruler:2, units:3 }, eq:'AD = ?', desc:{ en:'Overlapping lengths along a line', bg:'Застъпващи се отсечки по права', uk:'Відрізки на прямій, що перекриваються' }, also:['mbg-autumn-2021-2', 'mbg-autumn-2023-2', 'mbg-spring-2025-2'], gen:genSeg },
+  { id:20, op:'w', grp:'geo', d:3, shapes:{ '-':3, toward:3 }, eq:'A, B, C', desc:{ en:'Along a line, right then left — how far apart?', bg:'По права, надясно и после наляво — колко са далеч?', uk:'Уздовж прямої, праворуч, потім ліворуч — яка відстань?' }, also:['mbg-autumn-2025-2', 'sal-2020-2'], gen:genLineWide },
+  { id:40, op:'w', grp:'geo', d:3, shapes:{ '-':2, ruler:2, units:3, ab:2 }, eq:'AD = ?', desc:{ en:'Overlapping lengths along a line', bg:'Застъпващи се отсечки по права', uk:'Відрізки на прямій, що перекриваються' }, also:['mbg-autumn-2021-2', 'mbg-autumn-2023-2', 'mbg-spring-2025-2', 'sal-2024-2'], gen:genSegWide },
   { id:32, op:'w', grp:'geo', d:3, shapes:{ '0':2, '1':2, '2':2, '3':2, '4':3, '5':3 }, eq:{ bg:'Ленти', uk:'Стрічки' }, desc:{ en:'Centimetres, decimetres and metres', bg:'Сантиметри, дециметри и метри', uk:'Сантиметри, дециметри й метри' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2024-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2'], gen:without(genRibbon, '6', '7') },
   { id:52, op:'w', grp:'geo', d:3, shapes:{ '0':3, '1':3, '2':2 }, eq:{ bg:'Изрязан ъгъл', uk:'Вирізаний кут' }, desc:{ en:'A corner cut from a rectangle — its sides and its outline', bg:'Изрязан ъгъл от правоъгълник — страните и обиколката', uk:'Вирізаний кут прямокутника — сторони й периметр' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2'], gen:genStep },
   { id:200, op:'w', grp:'geo', needs:[32], src:'kms-2023', also:['kms-2022-2'], d:4, shapes:{ '6':4, '7':4 }, eq:{ bg:'Гирлянди и кутии', uk:'Гірлянди й коробки' }, desc:{ en:'Lengths in mixed units, compared with a limit or matched as equal', bg:'Дължини в смесени мерки, сравнени с граница или наредени като равни', uk:'Довжини в змішаних одиницях, порівняні з межею або згруповані як рівні' }, gen:only(genRibbon, '6', '7') },
@@ -609,7 +633,7 @@ export const LEVELS = [
   { id:91, op:'w', grp:'geo', needs:[32], src:'kms-2025', d:2, eq:{ bg:'Обиколка в дм', uk:'Периметр у дм' }, desc:{ en:'A rectangle\'s perimeter, asked in another unit', bg:'Обиколка на правоъгълник, питана в друга мярка', uk:'Периметр прямокутника в інших одиницях' }, gen:genRectDm },
   { id:280, op:'w', grp:'geo', needs:[267], src:'ach-2022', also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ plain:2, sum:2 }, eq:{ bg:'Сравни мерките', uk:'Порівняй довжини' }, desc:{ en:'Two lengths in см, дм and м: which is longer? The same units first', bg:'Две дължини в см, дм и м: коя е по-голяма? Първо в едни и същи мерки', uk:'Дві довжини в см, дм і м: яка більша? Спершу в однакових одиницях' }, gen:genUnitCmp },
   { id:281, op:'w', grp:'geo', src:'ach-2025', also:['ach-2026-2'], d:3, shapes:{ side:2, perim:3, row:3, house:2 }, eq:{ bg:'Обиколка на правоъгълник', uk:'Периметр прямокутника' }, desc:{ en:'A rectangle\'s other side and its perimeter, squares in a row, a side read off a triangle', bg:'Другата страна и обиколката на правоъгълник, квадрати в редица, страна от триъгълник', uk:'Друга сторона й периметр прямокутника, квадрати в ряд, сторона з трикутника' }, gen:genRectPool },
-  { id:282, op:'w', grp:'geo', src:'ach-2022', also:['ach-2023-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ sum:2, eq:2, back:2 }, eq:{ bg:'Обиколка на триъгълник', uk:'Периметр трикутника' }, desc:{ en:'A triangle\'s perimeter from its sides, or the third side from the perimeter', bg:'Обиколка на триъгълник от страните му — или третата страна от обиколката', uk:'Периметр трикутника за його сторонами — або третя сторона за периметром' }, gen:genTriPerim },
+  { id:282, op:'w', grp:'geo', src:'ach-2022', also:['ach-2023-2', 'ach-2025-2', 'ach-2026-2', 'sal-2024-2'], d:2, shapes:{ sum:2, eq:2, back:2, rel:2 }, eq:{ bg:'Обиколка на триъгълник', uk:'Периметр трикутника' }, desc:{ en:'A triangle\'s perimeter from its sides, or the third side from the perimeter', bg:'Обиколка на триъгълник от страните му — или третата страна от обиколката', uk:'Периметр трикутника за його сторонами — або третя сторона за периметром' }, gen:genTriPerimWide },
   { id:283, op:'w', grp:'geo', src:'ach-2022', also:['ach-2024-2', 'ach-2025-2', 'ach-2026-2'], d:2, shapes:{ sides:2, name:1 }, eq:{ bg:'Вид триъгълник', uk:'Вид трикутника' }, desc:{ en:'Equilateral, isosceles or scalene, by its sides', bg:'Равностранен, равнобедрен или разностранен — по страните', uk:'Рівносторонній, рівнобедрений чи різносторонній — за сторонами' }, gen:genTriType },
   { id:284, op:'w', grp:'geo', src:'ach-2025', d:2, eq:{ bg:'Елхичката', uk:'Ялинка' }, desc:{ en:'Triangles stacked into a fir tree: the big ones, and the small ones where they overlap', bg:'Триъгълници, наредени в елха: големите и малките, където се застъпват', uk:'Трикутники, складені в ялинку: великі й малі там, де вони заходять один на один' }, gen:genTreeCount },
   { id:137, op:'w', grp:'geo', needs:[141], src:'mbg-spring-2025', d:2, eq:{ bg:'Квадратчета от лист', uk:'Квадратики з аркуша' }, desc:{ en:'How many small squares can be cut from a sheet', bg:'Колко квадратчета могат да се изрежат от лист', uk:'Скільки квадратиків можна вирізати з аркуша' }, gen:genCutSq },

@@ -16,6 +16,19 @@ export function genPrices(){
     return {kind:'prices', it, x, y, z, A: x + y, B: x + z, traps:[x + y - z], ans: y};
   }
 }
+// Level 461. Салабашев 2023, задача 3: soup 5, a main dish 9 and a dessert 6 лева, the three together as a menu 16 — how much does
+// ordering the menu save? 5 + 9 + 6 = 20, and 20 − 16 = 4. A second set: a cinema ticket, popcorn and a drink as a combo.
+// [Bulgarian ×3 with the place, Ukrainian ×3, the offer's name in both]
+const COMBO = [{ bg:['супа', 'основно ястие', 'десерт'], uk:['суп', 'основну страву', 'десерт'], at:['В ресторанта предлагат', 'комбинирано меню от трите ястия', 'комбинираното меню', 'трите ястия'],
+    atUk:['У ресторані пропонують', 'комбіноване меню з трьох страв', 'комбіноване меню', 'три страви'] },
+  { bg:['билет за кино', 'пуканки', 'напитка'], uk:['квиток у кіно', 'попкорн', 'напій'], at:['В киното предлагат', 'комбо от трите неща', 'комбото', 'трите неща'],
+    atUk:['У кінотеатрі пропонують', 'комбо з трьох речей', 'комбо', 'три речі'] }];
+export function genCombo(){
+  for(;;){
+    const set = rnd(COMBO.length), p = [3 + rnd(8), 4 + rnd(9), 3 + rnd(8)], S = p[0] + p[1] + p[2], save = 1 + rnd(6);
+    return {kind:'prices', shape:'combo', set, p, S, M: S - save, traps:[S].filter(v => v !== save && v > 0), ans: save};
+  }
+}
 // the things, drawn small: a ruler, an eraser, a set square, a pencil, a sharpener
 function priceThing(i, x, y){
   const g = '<g transform="translate(' + x + ' ' + y + ')">';
@@ -40,14 +53,25 @@ function pricesSvg(q){
 }
 const priceName = (q, k) => tr(PRICE_THINGS[q.it[k]][0], PRICE_THINGS[q.it[k]][2]);
 function drawPrices(q){
+  if(q.shape === 'combo'){
+    const c = COMBO[q.set], n = x => '<span class="num">' + x + '</span>';
+    return '<div class="ask">' + tr(c.at[0] + ' ' + c.bg[0] + ' за ' + n(q.p[0]) + ' евро, ' + c.bg[1] + ' за ' + n(q.p[1]) + ' евро и ' + c.bg[2] + ' за ' + n(q.p[2]) + ' евро. Предлага се и ' + c.at[1] + ', което струва ' + n(q.M) + ' евро. <b>Колко евро спестява човек, ако си поръча ' + c.at[2] + ', вместо ' + c.at[3] + ' поотделно?</b>',
+      c.atUk[0] + ' ' + c.uk[0] + ' за ' + n(q.p[0]) + ' євро, ' + c.uk[1] + ' за ' + n(q.p[1]) + ' євро і ' + c.uk[2] + ' за ' + n(q.p[2]) + ' євро. Є також ' + c.atUk[1] + ', що коштує ' + n(q.M) + ' євро. <b>Скільки євро заощадить людина, якщо замовить ' + c.atUk[2] + ' замість того, щоб купувати ' + c.atUk[3] + ' окремо?</b>') + '</div>' +
+      '<div class="line lg">' + SLOT + ' <span class="unit">' + tr('евро', 'євро') + '</span></div>';
+  }
   const t = PRICE_THINGS[q.it[1]];
   return '<div class="ask">' + tr('Колко цента струва <b>' + t[1] + '</b>?', 'Скільки центів коштує <b>' + t[2] + '</b>?') + '</div>' + pricesSvg(q) +
     '<div class="line lg">' + SLOT + ' <span class="unit">' + tr('цента', 'ц.') + '</span></div>';
 }
 function eqPrices(q){
+  if(q.shape === 'combo') return q.p.join(' + ') + ' = ' + q.S + ', ' + q.S + ' − ' + q.M + ' = ' + q.ans;
   return priceName(q, 0) + ' ' + q.B + ' − ' + q.z + ' = ' + q.x + ', ' + priceName(q, 1) + ' ' + q.A + ' − ' + q.x + ' = ' + q.ans;
 }
 function whyPrices(q, full){
+  if(q.shape === 'combo'){
+    if(!full) return tr('Колко струват трите поотделно? Сравни с цената на менюто.', 'Скільки коштують три окремо? Порівняй з ціною меню.');
+    return q.p.join(' + ') + ' = <b>' + q.S + '</b> ' + tr('евро поотделно', 'євро окремо') + ' &nbsp;→&nbsp; ' + q.S + ' − ' + q.M + ' = ' + q.ans;
+  }
   if(!full) return tr('Във втората картинка има нещо, чиято цена знаеш. Махни го — какво остава?', 'На другому малюнку є річ, ціну якої ти знаєш. Прибери її — що лишається?');
   return priceName(q, 0) + ' + ' + priceName(q, 2) + ' = ' + q.B + ', ' + priceName(q, 2) + ' = ' + q.z + ' &nbsp;→&nbsp; ' + priceName(q, 0) + ' = ' + q.B + ' − ' + q.z + ' = <b>' + q.x + '</b> &nbsp;→&nbsp; ' +
     priceName(q, 1) + ' = ' + q.A + ' − ' + q.x + ' = ' + q.ans;

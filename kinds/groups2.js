@@ -13,6 +13,18 @@ import { KIND, SLOT, rnd, tr, ukN, ukPl } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
 const NEI_LANGS = [['английски', 'немски', 'англійську', 'німецьку', 'англійської', 'німецької'], ['немски', 'френски', 'німецьку', 'французьку', 'німецької', 'французької'],
   ['английски', 'испански', 'англійську', 'іспанську', 'англійської', 'іспанської'], ['френски', 'испански', 'французьку', 'іспанську', 'французької', 'іспанської']];
+// Салабашев 2021, задача 14 (shape 'both', no official key): 29 pupils, 12 have a dog, 11 a cat, 10 no pet — how many both?
+// 29 − 10 = 19 have at least one, and 12 + 11 = 23 counts the ones with both twice: 23 − 19 = 4.
+// [Bulgarian «имат …», Ukrainian «мають …» for each of the two pets]
+const BOTH_PETS = [[['куче', 'котка'], ['собаку', 'кота']], [['папагал', 'хамстер'], ['папугу', 'хом’яка']]];
+export function genNeitherBoth(){
+  for(;;){
+    const pet = rnd(BOTH_PETS.length), a = 8 + rnd(9), b = 8 + rnd(9), c = 1 + rnd(5), none = 2 + rnd(9);
+    if(c >= Math.min(a, b) - 2) continue;
+    const some = a + b - c;
+    return {kind:'neither', shape:'both', pet, a, b, c, none, n: some + none, some, traps:[some], ans: c};
+  }
+}
 export function genNeither(){
   if(Math.random() < 0.5){
     for(;;){
@@ -30,6 +42,12 @@ export function genNeither(){
   }
 }
 function drawNeither(q){
+  if(q.shape === 'both'){
+    const [bg, uk] = BOTH_PETS[q.pet];
+    return '<div class="ask">' + tr('В един клас от ' + num(q.n) + ' ученици ' + num(q.a) + ' имат ' + bg[0] + ', ' + num(q.b) + ' имат ' + bg[1] + ', а ' + num(q.none) + ' нямат домашен любимец. <b>Колко ученици имат и ' + bg[0] + ', и ' + bg[1] + '?</b>',
+      'У класі ' + ukPl(q.n, 'учень', 'учні', 'учнів') + ': ' + num(q.a) + ' мають ' + uk[0] + ', ' + num(q.b) + ' мають ' + uk[1] + ', а ' + num(q.none) + ' не мають домашнього улюбленця. <b>Скільки учнів мають і ' + uk[0] + ', і ' + uk[1] + '?</b>') + '</div>' +
+      '<div class="line xl">' + SLOT + '</div>';
+  }
   if(q.shape === 'neither'){
     const [l1, l2, u1, u2, g1, g2] = NEI_LANGS[q.li];
     return '<div class="ask">' + tr('Учениците в едно извънкласно занимание са ' + num(q.n) + '. От тях ' + num(q.a) + ' учат ' + l1 + ' език, ' + num(q.b) + ' учат ' + l2 + ' език, а ' + num(q.c) +
@@ -47,10 +65,16 @@ function drawNeither(q){
     '<div class="line xl">' + SLOT + '</div>';
 }
 function eqNeither(q){
+  if(q.shape === 'both') return q.n + ' − ' + q.none + ' = ' + q.some + ', ' + q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + ', ' + (q.a + q.b) + ' − ' + q.some + ' = ' + q.ans;
   if(q.shape === 'neither') return q.a + ' + ' + q.b + ' − ' + q.c + ' = ' + q.some + ', ' + q.n + ' − ' + q.some + ' = ' + q.ans;
   return q.N + ' − ' + q.B + ' = ' + q.G + ', ' + q.G + ' − ' + q.f + ' = ' + q.dg + ', ' + q.D + ' − ' + q.dg + ' = ' + q.ans;
 }
 function whyNeither(q, full){
+  if(q.shape === 'both'){
+    if(!full) return tr('Колко ученици имат поне едно животно? Ако съберем двете групи, кои са броени два пъти?', 'Скільки учнів мають хоча б одну тварину? Якщо додати обидві групи, хто пораховані двічі?');
+    return tr(q.n + ' − ' + q.none + ' = <b>' + q.some + '</b> ученици имат поне едно животно. ' + q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + ', но тези с две животни са преброени два пъти: ' + (q.a + q.b) + ' − ' + q.some + ' = <b>' + q.ans + '</b>',
+      q.n + ' − ' + q.none + ' = <b>' + q.some + '</b> — стільки учнів мають хоча б одну тварину. ' + q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + ', але ті, хто має двох, пораховані двічі: ' + (q.a + q.b) + ' − ' + q.some + ' = <b>' + q.ans + '</b>');
+  }
   if(q.shape === 'neither'){
     if(!full) return tr('Тези, които учат и двата езика, са преброени два пъти — веднъж при едните и веднъж при другите. Колко ученици учат поне един език?',
                         'Ті, хто вивчає обидві мови, пораховані двічі. Скільки учнів вивчають хоча б одну мову?');

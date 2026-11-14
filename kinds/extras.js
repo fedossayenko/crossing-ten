@@ -6,13 +6,20 @@
 // every bullseye gives 2 more, 20 thrown in all — 20 − 10 = 10 came from bullseyes, 2 at a time: 2, 4, 6, 8, 10, five.
 // 2022, задача 26 (shape 'farm'): cows and hens have 16 legs; 2 animals sold, heads and legs left 12 — a cow is 1 + 4 = 5, a hen
 // 1 + 2 = 3; 12 is only 3 + 3 + 3 + 3, four hens were left, the two sold were cows (16 − 8 = 8 legs), so four hens before.
-import { KIND, SLOT, rnd, tr, trN, ukN, ukPl } from '../js/core.js';
+import { KIND, SLOT, addUp, rnd, tr, trN, ukN, ukPl } from '../js/core.js';
 const num = n => '<span class="num">' + n + '</span>';
 const darts = n => ukPl(n, 'дротик', 'дротики', 'дротиків');
 // who plays darts: Bulgarian name, began, got, hit, threw; Ukrainian name, began, got, hit, threw
 /** @type {string[][]} */
 const DARTERS = [['Андрей', 'започнал', 'получавал', 'улучил', 'хвърлил', 'Андрій', 'розпочав', 'отримував', 'влучив', 'кинув'],
                  ['Мила', 'започнала', 'получавала', 'улучила', 'хвърлила', 'Міла', 'розпочала', 'отримувала', 'влучила', 'кинула']];
+// Салабашев 2023, задача 11 (shape 'legs', level 323): 10 animals, cows and hens, 26 legs — how many cows? If all 10 were hens
+// there would be 2, 4, …, 20 legs; the 6 left over are the cows' second pair, 2 for each cow: 2, 4, 6 — three cows.
+// A separate generator, so level 326 (shape 'farm' of genExtras) keeps its questions.
+export function genCowLegs(){
+  const n = 6 + rnd(11), c = 1 + rnd(n - 2);
+  return {kind:'extras', shape:'legs', n, c, L: 2*n + 2*c, traps:[n - c].filter(v => v !== c), ans: c};
+}
 export function genExtras(){
   const r = Math.random();
   if(r < 0.35){
@@ -43,7 +50,9 @@ function farmHens(L, R){
 }
 function drawExtras(q){
   let ask;
-  if(q.shape === 'humps') ask = tr('В зоологическа градина има общо ' + num(q.n) + ' камили — едногърби (с една гърбица) и двугърби (с две гърбици). Всички гърбици са ' + num(q.total) + '. <b>Колко от камилите са двугърби?</b>',
+  if(q.shape === 'legs') ask = tr('В животинската ферма има общо ' + num(q.n) + ' животни — крави и кокошки. Броят на краката на всички животни е ' + num(q.L) + '. <b>Колко крави има във фермата?</b>',
+    'На тваринній фермі всього ' + ukPl(q.n, 'тварина', 'тварини', 'тварин') + ' — корів і курей. Ніг у всіх тварин разом ' + num(q.L) + '. <b>Скільки корів на фермі?</b>');
+  else if(q.shape === 'humps') ask = tr('В зоологическа градина има общо ' + num(q.n) + ' камили — едногърби (с една гърбица) и двугърби (с две гърбици). Всички гърбици са ' + num(q.total) + '. <b>Колко от камилите са двугърби?</b>',
     'У зоопарку всього ' + num(q.n) + ' верблюдів — одногорбих (з одним горбом) і двогорбих (з двома горбами). Усіх горбів ' + num(q.total) + '. <b>Скільки з верблюдів двогорбих?</b>');
   else if(q.shape === 'darts'){
     const w = DARTERS[q.who];
@@ -60,11 +69,16 @@ function farmLeft(q){
   return { cr, hr, sum: [].concat(Array(cr).fill(5), Array(hr).fill(3)).join(' + ') };
 }
 function eqExtras(q){
+  if(q.shape === 'legs') return addUp(q.n, 2) + ', ' + q.L + ' − ' + 2*q.n + ' = ' + (q.L - 2*q.n) + ', ' + stepList(2, q.c) + ' → ' + q.ans;
   if(q.shape === 'humps') return q.total + ' − ' + q.n + ' = ' + q.ans;
   if(q.shape === 'darts') return q.total + ' − ' + q.n0 + ' = ' + (q.total - q.n0) + ', ' + stepList(q.e, q.k) + ' → ' + q.ans;
   return farmLeft(q).sum + ' = ' + q.R + ', ' + (q.h - 2 + q.x) + ' + ' + (2 - q.x) + ' = ' + q.ans;
 }
 function whyExtras(q, full){
+  if(q.shape === 'legs'){
+    if(!full) return tr('Ако всички животни са кокошки, колко крака ще има? Колко крака остават още?', 'Якби всі тварини були курками, скільки було б ніг? Скільки ніг лишається ще?');
+    return tr('кокошките са с по 2 крака: ', 'у курок по 2 ноги: ') + addUp(q.n, 2) + ' &nbsp;→&nbsp; ' + q.L + ' − ' + 2*q.n + ' = <b>' + (q.L - 2*q.n) + '</b> ' + tr('крака отгоре — по 2 за всяка крава: ', ukN(q.L - 2*q.n, 'ногу', 'ноги', 'ніг').split(' ')[1] + ' зверху — по 2 за кожну корову: ') + stepList(2, q.c) + ' &nbsp;→&nbsp; ' + trN(q.c, 'крава', 'крави', 'корова', 'корови', 'корів') + ' &nbsp;→&nbsp; ' + q.ans;
+  }
   if(q.shape === 'humps'){
     if(!full) return tr('Всяка камила има поне една гърбица. Колко гърбици остават над тях?', 'Кожен верблюд має принаймні один горб. Скільки горбів лишається понад них?');
     return q.n + tr(' камили имат ', ' верблюдів мають ') + q.n + tr(' гърбици. ', ' горбів. ') + q.total + ' − ' + q.n + ' = <b>' + q.ans + '</b> ' + tr('са вторите гърбици — по една на двугърба камила', 'це другі горби — по одному в двогорбого верблюда') + ' &nbsp;→&nbsp; ' + q.ans;

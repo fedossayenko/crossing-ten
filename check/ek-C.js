@@ -121,7 +121,9 @@
     if(sols.length !== 1 || sols[0].join() !== q.ages.join() || q.ans !== sols[0][4] || new Set(q.nm).size !== 5 || !names.every(s => text.includes(s)) || !text.includes(String(q.ans) + '🎂') && !text.includes('🎂' + q.ans)) fail('334: the cakes', q);
   }
   for(let i = 0; i < 3000; i++){
-    const q = Q.raw(335); count('neither ' + q.shape);
+    const q = Q.raw(335);
+    if(q.shape === 'both') continue;   // Салабашев 2021 #14, worked out again in check/sal-S3.js
+    count('neither ' + q.shape);
     if(q.shape === 'neither'){
       // pupils 0…n − 1: the first a learn the first language, the last-but-overlap b the second, c of them both
       let none = 0;

@@ -10,10 +10,12 @@ const CATS_DAY = ['день','дні','днів'], CATS_BOX = ['коробка',
 
 // Задача 17: in p times q days the first cat gets through q boxes and the second p,
 // so together they eat p + q boxes in that time.
+// Салабашев 2021, задача 15 (no official key): the cat eats a box in 3 days, the dog in 2 — days for ten boxes? In 6 days they eat
+// 2 + 3 = 5 boxes, so ten boxes take 6 + 6 = 12 days. The second animal's days may be 2.
 export function genCats(){
   const nm = CATS[rnd(CATS.length)];
   const p = 3 + rnd(3);
-  let q = 3 + rnd(3);
+  let q = 2 + rnd(4);
   if(q === p) q = p === 5 ? 3 : p + 1;
   const k = Math.random() < 0.3 ? 2 : 1;
   return {kind:'cats', nm, p, q, k, boxes: k*(p + q), ans: k*p*q};
