@@ -4,7 +4,7 @@
 // Задача 15: a corner cut out of a rectangle. Two of the six sides are never labelled,
 // so they have to be worked out — and the outline is the same length as the uncut
 // rectangle's, which is the surprise.
-import { CM, KIND, SLOT, SVG_FONT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, addUp, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genStep(){
   for(;;){
     const W = 5 + rnd(5), H = 4 + rnd(5);
@@ -38,6 +38,7 @@ function stepSvg(q){
 }
 
 function drawStep(q){
+  if(q.shape === 'roof') return drawStepRoof(q);
   const ask = q.shape === 0
     ? tr('От правоъгълник е изрязан правоъгълник. Получила се е друга фигура. <b>Колко са отсечките</b> на тази фигура, които са с <b>равни дължини</b>?',
          'З прямокутника вирізали прямокутник. Вийшла інша фігура. <b>Скільки відрізків</b> цієї фігури мають <b>однакову довжину</b>?')
@@ -51,6 +52,7 @@ function drawStep(q){
     (q.shape === 0 ? '' : CM) + '</div>';
 }
 function eqStep(q){
+  if(q.shape === 'roof') return eqStepRoof(q);
   return q.W + ' на ' + q.H + tr(', изрязано ', ', вирізано ') + q.w + ' на ' + q.h + ' → ' + q.ans;
 }
 // The picture: the figure again, its six sides walked as the answer needs them. For the outline the
@@ -85,6 +87,7 @@ function stepWalkSvg(q){
     tr('страните на фигурата', 'сторони фігури') + '">' + g + '</svg>';
 }
 function whyStep(q, full){
+  if(q.shape === 'roof') return whyStepRoof(q, full);
   const text = whyStepText(q, full);
   return full && text ? text + stepWalkSvg(q) : text;
 }
@@ -106,5 +109,41 @@ function whyStepText(q, full){
   return tr('изправената страна на целия правоъгълник е ' + q.H + ', а долната ѝ част е ' + (q.H - q.h),
             'вертикальна сторона цілого прямокутника — ' + q.H + ', а її нижня частина — ' + (q.H - q.h)) +
     ' &nbsp;→&nbsp; ' + q.H + ' − ' + (q.H - q.h) + ' = ' + q.ans;
+}
+// Салабашев 2024, 2 клас, задача 13 (level 500): a square of 15 см with a 3 см square cut from a corner, and a triangle of sides 15, 11 and 6 см glued on a side. The cut does
+// not change the outline (the sides move, they do not shrink), and the glued side is no longer on it: 15 + 15 + 15 + 11 + 6 = 62.
+export function genStepRoof(){
+  for(;;){
+    const S = 8 + rnd(9), n = 2 + rnd(Math.floor(S / 3)), a = 3 + rnd(S - 3), b = 3 + rnd(S - 3);
+    const x = (S*S + a*a - b*b) / (2*S);
+    if(a === b || a + b <= S + 1 || x <= 1 || x >= S - 1) continue;
+    return {kind:'step', shape:'roof', S, n, a, b, ans: 3*S + a + b};
+  }
+}
+// the figure on a grid of centimetres, y measured up: the square's corner cut at bottom left, the roof's apex at its two distances
+function roofPoints(q){
+  const x = (q.S*q.S + q.a*q.a - q.b*q.b) / (2*q.S), h = Math.sqrt(q.a*q.a - x*x);
+  return [[q.n, 0], [q.S, 0], [q.S, q.S], [x, q.S + h], [0, q.S], [0, q.n], [q.n, q.n]];
+}
+function roofSvg(q){
+  const P = roofPoints(q), top = P[3][1], u = Math.min(150 / q.S, 150 / top), f = v => v.toFixed(1), X = v => 40 + v*u, Y = v => 22 + (top - v)*u;
+  const lab = (x, y, t, anchor) => '<text x="' + f(x) + '" y="' + f(y) + '" text-anchor="' + anchor + '" font-size="12" font-weight="700" fill="var(--muted)" ' + SVG_FONT + '>' + t + ' см</text>';
+  const d = 'M' + P.map(p => f(X(p[0])) + ',' + f(Y(p[1]))).join(' L') + ' Z';
+  return '<div class="fig"><svg viewBox="0 0 ' + f(X(q.S) + 52) + ' ' + f(Y(0) + 24) + '" style="max-width:' + Math.round((X(q.S) + 52)*1.2) + 'px" role="img" aria-label="' + tr('квадрат с изрязан ъгъл и триъгълник отгоре', 'квадрат із вирізаним кутом і трикутник зверху') + '">' +
+    '<path d="' + d + '" fill="var(--accentbg)" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<line x1="' + f(X(0)) + '" y1="' + f(Y(q.S)) + '" x2="' + f(X(q.S)) + '" y2="' + f(Y(q.S)) + '" stroke="var(--ink)" stroke-width="2.2"/>' +
+    lab((X(P[3][0]) + X(0)) / 2 - 8, (Y(P[3][1]) + Y(q.S)) / 2 - 8, q.a, 'end') + lab((X(P[3][0]) + X(q.S)) / 2 + 8, (Y(P[3][1]) + Y(q.S)) / 2 - 8, q.b, 'start') +
+    lab(X(q.S / 2), Y(q.S) + 16, q.S, 'middle') + lab(X(q.n / 2), Y(0) + 15, q.n, 'middle') + '</svg></div>';
+}
+function drawStepRoof(q){
+  return '<div class="ask">' + tr('Фигурата на чертежа е получена от долепянето на квадрат със страна <span class="num">' + q.S + '</span> см, от който е изрязано квадратче със страна <span class="num">' + q.n + '</span> см, и триъгълник със страни <span class="num">' + q.S + '</span> см, <span class="num">' + q.a + '</span> см и <span class="num">' + q.b + '</span> см. Долепените страни на квадрата и триъгълника са равни. Колко сантиметра е <b>обиколката</b> на фигурата?',
+    'Фігуру на рисунку отримано приставленням квадрата зі стороною <span class="num">' + q.S + '</span> см, з якого вирізано квадратик зі стороною <span class="num">' + q.n + '</span> см, і трикутника зі сторонами <span class="num">' + q.S + '</span> см, <span class="num">' + q.a + '</span> см і <span class="num">' + q.b + '</span> см. Прикладені сторони квадрата й трикутника рівні. Скільки сантиметрів становить <b>периметр</b> фігури?') + '</div>' +
+    roofSvg(q) + '<div class="line md">' + SLOT + CM + '</div>';
+}
+const eqStepRoof = q => [q.S, q.S, q.S, q.a, q.b].join(' + ') + ' = ' + q.ans;
+function whyStepRoof(q, full){
+  if(!full) return tr('Изрязването мести страните, но не ги скъсява. А долепената страна вече не е по контура.', 'Вирізання пересуває сторони, але не робить їх коротшими. А прикладена сторона вже не лежить на контурі.');
+  return tr('квадратът с изрязано ъгълче има обиколка като цял квадрат: ', 'квадрат із вирізаним кутиком має периметр цілого квадрата: ') + addUp(4, q.S) + ' &nbsp;→&nbsp; ' +
+    tr('горната страна е долепена, тя не е по контура: ', 'верхня сторона прикладена, вона не на контурі: ') + 4*q.S + ' − ' + q.S + ' = <b>' + 3*q.S + '</b> &nbsp;→&nbsp; ' + tr('триъгълникът добавя ', 'трикутник додає ') + q.a + ' + ' + q.b + ' &nbsp;→&nbsp; ' + 3*q.S + ' + ' + q.a + ' + ' + q.b + ' = ' + q.ans;
 }
 KIND.step = { draw:drawStep, eq:eqStep, why:whyStep };

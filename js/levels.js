@@ -6,7 +6,7 @@ import { genPairs, genPairsRegroup, genPairsShort } from '../kinds/pairs.js';
 import { genRank } from '../kinds/rank.js';
 import { genSnail } from '../kinds/snail.js';
 import { genBox, genBoxMore } from '../kinds/box.js';
-import { genSqCut } from '../kinds/sqcut.js';
+import { genSqCut, genSqRows } from '../kinds/sqcut.js';
 import { genCount, genCountMissed, genCountShort, genCountTold } from '../kinds/count.js';
 import { genNamed, genNamedEdge, genNamedPair, genNamedSum } from '../kinds/named.js';
 import { genGrow, genGrowShort, genGrowTimes } from '../kinds/grow.js';
@@ -23,7 +23,7 @@ import { genBucket } from '../kinds/bucket.js';
 import { genRects, genRectsAnts, genRectsIn } from '../kinds/rects.js';
 import { genLine, genToward } from '../kinds/line.js';
 import { genShared } from '../kinds/shared.js';
-import { genStep } from '../kinds/step.js';
+import { genStep, genStepRoof } from '../kinds/step.js';
 import { genAfter, genBoundShort, genDateSum, genShift, genWeekday } from '../kinds/weekday.js';
 import { genMulMix } from '../kinds/mulmix.js';
 import { genDigProd, genDigSum } from '../kinds/digprod.js';
@@ -38,7 +38,7 @@ import { genSegPts } from '../kinds/segpts.js';
 import { genMidPt, genMidPtSeg } from '../kinds/midpt.js';
 import { genTriVsSq } from '../kinds/trisq.js';
 import { genPlates } from '../kinds/tiles.js';
-import { genSqGlue, genSqSplit } from '../kinds/sqsplit.js';
+import { genCarpets, genSqGlue, genSqSplit } from '../kinds/sqsplit.js';
 import { genSegNum } from '../kinds/segnum.js';
 import { genNoCommon } from '../kinds/nocommon.js';
 import { genCircCut } from '../kinds/circcut.js';
@@ -82,13 +82,13 @@ import { genSameSub } from '../kinds/samesub.js';
 import { genStepDig } from '../kinds/stepdig.js';
 import { genZeroFac } from '../kinds/zerofac.js';
 import { genSqOff } from '../kinds/sqoff.js';
-import { genPinwheel } from '../kinds/pinwheel.js';
+import { genPinwheel, genPinwheelRect } from '../kinds/pinwheel.js';
 import { genPyramid } from '../kinds/pyramid.js';
 import { genBalloons, genBalloons3, genBalloonsOne } from '../kinds/balloons.js';
 import { genAge } from '../kinds/age.js';
 import { genLetters } from '../kinds/letters.js';
 import { genIsoTri } from '../kinds/isotri.js';
-import { genRectDm, genRectLonger, genRectPool, genRectSame, genSqPerimMm } from '../kinds/rectdm.js';
+import { genRectDm, genRectStrip, genRectLonger, genRectPool, genRectSame, genSqPerimMm } from '../kinds/rectdm.js';
 import { genUnitCmp } from '../kinds/unitcmp.js';
 import { genTriType } from '../kinds/tritype.js';
 import { genMinuend } from '../kinds/minuend.js';
@@ -97,7 +97,7 @@ import { genYesNo } from '../kinds/yesno.js';
 import { genDigitBlocks, genWordPos } from '../kinds/wordpos.js';
 import { genDiffSeq, genDiffSeqNext } from '../kinds/diffseq.js';
 import { genDaily } from '../kinds/daily.js';
-import { genIsoPerim, genTriPerim, genTriRel, genTwoIso } from '../kinds/isoperim.js';
+import { genIsoHouse, genIsoPerim, genTriPerim, genTriRel, genTwoIso } from '../kinds/isoperim.js';
 import { genSanta } from '../kinds/santa.js';
 import { genBrackets, genBracketsShort } from '../kinds/brackets.js';
 import { genMatch } from '../kinds/match.js';
@@ -182,7 +182,8 @@ import { genBoxRibbon } from '../kinds/boxribbon.js';
 import { genMazeBones } from '../kinds/mazebones.js';
 import { genRoomSum } from '../kinds/roomsum.js';
 import { genRoomsMax } from '../kinds/roomsmax.js';
-import { genNetRoute } from '../kinds/netroute.js';
+import { genHareRoutes, genNetRoute } from '../kinds/netroute.js';
+import { genTsh } from '../kinds/tsh.js';
 import { genFlowReg } from '../kinds/flowreg.js';
 import { genBoxTri } from '../kinds/boxtri.js';
 import { genCircFig } from '../kinds/circfig.js';
@@ -307,6 +308,8 @@ const genNeitherWide = mixIn(genNeither, 0.3, genNeitherBoth);
 const genLineWide = mixIn(genLine, 0.3, genToward);
 const genSegWide = mixIn(genSeg, 0.25, genSegAb);
 const genTriPerimWide = mixIn(genTriPerim, 0.25, genTriRel);
+const genSqCutWide = mixIn(without(genSqCut, '0', '1', '2'), 0.2, genSqRows);
+const genIsoPerimWide = mixIn(genIsoPerim, 0.25, genIsoHouse);
 /** @type {Level[]} */
 export const LEVELS = [
   { id:1, op:'-', d:2, eq:'42 − 7', desc:{ en:'Two digits take away one, crossing a ten', bg:'Двуцифрено минус едноцифрено, с преминаване през десетицата', uk:'Двоцифрове мінус одноцифрове, з переходом через десяток' } },
@@ -613,10 +616,16 @@ export const LEVELS = [
   { id:40, op:'w', grp:'geo', d:3, shapes:{ '-':2, ruler:2, units:3, ab:2 }, eq:'AD = ?', desc:{ en:'Overlapping lengths along a line', bg:'Застъпващи се отсечки по права', uk:'Відрізки на прямій, що перекриваються' }, also:['mbg-autumn-2021-2', 'mbg-autumn-2023-2', 'mbg-spring-2025-2', 'sal-2024-2'], gen:genSegWide },
   { id:32, op:'w', grp:'geo', d:3, shapes:{ '0':2, '1':2, '2':2, '3':2, '4':3, '5':3 }, eq:{ bg:'Ленти', uk:'Стрічки' }, desc:{ en:'Centimetres, decimetres and metres', bg:'Сантиметри, дециметри и метри', uk:'Сантиметри, дециметри й метри' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2024-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2'], gen:without(genRibbon, '6', '7') },
   { id:52, op:'w', grp:'geo', d:3, shapes:{ '0':3, '1':3, '2':2 }, eq:{ bg:'Изрязан ъгъл', uk:'Вирізаний кут' }, desc:{ en:'A corner cut from a rectangle — its sides and its outline', bg:'Изрязан ъгъл от правоъгълник — страните и обиколката', uk:'Вирізаний кут прямокутника — сторони й периметр' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2'], gen:genStep },
+  { id:500, op:'w', grp:'geo', needs:[52], src:'sal-2024', d:4, eq:{ bg:'Квадрат с покрив', uk:'Квадрат із дахом' }, desc:{ en:'A square with a corner cut out and a triangle glued on a side: the outline of the whole', bg:'Квадрат с изрязан ъгъл и долепен триъгълник: обиколката на цялата фигура', uk:'Квадрат із вирізаним кутом і приставленим трикутником: периметр усієї фігури' }, gen:genStepRoof },
+  { id:501, op:'w', grp:'geo', needs:[281], src:'sal-2025', d:3, eq:{ bg:'Два правоъгълника и квадрат', uk:'Два прямокутники й квадрат' }, desc:{ en:'Two equal rectangles one over the other and a square beside them: the outline of the big rectangle', bg:'Два еднакви правоъгълника един върху друг и квадрат до тях: обиколката на големия правоъгълник', uk:'Два однакові прямокутники один на одному й квадрат поруч: периметр великого прямокутника' }, gen:genPinwheelRect },
+  { id:502, op:'w', grp:'geo', needs:[91], src:'sal-2020', d:3, eq:{ bg:'Отрязана ивица', uk:'Відрізана смужка' }, desc:{ en:'A square in дм with a strip in см cut off: the outline of the rest, in см', bg:'Квадрат в дм с отрязана ивица в см: обиколката на останалото, в см', uk:'Квадрат у дм з відрізаною смужкою в см: периметр решти, у см' }, gen:genRectStrip },
+  { id:503, op:'w', grp:'geo', src:'sal-2021', d:2, eq:{ bg:'Два килима', uk:'Два килими' }, desc:{ en:'Two carpets laid side by side along the long side: the size of the new one', bg:'Два килима един до друг по дългата страна: размерите на новия', uk:'Два килими один біля одного по довгій стороні: розмір нового' }, gen:genCarpets },
+  { id:504, op:'w', grp:'geo', needs:[21], src:'sal-2019', d:4, eq:{ bg:'Т и Ш', uk:'Т і Ш' }, desc:{ en:'The letters Т and Ш built of equal rectangles: the outline of one from the outline of the other', bg:'Буквите Т и Ш от еднакви правоъгълници: обиколката на едната по обиколката на другата', uk:'Літери Т і Ш з однакових прямокутників: периметр однієї за периметром іншої' }, gen:genTsh },
+  { id:505, op:'w', grp:'geo', src:'sal-2025', d:2, eq:{ bg:'Два пътя на зайчето', uk:'Два шляхи зайчика' }, desc:{ en:'A hare\'s two ways round a right-angled field: how much shorter the straight one is', bg:'Два пътя на зайчето около правоъгълна поляна: с колко е по-кратък прекият', uk:'Два шляхи зайчика навколо прямокутної галявини: на скільки коротший прямий' }, gen:genHareRoutes },
   { id:200, op:'w', grp:'geo', needs:[32], src:'kms-2023', also:['kms-2022-2'], d:4, shapes:{ '6':4, '7':4 }, eq:{ bg:'Гирлянди и кутии', uk:'Гірлянди й коробки' }, desc:{ en:'Lengths in mixed units, compared with a limit or matched as equal', bg:'Дължини в смесени мерки, сравнени с граница или наредени като равни', uk:'Довжини в змішаних одиницях, порівняні з межею або згруповані як рівні' }, gen:only(genRibbon, '6', '7') },
   { id:304, op:'w', grp:'geo', d:3, shapes:{ '0':2, '1':2, '2':3 }, eq:{ bg:'Квадрат от квадрати', uk:'Квадрат із квадратів' }, desc:{ en:'A square cut into equal squares: a small side, a perimeter, or all of them added', bg:'Квадрат, разрязан на еднакви квадрати: малката страна, обиколка или сборът от всички', uk:'Квадрат, розрізаний на однакові квадрати: менша сторона, периметр або сума всіх' }, also:['mbg-autumn-2025-2'], gen:only(genSqCut, '0', '1', '2') },
   { id:31, op:'w', grp:'geo', d:4, shapes:{ '0':3, '1':3, '2':3, '3':4 }, eq:{ bg:'Дръвчета', uk:'Деревця' }, desc:{ en:'Trees in a row: the gaps are one fewer, and the units may not match', bg:'Дървета в редица: разстоянията са с едно по-малко, а мерките може да са различни', uk:'Дерева в ряд: проміжків на один менше, а одиниці можуть різнитися' }, also:['mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2024-2', 'mbg-autumn-forecast2026-2'], gen:genTrees },
-  { id:21, op:'w', grp:'geo', needs:[304], d:4, shapes:{ '3':4, '4':4, '5':4, '6':4 }, eq:{ bg:'Обиколка', uk:'Периметр' }, desc:{ en:'Squares, sheets and triangles — sides and perimeters', bg:'Квадрати, листове и триъгълници — страни и обиколки', uk:'Квадрати, аркуші й трикутники — сторони й периметри' }, also:['mbg-winter-2020-2', 'mbg-winter-2023-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2'], gen:without(genSqCut, '0', '1', '2') },
+  { id:21, op:'w', grp:'geo', needs:[304], d:4, shapes:{ '3':4, '4':4, '5':4, '6':4, '7':3 }, eq:{ bg:'Обиколка', uk:'Периметр' }, desc:{ en:'Squares, sheets and triangles — sides and perimeters', bg:'Квадрати, листове и триъгълници — страни и обиколки', uk:'Квадрати, аркуші й трикутники — сторони й периметри' }, also:['mbg-winter-2020-2', 'mbg-winter-2023-2', 'mbg-autumn-2020-2', 'mbg-autumn-2021-2', 'mbg-autumn-2022-2', 'mbg-autumn-2023-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2', 'sal-2019-2'], gen:genSqCutWide },
   { id:22, op:'w', grp:'geo', needs:[21], d:4, shapes:{ '0':4, '1':4, '2':4 }, eq:{ bg:'Обща страна', uk:'Спільна сторона' }, desc:{ en:'Two figures share an edge — what it costs the outline', bg:'Две фигури с обща страна — какво губи обиколката', uk:'Дві фігури зі спільною стороною — що втрачає периметр' }, also:['mbg-autumn-2022-2', 'mbg-autumn-2024-2', 'mbg-autumn-2025-2', 'mbg-autumn-forecast2026-2'], gen:genShared },
   { id:34, op:'w', grp:'geo', needs:[19], d:4, eq:{ bg:'Оцветени', uk:'Розфарбовані' }, desc:{ en:'Paint whole rows and columns — what is left', bg:'Оцвети цели редове и стълбове — какво остава', uk:'Розфарбуй цілі рядки й стовпці — що залишиться' }, also:['mbg-autumn-2024-2', 'ek-2023-2'], gen:genPaint },
   { id:102, op:'w', grp:'geo', needs:[41], src:'mbg-winter-2022', d:3, shapes:{ '-':3, dots:3, games:3 }, eq:{ bg:'Точки и отсечки', uk:'Точки й відрізки' }, desc:{ en:'Points on a line and the segments between them — either way round', bg:'Точки върху права и отсечките между тях — и обратно', uk:'Точки на прямій і відрізки між ними — і навпаки' }, also:['mbg-winter-2020-2', 'mbg-autumn-2019-2', 'mbg-autumn-forecast2026-2', 'sal-2021-2'], gen:genSegCount },
@@ -640,7 +649,7 @@ export const LEVELS = [
   { id:137, op:'w', grp:'geo', needs:[141], src:'mbg-spring-2025', d:2, eq:{ bg:'Квадратчета от лист', uk:'Квадратики з аркуша' }, desc:{ en:'How many small squares can be cut from a sheet', bg:'Колко квадратчета могат да се изрежат от лист', uk:'Скільки квадратиків можна вирізати з аркуша' }, gen:genCutSq },
   { id:138, op:'w', grp:'geo', needs:[21, 141], src:'mbg-spring-2025', d:3, eq:{ bg:'Конецът', uk:'Нитка' }, desc:{ en:'One thread laid out as one shape, then another', bg:'Един конец, нареден в една фигура, после в друга', uk:'Одна нитка, викладена однією фігурою, потім іншою' }, gen:genThread },
   { id:121, op:'w', grp:'geo', needs:[91], src:'mbg-winter-2023', d:4, eq:{ bg:'С 2 дм по-дълга', uk:'На 2 дм довша' }, desc:{ en:'One side given, the other so much longer, the perimeter in another unit', bg:'Едната страна дадена, другата с толкова по-дълга, обиколката в друга мярка', uk:'Одна сторона дана, інша на стільки довша, периметр в інших одиницях' }, also:['mbg-winter-2021-2', 'mbg-winter-2022-2'], gen:genRectLonger },
-  { id:97, op:'w', grp:'geo', needs:[21], src:'kms-2025', d:4, shapes:{ '-':3, '2':4 }, eq:{ bg:'Бедро и основа', uk:'Бічна сторона й основа' }, desc:{ en:'An isosceles triangle built from a square\'s side', bg:'Равнобедрен триъгълник, построен от страната на квадрат', uk:'Рівнобедрений трикутник, побудований від сторони квадрата' }, also:['kms-2023-2'], gen:genIsoPerim },
+  { id:97, op:'w', grp:'geo', needs:[21], src:'kms-2025', d:4, shapes:{ '-':3, '2':4, house:3 }, eq:{ bg:'Бедро и основа', uk:'Бічна сторона й основа' }, desc:{ en:'An isosceles triangle built from a square\'s side', bg:'Равнобедрен триъгълник, построен от страната на квадрат', uk:'Рівнобедрений трикутник, побудований від сторони квадрата' }, also:['kms-2023-2', 'sal-2020-2'], gen:genIsoPerimWide },
   { id:128, op:'w', grp:'geo', needs:[97], src:'kms-2024', d:4, shapes:{ '1':4, '3':4 }, eq:{ bg:'Два триъгълника', uk:'Два трикутники' }, desc:{ en:'Two isosceles triangles, their perimeters together in decimetres — find a base', bg:'Два равнобедрени триъгълника, обиколките им заедно в дециметри — намери основа', uk:'Два рівнобедрені трикутники, їхні периметри разом у дециметрах — знайди основу' }, also:['kms-2023-2'], gen:genTwoIso },
   { id:143, op:'w', grp:'geo', src:'kms-2023', d:2, eq:{ bg:'Страни и върхове', uk:'Сторони й вершини' }, desc:{ en:'The sides and vertices of a few figures, counted together', bg:'Страните и върховете на няколко фигури, преброени заедно', uk:'Сторони й вершини кількох фігур, пораховані разом' }, gen:genCorners },
   { id:142, op:'w', grp:'geo', needs:[105], src:'kms-2023', d:4, eq:{ bg:'Триъгълници и квадрати', uk:'Трикутники й квадрати' }, desc:{ en:'Count the triangles and the squares in a figure of lines', bg:'Триъгълници и квадрати в чертеж от отсечки — колко от всеки', uk:'Трикутники й квадрати на рисунку з відрізків — скільки кожних' }, also:['kms-2022-2'], gen:genFigCount },

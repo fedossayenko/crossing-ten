@@ -4,7 +4,7 @@
 // 16 + 24 = 40, twice is 80 см, and 10 см make a дециметър: 8. The trap is stopping at 80.
 // МБГ Зима 2021–2023: one side given, the other «с 2 дм по-дълга», and the perimeter asked in
 // метра — or in мм and дециметра. Two unit changes, one inside the problem and one at the end.
-import { CM, KIND, SLOT, UNIT_MM, UNIT_W2, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, UNIT_MM, UNIT_W2, addUp, bgWith, popAt, rnd, svgText, tr } from '../js/core.js';
 export function genRectLonger(){
   for(;;){
     const mm = Math.random() < 0.3, base = mm ? 'мм' : 'см', dU = mm ? 'мм' : 'дм';
@@ -120,6 +120,7 @@ function whyRectPool(q, full){
 }
 const sqMmSide = (q, and) => q.shape === 'mm' ? q.s + '&nbsp;мм' : Math.floor(q.s / 10) + '&nbsp;см ' + and + ' ' + q.s % 10 + '&nbsp;мм';
 function drawRectDm(q){
+  if(q.shape === 'strip') return drawStrip(q);
   if(['side', 'perim', 'row', 'house'].includes(q.shape)) return drawRectPool(q);
   if(q.shape === 'mm' || q.shape === 'cmmm'){
     return '<div class="ask">' + tr('Страната на квадрат е <span class="num">' + sqMmSide(q, 'и') + '</span>. Колко <b>сантиметра</b> е обиколката на квадрата?',
@@ -151,6 +152,7 @@ function rectSameSvg(q){
     svgText((X + w/2).toFixed(1), (Y + h + 17).toFixed(1), q.b, 13, 'var(--warm)', popAt(3)) + svgText((X + w + 12).toFixed(1), (Y + h/2 + 5).toFixed(1), q.a, 13, 'var(--ink)', popAt(4)) + '</svg>';
 }
 function eqRectDm(q){
+  if(q.shape === 'strip') return eqStrip(q);
   if(['side', 'perim', 'row', 'house'].includes(q.shape)) return eqRectPool(q);
   if(q.shape === 'mm') return '4 · ' + q.s + ' = ' + 4*q.s + ' мм = ' + q.ans + ' см';
   if(q.shape === 'cmmm') return Math.floor(q.s / 10) + ' см ' + q.s % 10 + ' мм = ' + q.s + ' мм, 4 · ' + q.s + ' = ' + 4*q.s + ' мм = ' + q.ans + ' см';
@@ -159,6 +161,7 @@ function eqRectDm(q){
   return '2 · (' + q.a + ' + ' + q.b + ') = ' + q.P + ' см = ' + q.ans + ' дм';
 }
 function whyRectDm(q, full){
+  if(q.shape === 'strip') return whyStrip(q, full);
   if(['side', 'perim', 'row', 'house'].includes(q.shape)) return whyRectPool(q, full);
   if(q.shape === 'mm' || q.shape === 'cmmm'){
     if(!full) return tr('Обиколката на квадрата е четири пъти страната му. Първо всичко в милиметри — после колко сантиметра прави.',
@@ -178,5 +181,28 @@ function whyRectDm(q, full){
   if(!full) return tr('Първо обиколката в сантиметри — после колко дециметра прави.', 'Спершу периметр у сантиметрах — потім скільки це дециметрів.');
   return q.a + ' + ' + q.b + ' = ' + (q.a + q.b) + tr(', два пъти', ', двічі') + ' → <b>' + q.P + ' см</b> &nbsp;→&nbsp; 10 см = 1 дм' +
     tr(', значи ', ', отже ') + q.ans + ' дм';
+}
+// Салабашев 2020, 2 клас, задача 8 (level 502, shape 'strip'): a square of 3 дм with a strip 12 см wide cut off one side — the perimeter of the orange rest, in сантиметри.
+// 3 дм = 30 см; the rest is 30 − 12 = 18 см wide and 30 high: 30 + 18 + 30 + 18 = 96. The slip: the 12 taken off the perimeter of the square, or the strip left in.
+export function genRectStrip(){
+  const a = 2 + rnd(4), side = 10*a, b = 3 + rnd(side - 8), w = side - b;
+  return {kind:'rectdm', shape:'strip', a, side, b, w, ans: 2*(side + w)};
+}
+function stripSvg(q){
+  const u = 150 / q.side, S = q.side*u, W = q.w*u, f = v => v.toFixed(1), X = 44, Y = 20;
+  return '<div class="fig"><svg viewBox="0 0 ' + f(S + 2*X) + ' ' + f(S + 2*Y + 6) + '" style="max-width:' + Math.round((S + 2*X)*1.3) + 'px" role="img" aria-label="' + tr('квадрат с отрязана ивица', 'квадрат із відрізаною смужкою') + '">' +
+    '<rect x="' + f(X) + '" y="' + f(Y) + '" width="' + f(W) + '" height="' + f(S) + '" fill="var(--warm)" stroke="var(--bad)" stroke-width="2.5"/>' +
+    '<rect x="' + f(X + W) + '" y="' + f(Y) + '" width="' + f(S - W) + '" height="' + f(S) + '" fill="var(--paper)" stroke="var(--bad)" stroke-width="2.5"/>' +
+    svgText(f(X + W + (S - W)/2), f(Y - 6), q.b + ' см', 13, 'var(--ink)') + svgText(f(X - 20), f(Y + S/2 + 5), q.a + ' дм', 13, 'var(--ink)') + svgText(f(X + S/2), f(Y + S + 17), q.a + ' дм', 13, 'var(--ink)') + '</svg></div>';
+}
+function drawStrip(q){
+  return '<div class="ask">' + tr('От квадрат със страна <span class="num">' + q.a + '</span> дм е отрязана ивица с ширина <span class="num">' + q.b + '</span> см. Колко <b>сантиметра</b> е обиколката на оранжевия правоъгълник, който е останал?',
+    'Від квадрата зі стороною <span class="num">' + q.a + '</span> дм відрізали смужку завширшки <span class="num">' + q.b + '</span> см. Скільки <b>сантиметрів</b> становить периметр оранжевого прямокутника, що залишився?') + '</div>' +
+    stripSvg(q) + '<div class="line md">' + SLOT + CM + '</div>';
+}
+const eqStrip = q => q.a + ' дм = ' + q.side + ' см, ' + q.side + ' − ' + q.b + ' = ' + q.w + ', ' + [q.side, q.w, q.side, q.w].join(' + ') + ' = ' + q.ans + ' см';
+function whyStrip(q, full){
+  if(!full) return tr('Първо всичко в сантиметри: колко сантиметра е страната на квадрата? После колко е широк оранжевият правоъгълник.', 'Спершу все в сантиметрах: скільки сантиметрів становить сторона квадрата? Потім яка ширина оранжевого прямокутника.');
+  return q.a + ' дм = ' + addUp(q.a, 10) + tr(' см, ширината: ', ' см, ширина: ') + q.side + ' − ' + q.b + ' = <b>' + q.w + '</b> см &nbsp;→&nbsp; ' + [q.side, q.w, q.side, q.w].join(' + ') + ' = <b>' + q.ans + '</b> см';
 }
 KIND.rectdm = { draw:drawRectDm, eq:eqRectDm, why:whyRectDm };

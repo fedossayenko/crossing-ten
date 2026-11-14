@@ -7,7 +7,7 @@
 // Level 254. МБГ Есен 2023, 3 клас, задача 15: a square cut into two rectangles with perimeters 10 см and 14 см (the same
 // picture). Together the two go once round the square and twice along the cut, which is as long as a side: 24 is 6 sides,
 // so a side is 4. The slip: 24 : 4 = 6, the cut forgotten.
-import { CM, KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { CM, KIND, SLOT, popAt, rnd, shuffle, svgText, tr } from '../js/core.js';
 export function genSqGlue(){
   const a = 3 + rnd(10), b = 1 + rnd(a - 1);                  // the square's side; the strip's width, narrower
   return {kind:'sqsplit', shape:'glue', a, b, P1: 4*a, P2: 2*(a + b), traps: [6*a + 2*b, 5*a + 2*b], ans: 4*a + 2*b};
@@ -24,6 +24,7 @@ function stripSvg(left, right, h, label){
     '<line x1="' + L.toFixed(1) + '" y1="0" x2="' + L.toFixed(1) + '" y2="100"/></g></svg></div>';
 }
 function drawSqSplit(q){
+  if(q.shape === 'join') return drawCarpets(q);
   if(q.shape === 'split'){
     return '<div class="ask">' + tr('Квадрат е разделен на два правоъгълника с обиколки <span class="num">' + q.P1 + '</span> см и <span class="num">' + q.P2 + '</span> см. Колко <b>см</b> е страната на квадрата?',
       'Квадрат поділено на два прямокутники з периметрами <span class="num">' + q.P1 + '</span> см і <span class="num">' + q.P2 + '</span> см. Скільки <b>см</b> становить сторона квадрата?') + '</div>' +
@@ -34,6 +35,7 @@ function drawSqSplit(q){
     stripSvg(q.b, q.a, q.a, tr('квадрат и правоъгълник един до друг', 'квадрат і прямокутник поруч')) + '<div class="line md">x = ' + SLOT + CM + '</div>';
 }
 function eqSqSplit(q){
+  if(q.shape === 'join') return eqCarpets(q);
   if(q.shape === 'split') return q.P1 + ' + ' + q.P2 + ' = ' + 6*q.s + ', ' + 6*q.s + ' : 6 = ' + q.s + ' см';
   return q.P1 + ' : 4 = ' + q.a + ', ' + q.P2 + ' : 2 − ' + q.a + ' = ' + q.b + ', 2 · (' + (q.a + q.b) + ' + ' + q.a + ') = ' + q.ans + ' см';
 }
@@ -56,6 +58,7 @@ function splitSvg(q){
     '<g' + popAt(2) + '>' + part(X + gap, R, X + gap) + svgText((X + gap + R / 2).toFixed(1), H + 18, q.P2, 13, 'var(--ink)') + '</g></svg>';
 }
 function whySqSplit(q, full){
+  if(q.shape === 'join') return whyCarpets(q, full);
   if(q.shape === 'split'){
     if(!full) return tr('Събери двете обиколки. Колко страни на квадрата има в този сбор? Не забравяй разреза.', 'Додай обидва периметри. Скільки сторін квадрата в цій сумі? Не забудь про розріз.');
     return q.P1 + ' + ' + q.P2 + ' = <b>' + 6*q.s + '</b> см — ' + tr('това е обиколката на квадрата и още два пъти разрезът, който е колкото страната му',
@@ -66,5 +69,42 @@ function whySqSplit(q, full){
   return tr('страната на квадрата: ', 'сторона квадрата: ') + q.P1 + ' : 4 = <b>' + q.a + '</b> см; ' + tr('правоъгълникът има страна ', 'прямокутник має сторону ') + q.a + tr(' см, а другата му страна е ', ' см, а інша його сторона — ') +
     q.P2 + ' : 2 − ' + q.a + ' = <b>' + q.b + '</b> см' + glueSvg(q) +
     tr('новият правоъгълник е ', 'новий прямокутник — ') + (q.a + q.b) + tr(' на ', ' на ') + q.a + ' см &nbsp;→&nbsp; x = 2 · (' + (q.a + q.b) + ' + ' + q.a + ') = ' + q.ans + ' см';
+}
+// Салабашев 2021, 2 клас, задача 7 (level 503, shape 'join'): two carpets 8 дм by 15 дм laid side by side along their long side — the long side stays 15, the short ones add,
+// 8 + 8 = 16: a carpet 16 дм on 15 дм (the key А). The paper prints four sizes: the right one and three slips, which are drawn here from the same few mistakes (the long
+// sides added, the carpets joined along the short side, the sides doubled), so that no option is picked out by its numbers alone.
+function carpetOptions(a, L){
+  const right = [2*a, L], pool = [[a, 2*L], [L, a + L], [2*a, 2*L], [L, 4*a], [a + L, a], [2*L, a + L]];
+  const feats = p => [p[0], p[1], p[0] + p[1], p[0]*p[1]];
+  for(;;){
+    const wrong = shuffle(pool.filter(p => p[0] !== right[0] || p[1] !== right[1])).slice(0, 3);
+    const all = [right].concat(wrong), key = p => p.join('x');
+    if(new Set(all.map(key)).size < 4) continue;
+    let vote = false;
+    for(let k = 0; k < 4; k++){ const v = all.map(p => feats(p)[k]); [1, -1].forEach(sg => { const best = Math.max(...v.map(x => x*sg)); if(v.filter(x => x*sg === best).length === 1 && v[0]*sg === best) vote = true; }); }
+    if(vote) continue;
+    const order = shuffle(all.map((p, i) => i)), opts = order.map((i, id) => ({ id, v: id, pair: all[i], text: [all[i][0] + ' дм на ' + all[i][1] + ' дм', all[i][0] + ' дм на ' + all[i][1] + ' дм'] }));
+    return { options: opts, pick: order.indexOf(0) };
+  }
+}
+export function genCarpets(){
+  const a = 5 + rnd(5), L = a + 2 + rnd(8), o = carpetOptions(a, L);
+  return {kind:'sqsplit', shape:'join', a, L, options: o.options, pick: o.pick, own: true, ans: o.pick};
+}
+function carpetSvg(q, full){
+  const u = Math.min(110 / q.L, 120 / (2*q.a)), f = v => v.toFixed(1), w = q.a*u, h = q.L*u, X = 26, Y = 22;
+  const rect = (x, fill) => '<rect x="' + f(x) + '" y="' + f(Y) + '" width="' + f(w) + '" height="' + f(h) + '" fill="' + fill + '" stroke="var(--ink)" stroke-width="2.2"/>';
+  return '<div class="fig"><svg viewBox="0 0 ' + f(2*w + 2*X + 24) + ' ' + f(h + 2*Y + 4) + '" style="max-width:' + Math.round((2*w + 2*X + 24)*1.3) + 'px" role="img" aria-label="' + tr('два килима един до друг по дългата им страна', 'два килими один біля одного по довгій стороні') + '">' +
+    rect(X, 'var(--accentbg)') + rect(X + w, 'var(--warmbg)') +
+    svgText(f(X + w/2), f(Y - 6), q.a + ' дм', 13, 'var(--ink)') + svgText(f(X + w + w/2), f(Y - 6), q.a + ' дм', 13, 'var(--ink)') + svgText(f(X + 2*w + 26), f(Y + h/2 + 5), q.L + ' дм', 13, 'var(--ink)') + '</svg></div>';
+}
+function drawCarpets(q){
+  return '<div class="ask">' + tr('Пипи постелила във Вила Вилекула два килима с размери <span class="num">' + q.a + '</span> дм на <span class="num">' + q.L + '</span> дм един до друг по дългата им страна. Какви са размерите на получения по този начин килим?',
+    'Піпі застелила у віллі Вілекула два килими розміром <span class="num">' + q.a + '</span> дм на <span class="num">' + q.L + '</span> дм один біля одного по їхній довгій стороні. Який розмір має отриманий таким чином килим?') + '</div>' + carpetSvg(q, false);
+}
+const eqCarpets = q => q.a + ' + ' + q.a + ' = ' + 2*q.a + tr(', дългата страна ', ', довга сторона ') + q.L + ' → ' + 2*q.a + ' на ' + q.L;
+function whyCarpets(q, full){
+  if(!full) return tr('Килимите се допират по дългата си страна. Коя страна се удължава и коя остава същата?', 'Килими торкаються довгою стороною. Яка сторона стає довшою, а яка лишається такою самою?');
+  return tr('дългата страна остава ' + q.L + ' дм, а късите се събират: ', 'довга сторона лишається ' + q.L + ' дм, а короткі додаються: ') + q.a + ' + ' + q.a + ' = <b>' + 2*q.a + '</b> дм' + carpetSvg(q, true) + '<b>' + 2*q.a + ' дм на ' + q.L + ' дм</b>';
 }
 KIND.sqsplit = { draw:drawSqSplit, eq:eqSqSplit, why:whySqSplit };

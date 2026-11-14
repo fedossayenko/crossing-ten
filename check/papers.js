@@ -200,6 +200,8 @@
     } else if(q.kind === 'isoperim' && q.shape === 3){   // Коледно 2023: only one perimeter can be base + two legs
       const odd = q.list.filter(v => v % 2);
       if(odd.length !== 1 || (odd[0] - q.b) / 2 !== a || !q.list.includes(4*q.sq) || !q.list.includes(3*q.t) || new Set(q.list).size !== 6) fail('the odd one');
+    } else if(q.kind === 'isoperim' && q.shape === 'house'){   // Салабашев 2020 #10: the yellow and the red perimeters are equal; the square's side is the red base (worked again in check/sal-P2.js)
+      if(3*q.t !== 2*q.leg + q.base || !(q.base > 1 && q.base < q.leg) || 4*q.base !== a) fail('the house');
     } else if(q.kind === 'isoperim'){
       const s = q.P / 4, leg = s + q.up, base = leg - q.down;
       if(!(base > 0 && base < 2*leg) || 2*leg + base !== a) fail('the triangle');

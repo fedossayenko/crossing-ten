@@ -95,6 +95,23 @@ function triSqSvg(q){
     t((ax + L)*u/2 + ay/p*9, H - ay*u/2 - (L - ax)/p*9 + 4, p + ' см', 'start') +
     t(sx + S*u/2, H + 15, q.sqLabel || q.dm + (q.inCm ? ' см' : ' дм')) + '</svg></div>';
 }
+// Салабашев 2019, 2 клас, задача 6: a big square over a row of three small ones, the grey one 4 см — the rectangle they make is 12 by 16 (the big
+// square is as wide as the three small ones), its outline 56. Written as sums: the big side is the small side three times over (s + s + s).
+export function genSqRows(){
+  const s = 2 + rnd(5), grey = rnd(3);
+  return {kind:'sqcut', shape:7, s, grey, ans: 2*(3*s + 4*s)};
+}
+function rowsSvg(q){
+  const u = 150 / (3*q.s), S = q.s*u, f = v => v.toFixed(1);
+  let g = '<rect x="0" y="0" width="' + f(3*S) + '" height="' + f(3*S) + '" fill="none" stroke="var(--ink)" stroke-width="2.2"/>';
+  for(let i = 0; i < 3; i++) g += '<rect x="' + f(i*S) + '" y="' + f(3*S) + '" width="' + f(S) + '" height="' + f(S) + '" fill="' + (i === q.grey ? 'var(--fur)' : 'none') + '" stroke="var(--ink)" stroke-width="2.2"/>';
+  return '<div class="fig"><svg viewBox="-4 -4 ' + f(3*S + 8) + ' ' + f(4*S + 8) + '" style="max-width:' + Math.round(3*S + 8) + 'px" role="img" aria-label="' +
+    tr('правоъгълник от голям квадрат над три малки', 'прямокутник із великого квадрата над трьома малими') + '">' + g + '</svg></div>';
+}
+function rowsWalk(q){
+  const s = q.s, W = 3*s, H = 4*s, row = [[0, 3*s, W, 3*s], [s, 3*s, s, H], [2*s, 3*s, 2*s, H]];
+  return sqWalkSvg(W, H, row, [q.grey*s, 3*s, s, s], sqSides(0, 0, W, H, W, H), [W, H, W, H].join(' + ') + ' = ' + q.ans);
+}
 export function genSqCut(){
   if(Math.random() < 0.2){
     // Задача 15: strips, and the answer wanted in милиметри — ten to the centimetre.
@@ -159,6 +176,11 @@ function sqSvg(parts, side){
 }
 
 function drawSqcut(q){
+  if(q.shape === 7){
+    return '<div class="ask">' + tr('Правоъгълникът на чертежа е сглобен от <span class="num">4</span> квадрата. Страната на сивия квадрат е <span class="num">' + q.s + '</span> см. Колко сантиметра е обиколката на целия правоъгълник?',
+      'Прямокутник на рисунку складено з <span class="num">4</span> квадратів. Сторона сірого квадрата — <span class="num">' + q.s + '</span> см. Скільки сантиметрів становить периметр усього прямокутника?') + '</div>' +
+      rowsSvg(q) + '<div class="line md">' + SLOT + CM + '</div>';
+  }
   if(q.shape === 6 && q.both){
     return '<div class="ask">' + tr('Квадрат с обиколка <span class="num">' + q.P + '</span> см е разрязан на два правоъгълника. Колко сантиметра е <b>сборът от обиколките</b> на двата правоъгълника?',
       'Квадрат із периметром <span class="num">' + q.P + '</span> см розрізали на два прямокутники. Скільки сантиметрів становить <b>сума периметрів</b> обох прямокутників?') + '</div>' +
@@ -241,6 +263,7 @@ function drawSqcut(q){
     '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqSqcut(q){
+  if(q.shape === 7) return tr('малък квадрат ', 'малий квадрат ') + q.s + ' → ' + (3*q.s) + ' на ' + (4*q.s) + ' → ' + q.ans;
   if(q.shape === 6 && q.both) return q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;
   if(q.shape === 6 && q.half) return 'квадрат ' + q.side + tr(', на 2 ивици → ', ', на 2 смужки → ') + 10*q.side + ' на ' + 5*q.side + ' мм → ' + q.ans;
   if(q.shape === 6) return 'квадрат ' + q.side + tr(', на ' + q.k + ' ивици → ', ', на ' + q.k + ' смужки → ') +
@@ -259,6 +282,7 @@ function eqSqcut(q){
 const sqSides = (x, y, w, h, top, right) => [[x, y, x + w, y, top], [x + w, y, x + w, y + h, right], [x + w, y + h, x, y + h, top], [x, y + h, x, y, right]];
 const sqGrid = (k, S) => { const c = []; for(let i = 1; i < k; i++) c.push([i * S / k, 0, i * S / k, S], [0, i * S / k, S, i * S / k]); return c; };
 function sqcutSvg(q){
+  if(q.shape === 7) return rowsWalk(q);
   const P = tr('обиколка ', 'периметр ');
   if(q.shape === 6 && q.both){
     // the square's four sides, then the cut, once for each piece
@@ -301,6 +325,13 @@ function whySqcut(q, full){
   return full && text ? text + sqcutSvg(q) : text;
 }
 function whySqcutText(q, full){
+  if(q.shape === 7){
+    if(!full) return tr('Голямият квадрат е толкова широк, колкото трите малки заедно. Колко е висок целият правоъгълник?', 'Великий квадрат такий широкий, як три малі разом. Якої висоти весь прямокутник?');
+    const s = q.s, w = 3*s, h = 4*s;
+    return tr('малките квадрати са ' + s + ', а големият е ' + addUp(3, s) + ' &nbsp;→&nbsp; ширината е <b>' + w + '</b>, височината е ' + w + ' + ' + s + ' = <b>' + h + '</b>',
+      'малі квадрати — ' + s + ', а великий — ' + addUp(3, s) + ' &nbsp;→&nbsp; ширина <b>' + w + '</b>, висота ' + w + ' + ' + s + ' = <b>' + h + '</b>') +
+      ' &nbsp;→&nbsp; ' + [w, h, w, h].join(' + ') + ' = ' + q.ans;
+  }
   if(q.shape === 6 && q.both){
     if(!full) return tr('Двете парчета имат всичко от обиколката на квадрата — и още нещо. Какво?', 'Дві частини мають увесь периметр квадрата — і ще дещо. Що?');
     return tr('страната е <b>', 'сторона <b>') + q.side + '</b>: ' + addUp(4, q.side) + ' &nbsp;→&nbsp; ' + tr('разрезът е страна и на двете парчета', 'розріз — сторона обох частин') + ' &nbsp;→&nbsp; ' + q.P + ' + ' + q.side + ' + ' + q.side + ' = ' + q.ans;

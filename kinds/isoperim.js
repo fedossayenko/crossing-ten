@@ -12,7 +12,7 @@
 // equilateral triangle with side 2 см — three equal sides, 2 + 2 + 2 = 6. Аз и числата 2026, задача 8 (shape 'back'):
 // the perimeter 21 см, two sides 5 и 9 — the third is 21 − 5 − 9 = 7; 2023, задача 9, the same about a triangular tree,
 // 68 м with sides 16 и 26: 26. The slips: one side taken away, not both; a side for the perimeter; four sides for three.
-import { CM, KIND, SLOT, SVG_FONT, addUp, rnd, shuffle, tr } from '../js/core.js';
+import { CM, KIND, SLOT, SVG_FONT, addUp, rnd, shuffle, svgText, tr } from '../js/core.js';
 import { triSideSvg } from './tritype.js';
 // the triangle's sides as [base, left, right]: the longest across, so it stands
 const triPerimSides = s => { const x = s.slice().sort((p, q) => q - p); return [x[0], x[1], x[2]]; };
@@ -135,7 +135,42 @@ export function genIsoPerim(){
     return {kind:'isoperim', s, P: 4*s, up, leg, down, base, ans: 2*leg + base};
   }
 }
+// Салабашев 2020, 2 клас, задача 10 (shape 'house'): an equilateral yellow triangle, side 12 см, has the same perimeter as the red isosceles one, legs 14 см,
+// that stands on a green square. 12 + 12 + 12 = 36; 14 + 14 = 28; the red base, which is the square's side, is 36 − 28 = 8; the square's four sides, 8 + 8 + 8 + 8 = 32.
+// The legs are longer than the base, as drawn (a triangle with legs 14 and base 8 stands tall on its square).
+export function genIsoHouse(){
+  for(;;){
+    const t = 5 + rnd(9), top = Math.floor((3*t - 2) / 2), leg = t + 1 + rnd(top - t), base = 3*t - 2*leg;
+    if(base < 4 || 20*base < 9*leg) continue;     // a tall thin roof (base 2 under legs of 11) draws as a spike
+    return {kind:'isoperim', shape:'house', t, leg, base, ans: 4*base};
+  }
+}
+function houseSvg(q){
+  const hr = Math.sqrt(q.leg*q.leg - q.base*q.base/4), hy = q.t*Math.sqrt(3)/2, gap = 3;
+  const u = Math.min(190 / (q.base + q.t + gap), 120 / Math.max(q.base + hr, hy)), f = v => v.toFixed(1), H = Math.max(q.base + hr, hy)*u;
+  const x0 = 24, ys = H + 8, xs = x0 + (q.base + gap)*u, ax = x0 + q.base*u/2;
+  const red = [[x0, ys - q.base*u], [x0 + q.base*u, ys - q.base*u], [ax, ys - q.base*u - hr*u]], yel = [[xs, ys], [xs + q.t*u, ys], [xs + q.t*u/2, ys - hy*u]];
+  const pts = a => a.map(p => f(p[0]) + ',' + f(p[1])).join(' ');
+  const W = xs + q.t*u + 8;
+  return '<div class="fig"><svg viewBox="0 0 ' + f(W) + ' ' + f(ys + 22) + '" style="max-width:' + Math.round(W*1.2) + 'px" role="img" aria-label="' + tr('къща от червен триъгълник върху зелен квадрат и жълт триъгълник', 'будиночок із червоного трикутника на зеленому квадраті та жовтий трикутник') + '">' +
+    '<rect x="' + f(x0) + '" y="' + f(ys - q.base*u) + '" width="' + f(q.base*u) + '" height="' + f(q.base*u) + '" fill="var(--good)" stroke="var(--ink)" stroke-width="2"/>' +
+    '<polygon points="' + pts(red) + '" fill="var(--bad)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>' +
+    '<polygon points="' + pts(yel) + '" fill="var(--warm)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/>' +
+    svgText(f(x0 - 12), f(ys - q.base*u - hr*u/2), q.leg, 13, 'var(--ink)') + svgText(f(xs + q.t*u/2), f(ys + 17), q.t, 13, 'var(--ink)') + '</svg></div>';
+}
+function drawIsoHouse(q){
+  return '<div class="ask">' + tr('На чертежа обиколката на <b>жълтия</b> равностранен триъгълник със страна <span class="num">' + q.t + '</span> см е равна на обиколката на <b>червения</b> равнобедрен триъгълник с бедро <span class="num">' + q.leg + '</span> см. Колко сантиметра е обиколката на <b>зеления квадрат</b>?',
+    'На рисунку периметр <b>жовтого</b> рівностороннього трикутника зі стороною <span class="num">' + q.t + '</span> см дорівнює периметру <b>червоного</b> рівнобедреного трикутника з бічною стороною <span class="num">' + q.leg + '</span> см. Скільки сантиметрів становить периметр <b>зеленого квадрата</b>?') + '</div>' +
+    houseSvg(q) + '<div class="line md">' + SLOT + CM + '</div>';
+}
+const eqIsoHouse = q => 3*q.t + ' − ' + 2*q.leg + ' = ' + q.base + ', ' + addUp(4, q.base);
+function whyIsoHouse(q, full){
+  if(!full) return tr('Жълтият има три равни страни. Червеният има две бедра и основа — а основата е страната на квадрата.', 'У жовтого три рівні сторони. У червоного дві бічні сторони й основа — а основа є стороною квадрата.');
+  return tr('жълтият: ', 'жовтий: ') + addUp(3, q.t) + tr('; червеният: двете бедра ', '; червоний: дві бічні сторони ') + q.leg + ' + ' + q.leg + ' = <b>' + 2*q.leg + '</b> &nbsp;→&nbsp; ' + tr('основата и страната на квадрата: ', 'основа і сторона квадрата: ') +
+    3*q.t + ' − ' + 2*q.leg + ' = <b>' + q.base + '</b> &nbsp;→&nbsp; ' + addUp(4, q.base);
+}
 function drawIsoPerim(q){
+  if(q.shape === 'house') return drawIsoHouse(q);
   if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return drawTriPerim(q);
   if(q.shape === 2){
     const times = ['', 'веднъж', 'два пъти', 'три пъти'][q.laps], timesUk = ['', 'один раз', 'двічі', 'тричі'][q.laps];
@@ -162,6 +197,7 @@ function drawIsoPerim(q){
     '<div class="line md">' + SLOT + CM + '</div>';
 }
 function eqIsoPerim(q){
+  if(q.shape === 'house') return eqIsoHouse(q);
   if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return eqTriPerim(q);
   if(q.shape === 2) return (q.laps > 1 ? Array(q.laps).fill(3*q.a).join(' + ') + ' = ' : '') + q.ant + ', ' + q.route + ' = ' + q.tort + ' → ' + q.ans;
   if(q.shape === 3) return q.b + ' + ' + tr('бедро + бедро', 'бічна + бічна') + ' = ' + q.P + ' → ' + q.ans;
@@ -169,6 +205,7 @@ function eqIsoPerim(q){
   return q.P + ' = ' + Array(4).fill(q.s).join(' + ') + ', ' + q.s + ' + ' + q.up + ' = ' + q.leg + ', ' + q.leg + ' − ' + q.down + ' = ' + q.base + ' → ' + q.ans;
 }
 function whyIsoPerim(q, full){
+  if(q.shape === 'house') return whyIsoHouse(q, full);
   if(q.shape === 'sum' || q.shape === 'eq' || q.shape === 'back' || q.shape === 'rel') return whyTriPerim(q, full);
   if(q.shape === 2){
     if(!full) return tr('Колко отсечки има всеки път и колко е дълга всяка? Внимавай кои страни на MEK са равни.', 'Скільки відрізків у кожному шляху і яка довжина кожного? Зверни увагу, які сторони MEK рівні.');

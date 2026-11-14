@@ -54,7 +54,7 @@ const NOT = {
   nudge: { 60:'"0 cannot stand in front" when the product is 0', 64:'the target product, which the question states', 66:'the difference given in the question', 76:'the divisor 3, given in the question' },
   // their А/Б/В/Г questions answer with an option, not a number, and draw no answer box (their other questions keep every rule)
   option: { 63:1, 94:1, 146:1, 147:1, 154:1, 170:1, 177:1, 187:1, 276:1, 280:1, 283:1, 285:1, 299:1, 312:1, 313:1, 314:1, 315:1, 350:1, 354:1,
-    370:1, 371:1, 372:1, 373:1, 374:1, 375:1, 382:1, 385:1, 391:1, 394:1, 396:1, 400:1, 401:1, 402:1, 403:1, 404:1, 406:1, 407:1, 408:1, 409:1, 413:1, 414:1, 415:1, 416:1, 417:1, 418:1, 420:1, 421:1, 422:1, 423:1, 424:1, 425:1, 430:1, 431:1, 433:1, 441:1, 451:1, 482:1 },
+    370:1, 371:1, 372:1, 373:1, 374:1, 375:1, 382:1, 385:1, 391:1, 394:1, 396:1, 400:1, 401:1, 402:1, 403:1, 404:1, 406:1, 407:1, 408:1, 409:1, 413:1, 414:1, 415:1, 416:1, 417:1, 418:1, 420:1, 421:1, 422:1, 423:1, 424:1, 425:1, 430:1, 431:1, 433:1, 441:1, 451:1, 482:1, 503:1 },
   // the answer is a letter of a word: a lone «и» there is the letter in САНКИ, not the Bulgarian «и»
   letter: { 94:'the letter asked for', 402:'a cell of the table holds the letter И', 483:'the vowels of a name are listed letter by letter, and one of them is И', 351:'the word grid shows its letters one by one, and one of them is Е' },
 };
