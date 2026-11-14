@@ -39,12 +39,46 @@ export function genCountSqStrip(){
   const sizes = countSquares(cells);
   return {kind:'countsq', shape:'strip', cells, sizes, traps:[W*H, W*H + Math.floor(W/2)], ans: sizes.reduce((a, b) => a + b, 0)};
 }
+// Салабашев 2020, задача 7: a 4 × 4 square cut into tiles of mixed sizes (a rectangle two by one, small squares, two big squares of
+// two by two): the squares of every size, those made of several tiles too. A square counts when no tile crosses its edge: 6 + 2 big tiles +
+// 3 made of the small tiles and the rectangle + the whole = 12. Cut by filling the first empty cell with a tile that fits.
+export function genCountSqMixed(){
+  const SIZES = [[1, 1], [1, 1], [1, 1], [2, 1], [1, 2], [2, 2], [2, 2]];
+  for(;;){
+    const taken = Array.from({ length: 4 }, () => Array(4).fill(false)), tiles = [];
+    for(let y = 0; y < 4; y++) for(let x = 0; x < 4; x++){
+      if(taken[y][x]) continue;
+      const fit = SIZES.filter(([w, h]) => x + w <= 4 && y + h <= 4 && taken[y].slice(x, x + w).every(v => !v) && (h === 1 || !taken[y + 1].slice(x, x + w).some(v => v)));
+      const [w, h] = fit[rnd(fit.length)];
+      for(let j = 0; j < h; j++) for(let i = 0; i < w; i++) taken[y + j][x + i] = true;
+      tiles.push([x, y, w, h]);
+    }
+    const bySize = mixedSquares(tiles), sizes = Object.values(bySize), ans = sizes.reduce((a, b) => a + b, 0);
+    if(new Set(tiles.map(t => t[2] + 'x' + t[3])).size < 3 || bySize[1] === undefined || ans < 8 || ans > 16) continue;
+    return {kind:'countsq', shape:'mixed', tiles, bySize, sizes, ans};
+  }
+}
+/** squares of side k at (x, y) that no tile crosses: counted by size */
+function mixedSquares(tiles){
+  const by = {};
+  for(let k = 1; k <= 4; k++) for(let y = 0; y + k <= 4; y++) for(let x = 0; x + k <= 4; x++)
+    if(tiles.every(([tx, ty, w, h]) => { const inside = tx >= x && ty >= y && tx + w <= x + k && ty + h <= y + k, outside = tx >= x + k || ty >= y + k || tx + w <= x || ty + h <= y; return inside || outside; })) by[k] = (by[k] || 0) + 1;
+  return by;
+}
+function mixedSvg(q, only){
+  const u = 30, s = only ? 9 : u, shown = only ? [only[0], only[1], only[2]] : null;
+  const g = q.tiles.map(([x, y, w, h]) => '<rect x="' + x*s + '" y="' + y*s + '" width="' + w*s + '" height="' + h*s + '" fill="' + (only ? 'none' : 'color-mix(in srgb, var(--warm) 30%, transparent)') + '" stroke="' + (only ? 'var(--muted)' : 'var(--accent)') + '" stroke-width="' + (only ? 0.8 : 3) + '"/>').join('') +
+    (shown ? '<rect x="' + shown[0]*s + '" y="' + shown[1]*s + '" width="' + shown[2]*s + '" height="' + shown[2]*s + '" fill="rgba(47,111,143,.2)" stroke="var(--accent)" stroke-width="2"/>' : '');
+  return g;
+}
 function countSqSvg(cells){
   const u = 30, W = Math.max(...cells.map(c => c[0])) + 1, H = Math.max(...cells.map(c => c[1])) + 1;
   return '<div class="fig"><svg viewBox="-3 -3 ' + (W*u + 6) + ' ' + (H*u + 6) + '" style="max-width:' + (W*44) + 'px" role="img" aria-label="' + tr('фигура от квадратни плочки', 'фігура з квадратних плиток') + '">' +
     cells.map(([x, y]) => '<rect x="' + x*u + '" y="' + y*u + '" width="' + u + '" height="' + u + '" fill="color-mix(in srgb, var(--warm) 35%, transparent)" stroke="var(--ink)" stroke-width="1.6"/>').join('') + '</svg></div>';
 }
 function drawCountSq(q){
+  if(q.shape === 'mixed') return '<div class="ask">' + tr('Колко <b>квадрата</b> има на фигурата?', 'Скільки <b>квадратів</b> на фігурі?') + '</div><div class="fig"><svg viewBox="-4 -4 128 128" style="max-width:220px" role="img" aria-label="' +
+    tr('квадрат 4 на 4, разделен на плочки', 'квадрат 4 на 4, поділений на плитки') + '">' + mixedSvg(q) + '</svg></div>' + answerLine('xl');
   if(q.shape === 'strip') return '<div class="ask">' + tr('Фигурата е образувана от <span class="num">' + q.cells.length + '</span> еднакви малки квадратчета. Колко са <b>всичките</b> квадрати на фигурата?',
     'Фігуру утворено з <span class="num">' + q.cells.length + '</span> однакових маленьких квадратиків. Скільки <b>всього</b> квадратів на фігурі?') + '</div>' +
     countSqSvg(q.cells) + answerLine('xl');
@@ -71,6 +105,17 @@ function eqCountSq(q){
   return q.sizes.join(' + ') + ' = ' + q.ans;
 }
 function whyCountSq(q, full){
+  if(q.shape === 'mixed'){
+    if(!full) return tr('Не само плочките: квадрат е и всяко място, на което няма плочка през границата му — дори да е направено от няколко плочки.', 'Не лише плитки: квадрат — це й кожне місце, де жодна плитка не перетинає його межі, навіть складене з кількох плиток.');
+    const sizes = Object.keys(q.bySize), big = [];
+    for(let k = 2; k <= 4; k++) for(let y = 0; y + k <= 4; y++) for(let x = 0; x + k <= 4; x++)
+      if(q.tiles.every(([tx, ty, w, h]) => (tx >= x && ty >= y && tx + w <= x + k && ty + h <= y + k) || tx >= x + k || ty >= y + k || tx + w <= x || ty + h <= y)) big.push([x, y, k]);
+    const per = 5, gx = 10, rows = Math.ceil(big.length / per);
+    const mini = big.map((b, i) => '<g transform="translate(' + (i % per)*(36 + gx) + ' ' + Math.floor(i / per)*46 + ')"' + popAt(1 + i*0.4) + '>' + mixedSvg(q, b) + '</g>').join('');
+    const w = Math.min(big.length, per)*(36 + gx) - gx;
+    return (big.length ? '<svg viewBox="-3 -3 ' + (w + 6) + ' ' + (rows*46 - 10 + 6) + '" style="display:block; width:' + Math.round((w + 6)*1.4) + 'px; max-width:100%; margin:6px auto" role="img" aria-label="' + tr('по-големите квадрати', 'більші квадрати') + '">' + mini + '</svg>' : '') +
+      sizes.map(k => k + tr(' на ', ' на ') + k + ': <b>' + q.bySize[k] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
+  }
   if(!full && q.shape === 'strip') return tr('Не само малките: всеки четири квадратчета, събрани две на две, образуват квадрат — а може да има и по-голям.', 'Не лише маленькі: кожні чотири квадратики, складені два на два, утворюють квадрат — а може бути й більший.');
   if(!full) return tr('Не само малките: и всяко каре от плочки два на два е квадрат.', 'Не лише маленькі: кожен блок плиток два на два — теж квадрат.');
   return (q.shape === 'strip' ? countSqBig(q) : '') + q.sizes.map((n, i) => (i + 1) + ' на ' + (i + 1) + ': <b>' + n + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;

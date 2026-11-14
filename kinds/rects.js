@@ -67,7 +67,43 @@ export function genRects(){
   return {kind:'rects', shape:0, W, H, c, r, wide: c*(W-c+1), tall: r*(H-r+1), ans: c*(W-c+1)*r*(H-r+1)};
 }
 
+// Салабашев 2025, задача 10: a 3 × 4 grid with three grey squares: the rectangles that are not squares and hold exactly two grey ones — 7.
+// Every rectangle of the grid is tried, a square is left out. Shape 5 (level 512).
+const greyRects = (W, H, grey) => { const out = [];
+  for(let y0 = 0; y0 < H; y0++) for(let y1 = y0; y1 < H; y1++) for(let x0 = 0; x0 < W; x0++) for(let x1 = x0; x1 < W; x1++)
+    if(x1 - x0 !== y1 - y0 && grey.filter(([x, y]) => x >= x0 && x <= x1 && y >= y0 && y <= y1).length === 2) out.push([x0, y0, x1, y1]);
+  return out; };
+export function genRectsGrey(){
+  for(;;){
+    const W = 3 + rnd(2), H = 3, k = 3 + rnd(2), grey = [];
+    while(grey.length < k){ const c = [rnd(W), rnd(H)]; if(!grey.some(g => g[0] === c[0] && g[1] === c[1])) grey.push(c); }
+    const ans = greyRects(W, H, grey).length;
+    if(ans < 4 || ans > 10) continue;
+    return {kind:'rects', shape:5, W, H, grey, ans};
+  }
+}
+function greySvg(q, hit){
+  const u = hit ? 10 : 36, cell = (x, y) => '<rect x="' + x*u + '" y="' + y*u + '" width="' + u + '" height="' + u + '" fill="' + (q.grey.some(g => g[0] === x && g[1] === y) ? 'color-mix(in srgb, var(--ink) 55%, transparent)' : 'none') + '" stroke="var(--ink)" stroke-width="' + (hit ? 0.8 : 1.8) + '"/>';
+  let g = '';
+  for(let y = 0; y < q.H; y++) for(let x = 0; x < q.W; x++) g += cell(x, y);
+  if(hit) g += '<rect x="' + hit[0]*u + '" y="' + hit[1]*u + '" width="' + (hit[2] - hit[0] + 1)*u + '" height="' + (hit[3] - hit[1] + 1)*u + '" fill="rgba(47,111,143,.18)" stroke="var(--accent)" stroke-width="2"/>';
+  return g;
+}
+function drawGrey(q){
+  return '<div class="ask">' + tr('Мрежата на чертежа е съставена от <span class="num">' + q.W*q.H + '</span> еднакви квадратчета. Колко са всички правоъгълници на чертежа, които <b>не са квадрати</b> и съдържат <b>точно две</b> сиви квадратчета?',
+    'Сітку на рисунку складено з <span class="num">' + q.W*q.H + '</span> однакових квадратиків. Скільки всього прямокутників на рисунку, які <b>не є квадратами</b> і містять <b>рівно два</b> сірі квадратики?') + '</div><div class="fig"><svg viewBox="-3 -3 ' + (q.W*36 + 6) + ' ' + (q.H*36 + 6) +
+    '" style="max-width:' + q.W*46 + 'px" role="img" aria-label="' + tr('мрежа със сиви квадратчета', 'сітка зі сірими квадратиками') + '">' + greySvg(q) + '</svg></div>' + answerLine('xl');
+}
+function whyGrey(q, full){
+  if(!full) return tr('Опитай правоъгълниците по ред — по големина: първо тези с две квадратчета, после по-големите. Квадратите не се броят.', 'Пробуй прямокутники по порядку — за розміром: спершу з двох квадратиків, потім більші. Квадрати не рахуй.');
+  const hits = greyRects(q.W, q.H, q.grey), per = Math.max(1, Math.floor(280 / (q.W*10 + 12))), rows = Math.ceil(hits.length / per);
+  const mini = hits.map((r, i) => '<g transform="translate(' + (i % per)*(q.W*10 + 12) + ' ' + Math.floor(i / per)*(q.H*10 + 8) + ')"' + popAt(1 + i*0.3) + '>' + greySvg(q, r) + '</g>').join('');
+  const tw = Math.min(hits.length, per)*(q.W*10 + 12) - 12;
+  return '<svg viewBox="-3 -3 ' + (tw + 6) + ' ' + (rows*(q.H*10 + 8) - 8 + 6) + '" style="display:block; width:' + Math.round((tw + 6)*1.5) + 'px; max-width:100%; margin:6px auto" role="img" aria-label="' + tr('правоъгълниците с две сиви квадратчета', 'прямокутники з двома сірими квадратиками') + '">' + mini + '</svg>' +
+    tr('правоъгълници, които не са квадрати и имат две сиви: ', 'прямокутників, що не є квадратами й мають два сірі: ') + '<b>' + q.ans + '</b>';
+}
 function drawRects(q){
+  if(q.shape === 5) return drawGrey(q);
   if(q.shape === 4){
     return '<div class="ask">' + tr('В колко правоъгълника е мравката? (Квадратът е правоъгълник.)',
       'У скількох прямокутниках є мурашка? (Квадрат — це прямокутник.)') + '</div>' +
@@ -107,6 +143,7 @@ function drawRects(q){
     answerLine('md');
 }
 function eqRects(q){
+  if(q.shape === 5) return tr('правоъгълници с две сиви, без квадратите: ', 'прямокутників із двома сірими, без квадратів: ') + q.ans;
   if(q.shape === 3) return tr('всички ', 'усіх ') + q.all + tr(', без мравка ', ', без мурашки ') + q.free + ' → ' + q.ans;
   if(q.shape === 2) return q.W + ' на ' + q.H + tr(': квадрати ', ': квадратів ') + q.sq + tr(', правоъгълници ', ', прямокутників ') + q.all + ' → ' + q.ans;
   return q.shape === 1
@@ -178,6 +215,7 @@ function rectsSumSvg(q){
     tr('правоъгълниците и обиколките им', 'прямокутники та їхні периметри') + '">' + g + '</svg>';
 }
 function whyRects(q, full){
+  if(q.shape === 5) return whyGrey(q, full);
   if(q.shape === 3){
     if(!full) return tr('Брой правоъгълниците от едно, две, три и повече квадратчета — само тези, в които има мравка.',
       'Рахуй прямокутники з одного, двох, трьох і більше квадратиків — лише ті, де є мурашка.');

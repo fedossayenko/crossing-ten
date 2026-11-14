@@ -20,7 +20,7 @@ import { genCardSaid } from '../kinds/cardsaid.js';
 import { genFlipCards } from '../kinds/flipcards.js';
 import { genDigitBelow, genDigitCal, genDigitFreq, genDigitOmit, genDigitPages, genDigitRun } from '../kinds/dcount.js';
 import { genBucket } from '../kinds/bucket.js';
-import { genRects, genRectsAnts, genRectsIn } from '../kinds/rects.js';
+import { genRects, genRectsAnts, genRectsGrey, genRectsIn } from '../kinds/rects.js';
 import { genLine, genToward } from '../kinds/line.js';
 import { genShared } from '../kinds/shared.js';
 import { genStep, genStepRoof } from '../kinds/step.js';
@@ -108,7 +108,7 @@ import { genPaintRow, genPaintTwo } from '../kinds/paintrow.js';
 import { genSegCount, genSegCountEx } from '../kinds/segcount.js';
 import { genCommon } from '../kinds/common.js';
 import { genWeights } from '../kinds/weights.js';
-import { genCountSq, genCountSqStrip } from '../kinds/countsq.js';
+import { genCountSq, genCountSqMixed, genCountSqStrip } from '../kinds/countsq.js';
 import { genCutRect } from '../kinds/cutrect.js';
 import { genAlternate } from '../kinds/alternate.js';
 import { genPages, genTales } from '../kinds/pages.js';
@@ -187,15 +187,17 @@ import { genTsh } from '../kinds/tsh.js';
 import { genFlowReg } from '../kinds/flowreg.js';
 import { genBoxTri } from '../kinds/boxtri.js';
 import { genCircFig } from '../kinds/circfig.js';
-import { genShapeCount } from '../kinds/shapecount.js';
+import { genShapeCount, genShapeLetters, genWall } from '../kinds/shapecount.js';
+import { genRobot } from '../kinds/robot.js';
+import { genBrickMap } from '../kinds/brickmap.js';
 import { genBoats } from '../kinds/boats.js';
 import { genCandles } from '../kinds/candles.js';
-import { genFaces } from '../kinds/faces.js';
+import { genFaces, genFacesLatin } from '../kinds/faces.js';
 import { genToyBox } from '../kinds/toybox.js';
 import { genTally, genTallyBox } from '../kinds/tally.js';
 import { genBaskets } from '../kinds/baskets.js';
 import { genLanterns } from '../kinds/lanterns.js';
-import { genFigCount, genTreeCount, genVTri } from '../kinds/vtri.js';
+import { genFigCount, genTreeCount, genTriFig, genVTri } from '../kinds/vtri.js';
 import { genNumPyr, genPyrPlain } from '../kinds/numpyr.js';
 import { genEqGrid } from '../kinds/eqgrid.js';
 import { genPetals } from '../kinds/petals.js';
@@ -255,7 +257,7 @@ import { genBlind, genBlindSocks } from '../kinds/blind.js';
 import { genBowl } from '../kinds/bowl.js';
 import { genSortPick } from '../kinds/sortpick.js';
 import { genPigeon } from '../kinds/pigeon.js';
-import { genScales } from '../kinds/scales.js';
+import { genScales, genScalesPans } from '../kinds/scales.js';
 import { genDiceStack } from '../kinds/dicestack.js';
 import { genStarDig } from '../kinds/stardig.js';
 import { genZigzag } from '../kinds/zigzag.js';
@@ -663,6 +665,15 @@ export const LEVELS = [
   { id:128, op:'w', grp:'geo', needs:[97], src:'kms-2024', d:4, shapes:{ '1':4, '3':4 }, eq:{ bg:'Два триъгълника', uk:'Два трикутники' }, desc:{ en:'Two isosceles triangles, their perimeters together in decimetres — find a base', bg:'Два равнобедрени триъгълника, обиколките им заедно в дециметри — намери основа', uk:'Два рівнобедрені трикутники, їхні периметри разом у дециметрах — знайди основу' }, also:['kms-2023-2'], gen:genTwoIso },
   { id:143, op:'w', grp:'geo', src:'kms-2023', d:2, eq:{ bg:'Страни и върхове', uk:'Сторони й вершини' }, desc:{ en:'The sides and vertices of a few figures, counted together', bg:'Страните и върховете на няколко фигури, преброени заедно', uk:'Сторони й вершини кількох фігур, пораховані разом' }, gen:genCorners },
   { id:142, op:'w', grp:'geo', needs:[105], src:'kms-2023', d:4, eq:{ bg:'Триъгълници и квадрати', uk:'Трикутники й квадрати' }, desc:{ en:'Count the triangles and the squares in a figure of lines', bg:'Триъгълници и квадрати в чертеж от отсечки — колко от всеки', uk:'Трикутники й квадрати на рисунку з відрізків — скільки кожних' }, also:['kms-2022-2'], gen:genFigCount },
+  { id:510, op:'w', grp:'geo', src:'sal-2020', d:3, eq:{ bg:'Квадрати в плочки', uk:'Квадрати з плиток' }, desc:{ en:'A 4 by 4 square cut into tiles of mixed sizes: every square of every size, the ones made of several tiles too', bg:'Квадрат 4 на 4, разделен на плочки с различни размери: всички квадрати от всякакъв размер, и съставените от няколко плочки', uk:'Квадрат 4 на 4, поділений на плитки різних розмірів: усі квадрати будь-якого розміру, і складені з кількох плиток' }, gen:genCountSqMixed },
+  { id:511, op:'w', grp:'count', src:'sal-2021', d:2, eq:{ bg:'Тухли със снежинка', uk:'Цегли зі сніжинкою' }, desc:{ en:'A wall of bricks in three rows, a snowflake on some: by how many the bricks with one are fewer (or more) than those without', bg:'Стена от тухли в три реда, някои със снежинка: с колко тези със снежинка са по-малко (или повече) от тези без', uk:'Стіна з цеглин у три ряди, на деяких сніжинка: на скільки тих зі сніжинкою менше (або більше), ніж без' }, gen:genWall },
+  { id:512, op:'w', grp:'geo', needs:[19], src:'sal-2025', d:4, eq:{ bg:'Две сиви квадратчета', uk:'Два сірі квадратики' }, desc:{ en:'A grid with grey squares: the rectangles that are not squares and hold exactly two grey ones', bg:'Мрежа със сиви квадратчета: правоъгълниците, които не са квадрати и съдържат точно две сиви', uk:'Сітка зі сірими квадратиками: прямокутники, що не є квадратами й містять рівно два сірі' }, gen:genRectsGrey },
+  { id:513, op:'w', grp:'count', src:'sal-2020', d:2, eq:{ bg:'Липсващото лице', uk:'Обличчя, якого бракує' }, desc:{ en:'A 3 by 3 grid of faces, every row and column with each kind of eyes, nose and mouth once: which face is missing', bg:'Таблица 3 на 3 от лица, всеки ред и колона с всеки вид очи, нос и уста по веднъж: кое лице липсва', uk:'Таблиця 3 на 3 з облич, кожен ряд і стовпець з кожним видом очей, носа й рота по разу: якого обличчя бракує' }, gen:genFacesLatin },
+  { id:514, op:'w', grp:'find', src:'sal-2020', d:4, eq:{ bg:'Везни с животни', uk:'Терези з тваринами' }, desc:{ en:'Three balances with a cat, a rabbit and chicks against weights: how many kilograms balance the last one', bg:'Три везни с коте, зайче и пилета срещу тежести: колко килограма уравновесяват последната', uk:'Троє терезів із кішкою, кроликом і курчатами проти гир: скільки кілограмів зрівноважать останні' }, gen:genScalesPans },
+  { id:515, op:'w', grp:'count', src:'sal-2023', d:3, eq:{ bg:'Роботът от фигури', uk:'Робот із фігур' }, desc:{ en:'A robot made of polygons, each priced by its number of corners: what it costs', bg:'Робот от многоъгълници, всеки с цена по броя на ъглите си: колко струва', uk:'Робот із многокутників, кожен з ціною за кількістю кутів: скільки він коштує' }, gen:genRobot },
+  { id:516, op:'w', grp:'count', src:'sal-2024', d:3, eq:{ bg:'Оцвети стената', uk:'Зафарбуй стіну' }, desc:{ en:'A wall of fields in three rows, fields that touch must differ: the fewest colours', bg:'Стена от полета в три реда, полетата с обща граница са разноцветни: най-малко колко цвята', uk:'Стіна з полів у три ряди, поля зі спільною межею різнокольорові: найменше кольорів' }, gen:genBrickMap },
+  { id:517, op:'w', grp:'geo', needs:[284], src:'sal-2019', also:['sal-2022-2', 'sal-2023-2'], d:3, eq:{ bg:'Триъгълници на фигура', uk:'Трикутники на фігурі' }, desc:{ en:'How many triangles in a figure of lines: a heptagon with chords, a ring of lattice triangles, a rectangle with crossing lines', bg:'Колко триъгълника има във фигура от отсечки: седмоъгълник с диагонали, пръстен от триъгълничета, правоъгълник с пресичащи се линии', uk:'Скільки трикутників на фігурі з відрізків: семикутник з діагоналями, кільце з трикутничків, прямокутник з лініями, що перетинаються' }, gen:genTriFig },
+  { id:518, op:'w', grp:'count', src:'sal-2020', d:2, eq:{ bg:'Квадрати и триъгълници в букви', uk:'Квадрати й трикутники в літерах' }, desc:{ en:'The letters И and С made of squares and half-square triangles: by how many the squares are more than the triangles', bg:'Буквите И и С, направени от квадрати и половинки от квадрат: с колко квадратите са повече от триъгълниците', uk:'Літери И та С з квадратів і половинок квадрата: на скільки квадратів більше, ніж трикутників' }, gen:genShapeLetters },
   { id:153, op:'w', grp:'geo', needs:[21], src:'kms-2022', d:4, eq:{ bg:'Квадрат и правоъгълник', uk:'Квадрат і прямокутник' }, desc:{ en:'Equal perimeters, and a rectangle pinned down by its sides', bg:'Равни обиколки и правоъгълник, определен от страните си', uk:'Рівні периметри й прямокутник, визначений своїми сторонами' }, gen:genSqRect },
   { id:271, op:'w', grp:'geo', needs:[20], src:'mbg-autumn-forecast2026', d:3, eq:{ bg:'Средата на отсечката', uk:'Середина відрізка' }, desc:{ en:'A segment\'s midpoint, and a point a few centimetres from it', bg:'Средата на отсечка и точка на няколко сантиметра от нея', uk:'Середина відрізка й точка за кілька сантиметрів від неї' }, gen:genMidPtSeg },
   { id:71, op:'w', grp:'geo', needs:[20], grade:3, src:'mbg-autumn-2025', d:1, eq:{ bg:'Селищата', uk:'Села' }, desc:{ en:'A midpoint, and a place a few kilometres from it', bg:'Средата на пътя и място на няколко километра от нея', uk:'Середина дороги й місце за кілька кілометрів від неї' }, gen:genMidPt },

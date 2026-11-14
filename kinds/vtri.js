@@ -114,6 +114,7 @@ function figSvg(q){
     F.lines.map(l => { const [x1, y1] = P(l[0]), [x2, y2] = P(l[l.length - 1]); return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>'; }).join('') + '</svg></div>';
 }
 function drawVTri(q){
+  if(q.shape === 'tris') return '<div class="ask">' + tr('Колко са <b>триъгълниците</b> на фигурата?', 'Скільки <b>трикутників</b> на фігурі?') + '</div>' + trisSvg(q) + answerLine('xl');
   if(q.shape === 'tree') return drawTree(q);
   if(q.shape === 'count'){
     const ask = [tr('Колко са <b>триъгълниците</b> на чертежа?', 'Скільки <b>трикутників</b> на рисунку?'), tr('Колко са <b>квадратите</b> на чертежа?', 'Скільки <b>квадратів</b> на рисунку?'),
@@ -124,11 +125,13 @@ function drawVTri(q){
     vtriSvg(q) + answerLine('xl');
 }
 function eqVTri(q){
+  if(q.shape === 'tris') return tr('триъгълници → ', 'трикутників → ') + q.ans;
   if(q.shape === 'tree') return tr('големи ', 'великих ') + q.n + tr(', малки ', ', малих ') + (q.n - 1) + ' → ' + q.ans;
   if(q.shape === 'count') return tr('триъгълници ', 'трикутників ') + q.tri + tr(', квадрати ', ', квадратів ') + q.sq + ' → ' + q.ans;
   return tr('триъгълници с връх A → ', 'трикутників з вершиною A → ') + q.ans;
 }
 function whyVTri(q, full){
+  if(q.shape === 'tris') return full ? tr('триъгълници: <b>', 'трикутників: <b>') + q.ans + '</b>' : tr('Брой по големина: първо най-малките, после тези, съставени от няколко. Всеки триъгълник има три страни върху начертани отсечки.', 'Рахуй за розміром: спершу найменші, потім складені з кількох. Кожен трикутник має три сторони на накреслених відрізках.');
   if(q.shape === 'tree') return whyTree(q, full);
   if(q.shape === 'count'){
     if(!full) return tr('Брой по големина: първо най-малките, после съставените от няколко. И големият квадрат се брои.', 'Рахуй за розміром: спершу найменші, потім складені з кількох. І великий квадрат теж рахується.');
@@ -141,3 +144,67 @@ function whyVTri(q, full){
   return tr('по третата страна: ', 'за третьою стороною: ') + Object.values(by).join(' + ') + ' = ' + q.ans;
 }
 KIND.vtri = { draw:drawVTri, eq:eqVTri, why:whyVTri };
+// Салабашев 2 клас: how many triangles in a figure of segments (shape 'tris'): 2019 #7 a heptagon with chords and a line (14), 2022 #4 a ring of
+// the triangular lattice round an empty hexagon (20), 2023 #8 a rectangle open at the top with four crossing lines (14). A figure is its
+// segments; every crossing is a point, a triangle is three points not on one line whose three sides are each covered by drawn segments.
+// The rectangle's variants move the top point along the open side.
+const TRI_E = 1e-6;
+function arrangeSegs(segs){
+  const P = [], add = (x, y) => { if(!P.some(p => Math.hypot(p[0] - x, p[1] - y) < TRI_E)) P.push([x, y]); };
+  segs.forEach(([x1, y1, x2, y2]) => { add(x1, y1); add(x2, y2); });
+  for(let i = 0; i < segs.length; i++) for(let j = i + 1; j < segs.length; j++){
+    const [x1, y1, x2, y2] = segs[i], [x3, y3, x4, y4] = segs[j], d = (x2 - x1)*(y4 - y3) - (y2 - y1)*(x4 - x3);
+    if(Math.abs(d) < 1e-9) continue;
+    const t = ((x3 - x1)*(y4 - y3) - (y3 - y1)*(x4 - x3)) / d, u = ((x3 - x1)*(y2 - y1) - (y3 - y1)*(x2 - x1)) / d;
+    if(t >= -TRI_E && t <= 1 + TRI_E && u >= -TRI_E && u <= 1 + TRI_E) add(x1 + t*(x2 - x1), y1 + t*(y2 - y1));
+  }
+  return P;
+}
+// collinear segments that overlap or touch become one longer segment
+function mergeSegs(segs){
+  const groups = [];
+  for(const [x1, y1, x2, y2] of segs){
+    const L = Math.hypot(x2 - x1, y2 - y1), dx = (x2 - x1)/L, dy = (y2 - y1)/L;
+    let g = groups.find(g => Math.abs(g.dx*dy - g.dy*dx) < 1e-6 && Math.abs((x1 - g.x)*g.dy - (y1 - g.y)*g.dx) < 1e-6);
+    if(!g) groups.push(g = { x:x1, y:y1, dx, dy, iv:[] });
+    const a = (x1 - g.x)*g.dx + (y1 - g.y)*g.dy, b = (x2 - g.x)*g.dx + (y2 - g.y)*g.dy;
+    g.iv.push([Math.min(a, b), Math.max(a, b)]);
+  }
+  const out = [];
+  for(const g of groups){
+    const m = [];
+    g.iv.sort((a, b) => a[0] - b[0]).forEach(v => { if(m.length && v[0] <= m[m.length - 1][1] + TRI_E) m[m.length - 1][1] = Math.max(m[m.length - 1][1], v[1]); else m.push([...v]); });
+    m.forEach(([lo, hi]) => out.push([g.x + lo*g.dx, g.y + lo*g.dy, g.x + hi*g.dx, g.y + hi*g.dy]));
+  }
+  return out;
+}
+export function triCount(segs){
+  const P = arrangeSegs(segs);
+  const onSeg = (p, [x1, y1, x2, y2]) => Math.abs((x2 - x1)*(p[1] - y1) - (y2 - y1)*(p[0] - x1)) < 1e-6 && Math.min(x1, x2) - TRI_E <= p[0] && p[0] <= Math.max(x1, x2) + TRI_E && Math.min(y1, y2) - TRI_E <= p[1] && p[1] <= Math.max(y1, y2) + TRI_E;
+  const drawn = (p, r) => segs.some(s => onSeg(p, s) && onSeg(r, s));
+  let n = 0;
+  for(let a = 0; a < P.length; a++) for(let b = a + 1; b < P.length; b++) for(let c = b + 1; c < P.length; c++)
+    if(Math.abs((P[b][0] - P[a][0])*(P[c][1] - P[a][1]) - (P[b][1] - P[a][1])*(P[c][0] - P[a][0])) > 1e-6 && drawn(P[a], P[b]) && drawn(P[b], P[c]) && drawn(P[a], P[c])) n++;
+  return n;
+}
+const hexRing = (() => { const h = Math.sqrt(3)/2, lp = (i, j) => [i + j/2, j*h], hd = (i, j) => Math.max(Math.abs(i), Math.abs(j), Math.abs(i + j)), s = [];
+  for(let i = -2; i <= 2; i++) for(let j = -2; j <= 2; j++) if(hd(i, j) && hd(i, j) <= 2) for(const [di, dj] of [[1, 0], [0, 1], [-1, 1]]){
+    const k = i + di, l = j + dj; if(hd(k, l) && hd(k, l) <= 2) s.push([...lp(i, j), ...lp(k, l)]); }
+  return s; })();
+const hept = (() => { const T = [2.16, 0], UL = [0.46, 0.8], UR = [3.82, 0.8], L = [0, 2.66], R = [4.26, 2.66], BL = [1.2, 4.14], BR = [3.1, 4.14];
+  return [[T, UL], [UL, L], [L, BL], [BL, BR], [BR, R], [R, UR], [UR, T], [L, R], [UL, BL], [T, BL], [T, BR], [UR, BR]].map(([a, b]) => [...a, ...b]); })();
+const openBox = ax => [[0, 0, 0, 2], [4, 0, 4, 2], [0, 2, 4, 2], [0, 0, 4, 2], [4, 0, 0, 2], [ax, 0, 0, 2], [ax, 0, 4, 2]];
+/** the figures: the three printed ones first, then the rectangle with its top point moved to a quarter (flipped, the other quarter) */
+export const TRI_FIGS = [hept, hexRing, openBox(2), openBox(1)].map(raw => {
+  const m = mergeSegs(raw), x0 = Math.min(...m.flatMap(s => [s[0], s[2]])), y0 = Math.min(...m.flatMap(s => [s[1], s[3]])), segs = m.map(([a, b, c, d]) => [a - x0, b - y0, c - x0, d - y0]);   // the top left corner at 0, 0
+  return { segs, tri: triCount(segs) };
+});
+export function genTriFig(){
+  const f = rnd(TRI_FIGS.length), flip = rnd(2);
+  return {kind:'vtri', shape:'tris', f, flip, ans: TRI_FIGS[f].tri};
+}
+function trisSvg(q){
+  const F = TRI_FIGS[q.f], u = 40, xs = F.segs.flatMap(s => [s[0], s[2]]), w = Math.max(...xs), h = Math.max(...F.segs.flatMap(s => [s[1], s[3]])), X = x => (q.flip ? w - x : x)*u;
+  return '<div class="fig"><svg viewBox="-4 -4 ' + (w*u + 8) + ' ' + (h*u + 8) + '" style="max-width:' + (w*u + 8)*1.5 + 'px" role="img" aria-label="' + tr('чертеж от отсечки', 'рисунок із відрізків') + '">' +
+    F.segs.map(([x1, y1, x2, y2]) => '<line x1="' + X(x1).toFixed(1) + '" y1="' + (y1*u).toFixed(1) + '" x2="' + X(x2).toFixed(1) + '" y2="' + (y2*u).toFixed(1) + '" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>').join('') + '</svg></div>';
+}
