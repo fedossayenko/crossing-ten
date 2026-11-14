@@ -990,7 +990,8 @@ const server = http.createServer((req, res) => {
     const a1 = await page(`{ in: IN(), shown: $('syncCode').textContent, card: !$('syncOnRow').hidden, sheet: $('login').hidden }`);
     expect(a1.in && a1.shown === fam && a1.card && a1.sheet, 'signing up on A went wrong: ' + JSON.stringify(a1));
     // the visit count: a launch sends one /hello (counted by a fetch hook that survives reloads in sessionStorage),
-    // a relaunch the same day sends none
+    // a relaunch the same day sends none; only against a local worker, so a deployed counter never counts the test
+    if(/127\.0\.0\.1|localhost/.test(process.env.SMOKE_SYNC)){
     const hook = await cmd('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { const f = window.fetch; window.fetch = function(u){
       try { if(String(u).endsWith('/hello')) sessionStorage.setItem('hc', String(+(sessionStorage.getItem('hc') || 0) + 1)); } catch(e){} return f.apply(this, arguments); }; })()` });
     await run(`localStorage.removeItem('crossingten.hello'); sessionStorage.removeItem('hc'); location.reload(); 1`); await settle(1500);
@@ -999,6 +1000,7 @@ const server = http.createServer((req, res) => {
     const h2 = await page(`{ n: +sessionStorage.getItem('hc') }`);
     await cmd('Page.removeScriptToEvaluateOnNewDocument', { identifier: hook.result.identifier });
     expect(h1.n === 1 && h1.day && h2.n === 1, 'the page should send one /hello a day, none on a relaunch: ' + JSON.stringify({ h1, h2 }));
+    }
     const ra = await run(playOne);
     // B is a new device: its welcome screen logs in, a wrong password first
     await open(B); await run(fresh); await settle();

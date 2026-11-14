@@ -968,11 +968,12 @@ function judge(said){
   if(!a || !a.mist) return;
   S.judged[S.i] = said; S.ask = null;
   if(said){ sfx.tap(); $('hint').innerHTML = '<div class="whatq done">' + t('mistOk', a.shown) + '</div>'; saveRound(); return; }
-  S.typed[S.i] = String(a.shown); S.slip[S.i] = slipOf(q, [String(a.shown)]);
+  // Мишо's answer, not hers: it marks the task missed (and practised again) but is no slip of hers, and the
+  // slip nudges speak to her as the one who wrote it, so the general line explains it
+  S.typed[S.i] = String(a.shown);
   sfx.bad();
   reveal(); S.after[S.i] = 0;   // the answer and its way; not a try (after counts tries)
-  const nudge = S.slip[S.i] && t('slip')[S.slip[S.i]][1];
-  $('hint').insertAdjacentHTML('afterbegin', '<div class="fb status">' + mascotSvg(PLAYER.mascot, 'thinking') + '<div><b>' + t('mistNo') + '</b> ' + (nudge || t('mistWhy', a.shown)) + '</div></div>');
+  $('hint').insertAdjacentHTML('afterbegin', '<div class="fb status">' + mascotSvg(PLAYER.mascot, 'thinking') + '<div><b>' + t('mistNo') + '</b> ' + t('mistWhy', a.shown) + '</div></div>');
   saveRound();
 }
 // a key before the pick: the question again, and the buttons nudge
