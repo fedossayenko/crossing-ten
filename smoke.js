@@ -822,6 +822,53 @@ const server = http.createServer((req, res) => {
       'the Кенгуру result went wrong: ' + JSON.stringify(e3));
     await run(`$('sheet').hidden = true; $('levelPill').click(); { const b = $('pickComps').querySelector('[data-v=""]'); if(b) b.click(); const g = $('pickGrades').querySelector('[data-v="' + PLAYER.grade + '"]'); if(g) g.click(); } newRound(); 1`);
   }
+  // A Салабашев paper (Салабашев picked): 15 tasks in 120 minutes, 1–10 А–Г with four options, 11–15 a typed number,
+  // 2 / 4 / 6 points by place, 60 in all; kept at a reload and saved with its format
+  {
+    const lv = `const lv = q => LEVELS.find(l => l.id === q.lvl), ptsAt = k => k < 5 ? 2 : k < 10 ? 4 : 6;`;
+    const s1 = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms)); ${lv}
+      $('levelPill').click(); await wait(100);
+      const chip = (row, v) => { const b = $(row).querySelector('[data-v="' + v + '"]'); if(b) b.click(); return !!b; };
+      const out = { chips: chip('pickGrades', '2') && chip('pickComps', 'sal') };
+      const qs = Array.from({ length: 5 }, () => compTasks()), q0 = qs[0];
+      out.tasks = qs.every(q => q.length === 15 && q.every(x => lv(x).papers.some(p => p.startsWith('sal-'))) &&
+        q.slice(0, 10).every(x => x.options && x.options.length === 4 && new Set(x.options.map(o => o.v)).size === 4 && !!x.options[x.pick]) &&
+        q.slice(10).every(x => !x.options && (x.slots || 1) === 1 && Number.isInteger(answer(x))) && q.every((x, k) => x.pts === ptsAt(k)) &&
+        q.slice(0, 10).every((x, k, a) => !k || lv(a[k - 1]).d <= lv(x).d));
+      out.sum = q0.reduce((a, x) => a + x.pts, 0);
+      $('sheet').hidden = true; $('compStart').click(); await wait(100);
+      out.sheet = !$('compSheet').hidden && $('compRules').textContent.includes(t('salRulePts', 60)) && $('compRules').textContent.includes(t('compRuleTime', 15, 120)) &&
+        $('compRules').textContent.includes(t('ekRuleOpts', 10, 4, 15));
+      $('compGo').click(); await wait(100);
+      out.start = !!COMP && COMP.fmt === 'sal' && S.qs.length === 15 && COMP.end - COMP.t0 === 120 * 60000 && $('run').textContent.includes(t('ptsN', 2));
+      const q = S.qs[S.i]; document.querySelector('#choices .ch[data-o="' + q.pick + '"]').click(); await wait(100);
+      out.letters = [...document.querySelectorAll('#choices .ch .lt')].map(e => e.textContent).join('');
+      out.held = JSON.stringify(COMP.ans); out.qs = S.qs.map(drawQ).join('|').length;
+      return JSON.stringify(out); })()`) || '{}');
+    await cmd('Page.reload'); await settle();
+    const s2 = await page(`COMP ? { fmt: COMP.fmt, n: S.qs.length, held: JSON.stringify(COMP.ans), qs: S.qs.map(drawQ).join('|').length } : null`);
+    expect(s1.chips && s1.tasks && s1.sum === 60 && s1.sheet && s1.start && /^([А-Г]{4}|[A-D]{4})$/.test(s1.letters) && s2 && s2.fmt === 'sal' && s2.n === 15 && s2.held === s1.held && s2.qs === s1.qs,
+      'the Салабашев paper went wrong: ' + JSON.stringify({ s1, s2 }));
+    const s3 = JSON.parse(await run(`(async () => {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      const K = k => document.querySelector('.key[data-k="' + k + '"]').click();
+      // tasks 1–5 right, 6–10 wrong, 11–15 right: 5 x 2 + 5 x 6
+      for(let step = 0; step < 30 && COMP && !COMP.check; step++){
+        const q = S.qs[S.i], at = S.i;
+        if(q.options){ const id = at < 5 ? q.pick : q.options.find(o => o.id !== q.pick).id; document.querySelector('#choices .ch[data-o="' + id + '"]').click(); await wait(60); $('nextBtn').click(); }
+        else { [...String(answer(q))].forEach(K); K('go'); for(let t = 0; t < 100 && COMP && !COMP.check && S.i === at; t++) await wait(20); }
+      }
+      $('handIn').click(); await wait(50);
+      const r = LOCAL.rounds[LOCAL.rounds.length - 1];
+      const out = { round: { fmt: r.fmt, n: r.n, pts: r.pts, max: r.max }, score: $('score').textContent, foot: $('compFoot').textContent === t('salFoot'),
+        cps: [...$('compTable').querySelectorAll('.crow .cp')].map(e => +e.textContent) };
+      $('sheet').hidden = true; newRound(); await wait(50);
+      return JSON.stringify(out); })()`) || '{}');
+    expect(s3.round && s3.round.fmt === 'sal' && s3.round.n === 15 && s3.round.pts === 40 && s3.round.max === 60 && s3.score === '40 / 60' && s3.foot &&
+      s3.cps.join() === '2,2,2,2,2,0,0,0,0,0,6,6,6,6,6', 'the Салабашев result went wrong: ' + JSON.stringify(s3));
+    await run(`$('sheet').hidden = true; $('levelPill').click(); { const b = $('pickComps').querySelector('[data-v=""]'); if(b) b.click(); const g = $('pickGrades').querySelector('[data-v="' + PLAYER.grade + '"]'); if(g) g.click(); } newRound(); 1`);
+  }
   // A reload mid-round — an iPad dropping the app in the background, a new build — comes back to the same task
   {
     const want = await run(`S.level = 4; newRound(); S.results.push(true); next(); S.results.push(false); next(); JSON.stringify(S.qs[2])`);

@@ -271,6 +271,11 @@ never from the competitions' papers, which are copyrighted. A paper is saved as 
 with `level: 'comp'`, its points and the ids of its levels, and syncs like any other round. While it runs it is
 saved at every task under `<roundsKey>.paper`, so a reload resumes it (on the check screen too; it ends at once if its hour has passed).
 The next paper's date is `PLAYER.next`, so it travels with the player record.
+A competition with its own paper keeps its own format (`FMT` in `js/compete.js`, saved as the round's `fmt`): **Кенгуру**,
+26 tasks in 90 minutes, 1–24 А–Д and 25–26 typed, 3 / 4 / 5 points by place (100 in all); **Салабашев**, 15 tasks in
+120 minutes, 1–10 А–Г and 11–15 typed, 2 / 4 / 6 points by place (60 in all). The choices are the levels' own options or
+made from a whole-number answer, easiest first in the format's bands; the typed tasks are the hardest levels that take one
+whole number. A wrong answer or none costs nothing, and a paper of one format is compared only with papers of that format.
 Two badges go with it: **Състезател** (finish a competition) and **Изследовател** (tasks
 from all nine groups), sixteen in all.
 
