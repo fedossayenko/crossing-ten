@@ -14,7 +14,10 @@ const server = http.createServer((req, res) => {
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'ct-smoke-'));
   const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
     '--user-data-dir=' + dir, '--window-size=390,844', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
-  const done = code => { chrome.on('exit', () => { fs.rmSync(dir, { recursive: true, force: true }); process.exit(code); }); chrome.kill(); server.close(); };
+  // a failure is final: done(1) waits for Chrome's exit event, which never comes if Chrome already died (it does, under load),
+  // and node then ends on its own with code 0: the code is set first, and a later done(0) from the play going on can't undo it
+  let failed = false;
+  const done = code => { failed = failed || code !== 0; process.exitCode = failed ? 1 : 0; chrome.on('exit', () => { fs.rmSync(dir, { recursive: true, force: true }); process.exit(failed ? 1 : 0); }); chrome.kill(); server.close(); };
   // One watchdog per phase, not one for the whole run: phase(name, ms) restarts it, so a hang names where it is.
   // SMOKE_TIME=1 prints how long each phase took.
   let dog, cur = 'start', t0 = Date.now();
