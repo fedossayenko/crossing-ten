@@ -329,8 +329,8 @@ function putCat(slot, m){
 /* ---------- round flow ---------- */
 // New tasks from these levels added to a set, none of them a screen the set already shows: a level with fewer
 // different tasks than wanted gives a shorter round. ponytail: a task with the same text and other А/Б/В/Г counts as a repeat
-function addFresh(set, want, levels){
-  const seen = new Set(set.map(drawQ));
+function addFresh(set, want, levels, avoid = new Set()){
+  const seen = new Set([...set.map(drawQ), ...avoid]);   // avoid: the tasks she missed, never drawn again as new ones
   for(let i = 0; set.length < want && i < want * 40; i++){   // 40 draws a task find the rare ones of a lopsided level (153: two tasks are 3/4 of its draws)
     const lv = levels[rnd(levels.length)], q = gen(lv), k = drawQ(q);
     if(!seen.has(k)){ seen.add(k); set.push(Object.assign(q, { lvl: lv })); }
@@ -677,7 +677,8 @@ export function finish(){
   });
   const padFrom = COMP || S.daily ? missed.map(x => x.q.lvl) : [S.level];   // a paper's (or today's practice's) redo is padded from its own levels, not the one picked before it
   $('redo').onclick = () => {   // tasks like the ones she missed, other numbers: the very task again would teach its answer
-    newRound(shuffle(addFresh(missed.map(x => twin(x.q.lvl ?? S.level, x.q.shape, drawQ(plainQ(x.q)))), Math.min(12, Math.max(6, missed.length*2)), padFrom)));
+    const avoid = drawnOf(missed.map(x => plainQ(x.q)));
+    newRound(shuffle(addFresh(missed.map(x => twin(x.q.lvl ?? S.level, x.q.shape, avoid)), Math.min(12, Math.max(6, missed.length*2)), padFrom, avoid)));
     S.redo = true;                                     // a round of her own mistakes, for the "fixed" badge
   };
 
@@ -867,8 +868,9 @@ export function renderParent(){
   const worst = Object.values(by).filter(x => x.n >= 4 && x.miss >= 2).sort((a, b) => b.miss / b.n - a.miss / a.n).slice(0, 4);
   // practise these: a task like each she missed (its level and shape, other numbers), and new ones from those levels up to ten
   $('shapeGo').onclick = () => {
-    const set = worst.flatMap(x => x.seeds.map(([seed, ans]) => { const q = replay(x.lv, x.shape, seed, ans); return twin(x.lv, x.shape, q && drawQ(q)); })).slice(0, 10);
-    newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv))));
+    const avoid = drawnOf(worst.flatMap(x => x.seeds.map(([seed, ans]) => replay(x.lv, x.shape, seed, ans))));
+    const set = worst.flatMap(x => x.seeds.map(() => twin(x.lv, x.shape, avoid))).slice(0, 10);
+    newRound(shuffle(addFresh(set, 10, worst.map(x => x.lv), avoid)));
   };
   // her papers, her rounds of mistakes, and her last rounds (all of them on a tap): each opens task by task
   const logged = LOCAL.rounds.filter(r => Array.isArray(r.t)), comps = logged.filter(r => r.level === 'comp').reverse(), fixes = logged.filter(r => r.level === 'mix').reverse();
@@ -991,16 +993,21 @@ function replay(lv, shape, seed, ans){
 // A task like one she missed: its level and shape, other numbers (not: the missed task as drawn, to steer clear of).
 // The very task again teaches its answer, not its way: Em's rounds of mistakes redrew them, and an answer came back
 // on the next task of the level that asked something else (201: «24», a sum, for «how many», 2026-11-01).
-// ponytail: 60 draws find the shape; a level that rarely draws it gives any task of the level
-function twin(lv, shape, not){
-  for(let i = 0; i < 60; i++){ const q = gen(lv); if((q.shape ?? null) === (shape ?? null) && drawQ(q) !== not) return Object.assign(q, { lvl: lv }); }
-  return Object.assign(gen(lv), { lvl: lv });
+// avoid: every task she missed that this round practises (a twin of one must not be another of them).
+// ponytail: 60 draws find the shape; a level that rarely draws it gives another task of the level, still none she missed
+function twin(lv, shape, avoid){
+  const no = q => !avoid.has(drawQ(q));
+  for(let i = 0; i < 60; i++){ const q = gen(lv); if((q.shape ?? null) === (shape ?? null) && no(q)) return Object.assign(q, { lvl: lv }); }
+  for(let i = 0; i < 60; i++){ const q = gen(lv); if(no(q)) return Object.assign(q, { lvl: lv }); }
+  return Object.assign(gen(lv), { lvl: lv });   // a level with no task but the ones she missed
 }
+const drawnOf = qs => new Set(qs.filter(Boolean).map(drawQ));
 // Today's practice (js/daily.js picks the levels): a level missed in a mixed set as a task like it, a level to go over as any task of it
 export function startDaily(){
   const p = dailyPlan(LOCAL.rounds, LEVELS);
   if(!p.items.length) return;
-  const qs = p.items.map(x => x.miss ? twin(x.id, x.shape, (q => q && drawQ(q))(replay(x.id, x.shape ?? null, x.seed, x.ans))) : Object.assign(gen(x.id), { lvl: x.id }));
+  const avoid = drawnOf(p.items.filter(x => x.miss).map(x => replay(x.id, x.shape ?? null, x.seed, x.ans)));
+  const qs = p.items.map(x => x.miss ? twin(x.id, x.shape, avoid) : Object.assign(gen(x.id), { lvl: x.id }));
   const m = mistakePick(p.items, qs, rnd);   // «Намери грешката»: at most one task a day (never the first, so newRound's show() has none to ask)
   newRound(qs);
   if(m) S.mist[m.k] = m.shown;
@@ -1029,8 +1036,9 @@ function paintReview(){
   const missed = r ? r.t.filter(e => e[4] !== 1) : [];
   $('reviewFix').hidden = !missed.length;
   $('reviewFix').onclick = () => {
-    const set = missed.map(([lv, shape, seed, , , ans]) => { const d = replay(lv, shape, seed, ans); return twin(lv, shape, d && drawQ(d)); }).slice(0, 12);
-    newRound(shuffle(addFresh(set, Math.max(10, set.length), [...new Set(missed.map(e => e[0]))])));
+    const avoid = drawnOf(missed.map(([lv, shape, seed, , , ans]) => replay(lv, shape, seed, ans)));
+    const set = missed.map(([lv, shape]) => twin(lv, shape, avoid)).slice(0, 12);
+    newRound(shuffle(addFresh(set, Math.max(10, set.length), [...new Set(missed.map(e => e[0]))], avoid)));
   };
   $('reviewList').querySelectorAll('.crow').forEach(b => b.onclick = () => {
     const open = b.getAttribute('aria-expanded') !== 'true';
@@ -1107,16 +1115,18 @@ export function notebookData(now = Date.now()){
 export function fixKind(kind, check){
   const g = notebookData().open.find(x => x.kind === kind), levels = g ? [...new Set(g.items.map(x => x.lv))] : notebookLevels(kind);
   if(!levels.length) return;
-  const set = check || !g ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q))).slice(0, 12);
-  newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels)));
+  const avoid = drawnOf(g ? g.items.map(x => x.q) : []);
+  const set = check || !g ? [] : g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, avoid)).slice(0, 12);
+  newRound(shuffle(addFresh(set, Math.min(12, Math.max(5, set.length)), levels, avoid)));
   S.redo = check ? { check: kind } : { fix: kind };
 }
 // Put them all right: a task like each of every kind's missed tasks in one round (at most twelve, the most repeated kinds first)
 export function fixAll(){
-  const open = notebookData().open, set = open.flatMap(g => g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, drawQ(x.q)))).slice(0, 12);
+  const open = notebookData().open, avoid = drawnOf(open.flatMap(g => g.items.map(x => x.q)));
+  const set = open.flatMap(g => g.items.filter(x => x.q).map(x => twin(x.lv, x.q.shape, avoid))).slice(0, 12);
   const levels = [...new Set(open.flatMap(g => g.items.map(x => x.lv)))];
   if(!levels.length) return;
-  newRound(shuffle(addFresh(set, 5, levels)));
+  newRound(shuffle(addFresh(set, 5, levels, avoid)));
   S.redo = { fix: open.map(g => g.kind) };
 }
 // the levels a kind was put right on: from the round that put it right
@@ -1853,7 +1863,7 @@ startSync();
 Object.defineProperties(window, Object.fromEntries(Object.entries({
   $: () => $, ARCHIVE: () => ARCHIVE, BADGES: () => BADGES, COMP: () => COMP, IN: () => IN, LEVELS: () => LEVELS, LOCAL: () => LOCAL, LS: () => LS,
   PICK_COMP: () => PICK_COMP, PICK_GRADE: () => PICK_GRADE, PICK_ROUND: () => PICK_ROUND, PLAYER: () => PLAYER, PLAYERS: () => PLAYERS, RS: () => RS, S: () => S,
-  answer: () => answer, answers: () => answers, dailyPlan: () => dailyPlan, trapShown: () => trapShown, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
+  answer: () => answer, answers: () => answers, twin: () => twin, addFresh: () => addFresh, dailyPlan: () => dailyPlan, trapShown: () => trapShown, startDaily: () => startDaily, drawQ: () => drawQ, mbgPts: () => mbgPts, badgeName: () => badgeName, buildPicker: () => buildPicker, compTasks: () => compTasks, csvOf: () => csvOf,
   finish: () => finish, inFocus: () => inFocus, levelName: () => levelName, mastery: () => mastery, newRound: () => newRound, next: () => next, nextUp: () => nextUp,
   notebookData: () => notebookData, fixAll: () => fixAll, weekData: () => weekData, weeklyPng: () => weeklyPng, buildWeek: () => buildWeek, fixKind: () => fixKind, paintPill: () => paintPill, raw: () => raw, renderParent: () => renderParent, renderStats: () => renderStats, statsFrom: () => statsFrom, reveal: () => reveal, saveLocal: () => saveLocal, seeded: () => seeded, missedIn: () => missedIn, since: () => since, startComp: () => startComp, builtOn: () => builtOn, heldHere: () => heldHere, syncNow: () => syncNow, todayData: () => todayData, syncing: () => syncing, t: () => t, unionRounds: () => unionRounds,
 }).map(([k, get]) => [k, { get, configurable: true }]).concat([['PICK_FOR', { get: () => PICK_FOR, set: v => { PICK_FOR = v; }, configurable: true }]])));

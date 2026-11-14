@@ -694,6 +694,16 @@ const server = http.createServer((req, res) => {
         else out.all = b.hidden && $('roundList').children.length === n; }
       newRound(); await wait(30);
       return JSON.stringify(out); })()`) || '{}');
+    // a round of mistakes never draws a task she missed: not as a twin of another miss, not as a new task, on a level
+    // with few tasks too (the past-rounds step once caught «Упражни» drawing one of the paper's misses again)
+    const tw = JSON.parse(await run(`(() => { const small = LEVELS.map(l => { const k = new Set(); for(let i = 0; i < 300; i++) k.add(drawQ(raw(l.id))); return [l.id, k]; })
+        .filter(([, k]) => k.size >= 2 && k.size <= 6).sort((a, b) => a[1].size - b[1].size)[0];
+      if(!small) return JSON.stringify({ none: true });
+      const [lv, all] = small, avoid = new Set([...all].slice(1)); let bad = 0;
+      for(let i = 0; i < 200; i++) if(avoid.has(drawQ(twin(lv, '__none', avoid)))) bad++;
+      const pad = addFresh([], 3, [lv], avoid).filter(q => avoid.has(drawQ(q))).length;
+      return JSON.stringify({ lv, size: all.size, bad, pad }); })()`) || '{}');
+    expect(tw.lv && tw.bad === 0 && tw.pad === 0, 'a round of mistakes drew a task she missed: ' + JSON.stringify(tw));
     expect(rv.comps && rv.rounds && rv.named && rv.open && rv.row && rv.since && rv.back && rv.checked && rv.round && rv.fix && rv.mix && rv.fixes && rv.fixRows && rv.all, 'the past rounds went wrong: ' + JSON.stringify(rv));
   }
   // A paper keeps to the picker's focus: a grade, a competition, its round, one year. The card and the start sheet
@@ -969,8 +979,9 @@ const server = http.createServer((req, res) => {
     newRound(); await tick(); $('levelPill').focus(); $('levelPill').click(); await tick();
     out.bare = [...document.querySelectorAll('#picker span[aria-label]:not([role]), #picker div[aria-label]:not([role]), #dots:not([role]), #stars:not([role]), #side span[aria-label]:not([role])')].map(e => e.className || e.id);
     $('tabToday').click(); await tick(); out.bareToday = [...document.querySelectorAll('#today span[aria-label]:not([role])')].map(e => e.className);
-    newRound(); await tick();
-    $('levelPill').focus(); $('levelPill').click(); await tick(); $('closePick').click(); await tick(); out.back = document.activeElement === $('levelPill'); out.live = $('hint').getAttribute('aria-live');
+    newRound(); for(let i = 0; i < 100 && $('levelPill').closest('[hidden]'); i++) await tick(30);   // the round's screen back from Today first: a hidden button takes no focus
+    $('levelPill').focus(); $('levelPill').click(); await tick(); $('closePick').click(); for(let i = 0; i < 100 && !$('picker').hidden; i++) await tick(30); await tick();
+    out.back = document.activeElement === $('levelPill'); out.live = $('hint').getAttribute('aria-live');
     return JSON.stringify(out); } catch(e){ return JSON.stringify({ err: String(e) }); } })()`) || '{}');
   expect(ax.err === undefined && ax.bare.length === 0 && ax.bareToday.length === 0 && ax.back && ax.live === 'polite', 'accessibility: ' + JSON.stringify(ax));
   // Two devices through a running sync Worker (SMOKE_SYNC=http://127.0.0.1:8787 node smoke.js):
