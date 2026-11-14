@@ -21,7 +21,7 @@ export function dailyPlan(rounds, levels, now = Date.now()){
     if(r.daily && daysFrom(r.ts, now) === 0) done = { got: r.firstTry, n: r.n };
     if(typeof r.level === 'number'){ if(L.has(r.level)) of(r.level).study = Math.max(of(r.level).study, r.ts); }   // a round of one level: studied, not checked
     // a task where Мишо gave the right answer and she agreed was copied, not solved: no right answer of hers for the ladder
-    else if(Array.isArray(r.t)) r.t.forEach(([lv, shape, seed, , ok, ans], k) => { const j = r.judged && r.judged[k], copied = !!j && j[1] === 1 && String(j[0]) === String(ans);
+    else if(Array.isArray(r.t)) r.t.forEach(([lv, shape, seed, , ok, ans], k) => { const j = r.judged && r.judged[k], copied = ok === 1 && !!j && j[1] === 1 && String(j[0]) === String(ans);
       if(L.has(lv) && ok !== -1 && !copied) of(lv).mixed.push({ ts: r.ts, ok: ok === 1, shape, seed, ans }); });
   }
   const run = (xs, ok) => { let k = 0; for(let i = xs.length - 1; i >= 0 && xs[i].ok === ok; i--) k++; return k; };

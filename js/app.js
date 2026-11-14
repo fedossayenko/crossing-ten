@@ -701,7 +701,7 @@ export function finish(){
     // the step before answering (asksOf): wrong picks before the right one, by task; null where it was not asked
     asked: S.asks.some(w => w !== undefined && w !== null) ? S.qs.map((_, k) => S.asks[k] ?? null) : undefined,
     // «Намери грешката» (mistakePick): per task null, or [Мишо's answer, 1 she judged it rightly / 0 wrongly (a miss)]
-    judged: S.mist.some(v => v != null) ? S.qs.map((_, k) => S.mist[k] == null ? null : [S.mist[k], S.judged[k] ?? null]) : undefined,
+    judged: S.mist.some((v, k) => v != null && S.judged[k] != null) ? S.qs.map((_, k) => S.mist[k] == null || S.judged[k] == null ? null : [S.mist[k], S.judged[k]]) : undefined,   // never asked (А/Б/В/Г on mid-round): nothing
     // each task: its level, shape and seed (seeded(seed, () => raw(level)) draws it again), what she wrote
     // when she missed it, 1 right / 0 wrong / -1 left unanswered, and the right answer — so a task whose
     // generator has changed since is told apart, never shown as something it was not; then her seconds on it

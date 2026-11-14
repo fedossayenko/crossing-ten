@@ -25,7 +25,8 @@
   // a task where Мишо was right and she agreed is copied, not solved: it is no right answer of hers on the ladder
   { const lvs = [9, 10, 11, 12], t = lvs.map(lv => e(lv, 1)), r = j => mixed(2, t, { judged: j });
     const has = j => APP.dailyPlan([r(j)], APP.LEVELS, now).items.some(x => x.id === 10);
-    if(!has(undefined) || has([null, [ans(10), 1], null, null]) || !has([null, [ans(10) + 1, 1], null, null]))
+    const miss = j => APP.dailyPlan([mixed(2, lvs.map(lv => e(lv, lv === 10 ? 0 : 1)), { judged: j })], APP.LEVELS, now).items.some(x => x.id === 10 && x.miss);
+    if(!has(undefined) || has([null, [ans(10), 1], null, null]) || !has([null, [ans(10) + 1, 1], null, null]) || !miss([null, [ans(10), 1], null, null]))
       throw new Error('daily: a task copied from Мишо counted as her right answer (or a found mistake did not)'); }
   // under three levels met: nothing to mix yet
   if(APP.dailyPlan([own(2, 2), own(5, 2)], APP.LEVELS, now).items.length) throw new Error('daily: a practice of two levels');
