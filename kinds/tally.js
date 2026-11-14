@@ -34,7 +34,40 @@ function ringPic(q){
   for(let i = 0; i < q.on; i++){ const y = 128 - 9*i; g += '<path d="M121,' + y + ' A32,9 0 0 0 185,' + y + '" fill="none" stroke="var(--grape)" stroke-width="5"/>'; }
   return svgFrame('0 0 300 166', 400, tr('колче с пръстени на него и пръстени на пода', 'кілок із кільцями на ньому та кільця на підлозі')) + g + '</svg>';
 }
+// Салабашев 2022, задача 2: a box of 5 by 5 biscuits, hearts, circles and squares — 8, 10 and 7 of them. The fewest to eat so that as many of each kind
+// are left: the rarest kind (7) is all that can be left of each, so 1 heart and 3 circles go: 1 + 3 + 0 = 4 (shape 'box'; the total less three of the
+// rarest, with no times table: the gaps over the rarest kind are added). Hearts, circles and squares are drawn by their own shape.
+export function genTallyBox(){
+  for(;;){
+    const c = [4 + rnd(9), 4 + rnd(9)], n = [c[0], c[1], 25 - c[0] - c[1]], low = Math.min(...n), ans = 25 - 3*low;
+    if(n[2] < 4 || n[2] > 12 || ans < 2 || n.includes(ans)) continue;
+    const kinds = shuffle([].concat(...n.map((k, i) => Array(k).fill(i))));
+    return {kind:'tally', shape:'box', n, kinds, ans, traps:[25, Math.max(...n)]};
+  }
+}
+const biscuit = (/** @type {number} */ k, /** @type {number} */ x, /** @type {number} */ y) => k === 0
+  ? '<path d="M' + x + ',' + (y + 10) + ' C' + (x - 15) + ',' + (y + 1) + ' ' + (x - 10) + ',' + (y - 11) + ' ' + x + ',' + (y - 4) + ' C' + (x + 10) + ',' + (y - 11) + ' ' + (x + 15) + ',' + (y + 1) + ' ' + x + ',' + (y + 10) + 'Z" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-linejoin="round"/>'
+  : k === 1 ? '<circle cx="' + x + '" cy="' + y + '" r="10" fill="none" stroke="var(--ink)" stroke-width="1.8"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="var(--ink)"/>'
+  : '<rect x="' + (x - 9) + '" y="' + (y - 9) + '" width="18" height="18" fill="none" stroke="var(--ink)" stroke-width="1.8"/>';
+function boxPic(/** @type {any} */ q){
+  const u = 32;
+  return svgFrame('-5 -5 ' + (5*u + 10) + ' ' + (5*u + 10), 220, tr('кутия с бисквити — сърца, кръгчета и квадратчета', 'коробка з печивом — серця, кружечки й квадратики')) +
+    '<rect x="0" y="0" width="' + 5*u + '" height="' + 5*u + '" fill="none" stroke="var(--ink)" stroke-width="2"/>' +
+    q.kinds.map((/** @type {number} */ k, /** @type {number} */ i) => biscuit(k, (i % 5)*u + u/2, Math.floor(i / 5)*u + u/2)).join('') + '</svg>';
+}
+function drawBox(q){
+  return '<div class="ask">' + tr('Коко получил кутия с бисквити — кръгли, квадратни или във формата на сърце. Най-малко колко бисквити трябва да изяде Коко, за да останат по равен брой бисквити и от трите вида?',
+    'Коко отримав коробку з печивом — круглим, квадратним або у формі серця. Яку найменшу кількість печива має з’їсти Коко, щоб залишилося порівну печива всіх трьох видів?') + '</div>' + '<div class="fig">' + boxPic(q) + '</div>' + answerLine('md');
+}
+const boxGaps = (/** @type {any} */ q) => q.n.map((/** @type {number} */ v) => v - Math.min(...q.n)).filter((/** @type {number} */ d) => d > 0);
+function eqBox(q){ return q.n.join(', ') + ' → ' + boxGaps(q).join(' + ') + ' = ' + q.ans; }
+function whyBox(q, full){
+  if(!full) return tr('Преброй бисквитите от всеки вид. Най-много от всеки вид могат да останат толкова, колкото са от най-малкия.', 'Порахуй печиво кожного виду. Залишитися може не більше, ніж є печива найменшого виду.');
+  return tr('Сърца, кръгчета, квадратчета: ' + q.n.join(', ') + '. Най-малко са ' + Math.min(...q.n) + ', толкова ще останат от всеки вид. Изяждат се излишните: ' + boxGaps(q).join(' + ') + ' = <b>' + q.ans + '</b>.',
+    'Серця, кружечки, квадратики: ' + q.n.join(', ') + '. Найменше ' + Math.min(...q.n) + ', стільки й залишиться кожного виду. З’їдається зайве: ' + boxGaps(q).join(' + ') + ' = <b>' + q.ans + '</b>.');
+}
 function drawTally(q){
+  if(q.shape === 'box') return drawBox(q);
   if(q.shape === 'shoes') return '<div class="ask">' + tr('Приятелите на Ани са ѝ дошли на гости и са си събули обувките, които са показани. Колко приятели на Ани са ѝ дошли на гости?',
     'Друзі Ані прийшли до неї в гості й роззулися, взуття показано. Скільки друзів Ані прийшло в гості?') + '</div>' + shoePic(q) + answerLine('md');
   const all = q.on + q.off;
@@ -42,9 +75,11 @@ function drawTally(q){
     UK_COUNT[all] + ' гравців кидають по одному кільцю й намагаються нанизати його на кілок. Результат показано. За кожне успішне нанизування присуджують ' + ukN(q.per, 'очко', 'очки', 'очок') + '. Скільки всього виграно очок?') + '</div>' + ringPic(q) + answerLine('md');
 }
 function eqTally(q){
+  if(q.shape === 'box') return eqBox(q);
   return q.shape === 'shoes' ? 2*q.n + ' → ' + q.n : addUp(q.on, q.per);
 }
 function whyTally(q, full){
+  if(q.shape === 'box') return whyBox(q, full);
   if(q.shape === 'shoes'){
     if(!full) return tr('Всеки приятел е събул по две обувки. Преброй обувките и ги раздели по две.', 'Кожен друг зняв по два черевики. Порахуй взуття й розклади по два.');
     return tr('Обувките са ' + 2*q.n + ': ' + addUp(q.n, 2) + ' — по две на приятел, значи приятелите са ' + q.n + '.', 'Взуття ' + 2*q.n + ': ' + addUp(q.n, 2) + ' — по два на друга, отже друзів ' + q.n + '.');

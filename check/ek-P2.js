@@ -30,6 +30,7 @@
   // 360: count the grid's squares and the coloured ones in the picture; half the grid less the coloured is the answer
   for(let i = 0; i < 2000; i++){
     const q = Q.raw(360); count('halfgrid');
+    if(q.shape === 'sign') continue;   // the + and − squares are read back from the SVG in check/sal-P1.js
     const r = tags(Q.drawQ(q), 'rect'), on = r.filter(s => attr(s, 'fill') === 'var(--accent)').length;
     if(r.length !== q.W*q.H || r.length % 2 || r.length/2 - on !== q.ans || q.ans < 1 || on !== q.k) fail('360: the coloured squares in the picture do not give the answer', q);
     if(q.traps.includes(q.ans)) fail('360: a slip is the answer', q);

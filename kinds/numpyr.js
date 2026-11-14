@@ -8,7 +8,7 @@
 // 55, 22, 22 and 11 are shown; the letters are found row by row, from wherever only one box is missing:
 // A = 99 − 55 = 44, Б = 33, В = 22, then down to the base. (A+Б+В) − (Г+Д+Е+Ж+З+И+К) = 99 − 55 = 44 (here A … M).
 // rows[r][i]: row r from the top. Shown are the paper's five places; every other box has a letter.
-import { KIND, SVG_FONT, answerLine, rnd, tr } from '../js/core.js';
+import { KIND, SLOT, SVG_FONT, answerLine, rnd, shuffle, svgText, tr } from '../js/core.js';
 export const PYR_SHOWN = [[0, 0], [1, 0], [2, 1], [3, 0], [4, 3]];
 // ponytail: Latin letters where the paper has А, Б, … — «И» and «Е» would read as words to check.js's Ukrainian test
 /** @type {[number, number, string][]} */
@@ -58,7 +58,118 @@ function numPyrSvg(q){
   s += cell(3.5*w, 7*h, '') + cell(4.5*w, 7*h, '') + cell(4*w, 8*h, '★', true);
   return '<div class="fig tall"><svg viewBox="-4 -4 ' + (6*w + 8) + ' ' + (9*h + 8) + '" role="img" aria-label="' + tr('две пирамиди от числа', 'дві піраміди з чисел') + '">' + s + '</svg></div>';
 }
+// Салабашев 2020, задача 4: four rows, each box the sum of the two under it; shown 7, 3, 7 along the base and 13, 10 above it — the top is 41
+// (shape 'four'). 2021, задача 11 (no key in the paper, our own solution is 2): five rows, 22 on top, 10, 7 and 1, 2 at the base end — the first
+// base box (shape 'five'). 2023, задача 4: three small pyramids with a symbol each, ⬡ − ♡ + ☁ (shape 'sym'; every number is found by the same rule,
+// from the boxes shown, ♡ = 12, ⬡ = 99, ☁ = 8 and 99 − 12 + 8 = 95). The boxes shown are fixed in a pattern (and its mirror); the numbers are drawn.
+const pk = (/** @type {number} */ r, /** @type {number} */ i) => r + ',' + i;
+/** every box found by the rule from the boxes given: a box over two known ones, or a known box over one known one */
+function pyrSolve(/** @type {number} */ n, /** @type {Record<string, number>} */ given){
+  /** @type {Record<string, number>} */ const val = { ...given };
+  /** @type {Record<string, string[]>} */ const how = {};
+  for(let again = true; again;){
+    again = false;
+    for(let r = 0; r < n - 1; r++) for(let i = 0; i <= r; i++){
+      const p = pk(r, i), a = pk(r + 1, i), b = pk(r + 1, i + 1);
+      if(val[p] === undefined && val[a] !== undefined && val[b] !== undefined){ val[p] = val[a] + val[b]; how[p] = ['sum', a, b]; again = true; }
+      else if(val[b] === undefined && val[p] !== undefined && val[a] !== undefined){ val[b] = val[p] - val[a]; how[b] = ['sub', p, a]; again = true; }
+      else if(val[a] === undefined && val[p] !== undefined && val[b] !== undefined){ val[a] = val[p] - val[b]; how[a] = ['sub', p, b]; again = true; }
+    }
+  }
+  return { val, how };
+}
+/** the sums and differences that lead to one box, in the order they are done */
+function pyrSteps(/** @type {number} */ n, /** @type {number[][]} */ rows, /** @type {number[][]} */ shown, /** @type {number[]} */ target){
+  /** @type {Record<string, number>} */ const given = {};
+  shown.forEach(([r, i]) => { given[pk(r, i)] = rows[r][i]; });
+  const { val, how } = pyrSolve(n, given), out = [], seen = new Set();
+  const need = (/** @type {string} */ k) => {
+    if(seen.has(k) || !how[k]) return;
+    seen.add(k);
+    how[k].slice(1).forEach(need);
+    out.push(val[how[k][1]] + (how[k][0] === 'sum' ? ' + ' : ' − ') + val[how[k][2]] + ' = ' + val[k]);
+  };
+  need(pk(target[0], target[1]));
+  return out;
+}
+/** @type {Record<string, {n: number, shown: number[][], ask: number[]}>} */
+const PLAIN = { four: { n: 4, shown: [[3, 0], [3, 2], [3, 3], [2, 0], [2, 2]], ask: [0, 0] }, five: { n: 5, shown: [[0, 0], [1, 1], [2, 0], [4, 3], [4, 4]], ask: [4, 0] } };
+/** @type {Record<string, {sym: number[], shown: number[][]}>} */
+const SYM_TPL = { A: { sym: [2, 2], shown: [[0, 0], [2, 0], [2, 1]] }, B: { sym: [0, 0], shown: [[2, 0], [2, 2], [1, 1]] }, C: { sym: [2, 1], shown: [[0, 0], [1, 0], [2, 2]] } };
+const flipAt = (/** @type {number[][]} */ l, /** @type {number} */ f) => l.map(([r, i]) => [r, f ? r - i : i]);
+const plainOf = (/** @type {any} */ q) => ({ n: PLAIN[q.shape].n, shown: flipAt(PLAIN[q.shape].shown, q.flip), ask: flipAt([PLAIN[q.shape].ask], q.flip)[0] });
+const symOf = (/** @type {any} */ p) => ({ at: flipAt([SYM_TPL[p.tpl].sym], p.flip)[0], shown: flipAt(SYM_TPL[p.tpl].shown, p.flip) });
+/** @type {Record<string, string>} */
+const SYM_CH = { heart: '♡', hex: '⬡', cloud: '☁︎' };
+const symShape = (/** @type {string} */ k) => k === 'heart' ? '<path d="M0,6 C-10,-1 -7,-8 0,-3 C7,-8 10,-1 0,6Z"/>' : k === 'hex' ? '<polygon points="0,-8 7,-4 7,4 0,8 -7,4 -7,-4"/>'
+  : '<path d="M-7,5 a3.5,3.5 0 0 1 0,-7 a4,4 0 0 1 7,-3 a4.5,4.5 0 0 1 7,3 a3.5,3.5 0 0 1 0,7Z"/>';
+const symAttrs = 'fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round"';
+const symIc = (/** @type {string} */ k) => '<svg class="ic" viewBox="-10 -10 20 20" aria-hidden="true"><g data-sym="' + k + '" ' + symAttrs + '>' + symShape(k) + '</g></svg>';
+function pyrPlain(/** @type {number[][]} */ rows, /** @type {number[][]} */ shown, /** @type {number[]|null} */ ask, /** @type {{at:number[], k:string}|null} */ sym, /** @type {number} */ x0, /** @type {number} */ w, /** @type {number} */ h){
+  let s = '';
+  rows.forEach((row, r) => row.forEach((v, i) => {
+    const x = x0 + (rows.length - 1 - r)*w/2 + i*w, y = r*h, on = (/** @type {number[]|null|undefined} */ a) => !!a && a[0] === r && a[1] === i, special = on(ask) || on(sym && sym.at);
+    s += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + (special ? 'var(--solid)' : 'none') + '" stroke="var(--ink)" stroke-width="1.4"/>';
+    if(shown.some(a => on(a))) s += svgText(x + w/2, y + h/2 + 5.5, v, 15, 'var(--ink)');
+    else if(on(ask)) s += svgText(x + w/2, y + h/2 + 6, '?', 17, 'var(--accent)');
+    else if(sym && on(sym.at)) s += '<g data-sym="' + sym.k + '" transform="translate(' + (x + w/2) + ' ' + (y + h/2) + ')" ' + symAttrs + '>' + symShape(sym.k) + '</g>';
+  }));
+  return s;
+}
+const SYM_OPS = [['−', '+'], ['+', '−']];
+function genPyrSym(){
+  for(;;){
+    const tpls = shuffle(['A', 'B', 'C']), kinds = shuffle(['heart', 'hex', 'cloud']);
+    const pyr = tpls.map(tpl => ({ tpl, flip: rnd(2), rows: pyrRows([2 + rnd(23), 2 + rnd(23), 2 + rnd(23)]) }));
+    const vals = pyr.map(p => { const [r, i] = symOf(p).at; return p.rows[r][i]; });
+    if(vals.some(v => v > 99) || new Set(vals).size < 3) continue;
+    const ord = shuffle([0, 1, 2]), ops = SYM_OPS[rnd(2)], [a, b, c] = ord.map(k => vals[k]);
+    const first = ops[0] === '+' ? a + b : a - b, ans = ops[1] === '+' ? first + c : first - c;
+    if(first < 0 || ans < 1 || ans > 99) continue;
+    return {kind:'numpyr', shape:'sym', pyr, kinds, vals, ord, ops, ans};
+  }
+}
+export function genPyrPlain(){
+  const pick = rnd(3);
+  if(pick === 2) return genPyrSym();
+  const shape = pick ? 'five' : 'four', flip = rnd(2);
+  for(;;){
+    const base = shape === 'four' ? [2 + rnd(8), 1 + rnd(9), 1 + rnd(9), 2 + rnd(8)] : [0, 0, 0, 0, 0].map(() => 1 + rnd(6)), rows = pyrRows(base);
+    if(rows[0][0] > 99) continue;
+    const q = {kind:'numpyr', shape, flip, rows, ans: 0}, [r, i] = plainOf(q).ask;
+    q.ans = rows[r][i];
+    return q;
+  }
+}
+const symTerms = (/** @type {any} */ q, /** @type {(k: string) => string} */ f) => q.ord.map((/** @type {number} */ k, /** @type {number} */ j) => (j ? ' ' + q.ops[j - 1] + ' ' : '') + f(q.kinds[k])).join('');
+function drawPyrPlain(/** @type {any} */ q){
+  if(q.shape === 'sym'){
+    const w = 32, h = 26, gap = 18;
+    const s = q.pyr.map((/** @type {any} */ p, /** @type {number} */ k) => pyrPlain(p.rows, symOf(p).shown, null, { at: symOf(p).at, k: q.kinds[k] }, k*(3*w + gap), w, h)).join('');
+    return '<div class="ask">' + tr('Във всяка пирамида числото е сборът на двете числа под него. Колко е <span class="num">' + symTerms(q, symIc) + '</span>?',
+      'У кожній піраміді число — сума двох чисел під ним. Чому дорівнює <span class="num">' + symTerms(q, symIc) + '</span>?') + '</div>' +
+      '<div class="fig wide"><svg viewBox="-3 -3 ' + (9*w + 2*gap + 6) + ' ' + (3*h + 6) + '" role="img" aria-label="' + tr('три малки пирамиди от числа', 'три маленькі піраміди з чисел') + '">' + s + '</svg></div>' +
+      '<div class="line md">' + symTerms(q, symIc) + ' = ' + SLOT + '</div>';
+  }
+  const w = 38, h = 28, p = plainOf(q), n = p.n;
+  return '<div class="ask">' + (q.shape === 'four' ? tr('Числото във всяка кутийка е сборът на двете кутийки под нея. Кое е числото на върха на пирамидата?', 'Число в кожній клітинці — сума двох клітинок під нею. Яке число на вершині піраміди?')
+    : tr('Числото във всяка кутийка е сборът на двете числа в кутийките под нея. Кое число стои на мястото на въпросителния знак?', 'Число в кожній клітинці — сума двох чисел у клітинках під нею. Яке число стоїть на місці знака питання?')) + '</div>' +
+    '<div class="fig"><svg viewBox="-3 -3 ' + (n*w + 6) + ' ' + (n*h + 6) + '" role="img" aria-label="' + tr('пирамида от числа', 'піраміда з чисел') + '">' + pyrPlain(q.rows, p.shown, p.ask, null, 0, w, h) + '</svg></div>' + answerLine('xl');
+}
+function eqPyrPlain(/** @type {any} */ q){
+  if(q.shape === 'sym') return q.pyr.map((/** @type {any} */ p, /** @type {number} */ k) => SYM_CH[q.kinds[k]] + ' = ' + q.vals[k]).join(', ') + ' → ' + q.ord.map((/** @type {number} */ k, /** @type {number} */ j) => (j ? ' ' + q.ops[j - 1] + ' ' : '') + q.vals[k]).join('') + ' = ' + q.ans;
+  const p = plainOf(q);
+  return pyrSteps(p.n, q.rows, p.shown, p.ask).join(', ');
+}
+function whyPyrPlain(/** @type {any} */ q, /** @type {boolean} */ full){
+  if(!full) return tr('Започни от място, където знаеш две от трите числа: двете долу, или горното и едното долу.', 'Почни з місця, де знаєш два з трьох чисел: два внизу або верхнє й одне нижнє.');
+  if(q.shape === 'sym') return q.pyr.map((/** @type {any} */ p, /** @type {number} */ k) => SYM_CH[q.kinds[k]] + ': ' + pyrSteps(3, p.rows, symOf(p).shown, symOf(p).at).join(', ') + ' → <b>' + q.vals[k] + '</b>').join('<br>') + '<br>' +
+    symTerms(q, k => SYM_CH[k]) + ' = ' + q.ord.map((/** @type {number} */ k, /** @type {number} */ j) => (j ? ' ' + q.ops[j - 1] + ' ' : '') + q.vals[k]).join('') + ' = ' + q.ans;
+  const p = plainOf(q);
+  return pyrSteps(p.n, q.rows, p.shown, p.ask).map((t, j, a) => j === a.length - 1 ? t.replace(/= (\d+)$/, '= <b>$1</b>') : t).join(', ');
+}
 function drawNumPyr(q){
+  if(q.shape === 'four' || q.shape === 'five' || q.shape === 'sym') return drawPyrPlain(q);
   if(q.shape === 'one'){
     const ask = q.asks < 0 ? tr('пресметнете <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>', 'обчисліть <span class="num">(' + pyrLetSum(0, 3) + ') − (' + pyrLetSum(3) + ')</span>')
       : tr('кое число стои на мястото на буквата <b>' + PYR_LET[q.asks][2] + '</b>?', 'яке число стоїть на місці букви <b>' + PYR_LET[q.asks][2] + '</b>?');
@@ -72,10 +183,12 @@ function drawNumPyr(q){
     numPyrSvg(q) + answerLine('xl');
 }
 function eqNumPyr(q){
+  if(q.shape === 'four' || q.shape === 'five' || q.shape === 'sym') return eqPyrPlain(q);
   if(q.shape === 'one') return q.asks < 0 ? q.up + ' − ' + q.low + ' = ' + q.ans : PYR_LET[q.asks][2] + ' = ' + q.ans;
   return tr('долният ред ', 'нижній ряд ') + q.b.join(', ') + ' → ★ ' + q.top + ', ★ ' + q.bot + ' → ' + q.ans;
 }
 function whyNumPyr(q, full){
+  if(q.shape === 'four' || q.shape === 'five' || q.shape === 'sym') return whyPyrPlain(q, full);
   if(q.shape === 'one'){
     if(!full) return tr('Търси две съседни кутии, на които знаеш едната и тази над тях. Горе се изважда, долу се събира.', 'Шукай дві сусідні клітинки, де відома одна з них і та, що над ними. Згори віднімаєш, знизу додаєш.');
     const v = (/** @type {[number, number, string]} */ [r, i]) => q.rows[r][i];
