@@ -73,7 +73,7 @@ export function genMissing(){
 }
 // МБГ Полуфинал 2022, 1 клас, задача 2: 1, 2, …, …, 5, 6 — under the gap 3 + 4 = 7, so ? = 7; then 3, 4, …, …, 7, 8 — ? = 5 + 6 = 11.
 // A run of six from x, the middle two left out and added; the example is the same run two lower.
-// Салабашев 2020, задача 2 (level 488, 2nd grade): 0, 5, 10, ✱, ★, 25, ✹, 35 — a run in fives (or tens) with three symbols for the gaps,
+// Салабашев 2020, задача 2 (level 488, 2nd grade): 0, 5, 10, ✱, ★, 25, ✹, 35 — a run in fives (or twos, threes, fours) with three symbols for the gaps,
 // two of them side by side: ✱ = 15, ★ = 20, ✹ = 30, and ✱ + ★ + ✹ = 65 (shape 'syms'); the sum stays within 100.
 export function genGapSyms(){
   for(;;){

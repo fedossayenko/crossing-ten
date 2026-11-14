@@ -39,7 +39,10 @@ function lettersSvg(q){
   return svgFrame('0 0 ' + wide + ' ' + (rows.length * 30 + 26), Math.round(wide * 1.3), tr('буквите на името', 'літери імені')) + g + '</svg>';
 }
 function whyVowels(q, full){
-  if(!full) return tr('В това име гласните са буквите А, Е, И, О и У, а всички други са съгласни. Преброй всеки вид поотделно, буква по буква.', 'У цьому імені голосні — літери А, Е, И, О і У, а всі інші — приголосні. Порахуй кожен вид окремо, літера за літерою.');
+  if(!full){
+    const v = [...new Set(split(q).vow)], list = v.length > 1 ? v.slice(0, -1).join(', ') + tr(' и ', ' і ') + v[v.length - 1] : v[0];
+    return tr('В това име гласните са ' + list + ', а всички други букви са съгласни. Преброй всеки вид поотделно, буква по буква.', 'У цьому імені голосні — ' + list + ', а всі інші літери — приголосні. Порахуй кожен вид окремо, літера за літерою.');
+  };
   const { vow, con } = split(q), big = q.more ? con.length : vow.length, small = q.more ? vow.length : con.length;
   return tr('гласни: ' + vow.join(', ') + ' — ' + vow.length + '; съгласни: ' + con.join(', ') + ' — ' + con.length, 'голосні: ' + vow.join(', ') + ' — ' + vow.length + '; приголосні: ' + con.join(', ') + ' — ' + con.length) +
     ' &nbsp;→&nbsp; <b>' + big + ' − ' + small + ' = ' + q.ans + '</b>' + lettersSvg(q);

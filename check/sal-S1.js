@@ -173,7 +173,7 @@
     if(none.length !== 1 || opts.filter(o => vals.includes(o)).length !== 3 || opts[q.pick] !== none[0] || q.ans !== none[0] || opts.join() !== opts.slice().sort((x, y) => x - y).join()) fail('441: not exactly one option that is none of a, b, c, d', q);
     if(!q.own || Q.answers(q).join() !== String(none[0])) fail('441: answer', q);
   }
-  // 488 (Салабашев 2020 #2, split off the 1st-grade 225): the run in fives or tens, three symbols, the sum
+  // 488 (Салабашев 2020 #2, split off the 1st-grade 225): the run in fives (or twos, threes, fours), three symbols, the sum
   seen(488, 'syms', 3000, (q, t) => {
     const m = t.match(/^Пресметни✱\+★\+✹\.(.*?)✱\+★\+✹=/); if(!m) fail('488 syms: unexpected text ' + t, q);
     const cells = m[1].split(','), shown = cells.map(Number), at = ['✱', '★', '✹'].map(s => cells.indexOf(s));
