@@ -59,7 +59,8 @@
 
   // 296 again: the three groups told one from another, and the slips never the answer
   for(let i = 1; i <= 3000; i++){
-    const q = Q.seeded(i, () => Q.raw(296)), second = q.a + (q.more1 ? q.d1 : -q.d1), third = (q.ref ? second : q.a) + (q.more2 ? q.d2 : -q.d2);
+    const q = Q.seeded(i, () => Q.raw(296)); if(q.shape === 'kept') continue;   // 'kept' (Салабашев 2025 #5): check/sal-S2.js
+    const second = q.a + (q.more1 ? q.d1 : -q.d1), third = (q.ref ? second : q.a) + (q.more2 ? q.d2 : -q.d2);
     const want = {second, third, chain: third, total: q.a + second + third}[q.shape];
     if(q.ans !== want || q.b !== second || q.c !== third) fail('296: the groups do not add up', q);
     if(second < 5 || third < 5 || q.a + second + third > 100 || q.d1 === q.d2 || (q.shape === 'chain') !== (q.ref === 1 && q.shape !== 'second' && q.shape !== 'total')) fail('296: out of range', q);
@@ -70,6 +71,7 @@
   // 297 again: hand over and count
   for(let i = 1; i <= 3000; i++){
     const q = Q.seeded(i, () => Q.raw(297));
+    if(q.shape === 'gap') continue;   // Салабашев 2023 #10: check/sal-S2.js
     if(q.shape === 'give'){ if(!(q.ans > 0 && q.a - q.ans === q.b + q.ans)) fail('297: after giving they do not have the same', q); }
     else if(!(q.ans > 0 && q.ans + q.k === q.a - q.k)) fail('297: with the gift they do not have the same', q);
     if(q.traps.includes(q.ans) || q.a > 99) fail('297: a slip is the answer, or too many', q);

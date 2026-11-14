@@ -990,7 +990,7 @@ for(let i = 0; i < 4000; i++){
   const q = raw(47);
   if(q.a + q.b + q.c !== q.T) throw new Error('the three amounts do not make the total');
   if(q.a + q.b !== q.ab) throw new Error('the first two do not make their own total');
-  if(q.c - q.b !== q.d) throw new Error('the gap between the second and third is wrong');
+  if(q.c - q.b !== (q.shape === 'more' ? -q.d : q.d)) throw new Error('the gap between the second and third is wrong');   // 'more' (Салабашев 2022 #6): the second has more
   if([q.a, q.b, q.c].some(v => v < 1)) throw new Error('an amount fell to nothing');
   if(q.ans !== [q.a, q.b, q.c][q.asks]) throw new Error('the answer is not the one asked for');
   if(/ в втор/.test(strip(drawQ(q)))) throw new Error('„в втората" — Bulgarian wants „във" there');

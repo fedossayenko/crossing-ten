@@ -1,10 +1,11 @@
-// Question kind 'cuts': level 291 Разрези — Cuts and pieces, and things planted between others: one more, or one fewer.
+// Question kind 'cuts': level 291 Разрези — Cuts and pieces, and things planted between others: one more, or one fewer;
+// level 450 (shape 'twice') — the same done twice over.
 
 // Аз и числата 2026, 2 клас, задача 1: a ribbon cut in 4 places makes 5 pieces — every cut adds one piece to what
 // there was. Asked the other way round: so many pieces, how many cuts. Аз и числата 2024, задача 10: four pines,
 // a rose bush between each two of them: 3 bushes, one fewer than the pines (the paper's picture shows two pines and
 // a bush; the text counts). The slip is the number given, or one too many.
-import { KIND, UK_PLURAL, answerLine, numSpan, popAt, rnd, svgFrame, svgText, tr } from '../js/core.js';
+import { KIND, UK_PLURAL, answerLine, numSpan, popAt, rnd, svgFrame, svgText, tr, ukPl } from '../js/core.js';
 // who: [Bulgarian, feminine, Ukrainian]
 const CUT_WHO = [['Капитан Защо', false, 'Капітан Чому'], ['Пинки', true, 'Пінкі'], ['Мая', true, 'Мая'], ['Иво', false, 'Іво']];
 // what is cut: [Bulgarian, which (by gender), with the article, Ukrainian (accusative), Ukrainian short]
@@ -29,7 +30,31 @@ export function genCuts(){
   const k = 2 + rnd(8);
   return {kind:'cuts', shape:'cut', who, th, k, traps:[k, k + 2], ans: k + 1};
 }
+// Level 450: Салабашев 2019 #8 (20 red cubes, a green one between each two, then a yellow one between each two of all of them: 77) and
+// 2022 #10 (10 snowflakes, a bell between each two, then a tree between each two of all the toys: 37). Two fence-post counts one on the
+// other: n + (n − 1), and then 2n − 2 more between the 2n − 1 of the new row. The slip is the second count made on the first row.
+const TW_BG = [['червени', 'зелени', 'жълти'], ['снежинки', 'камбанки', 'елхички']], TW_UK = [['червоні', 'зелені', 'жовті'], ['сніжинки', 'дзвіночки', 'ялинки']];
+export function genCutsTwice(){
+  const n = 4 + rnd(17), story = rnd(2);
+  return {kind:'cuts', shape:'twice', story, n, traps:[4*n - 2], ans: 4*n - 3};
+}
+function drawTwice(q){
+  const bg = q.story === 0
+    ? 'Лили подредила в редица ' + numSpan(q.n) + ' червени кубчета. Между всеки две съседни кубчета тя поставила по едно зелено кубче. В новата редица между всеки две съседни кубчета поставила по едно жълто кубче. <b>Колко са всички кубчета в редицата?</b>'
+    : 'Милица направила гирлянд с коледни играчки. Първо окачила ' + numSpan(q.n) + ' снежинки. Между всеки две съседни снежинки окачила по една камбанка. Накрая между всеки две съседни играчки окачила по една елхичка. <b>Общо колко играчки е окачила тя на гирлянда?</b>';
+  const uk = q.story === 0
+    ? 'Ліля розклала в ряд ' + ukPl(q.n, 'червоний кубик', 'червоні кубики', 'червоних кубиків') + '. Між кожними двома сусідніми кубиками вона поклала по одному зеленому кубику. У новому ряду між кожними двома сусідніми кубиками поклала по одному жовтому кубику. <b>Скільки всього кубиків у ряду?</b>'
+    : 'Мілиця зробила гірлянду з ялинкових іграшок. Спочатку повісила ' + ukPl(q.n, 'сніжинку', 'сніжинки', 'сніжинок') + '. Між кожними двома сусідніми сніжинками повісила по одному дзвіночку. Наприкінці між кожними двома сусідніми іграшками повісила по одній ялинці. <b>Скільки всього іграшок повісила вона на гірлянду?</b>';
+  return '<div class="ask">' + tr(bg, uk) + '</div>' + answerLine('xl');
+}
+const eqTwice = q => q.n + ' + ' + (q.n - 1) + ' + ' + (2*q.n - 2) + ' = ' + q.ans;
+function whyTwice(q, full){
+  if(!full) return tr('Първо колко са новите между първите. После новата редица — колко са междините в нея?', 'Спершу скільки нових між першими. Потім новий ряд — скільки в ньому проміжків?');
+  const w = tr(TW_BG[q.story], TW_UK[q.story]);
+  return w[1] + ': ' + q.n + ' − 1 = <b>' + (q.n - 1) + '</b> &nbsp;→&nbsp; ' + tr('новата редица: ', 'новий ряд: ') + q.n + ' + ' + (q.n - 1) + ' = ' + (2*q.n - 1) + ' &nbsp;→&nbsp; ' + w[2] + ': ' + (2*q.n - 1) + ' − 1 = <b>' + (2*q.n - 2) + '</b> &nbsp;→&nbsp; ' + tr('общо: ', 'усього: ') + eqTwice(q);
+}
 function drawCuts(q){
+  if(q.shape === 'twice') return drawTwice(q);
   if(q.shape === 'between'){
     const T = CUT_TREES[q.t];
     return '<div class="ask">' + tr('В парк засадили ' + CUT_BG[q.n] + ' ' + T[0] + '. Между тях засаждали по един розов храст. Колко розови храста засадили?',
@@ -45,6 +70,7 @@ function drawCuts(q){
     answerLine('xl');
 }
 function eqCuts(q){
+  if(q.shape === 'twice') return eqTwice(q);
   if(q.shape === 'cut') return q.k + ' + 1 = ' + q.ans;
   return q.n + ' − 1 = ' + q.ans;
 }
@@ -76,6 +102,7 @@ function rowSvg(n, full, q){
   return cutsSvg(100, tr('храстите между дърветата', 'кущі між деревами'), g + svgText(130, 92, eqCuts(q), 15, 'var(--ink)', popAt(2*n + 1)));
 }
 function whyCuts(q, full){
+  if(q.shape === 'twice') return whyTwice(q, full);
   if(q.shape === 'between'){
     if(!full) return tr('Храстите са само в празните места между две дървета. Колко са празните места?', 'Кущі лише в проміжках між двома деревами. Скільки цих проміжків?') + rowSvg(4, false, q);
     return tr('между ' + q.n + ' дървета има <b>' + (q.n - 1) + '</b> празни места — по един храст във всяко',

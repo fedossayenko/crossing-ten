@@ -1,5 +1,5 @@
 // Question kind 'crates': level 47 Три щайги — A total, a part of it, and a gap between the rest.
-import { KIND, SLOT, popAt, rnd, svgText, tr } from '../js/core.js';
+import { KIND, SLOT, answerLine, numSpan, popAt, rnd, svgText, tr, ukPl } from '../js/core.js';
 
 const CRATES = [['щайги','щайга'], ['кутии','кутия'], ['кошници','кошница']];
 const ORD = ['първата', 'втората', 'третата'];
@@ -14,13 +14,35 @@ export function genCrates(){
   for(;;){
     const c = 4 + rnd(12), d = 1 + rnd(5), b = c - d, a = 2 + rnd(14);
     if(b < 1) continue;
-    const asks = rnd(3);
-    return {kind:'crates', box: CRATES[rnd(CRATES.length)], asks,
+    const asks = rnd(3), box = CRATES[rnd(CRATES.length)];
+    if(Math.random() < 0.3) return genCratesMore();
+    return {kind:'crates', box, asks,
             T: a + b + c, ab: a + b, a, b, c, d, ans: [a, b, c][asks]};
   }
 }
 
+// Салабашев 2022 #6 (shape 'more'): Тони, Мони and Сони have 70 trolleys in all, Тони and Мони 46, Мони has 3 more than Сони: how many has Тони? Сони has 70 − 46 = 24, Мони 24 + 3 = 27,
+// Тони 46 − 27 = 19. The gap is the other way round from the old question's («second has fewer than the third»), and the totals are bigger. Drawn after the old question.
+function genCratesMore(){
+  for(;;){
+    const c = 8 + rnd(20), d = 2 + rnd(5), b = c + d, a = 2 + rnd(20), asks = rnd(3), ans = [a, b, c][asks];
+    if(a + b + c > 90) continue;
+    return {kind:'crates', shape:'more', asks, T: a + b + c, ab: a + b, a, b, c, d, ans};
+  }
+}
+function drawMore(q){
+  const wn = ['Тони', 'Мони', 'Сони'], uw = ['Тоні', 'Моні', 'Соні'];
+  return '<div class="ask">' + tr('Тони, Мони и Сони имат общо ' + numSpan(q.T) + ' колички. Тони и Мони имат общо ' + numSpan(q.ab) + ' колички. Мони има с ' + numSpan(q.d) + ' колички <b>повече</b> от Сони. <b>Колко колички има ' + wn[q.asks] + '?</b>',
+    'Тоні, Моні та Соні мають разом ' + ukPl(q.T, 'візочок', 'візочки', 'візочків') + '. Тоні й Моні мають разом ' + ukPl(q.ab, 'візочок', 'візочки', 'візочків') + '. У Моні на ' + ukPl(q.d, 'візочок', 'візочки', 'візочків') + ' <b>більше</b>, ніж у Соні. <b>Скільки візочків у ' + uw[q.asks] + '?</b>') + '</div>' + answerLine('xl');
+}
+const eqMore = q => [q.T + ' − ' + q.ab + ' = ' + q.c, q.c + ' + ' + q.d + ' = ' + q.b, q.ab + ' − ' + q.b + ' = ' + q.a].slice(0, q.asks === 2 ? 1 : q.asks === 1 ? 2 : 3).join(', ');
+function whyMore(q, full){
+  if(!full) return tr('Сони се намира от двете, които вече знаеш заедно. После Мони е с повече от Сони.', 'Соні знайдеш через перших двох, яких разом ти вже знаєш. Потім у Моні більше, ніж у Соні.');
+  const steps = [tr('Сони', 'Соні') + ': ' + q.T + ' − ' + q.ab + ' = <b>' + q.c + '</b>', tr('Мони', 'Моні') + ': ' + q.c + ' + ' + q.d + ' = <b>' + q.b + '</b>', tr('Тони', 'Тоні') + ': ' + q.ab + ' − ' + q.b + ' = <b>' + q.a + '</b>'];
+  return steps.slice(0, q.asks === 2 ? 1 : q.asks === 1 ? 2 : 3).join(' &nbsp;→&nbsp; ');
+}
 function drawCrates(q){
+  if(q.shape === 'more') return drawMore(q);
   const u = cratesUk[q.box[0]];
   return '<div class="ask">' + tr('В три <span class="num">' + q.box[0] + '</span> има <span class="num">' + q.T +
     '</span> кг плодове. В първите две има общо <span class="num">' + q.ab +
@@ -34,6 +56,7 @@ function drawCrates(q){
     '<div class="line lg">' + SLOT + ' <span class="unit">кг</span></div>';
 }
 function eqCrates(q){
+  if(q.shape === 'more') return eqMore(q);
   return tr(q.T + ' кг, първите две ' + q.ab + ', втората с ' + q.d +
     ' по-малко → ' + ORD[q.asks] + ' ',
     q.T + ' кг, перші ' + (cratesUk[q.box[0]][2] ? 'дві ' : 'два ') + q.ab + ', ' + cratesOrd(q, 1) + ' на ' + q.d +
@@ -63,6 +86,7 @@ function cratesSvg(q, full){
   }
 }
 function whyCrates(q, full){
+  if(q.shape === 'more') return whyMore(q, full);
   if(!full) return tr('Третата се намира от двете, които вече знаеш заедно.',
     cratesUk[q.box[0]][2] ? 'Третю коробку знайдеш через перші дві — їх разом ти вже знаєш.'
                           : 'Третій ' + (q.box[0] === 'щайги' ? 'ящик' : 'кошик') + ' знайдеш через перші два — їх разом ти вже знаєш.') + cratesSvg(q, false);

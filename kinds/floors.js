@@ -1,9 +1,9 @@
-// Question kind 'floors': level 263 Етажите — A block of floors: so many times more above my floor than below it.
+// Question kind 'floors': level 263 Етажите — A block of floors: so many times more above my floor than below it; level 455 — as many above as below, told by a chain of floors.
 
 // МБГ Есен 2024, 3 клас, задача 16: a block of 9 floors, 3 times as many floors above ours as below it. Our own floor
 // is neither above nor below, so the other 8 are one part below and 3 parts above, 4 parts: 8 : 4 = 2 floors below
 // us, and we live on the 3rd. Sometimes it is below that has so many times more.
-import { KIND, answerLine, popAt, rnd, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgWith, numSpan, popAt, rnd, svgText, tr, ukN, ukPl } from '../js/core.js';
 export function genFloors(){
   for(;;){
     const k = 2 + rnd(4), x = 1 + rnd(6), N = x*(k + 1) + 1, below = Math.random() < 0.3;
@@ -13,8 +13,30 @@ export function genFloors(){
     return {kind:'floors', k, x, N, below, traps: [ans - 1, N - ans].filter(v => v !== ans), ans};
   }
 }
+// Level 455: Салабашев 2019 #11 (shape 'chain'): Мишо lives in a tall block with as many floors above his as below it. Иво lives 7 floors higher than Мишо, Тони 15 floors
+// lower than Иво, and Тони on the 8th: how many floors has the block? Иво is 8 + 15 = 23rd, Мишо 23 − 7 = 16th, with 15 floors above and 15 below: 15 + 15 + 1 = 31.
+// The slips: the floor itself (16), or its double (32), without his own floor.
+const FL_ORD = {2:'втория', 3:'третия', 4:'четвъртия', 5:'петия', 6:'шестия', 7:'седмия', 8:'осмия', 9:'деветия'};
+const FL_ORD_UK = {2:'другому', 3:'третьому', 4:'четвертому', 5:'п’ятому', 6:'шостому', 7:'сьомому', 8:'восьмому', 9:'дев’ятому'};
+export function genFloorsChain(){
+  for(;;){
+    const m = 6 + rnd(17), x = 2 + rnd(8), T = 2 + rnd(8), y = m + x - T;
+    if(y < 3 || m - 1 < 3) continue;
+    return {kind:'floors', shape:'chain', m, x, T, y, I: m + x, traps:[m], ans: 2*m - 1};
+  }
+}
+function drawChain(q){
+  return '<div class="ask">' + tr('Мишо живее във висок блок. Над неговия етаж има толкова етажи, колкото и под него. Иво живее ' + bgWith(q.x) + ' ' + numSpan(q.x) + ' етажа по-нагоре от Мишо, а Тони е ' + numSpan(q.y) + ' етажа по-надолу от Иво. Тони живее на ' + FL_ORD[q.T] + ' етаж. <b>Колко етажа има в блока на Мишо?</b>',
+    'Мішо живе у високому будинку. Над його поверхом стільки ж поверхів, скільки й під ним. Іво живе на ' + ukPl(q.x, 'поверх', 'поверхи', 'поверхів') + ' вище за Мішо, а Тоні — на ' + ukPl(q.y, 'поверх', 'поверхи', 'поверхів') + ' нижче за Іво. Тоні живе на ' + FL_ORD_UK[q.T] + ' поверсі. <b>Скільки поверхів у будинку Мішо?</b>') + '</div>' + answerLine('xl');
+}
+const eqChain = q => q.T + ' + ' + q.y + ' = ' + q.I + ', ' + q.I + ' − ' + q.x + ' = ' + q.m + ', ' + (q.m - 1) + ' + ' + (q.m - 1) + ' + 1 = ' + q.ans;
+function whyChain(q, full){
+  if(!full) return tr('Първо на кой етаж живее Мишо — тръгни от Тони. После колко етажа има над него и колко под него, и не забравяй самия му етаж.', 'Спершу на якому поверсі живе Мішо — почни з Тоні. Потім скільки поверхів над ним і скільки під ним, і не забудь сам його поверх.');
+  return tr('Иво: ', 'Іво: ') + q.T + ' + ' + q.y + ' = <b>' + q.I + '</b> &nbsp;→&nbsp; ' + tr('Мишо: ', 'Мішо: ') + q.I + ' − ' + q.x + ' = <b>' + q.m + '</b> &nbsp;→&nbsp; ' + tr('над него и под него по ', 'над ним і під ним по ') + (q.m - 1) + tr(' и неговият етаж: ', ' і його поверх: ') + (q.m - 1) + ' + ' + (q.m - 1) + ' + 1 = ' + q.ans;
+}
 const floorsUk = n => ukN(n, 'поверх', 'поверхи', 'поверхів'), floorsParts = n => ukN(n, 'частина', 'частини', 'частин');
 function drawFloors(q){
+  if(q.shape === 'chain') return drawChain(q);
   const [up, down] = q.below ? [tr('Под', 'Під'), tr('над', 'над')] : [tr('Над', 'Над'), tr('под', 'під')];
   return '<div class="ask">' + tr('Аз живея в блок на <span class="num">' + q.N + '</span> етажа. ' + up + ' нашия етаж има <span class="num">' + q.k +
       '</span> пъти повече етажи, отколкото ' + down + ' нашия етаж. <b>На кой етаж живея аз?</b>',
@@ -23,6 +45,7 @@ function drawFloors(q){
     answerLine('xl');
 }
 function eqFloors(q){
+  if(q.shape === 'chain') return eqChain(q);
   return q.N + ' − 1 = ' + (q.N - 1) + ', ' + (q.N - 1) + ' : ' + (q.k + 1) + ' = ' + q.x + ', ' + (q.below ? q.x + ' · ' + q.k + ' = ' + q.k*q.x + ', ' + q.k*q.x : q.x) + ' + 1 = ' + q.ans;
 }
 // the block: the floors under ours, ours, and the ones above it, the k-part side a darker colour; no numbers on it,
@@ -45,6 +68,7 @@ function floorsSvg(q){
     tr('етажите на блока', 'поверхи будинку') + '">' + g + '</svg>';
 }
 function whyFloors(q, full){
+  if(q.shape === 'chain') return whyChain(q, full);
   if(!full) return tr('Нашият етаж не се брои нито в етажите над нас, нито в тези под нас. Другите етажи са една част от едната страна и няколко такива части от другата.',
                       'Наш поверх не рахується ні серед поверхів над нами, ні серед тих, що під нами. Інші поверхи — це одна частина з одного боку і кілька таких частин з іншого.');
   const parts = tr('без нашия етаж: ', 'без нашого поверху: ') + q.N + ' − 1 = ' + (q.N - 1) + tr(' етажа — ', ' ' + floorsUk(q.N - 1).replace(/^\d+ /, '') + ' — ') + '1 + ' + q.k + ' = ' + tr((q.k + 1) + ' части', floorsParts(q.k + 1)) +

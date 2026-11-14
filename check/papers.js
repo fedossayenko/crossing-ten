@@ -727,7 +727,7 @@
         if([top, bot, top - bot][n.asks] !== n.ans) throw new Error('numpyr: ' + JSON.stringify(n));
       }
       if(found !== 1) throw new Error('numpyr: the shown boxes allow ' + found + ' bases ' + JSON.stringify(n));
-      const g = Q2.raw(125); let ages = 0;   // every brother's age tried against the three facts
+      let g = Q2.raw(125); while(g.shape) g = Q2.raw(125); let ages = 0;   // the family chain (Салабашев's short chains are checked in check/sal-S2.js)   // every brother's age tried against the three facts
       for(let B = 0; B < 60; B++){ const A = B + g.b, M = A + g.g; if((g.older ? g.F - M : M - g.F) === g.m && (g.asksAni ? A : B) === g.ans) ages++; }
       if(ages !== 1) throw new Error('ages: ' + JSON.stringify(g));
       const G = Q2.raw(126), len = G.who.flat().reduce((t, k, j) => t + k*G.len[j % 3], 0), green = G.who.reduce((t, w) => t + w[0], 0)*G.len[0], red = G.who.reduce((t, w) => t + w[2], 0)*G.len[2];

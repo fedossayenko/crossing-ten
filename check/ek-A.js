@@ -48,6 +48,7 @@
   // 310 / 311 again: lay the children out and count
   for(let i = 1; i <= 3000; i++){
     const q = Q.seeded(i, () => Q.raw(310 + (i % 2))), t = text(q);
+    if(q.shape === 'cars') continue;   // Салабашев 2024 #12: check/sal-S2.js
     if(q.shape === 'between'){
       const m = t.match(/опашка от (\d+) деца\. (\S+) е (\S+) по ред от началото на опашката, а (\S+) е (\S+) от края\. Колко деца има на опашката между (\S+) и (\S+)\?/);
       if(!m) fail('310: cannot read', t);

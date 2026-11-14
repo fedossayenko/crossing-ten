@@ -1,11 +1,11 @@
-// Question kind 'inrow': levels 310 В редицата and 311 От един до друг — Who stands where in a row, counted from both ends.
+// Question kind 'inrow': levels 310 В редицата and 311 От един до друг — Who stands where in a row, counted from both ends; level 454 — the same, told roundabout.
 
 // Кенгуру 2019, задача 5 (shape 'between'): a queue of 12, Лъчо the 7th from the front and Кирчо the 2nd from the end — how many
 // between them? 7 are counted up to Лъчо and 2 from Кирчо to the end, so 12 − 7 − 2 = 3.
 // Кенгуру 2023, задача 21 (shape 'last'): Ема is 3rd, 3 dancers between her and the last — 3 + 3 + 1 = 7 (the last one counts too).
 // Кенгуру 2025, задача 14 (shape 'span'): 12 in a row, Георги 5th from the left, Виктор 4th from the right; counting from Георги
 // (he is 1st), which place is Виктор? Виктор is 12 − 4 + 1 = 9th from the left, so 9 − 5 + 1 = 5.
-import { KIND, SLOT, ordBg, ordUk, popAt, rnd, svgText, tr, ukPl } from '../js/core.js';
+import { KIND, SLOT, bgWith, ordBg, ordUk, popAt, rnd, svgText, tr, ukPl } from '../js/core.js';
 const M_BG = ['', 'първи', 'втори', 'трети', 'четвърти', 'пети', 'шести', 'седми', 'осми', 'девети', 'десети'];
 const M_UK = ['', 'перший', 'другий', 'третій', 'четвертий', 'п’ятий', 'шостий', 'сьомий', 'восьмий', 'дев’ятий', 'десятий'];
 const N_BG = ['', 'първо', 'второ', 'трето', 'четвърто', 'пето', 'шесто', 'седмо', 'осмо', 'девето', 'десето'];
@@ -26,7 +26,31 @@ export function genInRow(){
       return {kind:'inrow', shape:'between', story, who, n, a, b, traps:[ans + 1, ans - 1, a + b], ans};
     }
     const story = rnd(2), who = rnd(5), k = 2 + rnd(8), m = 2 + rnd(7), ans = k + m + 1;
+    if(Math.random() < 0.3) return genCars();
     return {kind:'inrow', shape:'last', story, who, k, m, traps:[k + m, k + m + 2, m], ans};
+  }
+}
+// Салабашев 2024 #12 (shape 'cars'): Ваньо rides in one car of a train; the cars before his are 17, 9 fewer than the cars after his: how many in all? The cars
+// after are 17 + 9 = 26, and his own makes 17 + 26 + 1 = 44. The slip is leaving his car out. Drawn after the old question.
+const IR_VAN = [['Ваньо', 'Ванько'], ['Мишо', 'Мішо'], ['Данчо', 'Данчо']];
+function genCars(){
+  const who = rnd(IR_VAN.length), a = 8 + rnd(18), k = 2 + rnd(8);
+  return {kind:'inrow', shape:'cars', who, a, k, traps:[2*a + k], ans: 2*a + k + 1};
+}
+// Level 454, two shapes of places counted from both ends, both told roundabout. Салабашев 2024 #11 (shape 'cross'): 22 decorations in a row, the bell the 15th
+// from the left, the star the 15th from the right — how many are right of the star but left of the bell? The star is 22 − 15 + 1 = 8th from the left, so
+// 9 … 14, 15 − 8 − 1 = 6 (the two counts overlap, so k + m > n + 1). 2025 #12 (shape 'ahead'): 35 racers, Виктор was passed by 17 (Пепи among them), 25
+// came in after Пепи: how many between Пепи and Виктор? Пепи is 35 − 25 = 10th, so 17 − 10 = 7.
+export function genInRowPlaces(){
+  for(;;){
+    if(Math.random() < 0.5){
+      const n = 15 + rnd(16), k = 8 + rnd(n - 7), m = 8 + rnd(n - 7), ans = k + m - n - 2;
+      if(k > n || m > n || ans < 2 || ans > 9) continue;
+      return {kind:'inrow', shape:'cross', n, k, m, traps:[ans + 1], ans};
+    }
+    const n = 25 + rnd(26), b = 12 + rnd(n - 17), pp = n - b, ans = 2 + rnd(8), a = pp + ans;
+    if(pp < 5 || a + 1 >= n) continue;
+    return {kind:'inrow', shape:'ahead', n, a, b, pp, traps:[ans + 1], ans};
   }
 }
 export function genInRowSpan(){
@@ -37,7 +61,36 @@ export function genInRowSpan(){
   }
 }
 const num = n => '<span class="num">' + n + '</span>';
+function askPlaces(q){
+  if(q.shape === 'cars'){
+    const w = IR_VAN[q.who];
+    return tr(w[0] + ' се вози в един от вагоните на влак. Вагоните пред неговия са ' + num(q.a) + ' и са ' + bgWith(q.k) + ' ' + num(q.k) + ' по-малко от вагоните след неговия. <b>Колко общо са вагоните на този влак?</b>',
+      w[1] + ' їде в одному з вагонів потяга. Вагонів перед його вагоном — ' + num(q.a) + ', і це на ' + num(q.k) + ' менше, ніж вагонів після його вагона. <b>Скільки всього вагонів у цьому потязі?</b>');
+  }
+  if(q.shape === 'cross') return tr('Еми подредила любимите си ' + num(q.n) + ' различни коледни украшения за елха в редица. Златистата камбанка е на ' + ordBg(q.k, 'n') + ' място отляво надясно в тази редица. Сребърната звезда е на ' + ordBg(q.m, 'n') +
+      ' място отдясно наляво в редицата. <b>Колко от украшенията в редицата са вдясно от сребърната звезда, но вляво от златистата камбанка?</b>',
+    'Емі розставила свої улюблені ' + ukPl(q.n, 'різну ялинкову прикрасу', 'різні ялинкові прикраси', 'різних ялинкових прикрас') + ' у ряд. Золотистий дзвіночок — на ' + ordUk(q.k, 'n') + ' місці зліва направо в цьому ряду. Срібна зірка — на ' + ordUk(q.m, 'n') +
+      ' місці справа наліво в ряду. <b>Скільки прикрас у ряду праворуч від срібної зірки, але ліворуч від золотистого дзвіночка?</b>');
+  return tr('Пепи и Виктор били сред ' + num(q.n) + ' участници в състезание. В крайното класиране Виктор бил изпреварен от ' + num(q.a) + ' души, сред които бил Пепи. При това ' + num(q.b) + ' от участниците се класирали след Пепи. <b>Колко състезатели са се класирали след Пепи, но пред Виктор?</b>',
+    'У змаганні було ' + ukPl(q.n, 'учасник', 'учасники', 'учасників') + ': Пепі й Віктор. У підсумковому рейтингу перед Віктором фінішували ' + ukPl(q.a, 'учасник', 'учасники', 'учасників') + ', серед яких був Пепі. При цьому ' + ukPl(q.b, 'учасник', 'учасники', 'учасників') +
+      ' фінішували після Пепі. <b>Скільки учасників фінішували після Пепі, але перед Віктором?</b>');
+}
+const eqPlaces = q => q.shape === 'cars' ? q.a + ' + ' + (q.a + q.k) + ' + 1 = ' + q.ans : q.shape === 'cross' ? q.n + ' − ' + q.m + ' + 1 = ' + (q.n - q.m + 1) + ', ' + q.k + ' − ' + (q.n - q.m + 1) + ' − 1 = ' + q.ans
+  : q.n + ' − ' + q.b + ' = ' + q.pp + ', ' + q.a + ' − ' + q.pp + ' = ' + q.ans;
+function whyPlaces(q, full){
+  if(q.shape === 'cars'){
+    if(!full) return tr('Първо колко са вагоните след неговия. Не забравяй и самия негов вагон.', 'Спершу скільки вагонів після його вагона. Не забудь і сам його вагон.');
+    return tr('след неговия: ', 'після його вагона: ') + q.a + ' + ' + q.k + ' = <b>' + (q.a + q.k) + '</b> &nbsp;→&nbsp; ' + tr('общо: ', 'усього: ') + q.a + ' + ' + (q.a + q.k) + ' + 1 = ' + q.ans;
+  }
+  if(q.shape === 'cross'){
+    if(!full) return tr('На кое място отляво е звездата? После брой местата между нея и камбанката — без самите тях.', 'На якому місці зліва зірка? Потім порахуй місця між нею й дзвіночком — без них самих.');
+    return tr('звездата отляво: ', 'зірка зліва: ') + eqPlaces(q).split(', ')[0].replace(/(\d+)$/, '<b>$1</b>') + ' &nbsp;→&nbsp; ' + tr('между нея и камбанката: ', 'між нею і дзвіночком: ') + eqPlaces(q).split(', ')[1];
+  }
+  if(!full) return tr('На кое място е Пепи? От тези пред Виктор махни тези до Пепи, включително него.', 'На якому місці Пепі? Від тих, що перед Віктором, відніми тих, що до Пепі включно.');
+  return tr('Пепи е на място: ', 'Пепі на місці: ') + eqPlaces(q).split(', ')[0].replace(/(\d+)$/, '<b>$1</b>') + ' &nbsp;→&nbsp; ' + tr('между Пепи и Виктор: ', 'між Пепі й Віктором: ') + eqPlaces(q).split(', ')[1];
+}
 function ask(q){
+  if(q.shape === 'cars' || q.shape === 'cross' || q.shape === 'ahead') return askPlaces(q);
   if(q.shape === 'between'){
     const [A, B] = [IR_BOYS[2*q.who], IR_BOYS[2*q.who + 1]];
     return q.story === 0
@@ -62,6 +115,7 @@ function drawInRow(q){
   return '<div class="ask">' + ask(q) + '</div><div class="line xl">' + SLOT + '</div>';
 }
 function eqInRow(q){
+  if(q.shape === 'cars' || q.shape === 'cross' || q.shape === 'ahead') return eqPlaces(q);
   return q.shape === 'between' ? q.n + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans : q.shape === 'last' ? q.k + ' + ' + q.m + ' + 1 = ' + q.ans : q.n + ' − ' + q.b + ' + 1 − ' + q.a + ' + 1 = ' + q.ans;
 }
 // the row of squares: the two named ones in the middle colour, the ones between them tinted and counted above
@@ -77,6 +131,7 @@ function rowSvg(n, hot, from, to, cnt){
   return '<svg viewBox="0 0 300 86" style="display:block; width:300px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('редицата', 'ряд') + '">' + g + '</svg>';
 }
 function whyInRow(q, full){
+  if(q.shape === 'cars' || q.shape === 'cross' || q.shape === 'ahead') return whyPlaces(q, full);
   if(q.shape === 'between'){
     if(!full) return tr('Колко деца са до първото, включително него, и колко от второто до края, включително него? Махни ги от всички.', 'Скільки дітей до першої дитини включно і скільки від другої до кінця включно? Відніми їх від усіх.');
     return rowSvg(q.n, [q.a, q.n - q.b + 1], q.a, q.n - q.b + 1, q.ans) + tr('до първия включително: ' + q.a + ', от втория до края включително: ' + q.b + ' — те двамата не са между тях', 'до першого включно: ' + q.a + ', від другого до кінця включно: ' + q.b + ' — вони двоє не між ними') + ' &nbsp;→&nbsp; ' + eqInRow(q);

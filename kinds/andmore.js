@@ -1,16 +1,65 @@
 // Question kind 'andmore': level 119 И с толкова повече — One group, another with so many more: how many in all;
 // level 265 Рибарите (shape 'fish') — the last one as much as all the others together;
 // level 296 Три групи (q.three) — a second group told from the first, a third from the first or the second.
+// Level 119 also takes shape 'rest' (a total shared out, what is left), level 296 shape 'kept' (a total, three parts told, the rest).
 
 // МБГ Зима 2020, задача 5: 12 girls and 7 more boys. The trap is 12 + 7: the boys are 12 + 7 = 19,
 // and the children 12 + 19 = 31.
 // МБГ Есен 2023, 3 клас, задача 9: four fishermen with four boats; three caught 8 kg each and the fourth as much as the
 // three together. The fourth's catch is the three's again: 3 · 8 = 24, 24 + 24 = 48. The boats are only there to count.
-import { KIND, SLOT, answerLine, bgWith, numSpan, rnd, tr, ukN } from '../js/core.js';
+import { KIND, SLOT, answerLine, bgWith, numSpan, rnd, tr, ukN, ukPl } from '../js/core.js';
 export function genAndMore(){
   const a = 5 + rnd(20), d = 2 + rnd(10), fewer = Math.random() < 0.3;
   if(fewer && d >= a) return genAndMore();
+  if(Math.random() < 0.4) return genRest();
   return {kind:'andmore', a, d, fewer, b: fewer ? a - d : a + d, ans: fewer ? 2*a - d : 2*a + d};
+}
+// Салабашев 2019 #3 (50 apples, Грух 17, Прас 7 more: Квик?), 2020 #6 (40 sweets, 16, 6 more: left?), 2022 #3 (80 nuts, 25, 3 more:
+// left for the squirrel): a total shared out, the first takes a, the second d more than the first; what is left (shape 'rest').
+// Drawn after the old question, so a seed that asked the old one still does, unless this draw turns it into the new shape.
+function genRest(){
+  for(;;){
+    const story = rnd(3), a = 8 + rnd(23), d = 2 + rnd(9), b = a + d, T = 30 + rnd(60), left = T - a - b;
+    if(left < 2 || left > 40 || left === a || left === b) continue;
+    return {kind:'andmore', shape:'rest', story, a, d, b, T, traps:[T - a], ans: left};
+  }
+}
+// Салабашев 2025 #5: 44 biscuits, 13 to the son, 2 more to the nephew, the last 9 to the husband: how many kept? (shape 'kept' of level 296)
+function genKept(){
+  for(;;){
+    const T = 30 + rnd(60), a = 8 + rnd(13), k = 2 + rnd(5), m = 4 + rnd(12), b = a + k, kept = T - a - b - m;
+    if(kept < 3 || kept > 25 || kept === m) continue;
+    return {kind:'andmore', shape:'kept', T, a, k, b, m, traps:[T - a - b], ans: kept};
+  }
+}
+const REST_NAMES = ['Грух', 'Прас', 'Квик'], REST_NAMES_UK = ['Грух', 'Прас', 'Квік'];
+function drawRest(q){
+  const n = REST_NAMES, u = REST_NAMES_UK;
+  const bg = [
+    'Прасенцата ' + n[0] + ', ' + n[1] + ' и ' + n[2] + ' изяли общо ' + numSpan(q.T) + ' ябълки. ' + n[0] + ' изял ' + numSpan(q.a) + ' ябълки, а ' + n[1] + ' изял ' + bgWith(q.d) + ' ' + numSpan(q.d) + ' ябълки повече от ' + n[0] + '. <b>Колко ябълки изял ' + n[2] + '?</b>',
+    'Мили и Лори получили кутия с ' + numSpan(q.T) + ' бонбона. Лори взела ' + numSpan(q.a) + ' бонбона, а Мили взела ' + bgWith(q.d) + ' ' + numSpan(q.d) + ' бонбона повече. <b>Колко бонбона останали в кутията?</b>',
+    'Катеричката събрала ' + numSpan(q.T) + ' ореха. Кученцето поискало ' + numSpan(q.a) + ' ореха, а котето — ' + bgWith(q.d) + ' ' + numSpan(q.d) + ' ореха повече от кученцето. <b>Колко ореха ще останат за катеричката?</b>'][q.story];
+  const uk = [
+    'Поросята ' + u[0] + ', ' + u[1] + ' і ' + u[2] + ' з’їли разом ' + ukPl(q.T, 'яблуко', 'яблука', 'яблук') + '. ' + u[0] + ' з’їв ' + ukPl(q.a, 'яблуко', 'яблука', 'яблук') + ', а ' + u[1] + ' — на ' + ukPl(q.d, 'яблуко', 'яблука', 'яблук') + ' більше, ніж ' + u[0] + '. <b>Скільки яблук з’їв ' + u[2] + '?</b>',
+    'Мілі й Лорі подарували коробку. У коробці було ' + ukPl(q.T, 'цукерка', 'цукерки', 'цукерок') + '. Лорі взяла ' + ukPl(q.a, 'цукерку', 'цукерки', 'цукерок') + ', а Мілі — на ' + ukPl(q.d, 'цукерку', 'цукерки', 'цукерок') + ' більше. <b>Скільки цукерок залишилося в коробці?</b>',
+    'Білочка зібрала ' + ukPl(q.T, 'горіх', 'горіхи', 'горіхів') + '. Цуценя попросило ' + ukPl(q.a, 'горіх', 'горіхи', 'горіхів') + ', а кошеня — на ' + ukPl(q.d, 'горіх', 'горіхи', 'горіхів') + ' більше, ніж цуценя. <b>Скільки горіхів залишиться білочці?</b>'][q.story];
+  return '<div class="ask">' + tr(bg, uk) + '</div>' + answerLine('xl');
+}
+const restEq = q => q.a + ' + ' + q.d + ' = ' + q.b + ', ' + q.T + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans;
+function whyRest(q, full){
+  if(!full) return tr('Първо колко е взел вторият. После извади и двамата от всичко.', 'Спершу скільки взяв другий. Потім відніми обох від усього.');
+  return tr('вторият: ', 'другий: ') + q.a + ' + ' + q.d + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + tr('останали: ', 'залишилось: ') + q.T + ' − ' + q.a + ' − ' + q.b + ' = ' + q.ans;
+}
+function drawKept(q){
+  return '<div class="ask">' + tr('Мама Мия отворила пакет с ' + numSpan(q.T) + ' бисквити и запазила няколко от тях за себе си. Дала ' + numSpan(q.a) + ' от останалите бисквити на сина си Марти и ' + bgWith(q.k) + ' ' + numSpan(q.k) +
+      ' повече на братовчед му Мони. Последните ' + numSpan(q.m) + ' бисквити дала на татко Миро. <b>Колко бисквити е запазила за себе си мама Мия?</b>',
+    'Мама Мія відкрила пакет. У ньому було ' + ukPl(q.T, 'печиво', 'печива', 'печив') + '. Кілька вона залишила собі. Із решти дала ' + numSpan(q.a) + ' синові Марті і на ' + numSpan(q.k) + ' більше двоюрідному братові Моні. Останні ' +
+      ukPl(q.m, 'печиво', 'печива', 'печив') + ' дала татові Мірові. <b>Скільки печив залишила собі мама Мія?</b>') + '</div>' + answerLine('xl');
+}
+const keptEq = q => q.a + ' + ' + q.k + ' = ' + q.b + ', ' + q.T + ' − ' + q.a + ' − ' + q.b + ' − ' + q.m + ' = ' + q.ans;
+function whyKept(q, full){
+  if(!full) return tr('Първо колко е получил Мони. После извади от всичките бисквити всичко, което е дала.', 'Спершу скільки отримав Моні. Потім відніми від усього печива все, що вона віддала.');
+  return tr('Мони: ', 'Моні: ') + q.a + ' + ' + q.k + ' = <b>' + q.b + '</b> &nbsp;→&nbsp; ' + tr('запазила: ', 'залишила: ') + q.T + ' − ' + q.a + ' − ' + q.b + ' − ' + q.m + ' = ' + q.ans;
 }
 // n fishermen, the first n − 1 with m kg each, the last with all of theirs together
 export function genFishers(){
@@ -39,6 +88,7 @@ export function genThreeGroups(){
     const story = rnd(2), a = 12 + rnd(29), d1 = 3 + rnd(18), more1 = Math.random() < 0.7, d2 = 3 + rnd(18), more2 = Math.random() < 0.4, ref = rnd(2), w = rnd(20);
     const b = more1 ? a + d1 : a - d1, base = ref ? b : a, c = more2 ? base + d2 : base - d2;
     if(b < 5 || c < 5 || a + b + c > 100 || d1 === d2) continue;
+    if(Math.random() < 0.2) return genKept();
     const ask = w < 5 ? 'second' : w < 12 ? 'third' : 'total', shape = ask === 'third' && ref ? 'chain' : ask;
     // the slips: the second the other way; the third told from the wrong group; the total as the numbers given added up
     const other = ref ? a : b, wrong3 = more2 ? other + d2 : other - d2;
@@ -91,6 +141,8 @@ function whyThree(q, full){
   return second + ' &nbsp;→&nbsp; ' + third.replace(/(\d+)$/, '<b>$1</b>') + ' &nbsp;→&nbsp; ' + tr('общо: ', 'усього: ') + q.a + ' + ' + q.b + ' + ' + q.c + ' = ' + q.ans;
 }
 function drawAndMore(q){
+  if(q.shape === 'rest') return drawRest(q);
+  if(q.shape === 'kept') return drawKept(q);
   if(q.three) return drawThree(q);
   if(q.shape === 'fish') return drawFish(q);
   return '<div class="ask">' + tr('На спортната площадка играят <span class="num">' + q.a + '</span> момичета и ' + bgWith(q.d) + ' <span class="num">' + q.d + '</span> ' + (q.fewer ? 'по-малко' : 'повече') + ' момчета. Колко общо са децата, които играят на площадката?',
@@ -98,11 +150,15 @@ function drawAndMore(q){
     answerLine('xl');
 }
 function eqAndMore(q){
+  if(q.shape === 'rest') return restEq(q);
+  if(q.shape === 'kept') return keptEq(q);
   if(q.three) return eqThree(q);
   if(q.shape === 'fish') return (q.n - 1) + ' · ' + q.m + ' = ' + (q.n - 1)*q.m + ', ' + (q.n - 1)*q.m + ' + ' + (q.n - 1)*q.m + ' = ' + q.ans;
   return q.a + (q.fewer ? ' − ' : ' + ') + q.d + ' = ' + q.b + ', ' + q.a + ' + ' + q.b + ' = ' + q.ans;
 }
 function whyAndMore(q, full){
+  if(q.shape === 'rest') return whyRest(q, full);
+  if(q.shape === 'kept') return whyKept(q, full);
   if(q.three) return whyThree(q, full);
   if(q.shape === 'fish'){
     if(!full) return tr('Първо колко са уловили всички без последния. А последният е уловил колкото тях.', 'Спершу скільки зловили всі, крім останнього. А останній зловив стільки, скільки вони.');
