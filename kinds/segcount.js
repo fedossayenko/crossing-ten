@@ -17,10 +17,18 @@ function genDots(){
   const n = 3 + rnd(8), d = 2 + rnd(4), asks = rnd(3);
   return {kind:'segcount', shape:'dots', n, d, L: n*d, asks, traps:[n + 2 + n, 2*n], ans: asks === 0 ? 2*n + 1 : asks === 1 ? n - 1 : n};
 }
+// Салабашев 2021, 2 клас, задача 13: six players in a chess tournament, every two play each other once — how many games? The same
+// count as the segments between six points: the first player meets five, the next four new ones, …: 5 + 4 + 3 + 2 + 1 = 15. The paper
+// has no official key (the answer sheet stops at task 9); 15 is the task's own. Drawn after the points and the dots, so those keep their seeds.
+// [Bulgarian «по …», Ukrainian «з …»]: what they play
+const GAMES = [['шах', 'шахів'], ['тенис на маса', 'настільного тенісу'], ['шашки', 'шашок']];
+function genGames(){
+  const n = 4 + rnd(4), g = rnd(GAMES.length);
+  return {kind:'segcount', shape:'games', n, g, S: n*(n - 1)/2, traps:[n, n*(n - 1)/2 - n].filter(t => t > 0), ans: n*(n - 1)/2};
+}
 export function genSegCount(){
-  if(Math.random() < 0.3) return genDots();
-  const n = 3 + rnd(4), S = n*(n - 1)/2, rev = Math.random() < 0.45;
-  return {kind:'segcount', n, S, rev, ans: rev ? n : S};
+  const q = Math.random() < 0.3 ? genDots() : (() => { const n = 3 + rnd(4), S = n*(n - 1)/2, rev = Math.random() < 0.45; return {kind:'segcount', n, S, rev, ans: rev ? n : S}; })();
+  return Math.random() < 0.22 ? genGames() : q;
 }
 function segCountSvg(n){
   const W = 220, gap = W / (n + 1);
@@ -33,6 +41,12 @@ function segCountSvg(n){
     '<line x1="4" y1="20" x2="' + (W - 4) + '" y2="20" stroke="var(--ink)" stroke-width="2"/>' + pts + labs + '</svg></div>';
 }
 function drawSegCount(q){
+  if(q.shape === 'games'){
+    const g = GAMES[q.g], nBg = ['', '', '', '', 'четири', 'пет', 'шест', 'седем'][q.n], nUk = ['', '', '', '', 'чотири', 'п’ять', 'шість', 'сім'][q.n];
+    return '<div class="ask">' + tr('В турнир по ' + g[0] + ' участвали ' + nBg + ' състезатели. Всеки двама състезатели играли помежду си по един мач. Колко мача общо са изиграни в турнира?',
+      'У турнірі з ' + g[1] + ' брали участь ' + nUk + ' ' + ukWord(q.n, 'учасник', 'учасники', 'учасників') + '. Кожні двоє учасників зіграли між собою по одній грі. Скільки всього ігор зіграно в турнірі?') + '</div>' +
+      answerLine('xl');
+  }
   if(q.shape === 'ex'){
     const m = q.n - 1, k = m*(m - 1)/2, segs = [];
     for(let i = 0; i < m; i++) for(let j = i + 1; j < m; j++) segs.push('ABCDEF'[i] + 'ABCDEF'[j]);
@@ -58,6 +72,7 @@ function drawSegCount(q){
 }
 const segCountSum = n => Array.from({length: n - 1}, (_, i) => n - 1 - i).join(' + ');
 function eqSegCount(q){
+  if(q.shape === 'games') return segCountSum(q.n) + ' = ' + q.ans;
   if(q.shape === 'dots') return tr('жълти 2, червени ', 'жовтих 2, червоних ') + (q.n - 1) + tr(', сини ', ', синіх ') + q.n + ' → ' + q.ans;
   return q.n + ' • → ' + segCountSum(q.n) + ' = ' + q.S + (q.rev ? ' → ' + q.ans : '');
 }
@@ -92,6 +107,10 @@ function segDots(n, full){
   return svgFrame('0 -14 220 ' + (full ? 54 : 30), 220, tr('точките върху отсечката', 'точки на відрізку')) + g + '</svg>';
 }
 function whySegCount(q, full){
+  if(q.shape === 'games'){
+    if(!full) return tr('Първият състезател играе с всички останали. Вторият — само с онези, с които още не е играл. Колко нови мача има всеки?', 'Перший учасник грає з усіма іншими. Другий — лише з тими, з ким ще не грав. Скільки нових ігор у кожного?');
+    return tr('първият играе с ' + (q.n - 1) + ', вторият още ' + (q.n - 2) + ', … ', 'перший грає з ' + (q.n - 1) + ', другий ще ' + (q.n - 2) + ', … ') + ' &nbsp;→&nbsp; <b>' + segCountSum(q.n) + ' = ' + q.ans + '</b>';
+  }
   if(q.shape === 'dots'){
     if(!full) return tr('Начертай по-къса отсечка на няколко части и преброй: разделящите точки са с една по-малко от частите.', 'Намалюй коротший відрізок на кілька частин і порахуй: точок поділу на одну менше, ніж частин.') + segDots(3, false);
     return tr('жълти: 2 (краищата), червени: ', 'жовтих: 2 (кінці), червоних: ') + q.n + ' − 1 = <b>' + (q.n - 1) + '</b>' + tr(', сини: по една във всяка част, <b>', ', синіх: по одній у кожній частині, <b>') + q.n + '</b>' +

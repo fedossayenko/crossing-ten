@@ -2,7 +2,7 @@
 
 // Задача 9: writing out a run of numbers and counting how often one digit turns up. The
 // run is walked rather than reasoned about, so the count is never a guess.
-import { KIND, answerLine, bgList, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, bgList, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
 export function genDigitRun(){
   if(Math.random() < 0.15){
     // Есен 2019, задача 3: how many digits it takes to write 12, 34, 60 and 79 — two each, 8. Here a
@@ -73,8 +73,49 @@ export function genDigitFreq(){
     return {kind:'dcount', shape:'freq', k, s: shuffle(ds.flatMap((d, i) => Array(counts[i]).fill(d))).join(''), traps:[k], ans: ds[0]};
   }
 }
+// Салабашев 2021, 2 клас, задача 12: the wall calendar shows the days of December and this year, 2021 — how many 1s and 2s
+// in all? Dates 1 to 31 hold fourteen 1s (1, 11, 21, 31 and the ten from 10 to 19) and thirteen 2s, and the year 2021 two more
+// 2s and a 1: 14 + 13 + 3 = 30. The year is on the calendar too, which is the trap. The paper has no official key (the answer
+// sheet stops at task 9), so this reading is the task's own. A shape of its own beside the run: level 475, not 55.
+// [Bulgarian month, days, Ukrainian genitive]
+/** @type {[string, number, string][]} */
+const CAL_MON = [['януари', 31, 'січня'], ['март', 31, 'березня'], ['април', 30, 'квітня'], ['май', 31, 'травня'], ['юни', 30, 'червня'], ['юли', 31, 'липня'],
+                 ['август', 31, 'серпня'], ['септември', 30, 'вересня'], ['октомври', 31, 'жовтня'], ['ноември', 30, 'листопада'], ['декември', 31, 'грудня']];
+// the digit's name, counted: [Bulgarian, Ukrainian genitive plural]
+const CAL_DIG = { 1:['единици', 'одиниць'], 2:['двойки', 'двійок'], 3:['тройки', 'трійок'] };
+const calHits = (q, d) => { const ones = [], tens = []; for(let v = 1; v <= q.N; v++){ if(v % 10 === d) ones.push(v); if(Math.floor(v / 10) === d) tens.push(v); } return { ones, tens }; };
+const calYear = (q, d) => String(q.year).split('').filter(c => +c === d).length;
+export function genDigitCal(){
+  const m = rnd(CAL_MON.length), ds = [[1, 2], [1, 3], [2, 3]][rnd(3)], year = 2019 + rnd(8), N = CAL_MON[m][1];
+  const q = {kind:'dcount', shape:'cal', mon:m, N, year, ds};
+  const inYear = calYear(q, ds[0]) + calYear(q, ds[1]), days = ds.reduce((t, d) => t + calHits(q, d).ones.length + calHits(q, d).tens.length, 0);
+  return Object.assign(q, {traps:[days].filter(v => v !== days + inYear), ans: days + inYear});
+}
+// Салабашев 2023, 2 клас, задача 14: the pages of a book, from the first to the last, are numbered with 87 digits — how many
+// times is the digit 4 used? Pages 1 to 9 take nine digits, the other 78 two each, 39 more pages: 1 to 48. The fours: 4, 14, 24, 34,
+// 44 (two) and 40 to 43, 45 to 48 — 14. Level 476 joins what 82 asks (the last number from the digits) and 55 (a digit counted).
+export function genDigitPages(){
+  for(;;){
+    const N = 30 + rnd(31), d = 1 + rnd(9);
+    let n = 0; for(let v = 1; v <= N; v++) n += String(v).split(String(d)).length - 1;
+    if(n < 4) continue;
+    return {kind:'dcount', shape:'pages', D: 9 + 2*(N - 9), d, N, traps:[N].filter(v => v !== n), ans: n};
+  }
+}
+const pagesHits = q => { const out = []; for(let v = 1; v <= q.N; v++) if(String(v).includes(String(q.d))) out.push(v); return out; };
 const omitGone = q => Array.from({length: q.b - q.a - 6}, (_, i) => q.a + 4 + i);
 function drawDcount(q){
+  if(q.shape === 'cal'){
+    const M = CAL_MON[q.mon], [a, b] = q.ds;
+    return '<div class="ask">' + tr('Календарът на стената показва дните на месец <b>' + M[0] + '</b> и сегашната година – <span class="num">' + q.year + '</span>. Колко <b>общо</b> ' + CAL_DIG[a][0] + ' и ' + CAL_DIG[b][0] + ' има на календара?',
+      'Календар на стіні показує дні місяця <b>' + M[2] + '</b> і поточний рік – <span class="num">' + q.year + '</span>. Скільки <b>всього</b> ' + CAL_DIG[a][1] + ' і ' + CAL_DIG[b][1] + ' на календарі?') + '</div>' +
+      answerLine('xl');
+  }
+  if(q.shape === 'pages'){
+    return '<div class="ask">' + tr('За надписване на номерата на страниците на една книга от първата до последната използвали <span class="num">' + q.D + '</span> цифри. Колко <b>пъти</b> е използвана цифрата <span class="num">' + q.d + '</span>?',
+      'Для нумерації сторінок книжки від першої до останньої використали <span class="num">' + q.D + '</span> ' + ukWord(q.D, 'цифру', 'цифри', 'цифр') + '. Скільки <b>разів</b> використано цифру <span class="num">' + q.d + '</span>?') + '</div>' +
+      answerLine('xl');
+  }
   if(q.shape === 'from'){
     const run = [q.from, q.from + 1, q.from + 2, q.from + 3].join(', ') + ', …, ' + (q.to - 1) + ', ' + q.to;
     return '<div class="ask">' + tr('Колко са всички цифри <span class="num">' + q.d + '</span>, които се използват за записване на числата от <span class="num">' + q.from + '</span> до <span class="num">' + q.to + '</span>?',
@@ -125,6 +166,8 @@ function drawDcount(q){
     answerLine('xl');
 }
 function eqDcount(q){
+  if(q.shape === 'cal'){ const [a, b] = q.ds, h = d => calHits(q, d).ones.length + calHits(q, d).tens.length; return h(a) + ' + ' + h(b) + ' + ' + (calYear(q, a) + calYear(q, b)) + ' = ' + q.ans; }
+  if(q.shape === 'pages') return q.D + tr(' цифри → страници 1–', ' ' + ukWord(q.D, 'цифра', 'цифри', 'цифр') + ' → сторінки 1–') + q.N + tr(', цифра ', ', цифра ') + q.d + ' → ' + q.ans;
   if(q.shape === 2) return q.list.map(v => String(v).length).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'omit'){ const g = omitGone(q), one = g.filter(v => v < 10).length; return g[0] + ', …, ' + g[g.length - 1] + ' → ' + [one].concat(g.slice(one).map(() => 2)).join(' + ') + ' = ' + q.ans; }
   if(q.shape === 'freq') return q.s + ' → ' + tr(FREQ_K[q.k][0], FREQ_K[q.k][1]) + ': ' + q.ans;
@@ -162,6 +205,23 @@ function dcountSvg(q){
     tr('таблицата на числата', 'таблиця чисел') + '">' + g + '</svg>';
 }
 function whyDcount(q, full){
+  if(q.shape === 'cal'){
+    if(!full) return tr('Цифрата може да стои и на мястото на единиците, и на десетиците — а числото с две такива цифри се брои два пъти. Календарът показва и годината.',
+      'Цифра може стояти і в одиницях, і в десятках — а число з двома такими цифрами рахуй двічі. Календар показує й рік.');
+    const lst = a => a.length > 4 ? a[0] + ', …, ' + a[a.length - 1] : a.join(', ');
+    const part = d => { const h = calHits(q, d); return d + ': ' + tr('единици — ', 'одиниці — ') + lst(h.ones) + ' (' + h.ones.length + '), ' + tr('десетици — ', 'десятки — ') + lst(h.tens) + ' (' + h.tens.length + ')' +
+      ' &nbsp;→&nbsp; ' + (h.ones.length + h.tens.length); };
+    const days = q.ds.map(d => calHits(q, d).ones.length + calHits(q, d).tens.length), yr = calYear(q, q.ds[0]) + calYear(q, q.ds[1]);
+    return q.ds.map(part).join('; &nbsp;') + '; &nbsp;' + tr('годината ', 'рік ') + q.year + ' &nbsp;→&nbsp; ' + yr + ' &nbsp;→&nbsp; <b>' + days[0] + ' + ' + days[1] + ' + ' + yr + ' = ' + q.ans + '</b>';
+  }
+  if(q.shape === 'pages'){
+    if(!full) return tr('Първо: до коя страница стига книгата? Едноцифрените номера са с по една цифра, а останалите — с по две.',
+      'Спочатку: до якої сторінки сягає книжка? Одноцифрові номери — по одній цифрі, решта — по дві.');
+    const m = (q.D - 9) / 2, hits = pagesHits(q), list = hits.slice(0, 12).join(', ') + (hits.length > 12 ? ', …' : ''), twice = hits.filter(v => String(v).split(String(q.d)).length > 2);
+    return tr('страници 1–9: 9 цифри; остават ' + q.D + ' − 9 = ' + (q.D - 9) + ' цифри, по две за страница: ' + (q.D - 9) + ' = ' + m + ' + ' + m + ' → ' + m + ' страници; последната е 9 + ' + m + ' = <b>' + q.N + '</b>',
+      'сторінки 1–9: 9 цифр; лишається ' + q.D + ' − 9 = ' + (q.D - 9) + ' ' + ukWord(q.D - 9, 'цифра', 'цифри', 'цифр') + ', по дві на сторінку: ' + (q.D - 9) + ' = ' + m + ' + ' + m + ' → ' + m + ' ' + ukWord(m, 'сторінка', 'сторінки', 'сторінок') + '; остання — 9 + ' + m + ' = <b>' + q.N + '</b>') +
+      ' &nbsp;→&nbsp; ' + tr('цифрата ' + q.d + ' е в ', 'цифра ' + q.d + ' є в ') + list + (twice.length ? tr(' (' + twice.join(', ') + ' — два пъти)', ' (' + twice.join(', ') + ' — двічі)') : '') + ' &nbsp;→&nbsp; <b>' + q.ans + '</b>';
+  }
   if(q.shape === 2){
     if(!full) return tr('Пита се за цифрите, не за числата. Колко цифри има всяко число?', 'Питають про цифри, а не про числа. Скільки цифр у кожному числі?');
     return q.list.map(v => v + ' → ' + String(v).length).join(', ') + ' &nbsp;→&nbsp; ' + q.list.map(v => String(v).length).join(' + ') + ' = ' + q.ans;

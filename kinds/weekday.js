@@ -76,6 +76,17 @@ function genBack(){
           traps: ask ? [first + 7] : [n - 1, Math.floor(L / 7)], ans: ask ? first : n};
 }
 const backDates = q => { const r = []; for(let d = q.L; d >= 1; d -= 7) r.push(d); return r; };
+// Салабашев 2025, 2 клас, задача 2: this year 29 November is a Saturday — what do the dates of all the Saturdays of December add up to?
+// 30 November is a Sunday, so 1 December is a Monday and the Saturdays are 6, 13, 20 and 27: 6 + 13 + 20 + 27 = 66. The task states the
+// weekday, so no real calendar is needed: the month pair, the date (one of the last four of the month) and the weekday are drawn.
+// Level 480. Months from March to December, each with the next one (February would make the year matter).
+export function genDateSum(){
+  const i = 1 + rnd(9), from = MONTHS[i], to = MONTHS[i + 1], g = from[1] - rnd(4), gd = rnd(7), want = rnd(7);
+  const first1 = (gd + from[1] - g + 1) % 7, first = 1 + (want - first1 + 7) % 7, dates = [];
+  for(let d = first; d <= to[1]; d += 7) dates.push(d);
+  const ans = dates.reduce((t, v) => t + v, 0);
+  return {kind:'weekday', shape:'sum', from, to, mon: to, g, gd, d1: DAYS[first1], day: DAYS[want], first, dates, traps:[ans - dates[dates.length - 1]], ans};
+}
 export function genWeekday(){
   if(Math.random() < 0.25) return genBound();
   if(Math.random() < 0.3) return genWhichDay();
@@ -107,6 +118,12 @@ const weekdayMonUk = {
 const weekdayDays = n => ukN(n, 'день', 'дні', 'днів');
 
 function drawWeekday(q){
+  if(q.shape === 'sum'){
+    const u = weekdayUk[q.day.nm], m = weekdayMonUk[q.from[0]], n = weekdayMonUk[q.to[0]];
+    return '<div class="ask">' + tr('Тази година <b>' + q.g + ' ' + q.from[0] + '</b> е <b>' + DAYS[q.gd].nm + '</b>. На колко е равен сборът на датите на <b>всички ' + WEEKDAY_ALL[q.day.nm] + '</b> през месец ' + q.to[0] + ' тази година?',
+      'Цього року <b>' + q.g + ' ' + m[1] + '</b> — <b>' + weekdayUk[DAYS[q.gd].nm].nm + '</b>. Чому дорівнює сума дат <b>усіх ' + u.many + '</b> у ' + n[2] + ' цього року?') + '</div>' +
+      answerLine('xl');
+  }
   if(q.shape === 'shift'){
     const [a, b] = SHIFT_WHO[q.who];
     return '<div class="ask">' + tr('Рожденият ден на ' + a[0] + ' е ' + shiftIn(q.d0) + ', а рожденият ден на ' + b[0] + ' е <span class="num">' + q.k + '</span> ' + (q.k === 1 ? 'ден' : 'дни') + ' по-късно – ' + shiftIn(q.d1) +
@@ -164,6 +181,7 @@ function drawWeekday(q){
 }
 const afterDates = q => { const r = []; for(let d = q.first; d <= q.mon[1]; d += 7) r.push(d); return r; };
 function eqWeekday(q){
+  if(q.shape === 'sum') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + q.dates.join(' + ') + ' = ' + q.ans;
   if(q.shape === 'back') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + backDates(q).join(', ') + ' → ' + q.ans;
   if(q.shape === 'after') return tr(q.day.nm, weekdayUk[q.day.nm].nm) + ': ' + afterDates(q).join(', ') + ' → ' + q.ans;
   if(q.shape === 'shift') return tr(DAYS[q.d1].nm, weekdayUk[DAYS[q.d1].nm].nm) + ' + ' + q.m + ' → ' + tr(DAYS[q.at].nm, weekdayUk[DAYS[q.at].nm].nm);
@@ -191,7 +209,7 @@ function weekdaySvg(q){
   const cell = (c, r, fill, stroke, extra) => '<rect' + (extra || '') + ' x="' + (c * C + 1) + '" y="' + (r * C + 1) + '" width="' + (C - 2) + '" height="' + (C - 2) + '" rx="4" fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5"/>';
   const svg = (w, h, g) => '<svg viewBox="-2 -' + (q.mon || q.shape === 'which' ? 22 : 2) + ' ' + w + ' ' + h + '" style="display:block; width:' + Math.round(w * 1.25) + 'px; max-width:100%; margin:6px auto 0" role="img" aria-label="' +
     tr('календар', 'календар') + '">' + g + '</svg>';
-  if(q.shape === 'which' || q.shape === 'last' || q.shape === 'after' || q.shape === 'back'){
+  if(q.shape === 'which' || q.shape === 'last' || q.shape === 'after' || q.shape === 'back' || q.shape === 'sum'){
     const c0 = DAYS.indexOf(q.d1), len = q.shape === 'which' ? q.n : q.mon[1], col = q.shape === 'which' ? (c0 + q.n - 1) % 7 : DAYS.indexOf(q.day);
     const pos = d => [(c0 + d - 1) % 7, Math.floor((c0 + d - 1) / 7)], rows = pos(len)[1] + 1;
     let g = short.map((nm, c) => svgText(c * C + C / 2, -7, nm, 10, 'var(--muted)')).join('');
@@ -209,6 +227,7 @@ function weekdaySvg(q){
       g += svgText(84, rows * C + 22, backDates(q).join(', ') + ' → ' + q.ans, 15, 'var(--ink)', popAt(t0 + backDates(q).length + 1)); return svg(172, rows * C + 52, g);
     }
     let k = 1; for(let d = q.first; d <= len; d += 7) g += ring(d, k++);
+    if(q.shape === 'sum'){ g += svgText(84, rows * C + 22, afterDates(q).join(' + '), 12, 'var(--ink)', popAt(t0 + k)) + svgText(84, rows * C + 40, '= ' + q.ans, 15, 'var(--ink)', popAt(t0 + k + 1)); return svg(172, rows * C + 70, g); }
     if(q.shape === 'after'){ g += svgText(84, rows * C + 22, afterDates(q).join(', ') + ' → ' + q.ans, 15, 'var(--ink)', popAt(t0 + k)); return svg(172, rows * C + 52, g); }
     return svg(172, rows * C + 26, g);
   }
@@ -234,6 +253,13 @@ function whyWeekday(q, full){
   return full && text ? text + weekdaySvg(q) : text;
 }
 function whyWeekdayText(q, full){
+  if(q.shape === 'sum'){
+    if(!full) return tr('Колко дни има от дадената дата до края на месеца? Така намираш в кой ден от седмицата започва следващият месец. После един и същи ден се повтаря през 7 дни.',
+      'Скільки днів від названої дати до кінця місяця? Так знайдеш, з якого дня тижня починається наступний місяць. Потім той самий день повторюється кожні 7 днів.');
+    const walk = (uk) => { const r = []; for(let d = q.g + 1; d <= q.from[1]; d++) r.push(d + ' ' + (uk ? weekdayMonUk[q.from[0]][1] : q.from[0]) + ' — ' + (uk ? weekdayUk[DAYS[(q.gd + d - q.g) % 7].nm].nm : DAYS[(q.gd + d - q.g) % 7].nm));
+      r.push('1 ' + (uk ? weekdayMonUk[q.to[0]][1] : q.to[0]) + ' — ' + (uk ? weekdayUk[q.d1.nm].nm : q.d1.nm)); return r.join(', '); };
+    return tr(walk(false) + ' &nbsp;→&nbsp; ' + WEEKDAY_ALL[q.day.nm] + ': ', walk(true) + ' &nbsp;→&nbsp; ' + weekdayUk[q.day.nm].many + ': ') + q.dates.join(', ') + ' &nbsp;→&nbsp; <b>' + q.dates.join(' + ') + ' = ' + q.ans + '</b>';
+  }
   if(q.shape === 'back'){
     if(!full) return tr('Един и същи ден от седмицата се повтаря през всеки седем дни: върви назад от последния.', 'Той самий день тижня повторюється кожні сім днів: іди назад від останнього.');
     return tr(q.day.nm + ' е на ', weekdayUk[q.day.nm].nm + ' — ') + backDates(q).join(', ') + tr(' (още седмица назад е предишният месец)', ' (ще тиждень назад — уже попередній місяць)') + ' &nbsp;→&nbsp; ' + q.ans;

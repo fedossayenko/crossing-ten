@@ -131,7 +131,9 @@
   const n = {}, count = k => n[k] = (n[k] || 0) + 1;
   // 351: the squares, the cat, the bowl and the brick found in the picture, every way toward the bowl walked
   for(let i = 1; i <= 3000; i++){
-    const q = Q.seeded(i, () => Q.raw(351)), p = parts(Q.drawQ(q)), cells = p.rects.filter(r => r.w === 46 && r.h === 46);
+    const q = Q.seeded(i, () => Q.raw(351));
+    if(q.shape === 'word') continue;   // the word grid of Салабашев 2022 #9 is checked in check/sal-S4.js
+    const p = parts(Q.drawQ(q)), cells = p.rects.filter(r => r.w === 46 && r.h === 46);
     const x0 = Math.min(...cells.map(r => r.x)), y0 = Math.min(...cells.map(r => r.y)), R = new Set(cells.map(r => r.y)).size, C = new Set(cells.map(r => r.x)).size;
     const at = e => { const t = p.texts.find(t => t.t === e); return t ? [Math.floor((t.y - y0) / 46), Math.floor((t.x - x0) / 46)] : null; };
     const cat = at('🐱'), bowl = at('🥣'), stone = at('🧱'), dr = Math.sign(bowl[0] - cat[0]);

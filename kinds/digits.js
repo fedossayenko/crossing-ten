@@ -73,9 +73,29 @@ export function genDigits(){
   const n = 1 + rnd(18);
   return {kind:'digits', shape:0, n, ans: n <= 9 ? n : 19 - n};
 }
+// Салабашев 2025, 2 клас, задача 14: the digit 8 has two ovals, 0, 6 and 9 one, the rest none — how many two-digit numbers have exactly
+// two ovals? The tens digit decides, and it cannot be 0: tens 8 with a ones digit of no oval (6 numbers: 81, 82, 83, 84, 85, 87), tens 6 or 9
+// with a ones digit of one oval (60, 66, 69, 90, 96, 99), tens of no oval with ones 8 (18, 28, 38, 48, 58, 78): 6 + 6 + 6 = 18. The same
+// weights, other totals: exactly one oval (30) or three (5).
+const OVALS = [1, 0, 0, 0, 0, 0, 1, 0, 2, 1];   // the ovals of the digits 0 to 9
+const ovalsOf = v => OVALS[Math.floor(v / 10)] + OVALS[v % 10];
+const ovalsGroups = q => [2, 1, 0].map(t => { const list = []; for(let v = 10; v <= 99; v++) if(OVALS[Math.floor(v / 10)] === t && ovalsOf(v) === q.k) list.push(v); return { t, list }; }).filter(g => g.list.length);
+export function genDigitOvals(){
+  const k = [2, 2, 2, 2, 3, 1][rnd(6)], list = [];
+  for(let v = 10; v <= 99; v++) if(ovalsOf(v) === k) list.push(v);
+  // the slips: the zero kept as a tens digit (00 to 09 counted), and the digits that have an oval counted instead of the numbers
+  return {kind:'digits', shape:'ovals', k, traps:[list.length + (k === 2 ? 6 : 0)].filter(v => v !== list.length), ans: list.length};
+}
 const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
 
 function drawDigits(q){
+  if(q.shape === 'ovals'){
+    const ov = { 1:['точно по едно овалче', 'рівно по одному овалу'], 2:['точно по две овалчета', 'рівно по два овали'], 3:['точно по три овалчета', 'рівно по три овали'] }[q.k];
+    return '<div class="ask">' + tr('Цифрата 8 има две овалчета, цифрите 0, 6 и 9 имат по едно овалче, а останалите цифри нямат овалчета. Колко от <b>двуцифрените</b> числа имат ' + ov[0] + '?',
+      'Цифра 8 має два овали, цифри 0, 6 і 9 мають по одному овалу, а решта цифр овалів не мають. Скільки з <b>двоцифрових</b> чисел мають ' + ov[1] + '?') + '</div>' +
+      '<div class="given" style="letter-spacing:.35em"><span class="num">8</span> = 2 &nbsp; <span class="num">0 6 9</span> = 1</div>' +
+      answerLine('xl');
+  }
   if(q.shape === 'grid'){
     const td = v => '<td style="border:1.5px solid var(--muted); padding:4px 10px; text-align:center">' + v + '</td>';
     return '<div class="ask">' + tr('Колко от числата в таблицата имат <b>' + tensDigitBg(q.t) + '</b>?', 'Скільки чисел у таблиці мають <b>' + ukN(q.t, 'десяток', 'десятки', 'десятків') + '</b>?') + '</div>' +
@@ -123,6 +143,7 @@ function drawDigits(q){
 }
 const digitGapOk = q => q.list.filter(v => (q.ones ? v % 10 - Math.floor(v / 10) : Math.floor(v / 10) - v % 10) >= q.k);
 function eqDigits(q){
+  if(q.shape === 'ovals') return ovalsGroups(q).map(g => g.list.length).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'grid') return tensDigitOwn(q).join(', ') + ' → ' + q.ans;
   if(q.shape === 'all'){ const a = tensDigitAll(q); return a[0] + ', ' + a[1] + ', …, ' + a[a.length - 1] + ' → ' + q.ans; }
   if(q.shape === 'even') return [q.ans].concat(q.alt).join(', ');
@@ -135,6 +156,12 @@ function eqDigits(q){
     : tr('срещат се веднъж: 1 и 18 → ', 'трапляються один раз: 1 і 18 → ') + q.ans;
 }
 function whyDigits(q, full){
+  if(q.shape === 'ovals'){
+    if(!full) return tr('Разгледай цифрата на десетиците: тя има две овалчета, едно или нито едно. Колко овалчета остават за цифрата на единиците? Нулата не може да е отпред.',
+      'Подивись на цифру десятків: у неї два овали, один або жодного. Скільки овалів лишається для цифри одиниць? Нуль не може стояти першим.');
+    const gs = ovalsGroups(q), what = t => t === 0 ? tr('без овалче', 'без овалів') : t === 1 ? tr('с едно овалче', 'з одним овалом') : tr('с две овалчета', 'з двома овалами');
+    return gs.map(g => tr('десетици ' + what(g.t) + ': ', 'десятки ' + what(g.t) + ': ') + g.list.join(', ') + ' (' + g.list.length + ')').join('; &nbsp;') + ' &nbsp;→&nbsp; <b>' + gs.map(g => g.list.length).join(' + ') + ' = ' + q.ans + '</b>';
+  }
   if(q.shape === 'grid'){
     if(!full) return tr('Цифрата на десетиците е първата цифра на двуцифреното число. Внимавай с числата, в които тази цифра е на мястото на единиците.',
       'Цифра десятків — перша цифра двоцифрового числа. Обережно з числами, де ця цифра стоїть на місці одиниць.');

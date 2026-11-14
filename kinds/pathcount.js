@@ -19,7 +19,7 @@ export function pathWays(R, C, stone){
   }
   return w;
 }
-export function genPathCount(){
+function genPathBoard(){
   for(;;){
     const stone = Math.random() < 0.35, R = 2 + rnd(3), C = 2 + rnd(3), up = Math.random() < 0.3;
     if(R === 2 && C === 2 || R === 4 && C === 4) continue;
@@ -35,6 +35,44 @@ export function genPathCount(){
     return {kind:'pathcount', shape:'stone', R, C, up, stone:at, traps:[plain], ans: n};
   }
 }
+// Салабашев 2022, 2 клас, задача 9: from a letter of the grid one may move to the next letter only along one of the arrows — down-left, down,
+// down-right. In how many ways can the word МЕД be read in the grid of М М М, Е Е Е, Д Д Д? From each М 2, 3 or 2 ways to an Е (the ones on both
+// sides and straight below), and from there on to a Д: 5 + 7 + 5 = 17. The same DP as the board, with three moves: the ways to a letter are the
+// ways to the letters it can be reached from, added. Three columns as on the paper, now and then four (26); the word is three letters, a row
+// each. Drawn after the boards, so a cat's question keeps its seed.
+const WORDS = ['МЕД', 'МАК', 'ЛУК', 'ДОМ', 'РАК'];
+export function wordWays(C){
+  const w = [Array(C).fill(1)];
+  for(let r = 1; r < 3; r++) w.push(Array.from({length: C}, (_, c) => [c - 1, c, c + 1].reduce((t, k) => t + (k >= 0 && k < C ? w[r - 1][k] : 0), 0)));
+  return w;
+}
+function genPathWord(){
+  const C = Math.random() < 0.7 ? 3 : 4, word = WORDS[rnd(WORDS.length)], w = wordWays(C), ans = w[2].reduce((t, v) => t + v, 0);
+  return {kind:'pathcount', shape:'word', C, word, traps:[C*3, C*C].filter(v => v !== ans), ans};
+}
+export function genPathCount(){
+  const q = genPathBoard();
+  return Math.random() < 0.25 ? genPathWord() : q;
+}
+// the grid of letters, a row of the word each; with the ways to every letter written in (full)
+function wordBoard(q, full){
+  const C = q.C, w = wordWays(C), W = Math.max(C*U + 8, 150), x0 = (W - C*U)/2;
+  let g = '', k = 0;
+  for(let r = 0; r < 3; r++) for(let c = 0; c < C; c++){
+    const x = x0 + c*U, y = 4 + r*U;
+    g += '<rect x="' + x + '" y="' + y + '" width="' + U + '" height="' + U + '" fill="var(--solid)" stroke="var(--ink)" stroke-width="2"/>';
+    g += svgText(x + U/2 + (full ? -9 : 0), y + U/2 + (full ? 0 : 8), q.word[r], full ? 16 : 24, 'var(--ink)');
+    if(full) g += svgText(x + U/2 + 9, y + U/2 + 8, w[r][c], 18, 'var(--accent-ink)', popAt(1 + k++*0.5));
+  }
+  return svgFrame('0 0 ' + W + ' ' + (3*U + 8), W, tr('буквите на думата', 'літери слова')) + g + '</svg>';
+}
+// the three arrows from one letter to the three below
+function wordArrows(q){
+  const a = (x1, x2) => '<path d="M' + x1 + ',20 L' + x2 + ',46" stroke="var(--ink)" stroke-width="2" fill="none" marker-end="url(#wa)"/>';
+  return '<svg viewBox="0 0 120 70" style="display:block; width:120px; max-width:100%; margin:6px auto 0" role="img" aria-label="' + tr('стрелките', 'стрілки') + '"><defs><marker id="wa" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="var(--ink)"/></marker></defs>' +
+    svgText(60, 14, q.word[0], 16, 'var(--ink)') + a(52, 24) + a(60, 60) + a(68, 96) + svgText(24, 64, q.word[1], 16, 'var(--ink)') + svgText(60, 64, q.word[1], 16, 'var(--ink)') + svgText(96, 64, q.word[1], 16, 'var(--ink)') + '</svg>';
+}
+const wordSum = q => wordWays(q.C)[2].join(' + ') + ' = ' + q.ans;
 const ways = q => pathWays(q.R, q.C, q.stone);
 // the board, the cat in the first square, the bowl in the last; with the ways written in (full) or a route drawn (hint)
 function board(q, full){
@@ -65,6 +103,9 @@ function board(q, full){
   return svgFrame('0 0 ' + W + ' ' + (R * U + 8), W, tr('дъска с котка и купичка', 'дошка з кішкою і мисочкою')) + g + '</svg>';
 }
 function drawPathCount(q){
+  if(q.shape === 'word') return '<div class="ask">' + tr('От една буква на схемата може да се премине към следваща буква само по посока на една от стрелките. По колко начина може да се прочете думата <b>' + q.word + '</b> на рисунката долу?',
+    'З однієї літери схеми можна перейти до наступної літери лише в напрямку однієї зі стрілок. Скількома способами можна прочитати слово <b>' + q.word + '</b> на малюнку внизу?') + '</div>' +
+    '<div class="fig">' + wordArrows(q) + '</div><div class="fig">' + wordBoard(q, false) + '</div>' + answerLine('xl');
   const brick = q.stone ? tr(' На едно квадратче има тухла — през него не може да се минава.', ' На одній клітинці лежить цегла — через неї не можна проходити.') : '';
   return '<div class="ask">' + tr('Котката и купичката с мляко се намират в два ъгъла на показаната дъска. По колко начина може котката да отиде до купичката, ако се придвижва от квадратче в квадратче само в посока ' + (q.up ? 'нагоре или надясно' : 'надолу или надясно') + '?' + brick,
     'Кішка і мисочка з молоком опинилися у двох кутках показаної дошки. Скількома способами кішка може дійти до мисочки, якщо вона рухається з клітинки в клітинку лише в напрямку ' + (q.up ? 'вгору або праворуч' : 'вниз або праворуч') + '?' + brick) + '</div>' +
@@ -76,6 +117,12 @@ function lastSum(q){
   return w[q.R - 2][q.C - 1] + ' + ' + w[q.R - 1][q.C - 2] + ' = ' + q.ans;
 }
 function whyPathCount(q, full){
+  if(q.shape === 'word'){
+    if(!full) return tr('Започни с първия ред: по колко начина се стига до всяка буква? После за всяка буква от втория ред събери начините до буквите, от които се стига до нея.',
+      'Почни з першого рядка: скількома способами доходять до кожної літери? Потім для кожної літери другого рядка додай способи до літер, звідки до неї доходять.');
+    return tr('до всяка буква се стига от буквата над нея и от двете ѝ съседки отгоре — във всяка буква пишем по колко начина се стига до нея', 'до кожної літери доходять від літери над нею і від двох її сусідок зверху — у кожній літері пишемо, скількома способами до неї доходять') +
+      wordBoard(q, true) + '<div><b>' + wordSum(q) + '</b></div>';
+  }
   const from = q.up ? tr('отдолу или отляво', 'знизу або зліва') : tr('отгоре или отляво', 'зверху або зліва');
   if(!full) return tr('До всяко квадратче котката стига ' + from + '. Започни от котката и във всяко квадратче пресметни по колко начина се стига до него.',
     'До кожної клітинки кішка потрапляє ' + from + '. Почни від кішки й у кожній клітинці порахуй, скількома способами сюди доходять.') + '<div class="fig">' + board(q, false) + '</div>';
@@ -83,4 +130,4 @@ function whyPathCount(q, full){
     'у кожну клітинку пишемо, скількома способами сюди доходять: додаємо числа ' + from.replace(' або ', ' і ')) + (q.stone ? tr(' (в тухлата не се стига — там няма начини)', ' (до цегли не дійти — там способів немає)') : '') +
     board(q, true) + '<div><b>' + lastSum(q) + '</b></div>';
 }
-KIND.pathcount = { draw:drawPathCount, eq:lastSum, why:whyPathCount };
+KIND.pathcount = { draw:drawPathCount, eq:q => q.shape === 'word' ? wordSum(q) : lastSum(q), why:whyPathCount };

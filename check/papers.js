@@ -782,7 +782,8 @@
       if(n.options.filter(o => !ok(o.text[0])).length !== 1 || ok(n.options[n.pick].text[0])) fail('notrue', n);
       const b = Q3.raw(148); let left = b.M; for(let k = 0; k < b.k; k++) left -= b.p; if(left !== b.ans || left < 1) fail('buyleft', b);
       // 149: the clock stepped minute by minute up to the full hour (or the one after)
-      const k = Q3.raw(149); let hh = k.h, mm = k.m, steps = 0, goal = (k.h + (k.two ? 2 : 1)) % 24;
+      let k = Q3.raw(149); while(k.shape === 'span') k = Q3.raw(149);   // the minutes between two times in the next hour are checked in check/sal-S4.js
+      let hh = k.h, mm = k.m, steps = 0, goal = (k.h + (k.two ? 2 : 1)) % 24;
       while(!(hh === goal && mm === 0)){ mm++; steps++; if(mm === 60){ mm = 0; hh = (hh + 1) % 24; } }
       if(steps !== k.ans) fail('clockmin', k);
       const s = Q3.raw(150), both = []; for(let x = 10; x < s.N; x++) if(x % 10 === s.u && [s.s, s.s + 1].includes(Math.floor(x / 10) + x % 10)) both.push(x);

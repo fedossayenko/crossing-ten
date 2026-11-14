@@ -16,14 +16,51 @@ export function genOutfits(){
   const who = rnd(OUT_WHO.length), set = rnd(OUT_SETS.length), a = 2 + rnd(5), b = 2 + rnd(2);
   return {kind:'outfits', who, set, a, b, traps:[a + b, a*b + 1].filter(t => t !== a*b), ans: a*b};   // 2 + 2 is 2 · 2: no slip there
 }
+// Салабашев 2019, 2 клас, задача 10: to beat the dragon two fighters with different weapons are needed — the dwarf Баин with an axe, the
+// elves Лио and Нео with bows, the men Мат, Тед and Дан with swords. In how many ways can two of the six be chosen? From two different
+// groups: the dwarf with an elf 2, the dwarf with a man 3, an elf with a man 3 + 3 = 6 — 2 + 3 + 6 = 11. The slip is any two of the six, 15.
+// Written as sums, as the times table comes later. Level 479 (needs 294): three groups and «different weapons» is two dots up from
+// every top with every bottom.
+// a group: [names: [Bulgarian, Ukrainian]], and how the sentence names it — [Bulgarian one, Bulgarian many, Ukrainian one, Ukrainian many]
+// (+ how it is named in «with …»: [Bulgarian one, many, Ukrainian one, many])
+const DR_GROUPS = [
+  { names:[['Баин', 'Баїн'], ['Зуг', 'Зуг'], ['Бофур', 'Бофур']], lead:['джуджето', 'джуджетата', 'гном', 'гноми'], rel:['което носи брадва', 'които носят брадви', 'який носить сокиру', 'які носять сокири'], with:['джуджето', 'джуджетата', 'гномом', 'гномами'] },
+  { names:[['Лио', 'Ліо'], ['Нео', 'Нео'], ['Лин', 'Лін']], lead:['елфът', 'елфите', 'ельф', 'ельфи'], rel:['който стреля с лък', 'които стрелят с лъкове', 'який стріляє з лука', 'які стріляють з луків'], with:['елфа', 'елфите', 'ельфом', 'ельфами'] },
+  { names:[['Мат', 'Мат'], ['Тед', 'Тед'], ['Дан', 'Дан']], lead:['човекът', 'хората', 'людина', 'люди'], rel:['който е с меч', 'които са с мечове', 'яка з мечем', 'які з мечами'], with:['човека', 'хората', 'людиною', 'людьми'] },
+];
+const DR_ALL = { 5:['петимата', 'п’яти'], 6:['шестимата', 'шести'], 7:['седмината', 'семи'] };
+export function genDragon(){
+  for(;;){
+    const sizes = [1 + rnd(3), 1 + rnd(3), 1 + rnd(3)], N = sizes[0] + sizes[1] + sizes[2];
+    if(N < 5 || N > 7) continue;
+    const [a, b, c] = sizes, ans = a*b + a*c + b*c;
+    return {kind:'outfits', shape:'dragon', sizes, traps:[N*(N - 1)/2].filter(v => v !== ans), ans};
+  }
+}
+// a product as the sum the second grade writes: the bigger number as many times as the smaller
+const drProd = (x, y) => Array(Math.min(x, y)).fill(Math.max(x, y)).join(' + ');
+const drPairs = q => [[0, 1], [0, 2], [1, 2]].map(([i, j]) => ({ i, j, n: q.sizes[i]*q.sizes[j] }));
+const drJoin = (a, and) => a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ' + and + ' ' + a[a.length - 1];
+const drLine = (q, g, uk) => { const G = DR_GROUPS[g], n = q.sizes[g], names = G.names.slice(0, n).map(v => v[uk ? 1 : 0]), one = n === 1;
+  return uk ? G.lead[one ? 2 : 3] + ' ' + drJoin(names, 'і') + ', ' + G.rel[one ? 2 : 3] : G.lead[one ? 0 : 1] + ' ' + drJoin(names, 'и') + ', ' + G.rel[one ? 0 : 1]; };
+const drWith = (q, g, uk) => DR_GROUPS[g].with[(uk ? 2 : 0) + (q.sizes[g] === 1 ? 0 : 1)];
+const drTotal = q => q.sizes[0] + q.sizes[1] + q.sizes[2];
+function drawDragon(q){
+  const N = drTotal(q), lines = lang => [0, 1, 2].map(g => '• ' + drLine(q, g, lang)).join(',<br>');
+  return '<div class="ask">' + tr('За да победим дракона, трябва да го нападнем с <b>два различни</b> вида оръжие. С дракона искат да се бият:', 'Щоб перемогти дракона, треба напасти його <b>двома різними</b> видами зброї. З драконом хочуть битися:') + '</div>' +
+    '<div class="given" style="text-align:left">' + tr(lines(false), lines(true)) + '.</div>' +
+    '<div class="ask">' + tr('По колко различни начина от ' + DR_ALL[N][0] + ' можем да изберем <b>двама</b>, които да победят дракона?', 'Скількома різними способами з усіх ' + DR_ALL[N][1] + ' можна вибрати <b>двох</b>, які переможуть дракона?') + '</div>' +
+    answerLine('xl');
+}
 function drawOutfits(q){
+  if(q.shape === 'dragon') return drawDragon(q);
   const [bgWho, ukWho] = OUT_WHO[q.who], S = OUT_SETS[q.set];
   return '<div class="ask">' + tr(bgWho + ' има ' + numSpan(q.a) + ' различни по цвят ' + S.bg[0] + ' и ' + numSpan(q.b) + ' различни по цвят ' + S.bg[1] + '. Колко различни тоалета може да облече ' + bgWho + '?',
     ukWho + ' має ' + numSpan(q.a) + ' ' + outUk(q.a, S.uk[0][0], S.uk[0][1]) + ' різного кольору і ' + numSpan(q.b) + ' ' + outUk(q.b, S.uk[1][0], S.uk[1][1]) +
       ' різного кольору. Скільки різних комплектів одягу може вдягнути ' + ukWho + '?') + '</div>' +
     answerLine('xl');
 }
-function eqOutfits(q){ return Array(q.b).fill(q.a).join(' + ') + ' = ' + q.ans; }
+function eqOutfits(q){ if(q.shape === 'dragon') return drPairs(q).map(p => p.n).join(' + ') + ' = ' + q.ans; return Array(q.b).fill(q.a).join(' + ') + ' = ' + q.ans; }
 // The picture: one row for each bottom, with every top beside it — the rows hold as many as there are tops,
 // and the outfits are numbered along them, ending on the count.
 const OUT_COLORS = ['var(--accent)', 'var(--good)', 'var(--warm)', 'var(--rose)', 'var(--grape)', 'var(--lemon)'];
@@ -47,6 +84,13 @@ function outfitsSvg(q){
     tr('всяка долна дреха с всяка горна', 'кожна нижня річ з кожною верхньою') + '">' + g + '</svg>';
 }
 function whyOutfits(q, full){
+  if(q.shape === 'dragon'){
+    if(!full) return tr('Двамата трябва да са с различно оръжие, значи от две различни групи. От кои две групи може да са? Преброй двойките за всеки две групи поотделно.',
+      'Двоє мають бути з різною зброєю, тож з двох різних груп. З яких двох груп вони можуть бути? Порахуй пари для кожних двох груп окремо.');
+    const ps = drPairs(q), lab = (g, uk) => uk ? DR_GROUPS[g].lead[q.sizes[g] === 1 ? 2 : 3] : DR_GROUPS[g].lead[q.sizes[g] === 1 ? 0 : 1];
+    const part = (p, uk) => lab(p.i, uk) + (uk ? ' з ' : ' с ') + drWith(q, p.j, uk) + ': ' + (q.sizes[p.i] === 1 || q.sizes[p.j] === 1 ? p.n : drProd(q.sizes[p.i], q.sizes[p.j]) + ' = ' + p.n);
+    return tr(ps.map(p => part(p, false)).join('; &nbsp;'), ps.map(p => part(p, true)).join('; &nbsp;')) + ' &nbsp;→&nbsp; <b>' + ps.map(p => p.n).join(' + ') + ' = ' + q.ans + '</b>';
+  }
   const S = OUT_SETS[q.set];
   if(!full) return tr('Вземи ' + S.one[0] + ': с колко различни ' + S.bg[0] + ' може да се облече? После направи същото с другите.',
     'Візьми ' + S.one[1] + ': зі скількома різними ' + S.with + ' її можна вдягнути? Потім зроби те саме з іншими.');

@@ -6,7 +6,7 @@
 // colour first, 3 cubes, and the 4th must repeat one.
 // [Bulgarian plural, Ukrainian plural for 2–4, Ukrainian plural for 5 and more, colour]
 /** @type {[string, string, string, string][]} */
-import { BGNUM, KIND, SLOT, UKNUM_F, answerLine, popAt, rnd, shuffle, svgText, tr, ukN } from '../js/core.js';
+import { BGNUM, KIND, SLOT, UKNUM_F, answerLine, popAt, rnd, shuffle, svgText, tr, ukN, ukWord } from '../js/core.js';
 const BLIND_COLS = [['сини', 'сині', 'синіх', 'var(--accent)'], ['зелени', 'зелені', 'зелених', 'var(--good)'], ['жълти', 'жовті', 'жовтих', 'var(--lemon)'], ['червени', 'червоні', 'червоних', 'var(--rose)']];
 // МБГ Полуфинал 2022, 1 клас, задача 13: of five pens alike in size and colour, two write in blue and three in red;
 // how many to take to be sure one writes in blue? The unluckiest hand is the three red ones first, so 3 + 1 = 4 —
@@ -55,7 +55,45 @@ function blindSvg(q){
 }
 const blindList = q => tr(q.n.map((c, i) => c + ' ' + BLIND_COLS[q.cols[i]][0]).join(', ').replace(/, ([^,]*)$/, ' и $1'),
   q.n.map((c, i) => c + ' ' + BLIND_COLS[q.cols[i]][c < 5 ? 1 : 2]).join(', ').replace(/, ([^,]*)$/, ' і $1'));
+// Салабашев 2025, 2 клас, задача 15: Тони has 4 blue, 10 black and 6 grey socks, all alike but for the colour. The fewest he must take
+// blind to be sure of a pair of one colour and a pair of another? The unluckiest hand has one pair only: every black sock (10) and one
+// of each other colour (2) are still just one pair; the next sock, blue or grey, makes the second: 10 + 2 + 1 = 13. With two colours
+// the same: the biggest lot and one of the other, and one more. Every colour has at least two socks, or there would be no second pair.
+// Level 481 (needs 189): the unlucky hand is the task, and every colour must be thought of. Own picture, own colours.
+// [Bulgarian, Ukrainian 2–4, Ukrainian 5 and more, colour]
+const SOCK_COLS = [['сини', 'сині', 'синіх', 'var(--accent)'], ['черни', 'чорні', 'чорних', 'var(--coal)'], ['сиви', 'сірі', 'сірих', 'var(--muted)'], ['червени', 'червоні', 'червоних', 'var(--rose)'], ['зелени', 'зелені', 'зелених', 'var(--good)']];
+const SOCK_WHO = [['Тони', 'Тоні'], ['Иво', 'Іво']];
+export function genBlindSocks(){
+  for(;;){
+    const k = Math.random() < 0.7 ? 3 : 2, cols = shuffle([0, 1, 2, 3, 4]).slice(0, k), n = cols.map(() => 2 + rnd(9)), T = n.reduce((t, v) => t + v, 0);
+    if(T > 21 || new Set(n).size !== k) continue;
+    const most = Math.max(...n), ans = most + k;
+    // the slips: the unluckiest hand with no second pair itself (most + k − 1), and two pairs of the smallest lots (2 + 2)
+    return {kind:'blind', shape:'socks', who: rnd(SOCK_WHO.length), cols, n, T, traps:[most + k - 1, 4].filter(v => v !== ans), ans};
+  }
+}
+const sockList = (q, uk) => q.n.map((c, i) => (uk ? c + ' ' + (c < 5 ? 'однакові' : 'однакових') + ' ' + SOCK_COLS[q.cols[i]][c < 5 ? 1 : 2] : c + ' еднакви ' + SOCK_COLS[q.cols[i]][0])).join(', ').replace(/, ([^,]*)$/, uk ? ' і $1' : ' и $1');
+function sockSvg(q){
+  let g = '';
+  q.n.forEach((c, r) => { for(let i = 0; i < c; i++) g += '<path d="M' + (8 + i*26) + ',' + (5 + r*32) + ' h10 v14 l9,7 v6 h-19 z" fill="' + SOCK_COLS[q.cols[r]][3] + '" stroke="var(--ink)" stroke-width="1.3" stroke-linejoin="round"/>'; });
+  const w = 14 + 26*Math.max(...q.n), h = 6 + 32*q.n.length;
+  return '<div class="fig small"><svg viewBox="0 0 ' + w + ' ' + h + '" style="max-width:' + Math.round(w*1.1) + 'px" role="img" aria-label="' + tr('чорапите по цветове', 'шкарпетки за кольорами') + '">' + g + '</svg></div>';
+}
+function drawSocks(q){
+  const [bg, uk] = SOCK_WHO[q.who];
+  return '<div class="ask">' + tr('В шкафа си ' + bg + ' има ' + sockList(q, false) + ' чорапа. Колко <b>най-малко</b> чорапи трябва да извади от шкафа си със затворени очи ' + bg + ', за да е сигурен, че сред извадените ще има <b>поне един чифт</b> чорапи от един цвят и <b>поне един чифт</b> от друг цвят?',
+    'У шафі ' + uk + ' є ' + sockList(q, true) + ' ' + ukWord(q.n[q.n.length - 1], 'шкарпетка', 'шкарпетки', 'шкарпеток') + '. Яку <b>найменшу</b> кількість шкарпеток має дістати із шафи із заплющеними очима ' + uk + ', щоб бути певним, що серед витягнутих буде <b>принаймні одна пара</b> шкарпеток одного кольору і <b>принаймні одна пара</b> іншого кольору?') + '</div>' +
+    sockSvg(q) + answerLine('xl');
+}
+function whySocks(q, full){
+  if(!full) return tr('Помисли за най-лошия случай: какво можеш да извадиш, като има чифт от най-много един цвят? Какво още извадено ще направи втори чифт?', 'Подумай про найгірший випадок: що можна витягти, щоб пара була лише одного кольору? Що ще витягнуте зробить другу пару?');
+  const most = Math.max(...q.n), c = SOCK_COLS[q.cols[q.n.indexOf(most)]], k = q.n.length;
+  return tr('най-лошото: всичките ' + most + ' ' + c[0] + ' — един цвят — и по един чорап от ' + (k === 2 ? 'другия цвят' : 'другите цветове') + ': ' + (k - 1) + '; следващият чорап вече прави втори чифт',
+    'найгірше: усі ' + most + ' ' + (most < 5 ? c[1] : c[2]) + ' — один колір — і по одній шкарпетці ' + (k === 2 ? 'іншого кольору' : 'інших кольорів') + ': ' + (k - 1) + '; наступна вже робить другу пару') +
+    ' &nbsp;→&nbsp; <b>' + most + ' + ' + (k - 1) + ' + 1 = ' + q.ans + '</b>';
+}
 function drawBlind(q){
+  if(q.shape === 'socks') return drawSocks(q);
   if(q.shape === 'one'){
     const [t, o] = q.n, a = BLIND_INK[q.cols[0]], b = BLIND_INK[q.cols[1]];
     const boxes = [q.ans].concat(q.alt).map((_, i) => i ? ', <span class="slot" id="slot' + i + '"></span>' : SLOT).join('');
@@ -69,10 +107,12 @@ function drawBlind(q){
     blindSvg(q) + answerLine('xl');
 }
 function eqBlind(q){
+  if(q.shape === 'socks') return Math.max(...q.n) + ' + ' + (q.n.length - 1) + ' + 1 = ' + q.ans;
   if(q.shape === 'one') return q.n[1] + ' + 1 = ' + q.ans + ' → ' + [q.ans].concat(q.alt).join(', ');
   return q.diff ? Math.max(...q.n) + ' + 1 = ' + q.ans : q.n.length + ' + 1 = ' + q.ans;
 }
 function whyBlind(q, full){
+  if(q.shape === 'socks') return whySocks(q, full);
   if(q.shape === 'one'){
     if(!full) return tr('Помисли за най-лошия случай: колко химикала може да вземеш, без нито един да пише в ' + BLIND_INK[q.cols[0]][0] + '? И ако вземеш още, пак ли е сигурно?',
       'Подумай про найгірший випадок: скільки ручок можна взяти так, щоб жодна не писала ' + BLIND_INK[q.cols[0]][1] + '? А якщо взяти ще, теж точно?');
@@ -87,5 +127,5 @@ function whyBlind(q, full){
     : tr('най-лошото: по едно от всеки цвят — ' + q.n.length + ' различни; следващото повтаря цвят', 'найгірше: по одному кожного кольору — ' + q.n.length + ' різні; наступний повторює колір') + ' &nbsp;→&nbsp; ' + q.n.length + ' + 1 = ' + q.ans;
 }
 // The lucky hand for the sure one: two cubes (189: «2», 2026-10-26), one pen (189: «1», 10-31)
-const slipBlind = (q, parts) => parts.length === 1 && +parts[0] === (q.shape === 'one' ? 1 : 2) && +parts[0] !== q.ans ? 'lucky' : null;
+const slipBlind = (q, parts) => parts.length === 1 && +parts[0] === (q.shape === 'one' ? 1 : q.shape === 'socks' ? 4 : 2) && +parts[0] !== q.ans ? 'lucky' : null;
 KIND.blind = { draw:drawBlind, eq:eqBlind, why:whyBlind, slip:slipBlind };

@@ -7,7 +7,7 @@
 // brings its own four: the three colours and «cannot be told».
 // [Bulgarian, Ukrainian, Ukrainian genitive]
 /** @type {[string, string, string][]} */
-import { KIND, shuffle, tr } from '../js/core.js';
+import { KIND, rnd, shuffle, tr } from '../js/core.js';
 const WC_KIDS = [['Алекс', 'Алекс', 'Алекса'], ['Борис', 'Борис', 'Бориса'], ['Катрин', 'Катрін', 'Катрін'], ['Мая', 'Мая', 'Маї'],
                  ['Иван', 'Іван', 'Івана'], ['Ния', 'Нія', 'Нії']];
 // [Bulgarian, for a balloon; Ukrainian, for a balloon (кулька)]
@@ -82,7 +82,92 @@ function whyWhoFruit(q, full){
     N[1] + ' — єдиний хлопчик, чиє ім’я починається з ' + (q.vowel ? 'голосного' : 'приголосного') + ' звука → <b>' + fr(named)[2] + '</b>; &nbsp;' + G[1] + ': не ' + fr(other)[2] + ', не ' + fr(named)[2] + ' → <b>' + fr(0)[2] + '</b>; &nbsp;' +
       O[1] + ' → лишається <b>' + fr(other)[2] + '</b>');
 }
+// Level 482. Салабашев 2025, 2 клас, задача 6: Валя, Петя, Рая and Соня are from Варна, Пловдив, Русе and София, in some order. No one's
+// town starts with the first letter of her name. Рая has never skied; she sometimes visits the girl from Пловдив. Петя and the girl from
+// София often ski together. Where is Соня from? Рая is not from Русе (her letter), not Пловдив (she visits that girl), not София (that girl
+// skis, she never has): Варна. Петя: not Пловдив (letter), not София (she skis with her), Варна is taken: Русе. Соня: not София (letter),
+// Варна and Русе taken: Пловдив. The girls and their towns share their first letters (В, П, Р, С), so the first clue is the same every
+// time; the other two name a girl who visits and never skis (A), one who skis with another (B), and the towns of the girls they name.
+// [Bulgarian, Ukrainian]; the girls and their towns share the index
+/** @type {[string, string][]} */
+const WCC_GIRL = [['Валя', 'Валя'], ['Петя', 'Петя'], ['Рая', 'Рая'], ['Соня', 'Соня']];
+// the town: Bulgarian, Ukrainian, the girl from it in Bulgarian, the Ukrainian genitive of the town («дівчина з …»)
+/** @type {[string, string, string, string][]} */
+const WCC_CITY = [['Варна', 'Варна', 'варненката', 'Варни'], ['Пловдив', 'Пловдив', 'пловдивчанката', 'Пловдива'], ['Русе', 'Русе', 'русенката', 'Русе'], ['София', 'Софія', 'софиянката', 'Софії']];
+const WCC_GIRL_GEN_UK = ['Валі', 'Петі', 'Раї', 'Соні'];
+// solve by elimination, logging each step: a girl with one town left, or a town only one girl is left for
+function wccSolve(A, Y, Z, B){
+  /** @type {Record<number, any>[]} */
+  const why = [{}, {}, {}, {}];   // why[g][c]: the reason town c is not for girl g
+  for(let g = 0; g < 4; g++) why[g][g] = { r:'i' };
+  const note = (g, c, r) => { if(!why[g][c]) why[g][c] = { r }; };
+  note(A, Y, 'v'); note(A, Z, 'ka'); note(B, Z, 'kb');
+  const town = [-1, -1, -1, -1], steps = [];
+  for(;;){
+    /** @type {any} */
+    let hit = null;
+    for(let g = 0; g < 4 && !hit; g++){
+      if(town[g] >= 0) continue;
+      const left = [0, 1, 2, 3].filter(c => !why[g][c]);
+      if(left.length === 1) hit = { g, c:left[0], type:'naked' };
+    }
+    for(let c = 0; c < 4 && !hit; c++){
+      if(town.includes(c)) continue;
+      const who = [0, 1, 2, 3].filter(g => town[g] < 0 && !why[g][c]);
+      if(who.length === 1) hit = { g:who[0], c, type:'hidden' };
+    }
+    if(!hit) break;
+    steps.push(Object.assign({ out: Object.assign({}, why[hit.g]) }, hit));
+    town[hit.g] = hit.c;
+    for(let g = 0; g < 4; g++) if(g !== hit.g && !why[g][hit.c]) why[g][hit.c] = { r:'t', by:hit.g };
+  }
+  return { town, steps };
+}
+// every way to give the four towns out, kept when it fits the three clues
+function wccFits(A, Y, Z, B){
+  /** @type {number[][]} */
+  const out = [], perm = (a, rest) => { if(!rest.length){ out.push(a); return; } rest.forEach((c, i) => perm(a.concat(c), rest.filter((_, j) => j !== i))); };
+  perm([], [0, 1, 2, 3]);
+  return out.filter(t => t.every((c, g) => c !== g) && t[A] !== Y && t[A] !== Z && t[B] !== Z);
+}
+export function genWhoCity(){
+  for(;;){
+    const [A, B] = shuffle([0, 1, 2, 3]), Y = rnd(4), Z = rnd(4), ask = rnd(4);
+    if(Y === A || Z === A || Z === B || Y === Z) continue;
+    const fits = wccFits(A, Y, Z, B);
+    if(!fits.length || fits.some(t => t[ask] !== fits[0][ask])) continue;
+    const { town } = wccSolve(A, Y, Z, B);
+    if(town[ask] < 0) continue;   // the elimination must reach her
+    const texts = [0, 1, 2, 3].map(c => [WCC_CITY[c][0], WCC_CITY[c][1]]), ids = shuffle([0, 1, 2, 3]), pick = ids.indexOf(town[ask]);
+    return {kind:'whocolor', shape:'city', A, B, Y, Z, ask, options: ids.map((t, id) => ({ id, v: id, text: texts[t] })), pick, own: true, ans: pick};
+  }
+}
+function drawWhoCity(q){
+  const g = WCC_GIRL, c = WCC_CITY, a = q.A, b = q.B;
+  return '<div class="ask">' + tr('Родните градове на ' + g[0][0] + ', ' + g[1][0] + ', ' + g[2][0] + ' и ' + g[3][0] + ' са ' + c[0][0] + ', ' + c[1][0] + ', ' + c[2][0] + ' и ' + c[3][0] + ' в някакъв ред. Родният град на никоя от тях не започва с първата буква на името ѝ. ' +
+      g[a][0] + ' никога не е карала ски; тя понякога ходи на гости на ' + c[q.Y][2] + '. ' + g[b][0] + ' и ' + c[q.Z][2] + ' често карат заедно ски. <b>От кой град е ' + g[q.ask][0] + '?</b>',
+    'Рідні міста ' + WCC_GIRL_GEN_UK.slice(0, 3).join(', ') + ' і ' + WCC_GIRL_GEN_UK[3] + ' — ' + c[0][1] + ', ' + c[1][1] + ', ' + c[2][1] + ' і ' + c[3][1] + ' в якомусь порядку. Рідне місто жодної з них не починається з першої літери її імені. ' +
+      g[a][1] + ' ніколи не каталась на лижах; вона іноді ходить у гості до дівчини з ' + c[q.Y][3] + '. ' + g[b][1] + ' і дівчина з ' + c[q.Z][3] + ' часто катаються разом на лижах. <b>З якого міста ' + g[q.ask][1] + '?</b>') + '</div>';
+}
+function eqWhoCity(q){
+  const { town } = wccSolve(q.A, q.Y, q.Z, q.B);
+  return tr(WCC_GIRL[q.ask][0] + ' е от ' + WCC_CITY[town[q.ask]][0], WCC_GIRL[q.ask][1] + ' — з ' + WCC_CITY[town[q.ask]][3]);
+}
+function whyWhoCity(q, full){
+  if(!full) return tr('Започни с момичето, за което има най-много „не“: за кои градове не може да е? После изключвай градовете, които вече са взети.', 'Почни з дівчини, про яку найбільше «не»: з яких міст вона не може бути? Потім викреслюй міста, які вже зайняті.');
+  const { steps } = wccSolve(q.A, q.Y, q.Z, q.B);
+  return steps.slice(0, steps.findIndex(st => st.g === q.ask) + 1).map(st => {
+    const name = uk => WCC_GIRL[st.g][uk ? 1 : 0], city = (c, uk) => WCC_CITY[c][uk ? 1 : 0];
+    const reason = (w, uk) => w.r === 'i' ? (uk ? 'та сама літера' : 'същата буква') : w.r === 'v' ? (uk ? 'ходить у гості до неї' : 'ходи на гости на нея')
+      : w.r === 'ka' ? (uk ? 'не катається на лижах, а вона катається' : 'не е карала ски, а тя кара') : w.r === 'kb' ? (uk ? 'катається з нею на лижах' : 'кара ски с нея')
+      : (uk ? 'вже в ' + WCC_GIRL[w.by][1] : 'вече е на ' + WCC_GIRL[w.by][0]);
+    const outs = uk => Object.keys(st.out).map(Number).sort().map(c => 'не ' + city(c, uk) + ' (' + reason(st.out[c], uk) + ')').join(', ');
+    return st.type === 'naked' ? tr(name(false) + ': ' + outs(false) + ' → <b>' + city(st.c, false) + '</b>', name(true) + ': ' + outs(true) + ' → <b>' + city(st.c, true) + '</b>')
+      : tr(city(st.c, false) + ': остава само ' + name(false) + ' → <b>' + city(st.c, false) + '</b>', city(st.c, true) + ': лишається лише ' + name(true) + ' → <b>' + city(st.c, true) + '</b>');
+  }).join('; &nbsp;');
+}
 function drawWhoColor(q){
+  if(q.shape === 'city') return drawWhoCity(q);
   if(q.shape === 'fruit') return drawWhoFruit(q);
   const [a, b, c] = [0, 1, 2].map(k => wcKid(q, k)), cs = [0, 1, 2].map(k => wcCol(q, k)), n1 = q.not1.map(k => wcCol(q, k)), n2 = wcCol(q, q.not2), who = wcKid(q, q.ask);
   return '<div class="ask">' + tr(a[0] + ', ' + b[0] + ' и ' + c[0] + ' имат по един балон с различен цвят – ' + cs.map(x => x[0]).join(', ').replace(/, ([^,]*)$/, ' и $1') +
@@ -91,10 +176,12 @@ function drawWhoColor(q){
     '. Кулька ' + a[2] + ' ні ' + n1[0][1] + ', ні ' + n1[1][1] + '. Кулька ' + b[2] + ' не ' + n2[1] + '. <b>Якого кольору кулька ' + who[2] + '?</b>') + '</div>';
 }
 function eqWhoColor(q){
+  if(q.shape === 'city') return eqWhoCity(q);
   if(q.shape === 'fruit') return eqWhoFruit(q);
   return [0, 1, 2].map(k => tr(wcKid(q, k)[0], wcKid(q, k)[1]) + ' — ' + tr(wcCol(q, q.has[k])[0], wcCol(q, q.has[k])[1])).join(', ');
 }
 function whyWhoColor(q, full){
+  if(q.shape === 'city') return whyWhoCity(q, full);
   if(q.shape === 'fruit') return whyWhoFruit(q, full);
   if(!full) return tr('Започни от детето, за което се казва кои два цвята не са неговите.', 'Почни з дитини, про яку сказано, яких двох кольорів у неї немає.');
   const [a, b, c] = [0, 1, 2].map(k => wcKid(q, k)), col = k => wcCol(q, q.has[k]);
