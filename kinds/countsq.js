@@ -114,7 +114,7 @@ function whyCountSq(q, full){
     const mini = big.map((b, i) => '<g transform="translate(' + (i % per)*(36 + gx) + ' ' + Math.floor(i / per)*46 + ')"' + popAt(1 + i*0.4) + '>' + mixedSvg(q, b) + '</g>').join('');
     const w = Math.min(big.length, per)*(36 + gx) - gx;
     return (big.length ? '<svg viewBox="-3 -3 ' + (w + 6) + ' ' + (rows*46 - 10 + 6) + '" style="display:block; width:' + Math.round((w + 6)*1.4) + 'px; max-width:100%; margin:6px auto" role="img" aria-label="' + tr('по-големите квадрати', 'більші квадрати') + '">' + mini + '</svg>' : '') +
-      sizes.map(k => k + tr(' на ', ' на ') + k + ': <b>' + q.bySize[k] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
+      sizes.map(k => k + ' на ' + k + ': <b>' + q.bySize[k] + '</b>').join(', ') + ' &nbsp;→&nbsp; ' + q.sizes.join(' + ') + ' = ' + q.ans;
   }
   if(!full && q.shape === 'strip') return tr('Не само малките: всеки четири квадратчета, събрани две на две, образуват квадрат — а може да има и по-голям.', 'Не лише маленькі: кожні чотири квадратики, складені два на два, утворюють квадрат — а може бути й більший.');
   if(!full) return tr('Не само малките: и всяко каре от плочки два на два е квадрат.', 'Не лише маленькі: кожен блок плиток два на два — теж квадрат.');

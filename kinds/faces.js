@@ -34,7 +34,6 @@ function grid(q){
 // (a circle, a square, a triangle; a straight, a smiling, a sad mouth). Every row and every column has each kind of each part once, so the
 // face in the empty place is the one the row and the column leave out. The answer is a picture: its own А–Г, the right face and three that
 // differ from it in one, two or all three parts; no vote on the parts (the face most like the others, or least) picks the right one.
-const KINDS = ['circle', 'square', 'triangle'];
 const latin = () => { const p = shuffle([0, 1, 2]), d = 1 + rnd(2); return [0, 1, 2].map(r => [0, 1, 2].map(c => p[(c + d*r) % 3])); };
 export function genFacesLatin(){
   for(;;){

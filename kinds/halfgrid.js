@@ -17,10 +17,9 @@ export function genHalfGrid(){
 // Half of 18 is 9, and 9 − 6 = 3 (shape 'sign': q.cells are the + squares; turning a − into a + takes one from each side, so the answer is the same count as for colouring).
 export function genHalfGridSign(){
   const q = genHalfGrid();
-  return {...q, shape:'sign'};
+  // the slip of the signs: the gap between the two counts (twice the answer), not the colouring's slips
+  return {...q, shape:'sign', traps:[2*q.ans]};
 }
-// level 360 draws the signs now and then, after the old question, so a seed recorded before keeps its task unless this draw turns it into one
-export const genHalfGridWide = () => { const q = genHalfGrid(); return Math.random() < 0.3 ? genHalfGridSign() : q; };
 // the first q.ans white squares (in reading order) are the ones to colour in the solution
 const toColour = q => { const out = []; for(let i = 0; i < q.W*q.H && out.length < q.ans; i++) if(!q.cells.includes(i)) out.push(i); return out; };
 function gridPic(q, extra){

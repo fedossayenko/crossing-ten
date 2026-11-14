@@ -203,6 +203,15 @@
     if(E.some(e => attr(e, 'rx') !== attr(e, 'ry'))) fail('515: a circle that is not round', q);
     let tot = E.length*2; P.forEach(p => { if(p.length < 3 || p.length > 6 || new Set(p.map(String)).size !== p.length || area(p) < 20) fail('515: a polygon with a hidden corner or no area', q); tot += p.length; });
     if(E.length + P.length !== 22) fail('515: not 22 parts', q);
+    // no corner hidden: no corner of a part lies inside (or within 1.5 of the outline of) a part drawn after it, and no circle reaches into a later part
+    const shapes = [...sv.matchAll(/<(polygon|ellipse)\b[^>]*>/g)].map(m => m[1] === 'polygon' ? { poly: pts(m[0]) } : { c: [+attr(m[0], 'cx'), +attr(m[0], 'cy')], r: +attr(m[0], 'rx') });
+    const segD = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], u = Math.max(0, Math.min(1, ((p[0] - a[0])*dx + (p[1] - a[1])*dy)/(dx*dx + dy*dy))); return Math.hypot(p[0] - a[0] - u*dx, p[1] - a[1] - u*dy); };
+    const inPoly = (p, poly) => { let c = false; for(let i = 0, j = poly.length - 1; i < poly.length; j = i++){ const [xi, yi] = poly[i], [xj, yj] = poly[j]; if((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi)*(p[1] - yi)/(yj - yi) + xi) c = !c; } return c; };
+    const near = (p, s, m) => s.poly ? inPoly(p, s.poly) || s.poly.some((a, i) => segD(p, a, s.poly[(i + 1) % s.poly.length]) < m) : Math.hypot(p[0] - s.c[0], p[1] - s.c[1]) < s.r + m;
+    shapes.forEach((s, i) => shapes.slice(i + 1).forEach(later => {
+      const probe = s.poly || Array.from({ length: 16 }, (_, k) => [s.c[0] + s.r*Math.cos(k*Math.PI/8), s.c[1] + s.r*Math.sin(k*Math.PI/8)]);
+      if(probe.some(p => near(p, later, s.poly ? 1.5 : 0.5))) fail('515: a part covers a corner (or the round edge) of a part drawn before it', q);
+    }));
     if(tot !== q.ans || tot < 60 || tot > 99) fail('515: the drawn parts cost ' + tot, q);
     if(new Set([...E.map(() => 2), ...P.map(p => p.length)]).size < 4) fail('515: fewer than four kinds of part', q);
     [...P.flat(), ...E.flatMap(e => [[+attr(e, 'cx') - +attr(e, 'rx'), +attr(e, 'cy') - +attr(e, 'ry')], [+attr(e, 'cx') + +attr(e, 'rx'), +attr(e, 'cy') + +attr(e, 'ry')]])].forEach(([x, y]) => { if(x < 0 || x > 240 || y < 0 || y > 254) fail('515: a part outside the picture', q); });

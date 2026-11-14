@@ -58,10 +58,12 @@ function numPyrSvg(q){
   s += cell(3.5*w, 7*h, '') + cell(4.5*w, 7*h, '') + cell(4*w, 8*h, '★', true);
   return '<div class="fig tall"><svg viewBox="-4 -4 ' + (6*w + 8) + ' ' + (9*h + 8) + '" role="img" aria-label="' + tr('две пирамиди от числа', 'дві піраміди з чисел') + '">' + s + '</svg></div>';
 }
-// Салабашев 2020, задача 4: four rows, each box the sum of the two under it; shown 7, 3, 7 along the base and 13, 10 above it — the top is 41
-// (shape 'four'). 2021, задача 11 (no key in the paper, our own solution is 2): five rows, 22 on top, 10, 7 and 1, 2 at the base end — the first
-// base box (shape 'five'). 2023, задача 4: three small pyramids with a symbol each, ⬡ − ♡ + ☁ (shape 'sym'; every number is found by the same rule,
-// from the boxes shown, ♡ = 12, ⬡ = 99, ☁ = 8 and 99 − 12 + 8 = 95). The boxes shown are fixed in a pattern (and its mirror); the numbers are drawn.
+// Plain sum pyramids, each box the sum of the two under it (level 490), one shape per Салабашев task:
+// - 'four', 2020 задача 4: four rows, 7, 3, 7 shown along the base and 13, 10 above it; the top is 41.
+// - 'five', 2021 задача 11 (the paper has no key; our own solution is 2): five rows, 22 on top, then 10, 7, and 1, 2 at the base end;
+//   the first base box.
+// - 'sym', 2023 задача 4: three small pyramids with a symbol each, ⬡ − ♡ + ☁ (♡ = 12, ⬡ = 99, ☁ = 8, so 99 − 12 + 8 = 95).
+// Which boxes are shown is a fixed pattern per shape (or its mirror); the numbers are drawn.
 const pk = (/** @type {number} */ r, /** @type {number} */ i) => r + ',' + i;
 /** every box found by the rule from the boxes given: a box over two known ones, or a known box over one known one */
 function pyrSolve(/** @type {number} */ n, /** @type {Record<string, number>} */ given){

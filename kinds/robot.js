@@ -6,30 +6,31 @@
 // pentagon, a hexagon and a triangle on each arm 10 + 12 + 6: 85 (the neck is a trapezoid whose top lies on the head's lower side: four corners).
 // A robot here has the same 14 places; each place holds a polygon of 2 to 6 corners (2 = a circle), drawn on its own place so that no corner is hidden.
 // A part is drawn as the one shape it is: a circle, or a polygon with as many points as corners.
-import { KIND, answerLine, popAt, rnd, svgFrame, tr, ukN } from '../js/core.js';
+import { KIND, answerLine, popAt, rnd, svgFrame, tr } from '../js/core.js';
 /** the places of the robot: [name, how many, centre x, centre y, width, height, what its four-cornered part looks like] (a pair stands on both sides) */
 const S = (name, n, cx, cy, w, h, style) => ({ name, n, cx, cy, w, h, style });
 export const ROBOT_SLOTS = [
-  S('knob', 1, 120, 26, 30, 26, 'rect'),
+  S('knob', 1, 120, 24, 30, 24, 'rect'),
   S('head', 1, 120, 74, 84, 70, 'rect'),
   S('eyes', 2, 100, 66, 22, 20, 'rect'),
-  S('brows', 2, 100, 50, 22, 16, 'rect'),
-  S('nose', 1, 120, 86, 20, 18, 'rect'),
-  S('mouth', 1, 120, 101, 36, 12, 'rect'),
-  S('ears', 2, 62, 74, 30, 50, 'rhomb'),
-  S('neck', 1, 120, 118, 40, 18, 'trap'),
-  S('body', 1, 120, 158, 64, 64, 'rect'),
-  S('legs', 2, 105, 215, 16, 50, 'rect'),
-  S('feet', 2, 100, 245, 30, 9, 'rect'),
-  S('upper', 2, 74, 146, 28, 32, 'rect'),
-  S('fore', 2, 46, 168, 30, 28, 'rect'),
-  S('hand', 2, 26, 190, 26, 24, 'rect')
+  S('brows', 2, 100, 47, 22, 12, 'rect'),
+  S('nose', 1, 120, 85, 20, 14, 'rect'),
+  S('mouth', 1, 120, 100, 36, 10, 'rect'),
+  S('ears', 2, 60, 74, 30, 50, 'rhomb'),
+  S('neck', 1, 120, 119, 40, 16, 'trap'),
+  S('body', 1, 120, 161, 64, 62, 'rect'),
+  S('legs', 2, 105, 218, 16, 48, 'rect'),
+  S('feet', 2, 100, 248, 30, 8, 'rect'),
+  S('upper', 2, 72, 148, 26, 32, 'rect'),
+  S('fore', 2, 44, 178, 28, 24, 'rect'),
+  S('hand', 2, 26, 204, 26, 22, 'rect')
 ];
 export const ROBOT_PRINTED = [2, 6, 2, 3, 3, 4, 4, 4, 4, 4, 4, 5, 6, 3];
 const total = t => t.reduce((s, v, i) => s + v*ROBOT_SLOTS[i].n, 0);
 export function genRobot(){
   for(;;){
-    const t = ROBOT_SLOTS.map(() => 2 + rnd(5)), sum = total(t);
+    // the head is never a circle: a round head is narrower than its place, and the brows and eyes would reach over its edge
+    const t = ROBOT_SLOTS.map((_, i) => i === 1 ? 3 + rnd(4) : 2 + rnd(5)), sum = total(t);
     if(sum < 60 || sum > 99 || new Set(t).size < 4) continue;
     return {kind:'robot', t, ans: sum};
   }

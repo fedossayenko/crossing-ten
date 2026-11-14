@@ -40,7 +40,6 @@ export function genEqH(){
   }
 }
 // level 158 draws the H now and then, after the old question, so a seed recorded before keeps its task unless this draw turns it into an H
-export const genEqCrossWide = () => { const q = genEqCross(); return Math.random() < 0.25 ? genEqH() : q; };
 /** the H: columns 0, 2 and 4 carry an equality each from top to bottom, row 2 the one across */
 function eqHSvg(/** @type {any} */ q){
   const u = 34, cell = (/** @type {number} */ i, /** @type {number} */ j, /** @type {string|number} */ t, /** @type {boolean} */ tint) => '<rect x="' + (i*u + 2) + '" y="' + (j*u + 2) + '" width="' + (u - 4) + '" height="' + (u - 4) + '" rx="6" fill="' +
