@@ -93,14 +93,14 @@
   }
 
   // ---- 373: the tokens as drawn, row by row: a coloured one is filled, a white one is not
-  const toks = svg => [...svg.matchAll(/<circle [^>]*fill="var\(--(accent|solid)\)"/g)].map(m => m[1] === 'accent' ? 1 : 0);
+  const toks = svg => [...svg.matchAll(/<circle [^>]*fill="var\(--(accent|warm)\)"/g)].map(m => m[1] === 'accent' ? 1 : 0);
   for(let i = 1; i <= 3000; i++){
     const q = Q.seeded(i, () => Q.raw(373)), base = toks(svgs(given(q))[0]);
     const mine = only('373', q.options, o => toks(o.text[0]).every((x, k) => x === 1 - base[k]) && toks(o.text[0]).length === base.length);
     if(mine.id !== q.pick || new Set(q.options.map(o => toks(o.text[0]).join(''))).size !== 5) fail('373: the picked option is not every token turned over, or options repeat', q);
   }
   {   // the printed instance: ● / ○ ● / ● ○ ○ → ○ / ● ○ / ○ ● ● (E)
-    const q = pin('Кенгуру 2026 task 6', 'ek-2026-2', 373, g => g.n === 3 && g.base.join('') === '101100', ['Показаните жетони са бели от едната страна и цветни от другата. Как изглеждат те след като се преобърнат?']);
+    const q = pin('Кенгуру 2026 task 6', 'ek-2026-2', 373, g => g.n === 3 && g.base.join('') === '101100', ['Показаните жетони са жълти от едната страна и сини от другата. Как изглеждат те след като се преобърнат?']);
     if(toks(q.options[q.pick].text[0]).join('') !== '010011') throw new Error('Кенгуру 2026 task 6: the right option is not ○ / ● ○ / ○ ● ●');
   }
 

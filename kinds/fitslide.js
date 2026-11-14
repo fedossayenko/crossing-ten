@@ -76,7 +76,7 @@ function board(q, placed){
   }
   if(placed) placed.forEach((/** @type {number[][]} */ cs, k) => cs.forEach(([x, y]) => { g += cell(x, y, u, PCOL[q.nums[k] - 1], 'var(--ink)', 1.2, false); }));
   else q.hole.forEach(([x, y]) => { g += cell(x, y, u, 'var(--solid)', 'var(--muted)', 1.2, true); });
-  return '<svg viewBox="0 0 ' + N * u + ' ' + N * u + '" width="' + N * u + '" height="' + N * u + '" style="max-width:100%" role="img" aria-label="' + tr('дъска 7 на 7 с дупка от бели квадратчета', 'дошка 7 на 7 з діркою з білих квадратиків') + '">' + g + '</svg>';
+  return '<svg viewBox="0 0 ' + N * u + ' ' + N * u + '" width="' + N * u + '" height="' + N * u + '" style="max-width:100%" role="img" aria-label="' + tr('дъска 7 на 7 с дупка от празни квадратчета', 'дошка 7 на 7 з діркою з порожніх квадратиків') + '">' + g + '</svg>';
 }
 function pieceSvg(/** @type {Cells} */ c, k){
   const u = 18, w = Math.max(...c.map(p => p[0])) + 1, h = Math.max(...c.map(p => p[1])) + 1;
