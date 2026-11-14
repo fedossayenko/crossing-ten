@@ -26,12 +26,16 @@ export function genMirrorRow(){
     if(shape === 'shirt' && Math.random() < 0.4){ row[2] = row[0]; }   // 2 0 2 1: a sign twice, as the paper has it
     const names = ['order', 'signs', 'half', 'upside', 'both', 'mixed'], right = mrSig(row, OPS.mirror);
     const wrong = [];
-    shuffle(names.slice(0, 4)).concat(names.slice(4)).forEach(n => { const s = mrSig(row, OPS[n]); if(s !== right && wrong.length < 4 && !wrong.some(w => w.s === s)) wrong.push({ n, s }); });
+    shuffle(names.slice()).forEach(n => { const s = mrSig(row, OPS[n]); if(s !== right && wrong.length < 4 && !wrong.some(w => w.s === s)) wrong.push({ n, s }); });
     if(wrong.length < 4 || (shape === 'shirt' && row.filter(g => !MR_GLYPH[g][2]).length < 2)) continue;
+    if(mrMajority(wrong.map(w => w.n).concat('mirror')) === 'mirror') continue;   // the options must not give the answer away by a vote
     const ops = shuffle(wrong.map(w => w.n).concat('mirror')), pick = ops.indexOf('mirror');
     return {kind:'mirrorrow', shape, row, ops, options: ops.map((n, id) => ({ id, v: id, text: ['<span class="vw">' + mrPic(row, OPS[n]) + '</span>', '<span class="vw">' + mrPic(row, OPS[n]) + '</span>'], op: OPS[n], sig: mrSig(row, OPS[n]) })), pick, own: true, ans: pick};
   }
 }
+// taking, for order, turn and upside down, whatever most of the five options do: that must not be the mirror itself
+export const mrMajority = (/** @type {string[]} */ names) => { const v = /** @type {(k: 'rev'|'fx'|'fy') => boolean} */ (k => names.filter(n => OPS[n][k]).length * 2 > names.length);
+  const m = { rev: v('rev'), fx: v('fx'), fy: v('fy') }; return Object.keys(OPS).find(n => OPS[n].rev === m.rev && OPS[n].fx === m.fx && OPS[n].fy === m.fy) || ''; };
 const STEP = 32;
 /** the signs of a row as drawn glyphs, centred on cx, at height cy */
 function glyphs(row, cx, cy, step, size, o){

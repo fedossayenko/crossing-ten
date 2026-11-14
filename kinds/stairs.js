@@ -26,7 +26,7 @@ function mk(shape, N){
 }
 function pic(q, mark){
   const u = 26, W = q.shape === 'pyramid' ? 2*q.N - 1 : q.N;
-  const g = q.cells.map(([r, x, on]) => '<rect x="' + x*u + '" y="' + r*u + '" width="' + u + '" height="' + u + '" fill="' + (on ? 'var(--good)' : 'none') + '" fill-opacity=".7" stroke="var(--ink)" stroke-width="1.4"/>').join('');
+  const g = q.cells.map(([r, x, on]) => '<rect x="' + x*u + '" y="' + r*u + '" width="' + u + '" height="' + u + '" fill="' + (on ? 'var(--good)' : 'var(--paper)') + '" stroke="var(--fur-dark)" stroke-width="1.4"/>').join('');
   let lab = '';
   if(mark) for(let r = 0; r < q.N; r++){
     const row = q.cells.filter(c => c[0] === r), d = row.filter(c => c[2]).length - row.filter(c => !c[2]).length;

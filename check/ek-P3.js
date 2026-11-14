@@ -33,6 +33,7 @@
   const checkMirror = q => {
     const mine = only('mirror', q.options, o => readRow(o.text[0]) === mirrorOf(q.row));
     if(mine.id !== q.pick) fail('370: the picked option is not the mirror', q);
+    if(Q.mrMajority(q.ops) === 'mirror') fail('370: a vote on order, turn and upside down over the five options gives the answer', q);
     if(new Set(q.options.map(o => readRow(o.text[0]))).size !== 5 || q.options.some(o => o.text[0] !== o.text[1])) fail('370: options repeat', q);
     if(readRow(given(q).match(/<svg[\s\S]*?<\/svg>/)[0]) !== q.row.map(g => g).join(' ')) fail('370: the picture in the task is not the row', q);
   };

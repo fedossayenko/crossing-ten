@@ -58,7 +58,7 @@ function board(q, way){
   const W = Math.max(q.C * U + 44, 200), x0 = (W - q.C * U) / 2, g = greySet(q), H = q.R * U + 8, key = H + 6;
   let s = '';
   for(let r = 0; r < q.R; r++) for(let c = 0; c < q.C; c++)
-    s += '<rect x="' + (x0 + c * U) + '" y="' + (4 + r * U) + '" width="' + U + '" height="' + U + '" fill="' + (g.has(r + ',' + c) ? 'var(--fur)' : 'var(--solid)') + '" stroke="var(--ink)" stroke-width="1.8"/>';
+    s += '<rect x="' + (x0 + c * U) + '" y="' + (4 + r * U) + '" width="' + U + '" height="' + U + '" fill="' + (g.has(r + ',' + c) ? 'var(--fur)' : 'var(--paper)') + '" stroke="var(--fur-dark)" stroke-width="1.8"/>';
   s += svgText(x0 - 11, 4 + (q.R - 1) * U + U / 2 + 5, 'А', 16, 'var(--ink)') + svgText(x0 + q.C * U + 11, 4 + U / 2 + 5, 'В', 16, 'var(--ink)');
   if(way){
     const pts = way.map(([r, c]) => (x0 + c * U + U / 2) + ',' + (4 + r * U + U / 2));
@@ -66,7 +66,7 @@ function board(q, way){
     way.forEach(([r, c], i) => { s += '<g' + popAt(1 + i * 0.6) + '><circle cx="' + (x0 + c * U + U / 2) + '" cy="' + (4 + r * U + U / 2) + '" r="10" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="2"/>' +
       svgText(x0 + c * U + U / 2, 4 + r * U + U / 2 + 5, g.has(r + ',' + c) ? q.gc : q.wc, 14, 'var(--ink)') + '</g>'; });
   }
-  s += '<rect x="' + (W / 2 - 62) + '" y="' + (key - 1) + '" width="16" height="16" fill="var(--solid)" stroke="var(--ink)" stroke-width="1.8"/>' + svgText(W / 2 - 24, key + 12, '= ' + q.wc, 14, 'var(--ink)') +
+  s += '<rect x="' + (W / 2 - 62) + '" y="' + (key - 1) + '" width="16" height="16" fill="var(--paper)" stroke="var(--fur-dark)" stroke-width="1.8"/>' + svgText(W / 2 - 24, key + 12, '= ' + q.wc, 14, 'var(--ink)') +
     '<rect x="' + (W / 2 + 6) + '" y="' + (key - 1) + '" width="16" height="16" fill="var(--fur)" stroke="var(--ink)" stroke-width="1.8"/>' + svgText(W / 2 + 44, key + 12, '= ' + q.gc, 14, 'var(--ink)');
   return svgFrame('0 0 ' + W + ' ' + (H + 26), W, tr('дъска от бели и сиви квадратчета', 'дошка з білих і сірих клітинок')) + s + '</svg>';
 }
