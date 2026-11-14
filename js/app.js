@@ -957,7 +957,7 @@ function pickAsk(k){
 // the answer and its way.
 function mistOf(){
   const shown = S.mist[S.i];
-  return !COMP && shown != null && S.judged[S.i] == null ? { mist: true, shown } : null;
+  return !COMP && !LOCAL.choice && shown != null && S.judged[S.i] == null ? { mist: true, shown } : null;   // А/Б/В/Г switched on mid-round: no Мишо among the four
 }
 function paintMist(){
   const a = S.ask;

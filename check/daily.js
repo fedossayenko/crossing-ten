@@ -22,6 +22,11 @@
   // a round of a missed level today (study) moves its check to tomorrow; missed twice running, it waits two days
   const p3 = APP.dailyPlan(rounds.concat(own(9, 0), mixed(2, [e(10, 0)])), APP.LEVELS, now);
   if(p3.items.some(x => x.id === 9 || x.id === 10)) throw new Error('daily: 9 (studied today) or 10 (missed twice running) came back today: ' + JSON.stringify(p3.items));
+  // a task where Мишо was right and she agreed is copied, not solved: it is no right answer of hers on the ladder
+  { const lvs = [9, 10, 11, 12], t = lvs.map(lv => e(lv, 1)), r = j => mixed(2, t, { judged: j });
+    const has = j => APP.dailyPlan([r(j)], APP.LEVELS, now).items.some(x => x.id === 10);
+    if(!has(undefined) || has([null, [ans(10), 1], null, null]) || !has([null, [ans(10) + 1, 1], null, null]))
+      throw new Error('daily: a task copied from Мишо counted as her right answer (or a found mistake did not)'); }
   // under three levels met: nothing to mix yet
   if(APP.dailyPlan([own(2, 2), own(5, 2)], APP.LEVELS, now).items.length) throw new Error('daily: a practice of two levels');
   // «Намери грешката»: the answer shown as someone else's is a trap of the task and never one it accepts (nor negative, nor
