@@ -5,6 +5,20 @@
 // is how far a number is short of 100, so 29 − 19 − 9 = 1.
 import { KIND, SLOT, answerLine, numSpan, rnd, shuffle, tr } from '../js/core.js';
 export function genBrackets(){
+  const q = genBracketsOld();
+  return Math.random() < 0.12 ? genBracketsDigits() : q;   // drawn after the others, so they keep their seeds
+}
+// Салабашев 2025, задача 1: 20 + 25 − (2 + 0 + 2 + 5) — two two-digit numbers, the bracket of four one-digit numbers
+// (a 0 among them, as in a year) taken away: 45 − 9 (shape 7).
+function genBracketsDigits(){
+  for(;;){
+    const a = 10 + rnd(40), b = 10 + rnd(40), ds = [rnd(10), rnd(10), rnd(10), rnd(10)], z = ds.filter(d => !d).length;
+    const sum = ds[0] + ds[1] + ds[2] + ds[3];
+    if(z !== 1 || sum < 4 || a + b - sum < 10) continue;
+    return {kind:'brackets', shape:7, a, b, ds, ans: a + b - sum};
+  }
+}
+function genBracketsOld(){
   if(Math.random() < 0.12){
     // Коледно 2023, задача 2: (100 − 57) + 0 − (96 − 78). Each bracket first, and the + 0 changes
     // nothing: 43 + 0 − 18 = 25.
@@ -146,7 +160,7 @@ function whyBracketsShort(q, full){
   const flat = q.t.map((x, i) => (i ? x.s + ' ' : '') + sbVal(x)).join(' ');
   return (steps.length ? steps.join(', ') + ' &nbsp;→&nbsp; ' : '') + flat + ' = ' + q.ans;
 }
-export const bracketsExpr = q => SB_ALL[q.shape] ? sbExpr(q) : q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
+export const bracketsExpr = q => SB_ALL[q.shape] ? sbExpr(q) : q.shape === 7 ? q.a + ' + ' + q.b + ' − (' + q.ds.join(' + ') + ')' : q.shape === 6 ? '(' + q.a + ' − ' + q.b + ') + 0 − (' + q.c + ' − ' + q.d + ')' : q.shape === 5 ? q.a + ' − (' + q.a + ' − ' + q.b + ') + ' + q.c + ' − ' + q.d : q.shape === 4 ? '(' + q.a + ' + ' + q.b + ') + (' + q.c + ' − ' + q.d + ') − (' + q.e + ' + ' + q.f + ' − ' + q.g + ')' : q.shape === 3 ? [q.first].concat(q.gs).map(([a, b]) => '(' + a + ' − ' + b + ')').join(' − ') : q.shape === 2 ? '(' + [q.N].concat(q.down).join(' − ') + ') + (' + q.up.join(' + ') + ')' : q.shape === 0 ? q.a + ' − (' + q.b + ' − ' + q.c + ')' : q.xs.map(x => '(100 − ' + x + ')').join(' − ');
 function drawBrackets(q){
   if(SB_ALL[q.shape]) return drawBracketsShort(q);
   return '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div>' +
@@ -158,6 +172,11 @@ function eqBrackets(q){
 }
 function whyBrackets(q, full){
   if(SB_ALL[q.shape]) return whyBracketsShort(q, full);
+  if(q.shape === 7){
+    if(!full) return tr('Първо сметката в скобите, после отляво надясно.', 'Спершу обчисли в дужках, потім зліва направо.');
+    const sum = q.ds.reduce((t, v) => t + v, 0);
+    return q.ds.join(' + ') + ' = <b>' + sum + '</b>, ' + q.a + ' + ' + q.b + ' = <b>' + (q.a + q.b) + '</b> &nbsp;→&nbsp; ' + (q.a + q.b) + ' − ' + sum + ' = ' + q.ans;
+  }
   if(q.shape === 6){
     if(!full) return tr('Първо сметките в скобите. Какво прави + 0?', 'Спершу обчисли в дужках. Що змінює + 0?');
     return q.a + ' − ' + q.b + ' = <b>' + (q.a - q.b) + '</b>, ' + q.c + ' − ' + q.d + ' = <b>' + (q.c - q.d) + '</b> &nbsp;→&nbsp; ' + (q.a - q.b) + ' + 0 − ' + (q.c - q.d) + ' = ' + q.ans;

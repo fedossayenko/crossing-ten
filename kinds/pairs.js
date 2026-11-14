@@ -3,7 +3,17 @@
 // Задача 2: the terms pair up into tens. A pair making ten is always odd+odd or
 // even+even (1+9, 3+7, 2+8) — that parity is the tell she learns to spot.
 import { KIND, chainLine, exprText, rnd, shuffle, tr } from '../js/core.js';
-export function genPairs(){ return Math.random() < 0.5 ? genPairsTens() : genPairsSub(); }
+export function genPairs(){
+  const q = Math.random() < 0.5 ? genPairsTens() : genPairsSub();
+  return Math.random() < 0.12 ? genPairsAp() : q;   // drawn after the old shapes, so they keep their seeds
+}
+// Салабашев 2019, задача 1: 11 + 13 + 15 + 17 + 19 — a run with step 2 (five or seven terms): the ends make the same sum,
+// 11 + 19 = 13 + 17 = 30, and the middle one stands alone (shape 'ap'). The answer stays within 100.
+function genPairsAp(){
+  const n = Math.random() < 0.7 ? 5 : 7, s = n === 5 ? 10 + rnd(7) : 3 + rnd(6), terms = [];
+  for(let i = 0; i < n; i++) terms.push({op: i ? '+' : '', n: s + 2*i});
+  return {kind:'pairs', shape:'ap', n, s, terms, ans: n*(s + n - 1)};
+}
 function genPairsTens(){
   if(Math.random() < 0.15){
     // Зима 2022: pairs that make different round numbers (2 + 8 = 10, 12 + 18 = 30), then two
@@ -200,6 +210,12 @@ function eqPairs(q){
   return exprText(q.terms) + ' = ' + q.ans;
 }
 function whyPairs(q, full){
+  if(q.shape === 'ap'){
+    if(!full) return tr('Събери първото с последното, второто с предпоследното — получават се еднакви суми.', 'Додай перше з останнім, друге з передостаннім — виходять однакові суми.');
+    const ts = q.terms.map(t => t.n), h = (q.n - 1)/2, top = ts[0] + ts[q.n - 1], g = [];
+    for(let i = 0; i < h; i++) g.push('<b>(' + ts[i] + ' + ' + ts[q.n - 1 - i] + ')</b>');
+    return g.join(' + ') + ' + ' + ts[h] + ' = ' + Array(h).fill(top).join(' + ') + ' + ' + ts[h] + ' = ' + q.ans;
+  }
   if(q.shape === 'back'){
     if(!full) return tr('Число, което се добавя и веднага се изважда, не променя нищо — такива двойки се махат.', 'Число, яке додають і відразу віднімають, нічого не змінює — такі пари знищуються.');
     return q.cs.map(c => '<b>+ ' + c + ' − ' + c + '</b>').join(', ') + tr(' — всяка двойка дава 0 &nbsp;→&nbsp; остава ', ' — кожна пара дає 0 &nbsp;→&nbsp; залишається ') +

@@ -105,6 +105,17 @@ const namedEdgeAsk = q => {
 const namedBoxCells = n => '<span style="display:inline-flex; vertical-align:middle">' + '<span style="display:inline-block; width:1.1em; height:1.3em; border:2px solid var(--muted); margin-left:-2px"></span>'.repeat(n) + '</span>';
 const NAMED_DIGS = {1:['едноцифрено', 'одноцифрове'], 2:['двуцифрено', 'двоцифрове'], 3:['трицифрено', 'трицифрове']};
 export function genNamed(){
+  const q = genNamedOld();
+  return Math.random() < 0.08 ? genNamedDigits() : q;   // drawn after the old shapes, so they keep their seeds
+}
+// Салабашев 2024, задача 3 (shape 'dsum'): с колко най-голямото двуцифрено число е по-голямо от сбора на цифрите си? — 99 − (9 + 9) = 81;
+// the same for the smallest two-digit number (10 − 1 = 9) and the smallest three-digit one (100 − 1 = 99).
+const DSUM = [[0, 99], [1, 10], [2, 100]];
+function genNamedDigits(){
+  const w = rnd(DSUM.length), n = DSUM[w][1], sum = String(n).split('').reduce((t, d) => t + +d, 0);
+  return {kind:'named', shape:'dsum', w, n, sum, traps:[sum], ans: n - sum};
+}
+function genNamedOld(){
   if(Math.random() < 0.06){
     const v = Math.random() < 0.5 ? 0 : rnd(4), f = namedFour(v);
     return {kind:'named', shape:5, v, wit: f.wit, ans: f.best};
@@ -171,6 +182,10 @@ const namedGen = {2:'двох', 3:'трьох', 4:'чотирьох', 5:'п’я
 const namedNum = n => n + ' ' + (UK_PLURAL.select(n) === 'few' ? 'числа' : n === 1 ? 'число' : 'чисел');
 
 function drawNamed(q){
+  if(q.shape === 'dsum'){
+    const names = [['най-голямото двуцифрено число', 'найбільше двоцифрове число'], ['най-малкото двуцифрено число', 'найменше двоцифрове число'], ['най-малкото трицифрено число', 'найменше трицифрове число']][q.w];
+    return '<div class="ask">' + tr('С колко ' + names[0] + ' е по-голямо от сбора на цифрите си?', 'На скільки ' + names[1] + ' більше за суму своїх цифр?') + '</div>' + answerLine('xl');
+  }
   if(q.shape === 'boxes'){
     const [N, M] = [NAMED_DIGS[q.n], NAMED_DIGS[q.m]];
     return '<div class="ask">' + tr('Напиши липсващите числа, за да е вярно решена задачата: от ' + N[0] + ' число извадих ' + M[0] + ' и получих <span class="num">' + q.r + '</span>.',
@@ -241,7 +256,9 @@ function drawNamed(q){
     answerLine('xl');
 }
 const namedSumText = q => { const A = NAMED_ONE[0][q.a][2], B = NAMED_ONE[1][q.b][2]; return q.sum ? A + ' + ' + B : B + ' − ' + A; };
+const dsumDigits = q => String(q.n).split('').join(' + ');
 function eqNamed(q){
+  if(q.shape === 'dsum') return q.n + ' − (' + dsumDigits(q) + ') = ' + q.ans;
   if(q.shape === 'boxes') return q.big + ' − ' + q.small + ' = ' + q.r + ' → ' + q.big + ', ' + q.small;
   if(q.shape === 'nine' || q.shape === 'zero') return q.a + (q.sum ? ' + ' : ' − ') + q.o + ' = ' + q.ans;
   if(q.shape === 7) return namedSumText(q) + ' = ' + q.ans;
@@ -261,6 +278,10 @@ function eqNamed(q){
 // «Няколко» digits adding up to S with 0 and 9 the ends: what is left over, taken from 8 down (12: 0 + 3 + 9)
 const looseWit = S => { const mid = []; for(let d = 8, r = S - 9; r > 0 && d > 0; d--) if(d <= r){ mid.unshift(d); r -= d; } return [0, ...mid, 9]; };
 function whyNamed(q, full){
+  if(q.shape === 'dsum'){
+    if(!full) return tr('Първо кое е числото. После сбор на цифрите му и разлика.', 'Спершу — яке це число. Потім сума його цифр і різниця.');
+    return q.n + ', ' + dsumDigits(q) + ' = <b>' + q.sum + '</b> &nbsp;→&nbsp; ' + q.n + ' − ' + q.sum + ' = ' + q.ans;
+  }
   if(q.shape === 'boxes'){
     if(!full) return tr('Първото число трябва да е колкото може по-малко, а второто — колкото може по-голямо.', 'Перше число має бути якомога меншим, а друге — якомога більшим.');
     const [N, M] = [NAMED_DIGS[q.n], NAMED_DIGS[q.m]];

@@ -6,6 +6,16 @@ export const places = (n, u) => n + ' ' + PLACE[u][n === 1 ? 0 : 1];
 // Задача 1 and 5: a number said in tens, ones and hundreds instead of digits. Ten ones
 // make a десетица and ten десетици a стотица, so the same amount has many spellings.
 export function genTens(){
+  const q = genTensOld();
+  return Math.random() < 0.1 ? genTensOver() : q;   // drawn after the old shapes, so they keep their seeds
+}
+// Салабашев 2021, задача 5: «Кое число съдържа 2 десетици и 15 единици?» — the ones run past nine, so ten of them are one more
+// десетица: 20 + 15 = 35 (shape 'over'). The slips: 25 (the ones' digit beside the tens) and 15.
+function genTensOver(){
+  const a = 1 + rnd(7), b = 10 + rnd(10);
+  return {kind:'tens', shape:'over', a, b, traps:[...new Set([10*a + b % 10, b])], ans: 10*a + b};
+}
+function genTensOld(){
   const shape = rnd(5);
   if(shape === 4){
     // Задача 1: the count of ones runs past nine, so it carries into the tens — and the
@@ -64,6 +74,8 @@ const tensUk = {1:{one:'одиниця', few:'одиниці', many:'одини�
 const tensUkPlaces = (n, u) => ukN(n, tensUk[u].one, tensUk[u].few, tensUk[u].many);
 const tensPlaces = (n, u) => tr(places(n, u), tensUkPlaces(n, u));
 function drawTens(q){
+  if(q.shape === 'over') return '<div class="ask">' + tr('Кое число съдържа ' + places(q.a, 10) + ' и ' + places(q.b, 1) + '?', 'Яке число містить ' + tensUkPlaces(q.a, 10) + ' і ' + tensUkPlaces(q.b, 1) + '?') + '</div>' +
+    answerLine('xl');
   if(q.shape === 'said'){
     return '<div class="ask">' + (q.sum
       ? tr('Първото събираемо ' + tensSaidBg(q.A) + '. Второто събираемо ' + tensSaidBg(q.B) + '. <b>Сборът</b> е:', 'Перший доданок ' + tensSaidUk(q.A) + '. Другий доданок ' + tensSaidUk(q.B) + '. <b>Сума</b> дорівнює:')
@@ -87,10 +99,15 @@ function drawTens(q){
     answerLine('xl');
 }
 function eqTens(q){
+  if(q.shape === 'over') return 10*q.a + ' + ' + q.b + ' = ' + q.ans;
   if(q.shape === 'said') return q.a + (q.sum ? ' + ' : ' − ') + q.b + ' = ' + q.ans;
   return tr('разредни единици → ', 'розрядні одиниці → ') + q.ans;
 }
 function whyTens(q, full){
+  if(q.shape === 'over'){
+    if(!full) return tr('Всяка десетица е десет единици. Събери десетиците и единиците.', 'Кожен десяток — це десять одиниць. Додай десятки й одиниці.');
+    return tensPlaces(q.a, 10) + ' = <b>' + 10*q.a + '</b> &nbsp;→&nbsp; ' + 10*q.a + ' + ' + q.b + ' = ' + q.ans;
+  }
   if(q.shape === 'said'){
     if(!full) return tr('Запиши всяко число с цифри: първо цифрата на десетиците, после — на единиците.', 'Напиши кожне число цифрами: спершу цифру десятків, потім — одиниць.');
     const one = n => tensPlaces(n.t, 10) + tr(' и ', ' і ') + (n.rel === 0 ? '' : n.t + (n.rel === 1 ? ' − ' : ' + ') + n.k + ' = ') + tensPlaces(n.u, 1) + ' &nbsp;→&nbsp; <b>' + (10*n.t + n.u) + '</b>';

@@ -147,7 +147,9 @@
     if(found.length !== 1 || found[0][0] !== q.ans || found[0][1] !== q.alt[0] || q.alt[0] < 1 || q.S > 60) fail('289: the pair', q);
   }
   for(let i = 0; i < 3000; i++){
-    const q = Q.raw(290), st = q.seq.slice(1).map((v, j) => v - q.seq[j]); count('diffseq ' + q.shape);
+    const q = Q.raw(290), st = q.seq.slice(1).map((v, j) => v - q.seq[j]);
+    if(q.shape === 'hole') continue;   // Салабашев 2023 #6, worked again in check/sal-S1.js
+    count('diffseq ' + q.shape);
     if(q.shape === 'const'){
       if(q.seq.length !== 5 || st.some(x => x !== (q.up ? q.d : -q.d)) || q.seq.some(v => v < 0 || v > 99) || [q.ans].concat(q.alt).join() !== q.seq.slice(1).join()) fail('290: the five', q);
     } else {

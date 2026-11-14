@@ -66,8 +66,48 @@ export function genBox(){
   do { a = 7 + rnd(14); } while(a === b || a <= box);
   return {kind:'box', a, b, x, y, box, r, ans: a - box};
 }
+// Level 11's draw: the old shapes, and now and then one of three from the Салабашев papers (drawn after the old, so those keep their seeds).
+export function genBoxMore(){
+  const q = genBox(), w = Math.random();
+  return w < 0.05 ? genDefBox() : w < 0.1 ? genDiffBox() : w < 0.15 ? genThreeBox() : q;
+}
+// Салабашев 2022, задача 1: 66 − 9 + 11 = ♡, what is ♡ + 25? — the number is found by a short chain, then used (shape 'def').
+function genDefBox(){
+  for(;;){
+    const a = 30 + rnd(50), b = 2 + rnd(18), c = 5 + rnd(26), v = a - b + c, k = 11 + rnd(20);
+    if(v + k > 99 || v < 20) continue;
+    return {kind:'box', shape:'def', a, b, c, v, k, ans: v + k};
+  }
+}
+// Салабашев 2024, задача 2: 68 − ♡ = 43 and 57 + △ = 99, what is △ − ♡? — two unknowns, each from its own line, then their difference (shape 'diff').
+function genDiffBox(){
+  for(;;){
+    const h = 11 + rnd(40), t = 11 + rnd(50), p = 20 + rnd(40), n = 20 + rnd(40);
+    if(t <= h || h + p > 99 || n + t > 99) continue;
+    return {kind:'box', shape:'diff', h, t, m: h + p, p, n, w: n + t, ans: t - h};
+  }
+}
+// Салабашев 2021, задача 3: 7 + ✡ = 6 + 4, ❖ − 3 = 14 − 6, 4 + 8 = 16 − ☆, what is ✡ + ❖ − ☆? Every reading of it gives 10
+// (✡ = 3, ❖ = 11, ☆ = 4) and the paper's key says Б = 8, so that task is tagged here but not pinned (check/sal-S1.js).
+function genThreeBox(){
+  for(;;){
+    const X = 1 + rnd(9), a = 2 + rnd(8), Y = 8 + rnd(11), d = 1 + rnd(6), Z = 1 + rnd(9);
+    const bc = a + X, b = 1 + rnd(bc - 1), c = bc - b, ef = Y - d, f = 1 + rnd(8), e = ef + f, g = 2 + rnd(8), h = 2 + rnd(8), i = g + h + Z;
+    if(bc > 18 || e > 20 || i > 20 || ef < 1 || X + Y < Z + 1) continue;
+    return {kind:'box', shape:'three', X, Y, Z, a, b, c, d, e, f, g, h, i, ans: X + Y - Z};
+  }
+}
 
 function drawBox(q){
+  if(q.shape === 'def' || q.shape === 'diff' || q.shape === 'three'){
+    const c = x => '<span class="circle">' + x + '</span>';
+    if(q.shape === 'def') return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="given">' + q.a + ' − ' + q.b + ' + ' + q.c + ' = ' + c('♡') + '</div>' +
+      '<div class="ask">' + tr('на колко е равно ', 'чому дорівнює ') + c('♡') + ' + ' + q.k + '?</div><div class="line lg">' + c('♡') + ' + ' + q.k + ' = ' + SLOT + '</div>';
+    if(q.shape === 'diff') return '<div class="ask">' + tr('Ако', 'Якщо') + '</div><div class="given">' + q.m + ' − ' + c('♡') + ' = ' + q.p + ' &nbsp;' + tr('и', 'і') + '&nbsp; ' + q.n + ' + ' + c('△') + ' = ' + q.w + '</div>' +
+      '<div class="ask">' + tr('то ', 'то ') + c('△') + ' − ' + c('♡') + ' = ?</div><div class="line lg">' + c('△') + ' − ' + c('♡') + ' = ' + SLOT + '</div>';
+    return '<div class="given">' + q.a + ' + ' + c('✡') + ' = ' + q.b + ' + ' + q.c + ', &nbsp;' + c('❖') + ' − ' + q.d + ' = ' + q.e + ' − ' + q.f + ', &nbsp;' + q.g + ' + ' + q.h + ' = ' + q.i + ' − ' + c('☆') + '</div>' +
+      '<div class="ask">' + tr('Пресметнете', 'Обчисліть') + '</div><div class="line lg">' + c('✡') + ' + ' + c('❖') + ' − ' + c('☆') + ' = ' + SLOT + '</div>';
+  }
   if(q.shape === 'sym'){
     const c = x => '<span class="circle">' + x + '</span>';
     return '<div class="ask">' + (q.most ? tr('Колко <b>най-много</b> може да е ', 'Яким <b>найбільшим</b> може бути ') : tr('На колко е равно ', 'Чому дорівнює ')) + c('☺') + tr(', ако', ', якщо') + '</div>' +
@@ -106,6 +146,9 @@ function drawBox(q){
     ' − <span class="circle">◯</span> = ' + SLOT + '</div>';
 }
 function eqBox(q){
+  if(q.shape === 'def') return '♡ = ' + q.v + ' → ' + q.v + ' + ' + q.k + ' = ' + q.ans;
+  if(q.shape === 'diff') return '♡ = ' + q.h + ', △ = ' + q.t + ' → ' + q.t + ' − ' + q.h + ' = ' + q.ans;
+  if(q.shape === 'three') return '✡ = ' + q.X + ', ❖ = ' + q.Y + ', ☆ = ' + q.Z + ' → ' + q.X + ' + ' + q.Y + ' − ' + q.Z + ' = ' + q.ans;
   if(q.shape === 'sym') return '● = ' + q.X + ', ■ = ' + q.Y + ', ' + q.Y + ' + ☺ < ' + q.T + ' → ' + q.ans;
   if(q.shape === 'bal') return q.x + (q.plus ? '+' : '−') + q.y + ' = ' + q.L +
     ' → □ = ' + q.ans;
@@ -114,6 +157,19 @@ function eqBox(q){
   return q.b + ' − ◯ = ' + q.x + ' − ' + q.y + ' → ' + q.a + ' − ◯ = ' + q.ans;
 }
 function whyBox(q, full){
+  if(q.shape === 'def'){
+    if(!full) return tr('Намери първо числото, което стои вместо ♡.', 'Спочатку знайди число, що стоїть замість ♡.');
+    return q.a + ' − ' + q.b + ' = ' + (q.a - q.b) + ', ' + (q.a - q.b) + ' + ' + q.c + ' = <b>' + q.v + '</b> &nbsp;→&nbsp; ' + q.v + ' + ' + q.k + ' = ' + q.ans;
+  }
+  if(q.shape === 'diff'){
+    if(!full) return tr('Намери първо всяко от двете числа поотделно.', 'Спочатку знайди кожне з двох чисел окремо.');
+    return '♡ = ' + q.m + ' − ' + q.p + ' = <b>' + q.h + '</b>, &nbsp;△ = ' + q.w + ' − ' + q.n + ' = <b>' + q.t + '</b> &nbsp;→&nbsp; ' + q.t + ' − ' + q.h + ' = ' + q.ans;
+  }
+  if(q.shape === 'three'){
+    if(!full) return tr('Всяко равенство има символ само от едната страна: пресметни другата страна.', 'У кожній рівності символ лише з одного боку: обчисли другий бік.');
+    return '✡ = ' + q.b + ' + ' + q.c + ' − ' + q.a + ' = <b>' + q.X + '</b>, &nbsp;❖ = ' + q.e + ' − ' + q.f + ' + ' + q.d + ' = <b>' + q.Y + '</b>, &nbsp;☆ = ' + q.i + ' − ' + q.g + ' − ' + q.h + ' = <b>' + q.Z +
+      '</b> &nbsp;→&nbsp; ' + q.X + ' + ' + q.Y + ' − ' + q.Z + ' = ' + q.ans;
+  }
   if(q.shape === 'sym'){
     if(!full) return tr('Намери подред ● и ■. После: кое число, добавено към ■, още държи неравенството вярно?', 'Знайди по черзі ● і ■. Потім: яке число, додане до ■, ще залишає нерівність правильною?');
     return '● = ' + q.a + ' + ' + q.b + ' = <b>' + q.X + '</b> &nbsp;→&nbsp; ■ = ' + q.X + ' − ' + q.c + ' = <b>' + q.Y + '</b> &nbsp;→&nbsp; ' + q.Y + ' + ☺ &lt; ' + q.T +

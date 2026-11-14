@@ -21,6 +21,20 @@ export function genDiffSeq(){
 // Аз и числата 2022, задача 10 (shape 'const'): «Запиши 5 числа, първото от които да е 12, а всяко следващо – с 13
 // по-голямо от предходното» — 25, 38, 51, 64 in the four boxes; or from 49, each 7 less: 42, 35, 28, 21.
 export function genDiffSeqNext(){
+  const q = genDiffSeqNextOld();
+  return Math.random() < 0.15 ? genDiffSeqHole() : q;   // drawn after the old shapes, so they keep their seeds
+}
+// Салабашев 2023, задача 6 (shape 'hole'): 1, 2, 4, ?, 11, 16 — the steps 1, 2, 3, 4, 5 grow by one, and the missing number
+// stands inside the run (4th or 5th of six), not at its end: 4 + 3 = 7.
+function genDiffSeqHole(){
+  for(;;){
+    const a0 = 1 + rnd(9), d0 = 1 + rnd(3), g = 1 + rnd(2), at = 3 + rnd(2), seq = [a0];
+    for(let i = 0; i < 5; i++) seq.push(seq[i] + d0 + i*g);
+    if(seq[5] > 99) continue;
+    return {kind:'diffseq', shape:'hole', seq, down:false, d0, g, asksSum:false, at, ans: seq[at]};
+  }
+}
+function genDiffSeqNextOld(){
   if(Math.random() < 0.4){
     const up = Math.random() < 0.5, d = 2 + rnd(18), a = up ? 1 + rnd(99 - 4*d) : 4*d + 1 + rnd(99 - 4*d);   // none of the five 0 or past 99
     const seq = [0, 1, 2, 3, 4].map(i => a + (up ? i*d : -i*d));
@@ -34,6 +48,8 @@ export function genDiffSeqNext(){
   }
 }
 function drawDiffSeq(q){
+  if(q.shape === 'hole') return '<div class="ask">' + tr('Кое е <b>липсващото</b> число?', 'Яке число <b>пропущене</b>?') + '</div>' +
+    '<div class="seq">' + q.seq.map((v, i) => i === q.at ? '?' : v).join(', ') + '</div>' + answerLine('xl');
   if(q.shape === 'const'){
     return '<div class="ask">' + tr('Запиши 5 числа, първото от които да е <span class="num">' + q.seq[0] + '</span>, а всяко следващо – ' + bgWith(q.d) + ' <span class="num">' + q.d + '</span> <b>' + (q.up ? 'по-голямо' : 'по-малко') + '</b> от предходното.',
       'Напиши 5 чисел, перше з яких — <span class="num">' + q.seq[0] + '</span>, а кожне наступне на <span class="num">' + q.d + '</span> <b>' + (q.up ? 'більше' : 'менше') + '</b> за попереднє.') + '</div>' +
@@ -46,6 +62,7 @@ function drawDiffSeq(q){
     answerLine('xl');
 }
 function eqDiffSeq(q){
+  if(q.shape === 'hole') return q.seq.join(', ') + ' → ' + q.ans;
   if(q.shape === 'const') return q.seq.join(', ');
   return q.seq.join(', ') + (q.asksSum ? ' → ' + q.ans : '');
 }
@@ -68,6 +85,11 @@ function diffSeqSvg(q, full){
     tr('числата и стъпките между тях', 'числа і кроки між ними') + '">' + g + '</svg>';
 }
 function whyDiffSeq(q, full){
+  if(q.shape === 'hole'){
+    if(!full) return tr('Виж с колко се променя всяко число — а после как се променят самите стъпки.', 'Подивись, на скільки змінюється кожне число, — а потім як змінюються самі кроки.');
+    const st = q.seq.slice(1).map((v, i) => v - q.seq[i]);
+    return tr('стъпките растат с ', 'кроки зростають на ') + q.g + ': ' + st.slice(0, q.at - 1).join(', ') + ', … &nbsp;→&nbsp; ' + q.seq[q.at - 1] + ' + ' + st[q.at - 1] + ' = <b>' + q.ans + '</b>';
+  }
   if(q.shape === 'const'){
     if(!full) return q.up ? tr('Към всяко число прибави едно и също, за да получиш следващото.', 'До кожного числа додай те саме, щоб отримати наступне.')
                           : tr('От всяко число извади едно и също, за да получиш следващото.', 'Від кожного числа відніми те саме, щоб отримати наступне.');

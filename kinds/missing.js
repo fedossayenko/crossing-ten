@@ -74,6 +74,17 @@ export function genMissing(){
 // МБГ Полуфинал 2022, 1 клас, задача 2: 1, 2, …, …, 5, 6 — under the gap 3 + 4 = 7, so ? = 7; then 3, 4, …, …, 7, 8 — ? = 5 + 6 = 11.
 // A run of six from x, the middle two left out and added; the example is the same run two lower.
 export function genGapSum(){
+  const q = genGapSumOld();
+  return Math.random() < 0.15 ? genGapSyms() : q;   // drawn after the old shape, so it keeps its seeds
+}
+// Салабашев 2020, задача 2: 0, 5, 10, ✱, ★, 25, ✹, 35 — a run in fives (or tens) with three symbols for the gaps, two of them side by side:
+// ✱ = 15, ★ = 20, ✹ = 30, and ✱ + ★ + ✹ = 65 (shape 'syms').
+function genGapSyms(){
+  const k = Math.random() < 0.6 ? 5 : 10, s = Math.random() < 0.7 ? 0 : k, a = 2 + rnd(2), b = Math.min(6, a + 3 + rnd(2)), row = [];
+  for(let i = 0; i < 8; i++) row.push(s + i*k);
+  return {kind:'missing', shape:'syms', row, hide:[a, a + 1, b], ans: row[a] + row[a + 1] + row[b]};
+}
+function genGapSumOld(){
   const x = 3 + rnd(10), row = [0, 1, 2, 3, 4, 5].map(i => x + i);
   // the slips: the example's sum copied, or one of the two numbers alone
   return {kind:'missing', shape:'gap', row, hide:[2, 3], traps:[2*x + 1, x + 3], ans: 2*x + 5};
@@ -107,7 +118,11 @@ function gapRowSvg(row, x0, cw, f, lines, col){
   g += '<path d="M' + a + ',6 Q' + a + ',12 ' + (a + 6) + ',12 H' + (m - 6) + ' Q' + m + ',12 ' + m + ',18 Q' + m + ',12 ' + (m + 6) + ',12 H' + (b - 6) + ' Q' + b + ',12 ' + b + ',6" stroke="' + col + '" stroke-width="1.6" fill="none"/>';
   return g + lines.map((t, k) => svgText(m, 34 + k*17, t, f - 2, col)).join('');
 }
+const GAP_SYMS = ['✱', '★', '✹'];
 function drawMissing(q){
+  if(q.shape === 'syms') return '<div class="ask">' + tr('Пресметни ✱ + ★ + ✹.', 'Обчисли ✱ + ★ + ✹.') + '</div>' +
+    '<div class="seq">' + q.row.map((v, i) => q.hide.includes(i) ? '<span class="circle">' + GAP_SYMS[q.hide.indexOf(i)] + '</span>' : v).join(', ') + '</div>' +
+    '<div class="line lg">✱ + ★ + ✹ = ' + SLOT + '</div>';
   if(q.shape === 'many'){
     return '<div class="ask">' + tr('Колко числа са пропуснати?', 'Скільки чисел пропущено?') + '</div>' +
       '<div class="seq">' + q.run.slice(0, 3).join(', ') + ', …, ' + q.run.slice(-2).join(', ') + '</div>' +
@@ -153,6 +168,7 @@ function drawMissing(q){
     answerLine('lg');
 }
 function eqMissing(q){
+  if(q.shape === 'syms') return '✱ = ' + q.row[q.hide[0]] + ', ★ = ' + q.row[q.hide[1]] + ', ✹ = ' + q.row[q.hide[2]] + ' → ' + q.hide.map(i => q.row[i]).join(' + ') + ' = ' + q.ans;
   if(q.shape === 'many') return gapGone(q).join(', ') + ' → ' + q.ans;
   if(q.shape === 'gap') return tr('липсват ', 'пропущено ') + q.row[2] + tr(' и ', ' і ') + q.row[3] + ' → ' + q.row[2] + ' + ' + q.row[3] + ' = ' + q.ans;
   if(q.shape === 'turns') return '● = ' + q.row[q.hide[0]] + ', ■ = ' + q.row[q.hide[1]] + ' → ' + q.ans;
@@ -197,6 +213,10 @@ function missingSvg(q){
     tr('стъпките на редицата', 'кроки ряду') + '">' + g + '</svg>';
 }
 function whyMissing(q, full){
+  if(q.shape === 'syms'){
+    if(!full) return tr('С колко расте всяко число? Върви по редицата и намери всяка фигура.', 'На скільки зростає кожне число? Іди рядом і знайди кожну фігуру.');
+    return tr('числата растат с ', 'числа зростають на ') + (q.row[1] - q.row[0]) + ': ' + q.row.map((v, i) => q.hide.includes(i) ? '<b>' + v + '</b>' : v).join(', ') + ' &nbsp;→&nbsp; ' + q.hide.map(i => q.row[i]).join(' + ') + ' = ' + q.ans;
+  }
   const text = whyMissingText(q, full);
   return full && text ? text + missingSvg(q) : text;
 }

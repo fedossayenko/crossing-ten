@@ -4,6 +4,40 @@
 // noticing that + 0 changes nothing is part of the task.
 import { KIND, chainLine, exprText, rnd, tr } from '../js/core.js';
 export function genChain(){
+  const q = genChainPlain();
+  // Салабашев 2024, задача 1: 20 + 24 − 2 − 0 − 2 − 4 — a two-digit start and a two-digit step, then small steps (shape 'big'); drawn after the plain walk, so it keeps its seed
+  const w = Math.random();
+  return w < 0.15 ? genChainBig() : w < 0.3 ? genChainSmall() : q;
+}
+// Салабашев 2021, задача 1: 10 − 8 + 7 − 5 + 4 − 2 and 2023, задача 1: 2 + 0 + 2 − 3 — a shorter walk of four to six numbers, a start of 1 to 10, one-digit
+// steps (a 0 now and then), never outside 0…20 (shape 'short').
+function genChainSmall(){
+  for(;;){
+    const len = 4 + rnd(3), terms = [{op:'', n: 1 + rnd(10)}];
+    let run = terms[0].n, ok = true;
+    for(let k = 1; k < len; k++){
+      const n = Math.random() < 0.25 ? 0 : 1 + rnd(9), up = run + n > 20 ? false : n > run ? true : Math.random() < 0.5;
+      if(!up && n > run){ ok = false; break; }
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(ok) return {kind:'chain', shape:'short', terms, paired:0, ans:run};
+  }
+}
+function genChainBig(){
+  for(;;){
+    const terms = [{op:'', n: 10 + rnd(31)}, {op:'+', n: 11 + rnd(30)}];
+    let run = terms[0].n + terms[1].n, ok = true;
+    for(let k = 0; k < 4; k++){
+      const n = Math.random() < 0.25 ? 0 : 1 + rnd(9), up = run < 20 ? true : run > 70 ? false : Math.random() < 0.7 ? false : true;
+      if(!up && n > run){ ok = false; break; }
+      terms.push({op: up ? '+' : '−', n});
+      run += up ? n : -n;
+    }
+    if(ok && run >= 20 && run <= 99) return {kind:'chain', shape:'big', terms, paired:0, ans:run};
+  }
+}
+function genChainPlain(){
   for(;;){
     const len = 6 + rnd(3);
     const terms = [{op:'', n: 2 + rnd(8)}];

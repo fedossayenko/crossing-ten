@@ -12,6 +12,12 @@
 import { KIND, SLOT, answerLine, rnd, tr } from '../js/core.js';
 export function genConsec(){
   const q = consecOld();
+  // Салабашев 2023, задача 13 (shape 'digits'): three consecutive two-digit numbers add to 84 — the sum of all their digits? 84 : 3 = 28,
+  // so 27, 28, 29 and 2 + 7 + 2 + 8 + 2 + 9 = 30. Drawn after 'three', so the others keep their seeds.
+  if(Math.random() < 0.15){
+    const m = 11 + rnd(80);
+    return {kind:'consec', shape:'digits', m, S: 3*m, ans: [m - 1, m, m + 1].join('').split('').reduce((t, d) => t + +d, 0)};
+  }
   if(Math.random() < 0.2){
     const m = 2 + rnd(31);
     return {kind:'consec', shape:'three', m, S: 3*m, slots:3, stated:true, ans: m - 1, alt:[m, m + 1]};
@@ -32,6 +38,8 @@ function consecOld(){
   }
 }
 function drawConsec(q){
+  if(q.shape === 'digits') return '<div class="ask">' + tr('Сборът на три <b>последователни двуцифрени</b> числа е <span class="num">' + q.S + '</span>. Колко е <b>сборът от цифрите</b> на тези три числа?',
+    'Сума трьох <b>послідовних двоцифрових</b> чисел дорівнює <span class="num">' + q.S + '</span>. Чому дорівнює <b>сума цифр</b> цих трьох чисел?') + '</div>' + answerLine('xl');
   if(q.shape === 'three'){
     return '<div class="ask">' + tr('Сборът на кои <b>три последователни</b> числа е <span class="num">' + q.S + '</span>?', 'Сума яких <b>трьох послідовних</b> чисел дорівнює <span class="num">' + q.S + '</span>?') + '</div>' +
       '<div class="line md">' + SLOT + ', <span class="slot" id="slot1"></span>, <span class="slot" id="slot2"></span></div>';
@@ -51,11 +59,16 @@ function drawConsec(q){
     answerLine('xl');
 }
 function eqConsec(q){
+  if(q.shape === 'digits') return (q.m - 1) + ' + ' + q.m + ' + ' + (q.m + 1) + ' = ' + q.S + ' → ' + [q.m - 1, q.m, q.m + 1].join('').split('').join(' + ') + ' = ' + q.ans;
   if(q.shape === 'three') return (q.m - 1) + ' + ' + q.m + ' + ' + (q.m + 1) + ' = ' + q.S + ' → ' + (q.m - 1) + ', ' + q.m + ', ' + (q.m + 1);
   if(q.shape === 'count') return q.list.join(', ') + ' → ' + q.ans;
   return (10*q.t + 9) + ' − ' + 10*q.s + ' = ' + q.X + ' = ' + (q.X - 1)/2 + ' + ' + (q.X + 1)/2 + ' → ' + q.ans;
 }
 function whyConsec(q, full){
+  if(q.shape === 'digits'){
+    if(!full) return tr('Първо намери трите числа: средното е една трета от сбора. После събери всички цифри.', 'Спершу знайди три числа: середнє — одна третина суми. Потім додай усі цифри.');
+    return q.S + ' = ' + q.m + ' + ' + q.m + ' + ' + q.m + ' &nbsp;→&nbsp; <b>' + (q.m - 1) + ', ' + q.m + ', ' + (q.m + 1) + '</b> &nbsp;→&nbsp; ' + [q.m - 1, q.m, q.m + 1].join('').split('').join(' + ') + ' = ' + q.ans;
+  }
   if(q.shape === 'three'){
     if(!full) return tr('Трите числа са почти равни: средното е колкото една от три равни части на сбора.', 'Три числа майже рівні: середнє — це одна з трьох рівних частин суми.');
     return tr('най-голямото дава 1 на най-малкото и трите стават равни: ', 'найбільше віддає 1 найменшому, і всі три стають рівні: ') + q.S + ' = ' + q.m + ' + ' + q.m + ' + ' + q.m +

@@ -50,6 +50,7 @@
   const n = {};
   [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89].forEach(id => { for(let i = 0; i < 400; i++){
     const q = Q.raw(id), a = q.ans;
+    if(id === 89 && q.shape === 'two') continue;   // КА + НА = 46 (Салабашев 2022 #14): worked again in check/sal-S1.js
     n[q.kind] = (n[q.kind] || 0) + 1;
     if(Q.LEVELS.find(l => l.id === id).papers[0] !== 'mbg-winter-2024-2') throw new Error('level ' + id + ' should be on the Зима 2024 paper');
     const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
@@ -144,6 +145,7 @@
   const n = {};
   [90, 91, 92, 93, 94, 95, 96, 97, 98].forEach(id => { for(let i = 0; i < 400; i++){
     const q = Q.raw(id), a = q.ans;
+    if(id === 93 && q.shape === 'digits') continue;   // three consecutive numbers' digits (Салабашев 2023 #13): worked again in check/sal-S1.js
     n[q.kind] = (n[q.kind] || 0) + 1;
     const fail = m => { throw new Error(q.kind + ': ' + m + ' ' + JSON.stringify(q)); };
     if(Q.LEVELS.find(l => l.id === id).papers[0] !== 'kms-2025-2') fail('not on the КМС 2025 paper');

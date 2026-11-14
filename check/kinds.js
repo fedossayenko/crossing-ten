@@ -1111,6 +1111,7 @@ console.log('choosing the signs: matches an exhaustive search of every sign patt
 const seenTens = {};
 for(let i = 0; i < 6000; i++){
   const q = raw(51);
+  if(q.shape === 'over') continue;   // Салабашев 2021 #5, worked again from its drawn text in check/sal-S1.js
   seenTens[q.shape] = 1;
   const want = q.shape === 0 ? (q.N - q.c) / 10
              : q.shape === 1 ? (10*q.a + 10*q.b + 10*q.m) / 100

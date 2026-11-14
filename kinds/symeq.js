@@ -79,11 +79,19 @@ function genSymDirect(){
 }
 // 'double' (Полуфинал 2024) takes half of the chain's old share; 'direct', 'triple' and 'arrow' (Полуфинал 2022
 // and 2023) take slices of the tri, def and part shares — so the other shapes keep their seeds
-export function genSymEq(){ const r = Math.random(); return r < 0.15 ? genSymChain() : r < 0.3 ? genSymDouble() : r < 0.45 ? genSymTri() : r < 0.55 ? genSymDirect() : r < 0.63 ? genSymTriple() : r < 0.8 ? genSymDef() : r < 0.94 ? genSymPart() : genSymArrow(); }
+export function genSymEq(){ const q = genSymEqOld(); return Math.random() < 0.1 ? genSymSides() : q; }   // 'sides' drawn after the old shapes, so they keep their seeds
+// Салабашев 2022, задача 12: ♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ and ♣ + 15 = ♡ + 33 — ♡? The figure stands on both sides: take ♡ + ♡
+// off both sides of the first line and ♣ = ♡ + ♡; put that in the second, ♡ + ♡ + 15 = ♡ + 33, take ♡ off both sides, ♡ = 33 − 15.
+function genSymSides(){
+  const x = 5 + rnd(16), c1 = 3 + rnd(18);
+  return {kind:'symeq', shape:'sides', x, c1, c2: c1 + x, ans: x};
+}
+function genSymEqOld(){ const r = Math.random(); return r < 0.15 ? genSymChain() : r < 0.3 ? genSymDouble() : r < 0.45 ? genSymTri() : r < 0.55 ? genSymDirect() : r < 0.63 ? genSymTriple() : r < 0.8 ? genSymDef() : r < 0.94 ? genSymPart() : genSymArrow(); }
 
 const SYMS = ['■', '∆', '○'];
 const symDefOf = q => ['□ + □ − ' + q.j, '□ − ' + q.j, '□ + ' + q.j][q.df].replace(' − 0', '');
-const symEqLines = q => q.shape === 'chain'
+const symEqLines = q => q.shape === 'sides' ? ['♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡', '♣ + ' + q.c1 + ' = ♡ + ' + q.c2]
+  : q.shape === 'chain'
   ? [Array(q.k).fill('■').join(' + ') + ' = ' + q.s1, '■ + ∆ + ∆ = ' + q.s2, '∆ + ○ + ∆ = ' + q.s3]
   : q.shape === 'def' ? ['□ = ' + q.k, '∆ = ' + symDefOf(q)]
   : q.shape === 'triple' ? ['□ = ' + q.k, '∆ = □ + □ + □']
@@ -92,7 +100,7 @@ const symEqLines = q => q.shape === 'chain'
   : q.shape === 'part' ? ['○ + ● + □ = ' + q.T, '○ + ● = ' + q.a, q.rel ? '□ = ○ + ' + q.d : '● + □ = ' + q.b]
   : q.shape === 'double' ? ['▲ + ◆ + ☺ = ' + q.s1, '▲ + ▲ = ' + q.s2, '☺ + ☺ + ▲ = ' + q.s3]
   : ['■ + ∆ = ' + q.s1, '∆ + ○ = ' + q.s2, '■ + ○ = ' + q.s3];
-const symEqAsk = q => q.shape === 'chain' ? '○' : q.shape === 'double' ? '◆' : q.shape === 'def' ? (q.ask ? '□ + ' + q.p + ' + ∆ − ' + q.m : '□ + ∆') : q.shape === 'part' ? '●'
+const symEqAsk = q => q.shape === 'sides' ? '♡' : q.shape === 'chain' ? '○' : q.shape === 'double' ? '◆' : q.shape === 'def' ? (q.ask ? '□ + ' + q.p + ' + ∆ − ' + q.m : '□ + ∆') : q.shape === 'part' ? '●'
   : q.shape === 'triple' ? ['∆ − □', '∆ + □', '∆'][q.ask] : q.shape === 'arrow' ? '□' : q.shape === 'direct' ? '◆' : SYMS[q.ask];
 // 'arrow' is drawn as the paper prints it: one row, each arrow with what it adds written under it
 const symArrow = lbl => '<span style="display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1; margin:0 .3em">⟶<small>' + lbl + '</small></span>';
@@ -107,6 +115,10 @@ function eqSymEq(q){
   return symEqLines(q).join(', ') + ' → ' + symEqAsk(q) + ' = ' + q.ans;
 }
 function whySymEq(q, full){
+  if(q.shape === 'sides'){
+    if(!full) return tr('От двете страни на първото равенство махни по ♡ + ♡. Какво е ♣? После го сложи във второто равенство.', 'З обох боків першої рівності прибери по ♡ + ♡. Чому дорівнює ♣? Потім постав це в другу рівність.');
+    return '♡ + ♡ + ♡ + ♡ = ♡ + ♣ + ♡ &nbsp;→&nbsp; ♣ = <b>♡ + ♡</b> &nbsp;→&nbsp; ♡ + ♡ + ' + q.c1 + ' = ♡ + ' + q.c2 + ' &nbsp;→&nbsp; ♡ + ' + q.c1 + ' = ' + q.c2 + ' &nbsp;→&nbsp; ♡ = ' + q.c2 + ' − ' + q.c1 + ' = ' + q.ans;
+  }
   if(q.shape === 'triple'){
     if(!full) return tr('Първо намери ∆ — това е □, събрано три пъти. После сложи числата на мястото на фигурите.',
       'Спершу знайди ∆ — це □, додане тричі. Потім постав числа замість фігур.');
