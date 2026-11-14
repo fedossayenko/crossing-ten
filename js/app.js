@@ -7,7 +7,7 @@ import { dailyPlan, mistakePick, trapShown } from './daily.js';
 import { LANG, LANGS, LANG_TAG, levelDesc, levelName, setLang, t } from './i18n.js';
 import { MASCOTS, mascotSvg, wearMascot } from './mascots.js';
 import { choiceHtml, withChoices } from './choice.js';
-import { COMP_MIN, COMP_N, compDims, ekPts, paperPts, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
+import { COMP_MIN, COMP_N, compDims, FMT, paperPts, compAnswer, compEnd, paintCompCard, paintCompSheet, compLeft, compTasks, compTime, openComp, paintPaperResult, paperSnap, resumeComp, startComp, startCompete } from './compete.js';
 import { showToday } from './ui/today.js';
 import { showNotebook } from './ui/notebook.js';
 import { shareWeekly, weeklyPng } from './weekly.js';
@@ -1033,7 +1033,7 @@ function paintReview(){
     // a miss: the misreading her answer shows, and whether its level was played after this round
     const slip = ok === 0 && q && wrote != null ? slipOf(q, String(wrote).split(' · ')) : null, later = ok === 1 ? null : since(lv, r.ts);
     const note2 = ok === 1 ? '' : [slip && t('slip')[slip][0], later.n ? t('sinceRight', later.ok, later.n) : t('sinceNone')].filter(Boolean).join(' · ');
-    const pts = !comp ? '' : r.fmt === 'ek' ? (ok === 1 ? ekPts(k) : 0) : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
+    const pts = !comp ? '' : FMT[r.fmt] ? (ok === 1 ? FMT[r.fmt].pts(k) : 0) : ok === 1 ? 2 : ok === 0 && q && wrote ? mbgPts(q, String(wrote).split(' · ')) : 0;
     return '<button class="crow ' + st + '" aria-expanded="false"><span class="cn">' + (k + 1) + '</span><span class="cg">' + task + (note ? '<small>' + note + '</small>' : '') + (note2 ? '<small>' + note2 + '</small>' : '') +
       '</span><span class="co">' + said + '</span><span class="cp">' + pts + '</span></button><div class="why" hidden>' +
       (q ? '<div class="stage rtask">' + drawQ(q).replace(/ id="slot\d+"/g, '') + '</div><div class="eq">' + eqText(q) + '</div>' + why(q, true) : t('taskGone')) + '</div>';
