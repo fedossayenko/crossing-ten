@@ -38,9 +38,9 @@ export function genBracelet(){
     if(q) return q;
   }
 }
-/** a ring of beads, white (paper) and black (dark grey); the join sits at the start + the turn */
+/** a ring of beads, white (paper) and black (coal); the join sits at the start + the turn */
 function ring(/** @type {number[]} */ a, /** @type {number} */ turn, /** @type {number} */ k){
-  const n = a.length, beads = a.map((c, i) => { const t = (i + turn) / n * 2 * Math.PI + Math.PI / 2; return '<circle cx="' + (65 + 50 * Math.cos(t)).toFixed(1) + '" cy="' + (40 + 29 * Math.sin(t)).toFixed(1) + '" r="8" fill="' + (c ? 'var(--fur-dark)' : 'var(--paper)') + '" stroke="var(--ink)" stroke-width="1.8"/>'; }).join('');
+  const n = a.length, beads = a.map((c, i) => { const t = (i + turn) / n * 2 * Math.PI + Math.PI / 2; return '<circle cx="' + (65 + 50 * Math.cos(t)).toFixed(1) + '" cy="' + (40 + 29 * Math.sin(t)).toFixed(1) + '" r="8" fill="' + (c ? 'var(--coal)' : 'var(--paper)') + '" stroke="var(--ink)" stroke-width="1.8"/>'; }).join('');
   return '<svg viewBox="0 0 130 80" width="130" height="80" style="max-width:100%" role="img" aria-label="' + ['гривна от мъниста, по ред: ', 'браслет з намистин, по колу: '][k] + a.map(c => [['бяло', 'черно'], ['біла', 'чорна']][k][c]).join(', ') +
     '"><ellipse cx="65" cy="40" rx="50" ry="29" fill="none" stroke="var(--fur-dark)" stroke-width="1.6"/>' + beads + '</svg>';
 }

@@ -25,9 +25,9 @@ function pic(q, turn, arrow){
   const n = q.n, N = q.N, rb = pitchR(N), rs = pitchR(n), sx = (rb + rs) * Math.cos(CONTACT), sy = (rb + rs) * Math.sin(CONTACT), D = 360 / N;
   const sa = CONTACT + Math.PI + Math.PI / n;   // the small gear's black tooth stands beside the gap that meets the big gear's black tooth
   let s = '<g transform="rotate(' + (-turn * D).toFixed(2) + ' 0 0)"><polygon points="' + teeth(0, 0, N, CONTACT).join(' ') + '" fill="var(--accentbg)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>' +
-    '<circle r="' + (rb - TH - 5).toFixed(1) + '" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/><polygon points="' + tooth(0, 0, N, CONTACT) + '" fill="var(--ink)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><circle r="2.5" fill="var(--accent)"/></g>';
+    '<circle r="' + (rb - TH - 5).toFixed(1) + '" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/><polygon points="' + tooth(0, 0, N, CONTACT) + '" fill="var(--coal)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><circle r="2.5" fill="var(--accent)"/></g>';
   s += '<polygon points="' + teeth(sx, sy, n, sa).join(' ') + '" fill="var(--warmbg)" stroke="var(--warm)" stroke-width="2" stroke-linejoin="round"/>' +
-    '<polygon points="' + tooth(sx, sy, n, sa) + '" fill="var(--ink)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="2.5" fill="var(--warm)"/>';
+    '<polygon points="' + tooth(sx, sy, n, sa) + '" fill="var(--coal)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="2.5" fill="var(--warm)"/>';
   if(arrow){   // a clockwise arc round the small gear's far side
     const R = rs + TH + 9, a1 = -190 * Math.PI / 180, a2 = -95 * Math.PI / 180, p = a => [sx + R * Math.cos(a), sy + R * Math.sin(a)], [x1, y1] = p(a1), [x2, y2] = p(a2), tx = -Math.sin(a2), ty = Math.cos(a2);
     s += '<path d="M' + x1.toFixed(1) + ',' + y1.toFixed(1) + ' A' + R.toFixed(1) + ',' + R.toFixed(1) + ' 0 0 1 ' + x2.toFixed(1) + ',' + y2.toFixed(1) + '" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/>' +

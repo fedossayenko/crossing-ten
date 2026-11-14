@@ -13,7 +13,7 @@ const BLIND_COLS = [['сини', 'сині', 'синіх', 'var(--accent)'], ['�
 // and all five are sure too: «Посочете всички възможни отговори!» wants 4 and 5. One ink's t pens and the
 // other's o: every count from o + 1 to t + o, a box for each.
 // [Bulgarian «пише в …», Ukrainian «пише …», colour]
-const BLIND_INK = [['синьо', 'синім', 'var(--accent)'], ['червено', 'червоним', 'var(--bad)'], ['зелено', 'зеленим', 'var(--good)'], ['черно', 'чорним', 'var(--ink)']];
+const BLIND_INK = [['синьо', 'синім', 'var(--accent)'], ['червено', 'червоним', 'var(--bad)'], ['зелено', 'зеленим', 'var(--good)'], ['черно', 'чорним', 'var(--coal)']];
 const BLIND_BG = Object.assign({}, BGNUM, {2:'два'}), BLIND_UK_OF = {4:'чотирьох', 5:'п’яти', 6:'шести', 7:'семи'};   // «два химикала», «з п’яти ручок»
 function genBlindOne(){
   const t = 2 + rnd(2), o = 2 + rnd(6 - t), T = t + o, sure = [];

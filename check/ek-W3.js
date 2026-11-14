@@ -161,7 +161,7 @@
   tagged(414, ['ek-2026-2']);
 
   // ---- 415: the squares are read from the fills; the three steps from the sentences; the final row compared with every option
-  const FILL415 = { 'var(--fur-dark)': 0, 'var(--paper)': 1, 'url(#rch)': 2 };
+  const FILL415 = { 'var(--coal)': 0, 'var(--paper)': 1, 'url(#rch)': 2 };
   const row415 = svg => parse(svg).rects.filter(r => r.x === r.x).map(r => FILL415[r.fill]);
   const stepsOf = q => {
     const t = Q.drawQ(q).replace(/<[^>]*>/g, ''), W = { черно: 0, бяло: 1, шарено: 2 };
@@ -192,7 +192,7 @@
 
   // ---- 416: the beads of every ring are read back in the order round the ellipse; a bracelet is the same turned or turned over
   const cls416 = a => { const r = a.slice().reverse(); let best = ''; for(let i = 0; i < a.length; i++) for(const x of [a, r]){ const s = x.slice(i).concat(x.slice(0, i)).join(''); if(best === '' || s < best) best = s; } return best; };
-  const ring416 = svg => parse(svg).circles.map(c => ({ a: Math.atan2((c.y - 40) / 29, (c.x - 65) / 50), c: /fur-dark/.test(c.fill) ? 1 : /paper/.test(c.fill) ? 0 : -1 })).sort((p, q) => p.a - q.a).map(x => x.c);
+  const ring416 = svg => parse(svg).circles.map(c => ({ a: Math.atan2((c.y - 40) / 29, (c.x - 65) / 50), c: /coal/.test(c.fill) ? 1 : /paper/.test(c.fill) ? 0 : -1 })).sort((p, q) => p.a - q.a).map(x => x.c);
   const steps416 = q => {
     const t = Q.drawQ(q).replace(/<[^>]*>/g, ''), N = { едно: 1, две: 2 };
     return [...t.matchAll(/(отляво|отдясно) се нанизват? (едно|две) (бяло|бели|черно|черни) мънист/g)].map(m => [m[1] === 'отляво' ? 'L' : 'R', /чер/.test(m[3]) ? 1 : 0, N[m[2]]]);

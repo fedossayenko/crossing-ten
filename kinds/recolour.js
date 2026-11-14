@@ -41,7 +41,7 @@ export function genRecolour(){
   }
 }
 const PAT = '<pattern id="rch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="var(--paper)"/><line x1="0" y1="0" x2="0" y2="5" stroke="var(--fur-dark)" stroke-width="2.4"/></pattern>';
-const FILLS = ['var(--fur-dark)', 'var(--paper)', 'url(#rch)'];
+const FILLS = ['var(--coal)', 'var(--paper)', 'url(#rch)'];
 /** a row of squares as a picture; k = the language of its label */
 function strip(/** @type {number[]} */ r, /** @type {number} */ k, w = 0){
   const s = 17, W = r.length * s + 4;
