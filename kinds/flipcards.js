@@ -11,7 +11,7 @@ const PLAIN = [0, 1, 3, 4, 5, 7, 8];
 const reads = f => f === 6 ? [6, 9] : f === 9 ? [9, 6] : [f];
 const cardReads = c => [...new Set(c.flatMap(reads))];
 export function genFlipCards(){
-  const sp = Math.random() < 0.3 ? [6, rnd(2) ? 9 : 6] : [Math.random() < 0.7 ? 6 : 9];
+  const sp = Math.random() < 0.3 ? [6, 9] : [Math.random() < 0.7 ? 6 : 9];   // two turning faces: a 6 and a 9 (never 6 on both sides)
   const all = shuffle(shuffle(PLAIN.slice()).slice(0, 4 - sp.length).concat(sp));
   const cards = [all.slice(0, 2), all.slice(2, 4)], ans = flipNumbers(cards).length, flat = flipNumbers(cards, f => [f]).length;
   return {kind:'flipcards', cards, traps: flat !== ans ? [flat] : [], ans};
