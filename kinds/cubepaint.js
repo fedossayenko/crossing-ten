@@ -10,16 +10,17 @@ import { isoReadable, isoSvg, touching } from './isocubes.js';
 const DIRS = [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]];
 const has = (cells, x, y, z) => cells.some(o => o.x === x && o.y === y && o.z === z);
 /** the 24 turns of a solid (the signed permutations of the axes that do not mirror it) */
-const TURNS = [];
+export const SOLID_TURNS = [];
+const TURNS = SOLID_TURNS;
 [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].forEach(p => [1, -1].forEach(a => [1, -1].forEach(b => [1, -1].forEach(c => {
   const sg = [a, b, c], inv = p.reduce((k, v, i) => k + p.slice(i + 1).filter(w => w < v).length, 0) % 2 ? -1 : 1;
   if(a*b*c*inv === 1) TURNS.push(v => [sg[0]*v[p[0]], sg[1]*v[p[1]], sg[2]*v[p[2]]]);
 }))));
-const spot = cells => cells.map(c => [c.x, c.y, c.z]);
-const norm = pts => { const m = [0, 1, 2].map(i => Math.min(...pts.map(p => p[i]))); return pts.map(p => ({ x: p[0] - m[0], y: p[1] - m[1], z: p[2] - m[2] })); };
+export const solidSpot = cells => cells.map(c => [c.x, c.y, c.z]);
+export const solidNorm = pts => { const m = [0, 1, 2].map(i => Math.min(...pts.map(p => p[i]))); return pts.map(p => ({ x: p[0] - m[0], y: p[1] - m[1], z: p[2] - m[2] })); };
 /** one name for a solid however it is turned */
-export const solidName = cells => TURNS.map(t => norm(spot(cells).map(t)).map(c => c.x + '' + c.y + c.z).sort().join('.')).sort()[0];
-const grow = n => {
+export const solidName = cells => TURNS.map(t => solidNorm(solidSpot(cells).map(t)).map(c => c.x + '' + c.y + c.z).sort().join('.')).sort()[0];
+export const growSolid = n => {
   const cells = [{ x: 1, y: 1, z: 1 }];
   while(cells.length < n){
     const from = cells[rnd(cells.length)], d = DIRS[rnd(6)];
@@ -28,12 +29,12 @@ const grow = n => {
   return cells;
 };
 /** a pose of the solid a child can read: some turn of it with no hidden or false-touching cubes */
-const pose = cells => { const ok = shuffle(TURNS.slice()).map(t => norm(spot(cells).map(t))).find(c => isoReadable(c, true)); return ok || null; };
+const pose = cells => { const ok = shuffle(TURNS.slice()).map(t => solidNorm(solidSpot(cells).map(t))).find(c => isoReadable(c, true)); return ok || null; };
 export function genCubePaint(){
   for(;;){
     const n = [4, 4, 5][rnd(3)], seen = new Map();
     for(let i = 0; i < 40 && seen.size < 5; i++){
-      const c = grow(n), name = solidName(c);
+      const c = growSolid(n), name = solidName(c);
       if(!seen.has(name)){ const p = pose(c); if(p) seen.set(name, p); }
     }
     if(seen.size < 5) continue;
