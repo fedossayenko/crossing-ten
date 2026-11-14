@@ -21,7 +21,7 @@ const FL_ORD_UK = {2:'другому', 3:'третьому', 4:'четверто
 export function genFloorsChain(){
   for(;;){
     const m = 6 + rnd(17), x = 2 + rnd(8), T = 2 + rnd(8), y = m + x - T;
-    if(y < 3 || m - 1 < 3) continue;
+    if(y < 3 || m - 1 < 3 || x > m - 1) continue;   // Иво lives in the block too: at most the top floor, 2m − 1
     return {kind:'floors', shape:'chain', m, x, T, y, I: m + x, traps:[m], ans: 2*m - 1};
   }
 }

@@ -96,7 +96,7 @@ export function genDigitCal(){
 // 44 (two) and 40 to 43, 45 to 48 — 14. Level 476 joins what 82 asks (the last number from the digits) and 55 (a digit counted).
 export function genDigitPages(){
   for(;;){
-    const N = 30 + rnd(31), d = 1 + rnd(9);
+    const N = 30 + rnd(25), d = 1 + rnd(9);   // N up to 54: the digits used, 2N − 9, stay under a hundred
     let n = 0; for(let v = 1; v <= N; v++) n += String(v).split(String(d)).length - 1;
     if(n < 4) continue;
     return {kind:'dcount', shape:'pages', D: 9 + 2*(N - 9), d, N, traps:[N].filter(v => v !== n), ans: n};

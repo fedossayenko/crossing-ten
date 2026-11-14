@@ -21,7 +21,7 @@ const SPAN_WHO = [[['Мила', 'Міла'], ['Ани', 'Аня']], [['Ема', 
 function genClockSpan(){
   const form = rnd(2), who = rnd(2), h = form ? 6 + rnd(4) : 12 + rnd(8), m = 3 + rnd(55);
   let m2 = 3 + rnd(55);
-  while(m2 === m) m2 = 3 + rnd(55);
+  while(m2 === m || 60 - m + m2 > 99) m2 = 3 + rnd(55);   // within a hundred minutes
   const ans = 60 - m + m2;
   return {kind:'clockmin', shape:'span', form, who, h, m, m2, traps:[Math.abs(m2 - m), 100 - m + m2].filter(v => v > 0 && v !== ans), ans};
 }

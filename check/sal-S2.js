@@ -187,6 +187,7 @@
     if(found.length !== 1) fail('455: no unique block', q);
     right('455', q, found[0]); noSlip('455', q);
     if(misho < 6 || y < 3) fail('455: odd numbers', q);
+    if(T + y > found[0]) fail('455: Иво lives above the top floor', q);   // every one of them lives in the block
   }
   // 456: the money searched: p for a backpack, r left after two, s short for three
   for(let i = 1; i <= 3000; i++){

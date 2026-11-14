@@ -40,7 +40,7 @@ function genPathBoard(){
 // sides and straight below), and from there on to a Д: 5 + 7 + 5 = 17. The same DP as the board, with three moves: the ways to a letter are the
 // ways to the letters it can be reached from, added. Three columns as on the paper, now and then four (26); the word is three letters, a row
 // each. Drawn after the boards, so a cat's question keeps its seed.
-const WORDS = ['МЕД', 'МАК', 'ЛУК', 'ДОМ', 'РАК'];
+const WORDS = ['МЕД', 'МАК', 'ЛУК', 'СОМ', 'РАК'];   // words of both languages
 export function wordWays(C){
   const w = [Array(C).fill(1)];
   for(let r = 1; r < 3; r++) w.push(Array.from({length: C}, (_, c) => [c - 1, c, c + 1].reduce((t, k) => t + (k >= 0 && k < C ? w[r - 1][k] : 0), 0)));

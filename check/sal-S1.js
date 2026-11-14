@@ -178,7 +178,7 @@
     const m = t.match(/^Пресметни✱\+★\+✹\.(.*?)✱\+★\+✹=/); if(!m) fail('488 syms: unexpected text ' + t, q);
     const cells = m[1].split(','), shown = cells.map(Number), at = ['✱', '★', '✹'].map(s => cells.indexOf(s));
     if(cells.length !== 8 || at.some(x => x < 0)) fail('488 syms: not eight cells with three symbols', q);
-    const k = shown[1] - shown[0]; if(![5, 10].includes(k) || (at[1] !== at[0] + 1) || at[2] < at[1] + 2) fail('488 syms: step or places', q);
+    const k = shown[1] - shown[0]; if(![2, 3, 4, 5].includes(k) || (at[1] !== at[0] + 1) || at[2] < at[1] + 2) fail('488 syms: step or places', q);
     const base = shown[0], run = cells.map((_, i) => base + i*k);
     cells.forEach((c, i) => { if(!isNaN(shown[i]) && shown[i] !== run[i]) fail('488 syms: not a steady run', q); });
     if(run[at[0]] + run[at[1]] + run[at[2]] !== q.ans || q.ans > 100) fail('488 syms: wrong', q);

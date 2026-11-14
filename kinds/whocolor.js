@@ -160,7 +160,7 @@ function whyWhoCity(q, full){
     const name = uk => WCC_GIRL[st.g][uk ? 1 : 0], city = (c, uk) => WCC_CITY[c][uk ? 1 : 0];
     const reason = (w, uk) => w.r === 'i' ? (uk ? 'та сама літера' : 'същата буква') : w.r === 'v' ? (uk ? 'ходить у гості до неї' : 'ходи на гости на нея')
       : w.r === 'ka' ? (uk ? 'не катається на лижах, а вона катається' : 'не е карала ски, а тя кара') : w.r === 'kb' ? (uk ? 'катається з нею на лижах' : 'кара ски с нея')
-      : (uk ? 'вже в ' + WCC_GIRL[w.by][1] : 'вече е на ' + WCC_GIRL[w.by][0]);
+      : (uk ? 'вже у ' + WCC_GIRL_GEN_UK[w.by] : 'вече е на ' + WCC_GIRL[w.by][0]);
     const outs = uk => Object.keys(st.out).map(Number).sort().map(c => 'не ' + city(c, uk) + ' (' + reason(st.out[c], uk) + ')').join(', ');
     return st.type === 'naked' ? tr(name(false) + ': ' + outs(false) + ' → <b>' + city(st.c, false) + '</b>', name(true) + ': ' + outs(true) + ' → <b>' + city(st.c, true) + '</b>')
       : tr(city(st.c, false) + ': остава само ' + name(false) + ' → <b>' + city(st.c, false) + '</b>', city(st.c, true) + ': лишається лише ' + name(true) + ' → <b>' + city(st.c, true) + '</b>');

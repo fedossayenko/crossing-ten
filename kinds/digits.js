@@ -83,8 +83,8 @@ const ovalsGroups = q => [2, 1, 0].map(t => { const list = []; for(let v = 10; v
 export function genDigitOvals(){
   const k = [2, 2, 2, 2, 3, 1][rnd(6)], list = [];
   for(let v = 10; v <= 99; v++) if(ovalsOf(v) === k) list.push(v);
-  // the slips: the zero kept as a tens digit (00 to 09 counted), and the digits that have an oval counted instead of the numbers
-  return {kind:'digits', shape:'ovals', k, traps:[list.length + (k === 2 ? 6 : 0)].filter(v => v !== list.length), ans: list.length};
+  // the slip: the zero kept as a tens digit (00, 06 and 09 have two ovals)
+  return {kind:'digits', shape:'ovals', k, traps:[list.length + (k === 2 ? 3 : 0)].filter(v => v !== list.length), ans: list.length};
 }
 const twoDigitWith = n => { const out = []; for(let v = 10; v <= 99; v++) if((v%10) + Math.floor(v/10) === n) out.push(v); return out; };
 

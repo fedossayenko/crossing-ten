@@ -32,14 +32,14 @@ function lettersSvg(q){
   rows.forEach((r, ri) => r.forEach((ch, i) => {
     const x = 4 + i * W, y = 4 + ri * 30, v = isVowel(ch);
     g += '<g' + popAt(i * 0.3 + ri * 2) + '><rect x="' + x + '" y="' + y + '" width="' + (W - 3) + '" height="25" rx="5" fill="' + (v ? 'var(--accent)' : 'var(--solid)') + '" stroke="var(--ink)" stroke-width="1.3"/>' +
-      svgText(x + (W - 3) / 2, y + 18, ch, 14, v ? '#fff' : 'var(--ink)') + '</g>';
+      svgText(x + (W - 3) / 2, y + 18, ch, 14, v ? 'var(--paper)' : 'var(--ink)') + '</g>';
   }));
   const { vow, con } = split(q);
   g += svgText(wide / 2, rows.length * 30 + 18, (q.more ? con.length + ' − ' + vow.length : vow.length + ' − ' + con.length) + ' = ' + q.ans, 14, 'var(--ink)', popAt(6));
   return svgFrame('0 0 ' + wide + ' ' + (rows.length * 30 + 26), Math.round(wide * 1.3), tr('буквите на името', 'літери імені')) + g + '</svg>';
 }
 function whyVowels(q, full){
-  if(!full) return tr('Гласните са А, Е, И, О и У. Всички други букви са съгласни. Преброй всеки вид поотделно, буква по буква.', 'Голосні — А, Е, И, О і У. Усі інші літери — приголосні. Порахуй кожен вид окремо, літера за літерою.');
+  if(!full) return tr('В това име гласните са буквите А, Е, И, О и У, а всички други са съгласни. Преброй всеки вид поотделно, буква по буква.', 'У цьому імені голосні — літери А, Е, И, О і У, а всі інші — приголосні. Порахуй кожен вид окремо, літера за літерою.');
   const { vow, con } = split(q), big = q.more ? con.length : vow.length, small = q.more ? vow.length : con.length;
   return tr('гласни: ' + vow.join(', ') + ' — ' + vow.length + '; съгласни: ' + con.join(', ') + ' — ' + con.length, 'голосні: ' + vow.join(', ') + ' — ' + vow.length + '; приголосні: ' + con.join(', ') + ' — ' + con.length) +
     ' &nbsp;→&nbsp; <b>' + big + ' − ' + small + ' = ' + q.ans + '</b>' + lettersSvg(q);

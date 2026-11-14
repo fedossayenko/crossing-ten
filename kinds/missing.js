@@ -77,7 +77,8 @@ export function genMissing(){
 // two of them side by side: ✱ = 15, ★ = 20, ✹ = 30, and ✱ + ★ + ✹ = 65 (shape 'syms'); the sum stays within 100.
 export function genGapSyms(){
   for(;;){
-    const k = Math.random() < 0.6 ? 5 : 10, s = Math.random() < 0.7 ? 0 : k, a = 2 + rnd(2), b = Math.min(6, a + 3 + rnd(2)), row = [];
+    // steps of 5 (the paper's), 2, 3 or 4: a run in tens would only ever give 20 + 30 + 50 within a hundred
+    const k = [5, 5, 5, 2, 3, 4][rnd(6)], s = Math.random() < 0.7 ? 0 : k, a = 2 + rnd(2), b = Math.min(6, a + 3 + rnd(2)), row = [];
     for(let i = 0; i < 8; i++) row.push(s + i*k);
     const ans = row[a] + row[a + 1] + row[b];
     if(ans <= 100) return {kind:'missing', shape:'syms', row, hide:[a, a + 1, b], ans};
