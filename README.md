@@ -1,7 +1,7 @@
 # Crossing Ten
 
 Arithmetic practice for a Bulgarian grade-2 pupil, built around the olympiad
-worksheets she is working through. Plain HTML, CSS and native ES modules; no build step and no npm dependencies (a small Preact is vendored
+worksheets she is working through. Plain HTML, CSS and native ES modules; the source runs with no build step and no npm dependencies, and a release is one minified script made by `build.sh` (a small Preact is vendored
 in `js/vendor/`). 297 levels in 197 question kinds. `node check.js` verifies every generator, `node smoke.js` plays every
 level in Chrome.
 
@@ -178,7 +178,7 @@ first. A paper's full name and its short tag are `papers` and `paperTag` in `js/
 2nd-grade groundwork counts as done, a lower grade's levels are not suggested to her unless she picks them
 as her focus, a 1st-grader climbs grade by grade, and competitions are drawn from her grade's levels, or from the focus.
 
-- Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages, served from the `main` branch as it is pushed: no build, no GitHub Actions — there is no `.github/`)
+- Live: https://fedossayenko.github.io/crossing-ten/ (GitHub Pages: on a push to `main`, `.github/workflows/pages.yml` runs `build.sh` and publishes the built app)
 - Also: https://crossing-ten.sayenkofedor.workers.dev/ (Cloudflare, `./deploy-cf.sh` from a clean tree — no CI, free).
   The two are different addresses, so each keeps its own copy on a device; the family profile brings the rounds
   across. Google sign-in works on an address only once it is an authorised JavaScript origin of the OAuth client.
@@ -211,7 +211,7 @@ as her focus, a 1st-grader climbs grade by grade, and competitions are drawn fro
 | `worker/` | the sync server: a Cloudflare Worker (`index.js`) and its D1 tables (`schema.sql`) |
 | `sw.js` | serves the latest build, falls back to the cache offline |
 
-Every file is a native ES module (no bundler, no build): it imports what it uses and exports what others
+Every file is a native ES module (the source runs unbundled; `build.sh` bundles a release): it imports what it uses and exports what others
 need, and the rest stays private to it. `index.html` lists every module with `<script type="module">`
 (the service worker caches those and every module they import, so a new module needs no list). To add a level:
 write `kinds/<kind>.js`, list it in `index.html` before `js/questions.js`, add its row

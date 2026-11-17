@@ -1,5 +1,5 @@
 #!/bin/sh
-# Every check a commit must pass: types, generators, a headless-Chrome play-through, all three at once.
+# Every check a commit must pass: types, generators, a headless-Chrome play-through of the built app, all three at once.
 # The verify skill and the pre-push hook (.githooks/pre-push) both run this; worker tests are in AGENTS.md.
 # ponytail: checks the working tree, not the pushed commit; another session's uncommitted files count too.
 cd "$(dirname "$0")" || exit 1
@@ -7,7 +7,8 @@ PATH=/opt/homebrew/bin:$PATH   # the plain `node` shim on this machine is broken
 out=$(mktemp -d)
 npx -y -p typescript@7.0.2 tsc -p . >"$out/tsc" 2>&1 & t=$!
 node check.js >"$out/check" 2>&1 & c=$!
-node smoke.js >"$out/smoke" 2>&1 & s=$!
+# the play-through runs on the built app (one minified script), since that is what ships; `node smoke.js` alone plays the source
+{ ./build.sh "$out/app" && SMOKE_ROOT="$out/app" node smoke.js; } >"$out/smoke" 2>&1 & s=$!
 wait $t; ts=$?
 wait $c; cs=$?
 wait $s; ss=$?

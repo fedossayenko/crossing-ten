@@ -4,9 +4,12 @@ const http = require('http'), fs = require('fs'), path = require('path'), { spaw
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const TYPES = { '.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.json':'application/json', '.png':'image/png' };
 
+// SMOKE_ROOT=.deploy plays the built app (build.sh) instead of the source: what verify.sh does, since that is what ships
+const ROOT = path.resolve(__dirname, process.env.SMOKE_ROOT || '.');
+const BUILT = !!process.env.SMOKE_ROOT;   // the built app has no module files to import on their own: the R0 timing is skipped there
 const server = http.createServer((req, res) => {
-  const f = path.join(__dirname, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
-  if(!f.startsWith(__dirname) || !fs.existsSync(f)){ res.writeHead(404); res.end(); return; }
+  const f = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]).replace(/\/$/, '/index.html'));
+  if(!f.startsWith(ROOT) || !fs.existsSync(f)){ res.writeHead(404); res.end(); return; }
   res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
 }).listen(0, '127.0.0.1', async () => {
@@ -948,13 +951,13 @@ const server = http.createServer((req, res) => {
       const pickB = box.querySelectorAll('.badge')[4]; pickB.click(); await new Promise(r => setTimeout(r, 30));
       $('badges').querySelectorAll('.badge')[4].click();
       out.same.tap = txt(box.querySelector('.badgeneed')) === txt($('badgeNeed')) && pickB.getAttribute('aria-pressed') === 'true';
-      const m = await import('./js/ui/badges.js'); let t = performance.now();
+      ${BUILT ? '' : `const m = await import('./js/ui/badges.js'); let t = performance.now();
       for(let i = 0; i < 50; i++) m.showBadges(box, LOCAL.rounds);
       out.rerenderMs = ((performance.now() - t) / 50).toFixed(2);
-      t = performance.now(); for(let i = 0; i < 50; i++) renderStats(); out.legacyMs = ((performance.now() - t) / 50).toFixed(2);
+      t = performance.now(); for(let i = 0; i < 50; i++) renderStats(); out.legacyMs = ((performance.now() - t) / 50).toFixed(2);`}
       return JSON.stringify(out); })()`) || '{}');
     expect(r0.same && Object.values(r0.same).every(Boolean), 'the Preact badges screen differs from the hand-built one: ' + JSON.stringify(r0));
-    console.log('smoke: R0 trial — the Preact badges screen matches the hand-built one; re-render ' + r0.rerenderMs + ' ms, hand-built ' + r0.legacyMs + ' ms');
+    console.log('smoke: R0 trial — the Preact badges screen matches the hand-built one' + (BUILT ? '' : '; re-render ' + r0.rerenderMs + ' ms, hand-built ' + r0.legacyMs + ' ms'));
     await cmd('Page.navigate', { url }); await settle();
   }
   // The screen is kept on while a task is up and let go elsewhere: a stand-in wake lock counts what is held

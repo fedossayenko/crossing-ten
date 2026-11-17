@@ -1,7 +1,8 @@
 # Crossing Ten – agent guide
 
 Maths practice for a grade-2 pupil (Bulgarian olympiad worksheets). Plain HTML, CSS and
-native ES modules (no bundler); no build step, no npm dependencies (Preact is vendored in `js/vendor/`). Layout and the
+native ES modules; the source runs as it is, with no npm dependencies (Preact is vendored in `js/vendor/`). A release
+is built: `./build.sh` makes one minified script and stylesheet in `.deploy/` (esbuild through npx, pinned there). Layout and the
 design rules (difficulty rubric, training path) are in `README.md`.
 
 ## Commands
@@ -22,9 +23,11 @@ design rules (difficulty rubric, training path) are in `README.md`.
   The worker limits `/signup`, `/login` and `/google` to 10 a minute per IP (`LIMIT` binding); `test.js` sends a fake
   `cf-connecting-ip` per call locally, and a run against a deployed worker waits out the limit.
 - Who opens the app (`POST /hello`, one counter row per UTC day, site, signed-in or not; nothing else is kept): `cd worker && npx wrangler@4 d1 execute crossing-ten --remote --json -c wrangler.toml --command "SELECT * FROM hello ORDER BY day DESC"`.
-- `./verify.sh` runs tsc, check.js and smoke.js at once (about 45 s, set by smoke.js); run it before finishing. None may be weakened to make a change pass.
-- Deploy: `git push` (GitHub Pages serves the `main` branch as pushed; there is no CI and no `.github/`) and
-  `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
+- `./verify.sh` runs tsc, check.js and smoke.js at once (about 45 s, set by smoke.js); run it before finishing. Its
+  smoke plays the built app (`build.sh`, then `SMOKE_ROOT=<folder> node smoke.js`), since that is what ships; a plain
+  `node smoke.js` plays the source. A file the page needs must be named in `index.html` or imported, or the build lacks it. None may be weakened to make a change pass.
+- Deploy: `git push` (`.github/workflows/pages.yml` runs `build.sh` and publishes the result to GitHub Pages, about a
+  minute: `gh run watch`; it runs no checks) and `./deploy-cf.sh` (Cloudflare, from this machine, only a committed app).
 - Hooks are tracked in `.githooks/` and switched on once per clone with git's `core.hooksPath` setting pointed at
   `.githooks` (a clone without it has no hooks). The commit hook runs gitleaks on the staged changes (`--redact`,
   if installed) and refuses `.wrangler/`, `.dev.vars`, `*.pem`, `pdfs/`, `.deploy/` (the repo is public). The push

@@ -3,7 +3,7 @@
 // ponytail: every launch revalidates each file (cheap 304s); switch to stale-while-revalidate if start-up feels slow.
 // The cache's name carries a version: a new one is filled on install and the old ones are deleted on activate,
 // so a file the app no longer has does not linger. Bump it when the cached set itself changes shape.
-const CACHE = 'crossing-ten-v3';
+const CACHE = 'crossing-ten-v4';   // v4: the app is one built script (build.sh), the 320 module files of v3 go
 
 // On install, fetch the page and every file it needs, so one visit is enough to play offline (the first visit's
 // own requests happen before the worker runs, and would not be kept). Needs = what index.html names by src/href,

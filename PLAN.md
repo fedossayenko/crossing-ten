@@ -25,7 +25,6 @@ are in `README.md` and `AGENTS.md`, not here.
   Hashing in `check/golden.js` (0.3 s) is not worth a thread.
 
 ## Triggers, not tasks
-- Deploy-time bundle: when a phone shows a slow start, or the kinds pass ~400.
 - Cross-family difficulty (Elo): at ~500 families, from the per-task records in each round — privacy notice,
   parental consent and "delete my data" first.
 
