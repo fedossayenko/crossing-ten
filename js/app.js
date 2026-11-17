@@ -1814,6 +1814,7 @@ function fitStage(){
 }
 { const seen = new MutationObserver(fitStage);
   ['stage', 'hint', 'choices'].forEach(id => seen.observe($(id), { childList: true }));
+  seen.observe($('stage').parentNode, { attributes: true, attributeFilter: ['hidden'], subtree: true });   // the options, a note or another answer box shown or hidden
   BIG.addEventListener('change', fitStage); addEventListener('resize', fitStage); }
 // Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
 // an accidental pinch just breaks the layout, so the gesture is turned off here. It is
