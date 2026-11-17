@@ -229,6 +229,10 @@ button.catwrap{background:none; border:0; padding:0; border-radius:50%}
 .fig svg{height:clamp(80px,19vh,176px); width:auto; max-width:100%; overflow:visible}
 .fig > svg{min-width:0}   /* two pictures side by side (the scales) shrink to fit a phone, not overflow it */
 .fig.maze svg{height:clamp(110px,38vh,320px)}   /* a maze, a map or a board with small labels: bigger than the 19vh a picture gets, still scaled to fit */
+/* an iPad held upright (any screen that wide and that tall): the card kept 90 px of margin either side and the task
+   sat small in a card half empty (a picture stops at 176 px, and most carry a size of their own). The card is wider
+   here, and app.js (fitStage) makes the whole task as large as the card holds. */
+@media (min-width:700px) and (min-height:900px){ .app{max-width:760px} }
 .ic{height:1.3em; width:auto; vertical-align:-.3em}
 .grid4{display:grid; grid-template-columns:repeat(5, auto); gap:1px 7px;
   justify-content:center; align-items:center; text-align:center;

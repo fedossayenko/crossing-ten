@@ -4,7 +4,7 @@
 // app.js gathers the data (todayData) and does the playing; this only draws. Same classes as the picker's cards.
 import { h, render } from '../vendor/preact.js';
 import htm from '../vendor/htm.js';
-import { go, playLevel, startDaily, todayData, trainFor } from '../app.js';
+import { go, paperFor, playLevel, startDaily, todayData, trainFor } from '../app.js';
 import { openComp } from '../compete.js';
 import { LANG, LANG_TAG, t } from '../i18n.js';
 import { mascotSvg } from '../mascots.js';
@@ -61,7 +61,7 @@ function Today(){
           <div class="gtitle"><b>${t('thisWeek')}</b><span>${t('learnedOf', d.learned, d.levels)}</span></div>
           <div class="days">${d.days.map(x => html`<span class=${x.played ? 'on' : ''}><i></i>${x.label}</span>`)}</div>
         </div>
-        <button class="gcard nextcard comp" onClick=${() => openComp()}><span class="nm"><span class="lab">${t('compName')}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
+        <button class="gcard nextcard comp" onClick=${() => d.paper ? paperFor(d.paper.at) : openComp()}><span class="nm"><span class="lab">${t('compName')}${d.paper ? ' · ' + d.paper.name : ''}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>
         ${d.forecast && html`<button class="gcard nextcard comp forecast" onClick=${() => openComp('forecast')}><span class="nm"><span class="lab">${t('papers')['mbg-autumn-forecast2026']}</span><span class="eq">${t('compWhat', d.compN, d.compMin)}</span></span>${CHEV}</button>`}
       </div>
     </div>`;

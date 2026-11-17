@@ -1202,12 +1202,13 @@ function buildToday(now){
   const nx = suggest(m, lastLvl && (lastLvl.grp || lastLvl.op), !!(lastLvl && m[lastLvl.id] && m[lastLvl.id].done));
   const card = l => ({ id: l.id, name: levelName(l), group: groupOf(l), desc: levelDesc(l), d: l.d, review: !!(m[l.id] && m[l.id].done) });
   const lv = LEVELS.find(l => l.id === S.level);
+  const pp = nextPaper(), PF = pp && FMT[pp.at.split('-')[0]];   // Today's paper card is her next competition's paper, in its format
   return { name: playerName(PLAYER), mascot: PLAYER.mascot, streak: st.streak, roundsToday: LOCAL.rounds.filter(r => r.day === day).length,
     mid: !COMP && midRound() && lv ? levelName(lv) + ' · ' + t('taskOf', S.i + 1, S.qs.length) : '',
     next: nx ? Object.assign(card(nx), { fix: toFix(levelHistory(LOCAL.rounds)[nx.id], m[nx.id]) }) : null, daily: dailyPlan(LOCAL.rounds, LEVELS, now),
-    week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: nextPaper(), notebook: notebookData(now),
+    week: LOCAL.rounds.filter(r => r.ts >= weekStart(now)).length, paper: pp, notebook: notebookData(now),
     days: weekData(now).days, learned: LEVELS.filter(l => m[l.id] && m[l.id].done).length, levels: LEVELS.length, badge: nextBadge(st),
-    compN: COMP_N, compMin: COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
+    compN: PF ? PF.n : COMP_N, compMin: PF ? PF.min : COMP_MIN, forecast: myGrade() === 2 };   // the forecast's paper is a 2nd-grade one
 }
 // Today's cards: play this level now
 export function playLevel(id){ S.level = id; paintPill(); newRound(); }
@@ -1272,11 +1273,15 @@ export function nextPaper(){
     when: when.toLocaleDateString(LANG_TAG[LANG], { weekday:'long', day:'numeric', month:'long' }) };
 }
 // Train for it: the levels page, focused on that competition and round in her grade
-export function trainFor(at){
+function focusOn(at){
   loadFocus();
   [PICK_GRADE, PICK_COMP, PICK_ROUND, PICK_PAPER] = [myGrade(), at.split('-')[0], at.split('-')[1] || '', ''];
-  saveFocus(); go('levels');
+  saveFocus();
 }
+export function trainFor(at){ focusOn(at); go('levels'); }
+// Sit it: a paper of that competition in its own format (Today's paper card, while a next competition is set).
+// Em had not sat a paper for two weeks before Салабашев: Today's card started an МБГ paper whatever came next.
+export function paperFor(at){ focusOn(at); openComp(); }
 // her grade: the levels page, the suggestion and a paper keep to it
 document.querySelectorAll('#gradeSeg button').forEach(b => b.onclick = () => {
   PLAYER.grade = +b.dataset.g; PLAYER.updated = Date.now(); savePlayers(); PICK_FOR = null;   // updated: the newest edit wins across devices
@@ -1795,6 +1800,21 @@ $('synced').textContent = heldHere() + builtOn();   // sync.js takes this line o
 
 export const say = t => { $('synced').textContent = t + builtOn(); };
 
+// A wide and tall screen (an iPad held upright): the task as large as the card holds without scrolling, a third larger
+// at most: text, picture and answer boxes together, since most pictures carry a size of their own. Measured again
+// whenever the task or what stands under it (a hint, the way) is drawn: a tall picture or a long hint gets less.
+// 2026-11-17, all 446 levels at 820 x 1180: one size for all (a quarter larger) made six of them scroll.
+const BIG = matchMedia('(min-width:700px) and (min-height:900px)');
+function fitStage(){
+  const st = $('stage'), box = /** @type {HTMLElement} */ (st.parentNode);
+  st.style.zoom = '';
+  if(!BIG.matches) return;
+  for(const z of ['1.3', '1.2', '1.1']){ st.style.zoom = z; if(box.scrollHeight <= box.clientHeight + 1 && box.scrollWidth <= box.clientWidth + 1) return; }
+  st.style.zoom = '';
+}
+{ const seen = new MutationObserver(fitStage);
+  ['stage', 'hint', 'choices'].forEach(id => seen.observe($(id), { childList: true }));
+  BIG.addEventListener('change', fitStage); addEventListener('resize', fitStage); }
 // Safari keeps pinch-zoom even with user-scalable=no; for a full-screen practice app
 // an accidental pinch just breaks the layout, so the gesture is turned off here. It is
 // a deliberate trade against the usual advice — nothing on the page needs magnifying.

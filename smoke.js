@@ -15,7 +15,7 @@ const server = http.createServer((req, res) => {
 }).listen(0, '127.0.0.1', async () => {
   const url = 'http://127.0.0.1:' + server.address().port + '/';
   const dir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'ct-smoke-'));
-  const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
+  const chrome = spawn(CHROME, ['--headless=new', '--mute-audio', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
     '--user-data-dir=' + dir, '--window-size=390,844', 'about:blank'], { stdio: ['ignore', 'ignore', 'pipe'] });
   // a failure is final: done(1) waits for Chrome's exit event, which never comes if Chrome already died (it does, under load),
   // and node then ends on its own with code 0: the code is set first, and a later done(0) from the play going on can't undo it
@@ -234,6 +234,12 @@ const server = http.createServer((req, res) => {
     const set = (at, date) => { $('paperAt').value = at; $('paperAt').onchange(); $('paperDate').value = date; $('paperDate').onchange(); };
     $('tabParents').click(); await tick();
     const r = { options: [...$('paperAt').options].map(o => o.value).includes('mbg-autumn') };
+    // with a next competition set, Today's paper card is that competition's paper: named, in its format, and a tap opens its start sheet
+    set('sal', day(5)); $('tabToday').click(); await tick();
+    const pc = document.querySelector('#today .nextcard.comp:not(.forecast)');
+    r.paperCard = pc.textContent.includes(t('comps').sal) && pc.textContent.includes(t('compWhat', 15, 120));
+    pc.click(); await tick(); r.paperSheet = !$('compSheet').hidden && PICK_COMP === 'sal' && $('compFrom').textContent.includes(t('comps').sal) && $('compRules').textContent.includes(t('compRuleTime', 15, 120));
+    $('tabParents').click(); await tick();
     set('mbg-autumn', day(5)); r.saved = PLAYER.next && PLAYER.next.at === 'mbg-autumn' && PLAYER.next.date === day(5) && JSON.parse(localStorage.getItem('crossingten.players')).list.find(p => p.id === PLAYER.id).next.date === day(5);   // in the player's record, which sync carries
     $('tabToday').click(); await tick();
     const card = document.querySelector('#today .paperday'), ready = card && +card.querySelector('.ready b').textContent.replace('%', '');
@@ -268,7 +274,7 @@ const server = http.createServer((req, res) => {
       LOCAL.rounds = keep; saveLocal(); }
     newRound(); await tick();   // back where the next test expects her: on a fresh round
     return JSON.stringify(r); })()`) || '{}');
-  expect(r5.options && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today && r5.dailyCard && r5.dailyPlay && r5.dailyLog && r5.dailyDone && r5.dailyPill, 'the next competition or today\'s practice went wrong: ' + JSON.stringify(r5));
+  expect(r5.options && r5.paperCard && r5.paperSheet && r5.saved && r5.card && r5.trains && r5.past && r5.cleared && r5.today && r5.dailyCard && r5.dailyPlay && r5.dailyLog && r5.dailyDone && r5.dailyPill, 'the next competition or today\'s practice went wrong: ' + JSON.stringify(r5));
   // «Намери грешката» (js/daily.js): a task of today's practice shows a typical wrong answer first. A key does nothing until she
   // says Вярно/Грешно; Грешно is right and she types the answer as usual; Вярно is a miss, the answer and why come at once;
   // logged by task as [the answer shown, 1 found it / 0 took it for right]; never in a paper; a daily plays at most one
