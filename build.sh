@@ -10,7 +10,10 @@ PATH=/opt/homebrew/bin:$PATH   # the plain `node` shim on this machine is broken
 OUT=${1:-.deploy}
 ESBUILD="npx -y esbuild@0.25.10"
 rm -rf "$OUT" && mkdir -p "$OUT"
-git ls-files sw.js manifest.json icon-180.png icon-512.png fonts | rsync -a --files-from=- . "$OUT/"   # only what git tracks
+git ls-files sw.js manifest.json 'icon-*.png' fonts | rsync -a --files-from=- . "$OUT/"   # only what git tracks
+for f in $(grep -o '"src": *"[^"]*"' manifest.json | sed -E 's|.*"([^"]*)"$|\1|'); do   # every icon the manifest names went along
+  [ -f "$OUT/$f" ] || { echo "build: manifest.json names $f, which the build lacks"; exit 1; }
+done
 # the entry is the page's own module tags, in their order; no --target: the syntax ships as written
 grep -o '<script type="module" src="[^"]*"' index.html | sed -E 's|.*src="(.*)"|import "./\1";|' |
   $ESBUILD --bundle --format=esm --minify --charset=utf8 --sourcemap --sourcefile=entry.js --log-level=warning --outfile="$OUT/app.js"
